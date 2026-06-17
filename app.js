@@ -47,7 +47,7 @@ async function sha256(text) {
 
 // ── PASSWORT-HASHES (aus data.js werden echte hashes ergänzt) ──
 // Für Demo: wir berechnen die Hashes beim ersten Aufruf und cachen sie
-const DEMO_PASSWORDS=***
+const DEMO_PASSWORDS = {
   'admin@csc.de':            'Admin2024!',
   'mueller@reinigung-a.de':  'UnternehmenA2024!',
   'schmidt@reinigung-a.de':  'MitA2024!',
