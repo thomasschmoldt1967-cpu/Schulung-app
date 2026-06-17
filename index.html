@@ -344,5 +344,46 @@
 <!-- DATA + APP LOGIC -->
 <!-- data.js nicht mehr benötigt — Daten kommen aus Supabase -->
 <script src="app.js"></script>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: GAST / EINLADUNG (kein Login nötig)
+══════════════════════════════════════════════════════════ -->
+<div id="screen-gast" class="screen" style="display:none">
+  <header class="app-header">
+    <h1>📋 Schulungsunterweisung</h1>
+    <img src="csc-logo.png" alt="CSC GmbH" style="height:36px;filter:brightness(0) invert(1);opacity:.9">
+  </header>
+  <div class="content">
+    <!-- Schritt 1: Name eingeben -->
+    <div id="gast-name-screen">
+      <div class="card" style="margin-top:20px">
+        <div class="card-title" id="gast-schulung-titel">Schulungsunterweisung</div>
+        <p id="gast-schulung-info" style="font-size:.85rem;color:#6b7280;margin-bottom:16px"></p>
+        <div class="form-group">
+          <label>Ihr Name *</label>
+          <input type="text" id="gast-name-input" placeholder="Vor- und Nachname" style="font-size:1rem">
+        </div>
+        <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="gastWeiter()">Weiter →</button>
+        <div id="gast-name-msg" class="error-msg" style="margin-top:8px"></div>
+      </div>
+    </div>
+    <!-- Schritt 2: Formular (wird dynamisch befüllt) -->
+    <div id="gast-formular-screen" style="display:none">
+      <button class="back-btn" onclick="gastZurueck()">← Zurück</button>
+      <div id="gast-formular-content"></div>
+      <div style="margin-top:20px;display:flex;gap:10px">
+        <button class="btn btn-primary" style="flex:1" onclick="gastAbschliessen()">✅ Unterschreiben & Abschließen</button>
+      </div>
+      <div id="gast-formular-msg" class="error-msg" style="margin-top:8px"></div>
+    </div>
+    <!-- Schritt 3: Bestätigung -->
+    <div id="gast-fertig-screen" style="display:none;text-align:center;padding:40px 20px">
+      <div style="font-size:4rem">✅</div>
+      <h2 style="color:#16a34a;margin:16px 0 8px">Erfolgreich abgeschlossen!</h2>
+      <p style="color:#6b7280;font-size:.9rem">Ihre Unterschrift wurde gespeichert.<br>Sie können dieses Fenster schließen.</p>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

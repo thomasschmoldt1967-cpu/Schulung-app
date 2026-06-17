@@ -92,6 +92,11 @@ const SB = {
 // ── APP INITIALISIEREN ───────────────────────────────────────
 async function initApp() {
   showScreen('screen-loading');
+
+  // Einladungslink prüfen — wenn vorhanden, Gast-Flow starten
+  const istGast = await pruefeEinladungsToken();
+  if (istGast) return;
+
   try {
     const [tenants, vorlagen, zuws] = await Promise.all([
       SB.get('tenants'),
@@ -727,6 +732,7 @@ function renderSubDashboard() {
       <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         ${statusBadgeHtml(s)}
         ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF speichern</button>` : ''}
+        ${currentUser.role==='verantwortlicher' ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -1226,3 +1232,360 @@ function nuRenderListe() {
 }
 
 // Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
+
+// ══════════════════════════════════════════════════════════════
+//  EINLADUNG: Link + QR-Code generieren (Verantwortlicher)
+// ══════════════════════════════════════════════════════════════
+
+let aktiveEinladungZuwId = null;
+
+async function einladungOeffnen(zuwId) {
+  aktiveEinladungZuwId = zuwId;
+  const zuw = zuweisungen.find(z=>z.id===zuwId);
+  const v   = SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw?.vorlagenId);
+  const titel = v ? v.titel : zuwId;
+
+  // Modal erstellen
+  const overlay = document.createElement('div');
+  overlay.id = 'einladung-modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <h3 style="margin:0 0 6px;font-size:1.1rem">🔗 Mitarbeiter einladen</h3>
+      <p style="font-size:.82rem;color:#6b7280;margin:0 0 16px">${escHtml(titel)}</p>
+
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-primary" style="flex:1" onclick="einladungGenerieren()">🔗 Link generieren</button>
+        <button class="btn btn-outline" onclick="document.getElementById('einladung-modal').remove()">✕ Schließen</button>
+      </div>
+
+      <div id="einl-result" style="display:none">
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px;margin-bottom:12px">
+          <div style="font-size:.78rem;color:#6b7280;margin-bottom:4px">Einladungslink (7 Tage gültig):</div>
+          <div id="einl-link-text" style="font-size:.8rem;word-break:break-all;color:#1e40af;font-weight:600"></div>
+          <div style="display:flex;gap:8px;margin-top:10px">
+            <button class="btn btn-outline btn-sm" style="flex:1" onclick="einlLinkKopieren()">📋 Kopieren</button>
+            <button class="btn btn-outline btn-sm" style="flex:1" onclick="einlTeilen()">📤 Teilen</button>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div style="font-size:.78rem;color:#6b7280;margin-bottom:8px">QR-Code zum Scannen:</div>
+          <div id="einl-qr" style="display:inline-block;background:#fff;padding:8px;border:1px solid #e5e7eb;border-radius:8px"></div>
+          <div style="margin-top:10px">
+            <button class="btn btn-outline btn-sm" onclick="einlQrDrucken()">🖨️ QR-Code drucken</button>
+          </div>
+        </div>
+      </div>
+      <div id="einl-msg" class="error-msg" style="margin-top:8px"></div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function einladungGenerieren() {
+  const msgEl = document.getElementById('einl-msg');
+  msgEl.textContent = '⏳ Link wird erstellt …';
+  msgEl.style.color = '#2563eb';
+
+  try {
+    // Zufälligen Token erzeugen
+    const arr = new Uint8Array(24);
+    crypto.getRandomValues(arr);
+    const token = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+
+    const zuw = zuweisungen.find(z=>z.id===aktiveEinladungZuwId);
+    const gueltigBis = new Date(Date.now() + 7*24*60*60*1000).toISOString();
+    const id = 'einl_' + Date.now();
+
+    const res = await SB.post('einladungen', {
+      id, token,
+      zuweisung_id: aktiveEinladungZuwId,
+      tenant_id:    zuw.tenantId,
+      erstellt_von: currentUser.name,
+      gueltig_bis:  gueltigBis,
+      genutzt:      false
+    });
+    if (res.error) throw new Error(res.error.message || JSON.stringify(res.error));
+
+    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+    const link = `${baseUrl}?einladung=${token}`;
+
+    // Link anzeigen
+    document.getElementById('einl-link-text').textContent = link;
+    document.getElementById('einl-result').style.display = '';
+    msgEl.textContent = '';
+
+    // QR-Code erzeugen
+    await einlQrErzeugen(link);
+
+  } catch(e) {
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = '❌ Fehler: ' + e.message;
+  }
+}
+
+async function einlQrErzeugen(link) {
+  const el = document.getElementById('einl-qr');
+  el.innerHTML = '';
+  // QR via externe API (kostenlos, kein Tracking)
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(link)}`;
+  const img = document.createElement('img');
+  img.src = qrUrl;
+  img.style.cssText = 'width:200px;height:200px;display:block';
+  img.alt = 'QR-Code';
+  el.appendChild(img);
+}
+
+function einlLinkKopieren() {
+  const link = document.getElementById('einl-link-text').textContent;
+  navigator.clipboard.writeText(link).then(()=>showToast('✅ Link kopiert!')).catch(()=>{
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = link; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+    showToast('✅ Link kopiert!');
+  });
+}
+
+function einlTeilen() {
+  const link = document.getElementById('einl-link-text').textContent;
+  const zuw  = zuweisungen.find(z=>z.id===aktiveEinladungZuwId);
+  const v    = SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw?.vorlagenId);
+  if (navigator.share) {
+    navigator.share({ title: v?.titel || 'Schulungsunterweisung', text: 'Bitte folgende Schulung unterzeichnen:', url: link });
+  } else {
+    einlLinkKopieren();
+  }
+}
+
+function einlQrDrucken() {
+  const img = document.querySelector('#einl-qr img');
+  if (!img) return;
+  const zuw = zuweisungen.find(z=>z.id===aktiveEinladungZuwId);
+  const v   = SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw?.vorlagenId);
+  const w = window.open('','_blank','width=400,height=500');
+  w.document.write(`<html><body style="text-align:center;font-family:sans-serif;padding:30px">
+    <img src="${img.src}" style="width:220px;height:220px"><br>
+    <p style="font-size:1rem;margin-top:12px"><strong>${escHtml(v?.titel||'Schulungsunterweisung')}</strong></p>
+    <p style="font-size:.85rem;color:#666">Mit Smartphone scannen und Schulung unterzeichnen</p>
+    <p style="font-size:.75rem;color:#999">CSC GmbH · www.csc-hannover.de</p>
+  </body></html>`);
+  w.document.close();
+  setTimeout(()=>w.print(), 500);
+}
+
+// ══════════════════════════════════════════════════════════════
+//  GAST-FLOW: Einladungslink ohne Login
+// ══════════════════════════════════════════════════════════════
+
+let gastToken       = null;
+let gastEinladung   = null;
+let gastZuweisung   = null;
+let gastVorlage     = null;
+let gastSigPads     = {};
+
+async function pruefeEinladungsToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('einladung');
+  if (!token) return false;
+
+  gastToken = token;
+
+  try {
+    // Token in Supabase nachschlagen
+    const res = await fetch(
+      `${SUPABASE_URL}/rest/v1/einladungen?token=eq.${token}&select=*`,
+      { headers: SB.h }
+    );
+    const data = await res.json();
+    if (!data || !data.length) { gastFehler('Dieser Einladungslink ist ungültig.'); return true; }
+
+    const einl = data[0];
+    if (einl.genutzt) { gastFehler('Dieser Link wurde bereits verwendet.'); return true; }
+    if (new Date(einl.gueltig_bis) < new Date()) { gastFehler('Dieser Einladungslink ist abgelaufen.'); return true; }
+
+    gastEinladung = einl;
+
+    // Zuweisung + Vorlage laden
+    const [zuws, vorls] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${einl.zuweisung_id}&select=*`,{headers:SB.h}).then(r=>r.json()),
+      fetch(`${SUPABASE_URL}/rest/v1/vorlagen?select=*`,{headers:SB.h}).then(r=>r.json())
+    ]);
+
+    gastZuweisung = zuws?.[0];
+    gastVorlage   = vorls?.find(v=>v.id===gastZuweisung?.vorlage_id);
+
+    if (!gastZuweisung || !gastVorlage) { gastFehler('Schulung nicht gefunden.'); return true; }
+
+    // Gast-Screen anzeigen
+    document.getElementById('gast-schulung-titel').textContent = gastVorlage.titel || 'Schulungsunterweisung';
+    document.getElementById('gast-schulung-info').textContent  =
+      `Frist: ${gastZuweisung.frist||'–'} · Bitte geben Sie Ihren Namen ein und schließen Sie die Unterweisung ab.`;
+
+    document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+    document.getElementById('screen-gast').style.display='';
+    return true;
+
+  } catch(e) {
+    gastFehler('Verbindungsfehler: ' + e.message);
+    return true;
+  }
+}
+
+function gastFehler(msg) {
+  document.querySelectorAll('.screen').forEach(s=>s.style.display='none');
+  document.getElementById('screen-gast').style.display='';
+  document.getElementById('gast-name-screen').innerHTML = `
+    <div class="card" style="margin-top:20px;text-align:center">
+      <div style="font-size:3rem">❌</div>
+      <h3 style="color:#dc2626;margin:12px 0 8px">Link ungültig</h3>
+      <p style="color:#6b7280;font-size:.9rem">${escHtml(msg)}</p>
+    </div>`;
+}
+
+function gastWeiter() {
+  const name = document.getElementById('gast-name-input').value.trim();
+  const msg  = document.getElementById('gast-name-msg');
+  if (!name) { msg.textContent = '⚠️ Bitte Ihren Namen eingeben.'; return; }
+  msg.textContent = '';
+
+  // Formular rendern
+  const abschnitte = gastVorlage.abschnitte || [];
+  let html = '';
+  gastSigPads = {};
+
+  if (gastVorlage.typ === 'pdf' && gastVorlage.pdf_url) {
+    html += `<div class="card"><iframe src="${gastVorlage.pdf_url}" style="width:100%;height:500px;border:none;border-radius:8px"></iframe></div>`;
+  }
+
+  abschnitte.forEach((ab, ai) => {
+    html += `<div class="card"><div class="card-title">${escHtml(ab.titel||'')}</div>`;
+    (ab.felder||[]).forEach((f, fi) => {
+      const fid = `gast_f_${ai}_${fi}`;
+      if (f.typ==='signature') {
+        html += `<div class="form-group"><label>${escHtml(f.label||'Unterschrift')}${f.pflicht?' *':''}</label>
+          <canvas id="${fid}" style="border:2px solid #d1d5db;border-radius:8px;touch-action:none;width:100%;height:120px;background:#fff"></canvas>
+          <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="gastSigClear('${fid}')">✕ Löschen</button></div>`;
+        gastSigPads[fid] = { pflicht: !!f.pflicht, label: f.label };
+      } else if (f.typ==='checkbox') {
+        html += `<div class="form-group" style="display:flex;gap:10px;align-items:flex-start">
+          <input type="checkbox" id="${fid}" style="width:auto;margin-top:3px">
+          <label for="${fid}" style="margin:0;font-weight:400">${escHtml(f.label||'')}${f.pflicht?' *':''}</label></div>`;
+      } else if (f.typ==='select') {
+        const opts = (f.optionen||'').split(',').map(o=>`<option>${escHtml(o.trim())}</option>`).join('');
+        html += `<div class="form-group"><label>${escHtml(f.label||'')}${f.pflicht?' *':''}</label>
+          <select id="${fid}"><option value="">— bitte wählen —</option>${opts}</select></div>`;
+      } else if (f.typ==='textarea') {
+        html += `<div class="form-group"><label>${escHtml(f.label||'')}${f.pflicht?' *':''}</label>
+          <textarea id="${fid}" rows="3" placeholder="${escHtml(f.platzhalter||'')}"></textarea></div>`;
+      } else {
+        html += `<div class="form-group"><label>${escHtml(f.label||'')}${f.pflicht?' *':''}</label>
+          <input type="text" id="${fid}" placeholder="${escHtml(f.platzhalter||'')}"></div>`;
+      }
+    });
+    html += '</div>';
+  });
+
+  document.getElementById('gast-formular-content').innerHTML = html;
+  document.getElementById('gast-name-screen').style.display    = 'none';
+  document.getElementById('gast-formular-screen').style.display = '';
+
+  // Signature Pads initialisieren
+  setTimeout(() => {
+    Object.keys(gastSigPads).forEach(fid => {
+      const canvas = document.getElementById(fid);
+      if (!canvas) return;
+      // Canvas-Größe setzen
+      canvas.width  = canvas.offsetWidth  || 320;
+      canvas.height = canvas.offsetHeight || 120;
+      const ctx = canvas.getContext('2d');
+      const pad = { drawing: false, ctx, canvas, data: null };
+      canvas.addEventListener('mousedown',  e => { pad.drawing=true; ctx.beginPath(); ctx.moveTo(e.offsetX,e.offsetY); });
+      canvas.addEventListener('mousemove',  e => { if(!pad.drawing)return; ctx.lineTo(e.offsetX,e.offsetY); ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=2; ctx.stroke(); });
+      canvas.addEventListener('mouseup',    ()=> { pad.drawing=false; pad.data=canvas.toDataURL(); });
+      canvas.addEventListener('touchstart', e => { e.preventDefault(); pad.drawing=true; const t=e.touches[0],r=canvas.getBoundingClientRect(); ctx.beginPath(); ctx.moveTo(t.clientX-r.left,t.clientY-r.top); });
+      canvas.addEventListener('touchmove',  e => { e.preventDefault(); if(!pad.drawing)return; const t=e.touches[0],r=canvas.getBoundingClientRect(); ctx.lineTo(t.clientX-r.left,t.clientY-r.top); ctx.strokeStyle='#1e3a5f'; ctx.lineWidth=2; ctx.stroke(); });
+      canvas.addEventListener('touchend',   ()=> { pad.drawing=false; pad.data=canvas.toDataURL(); });
+      gastSigPads[fid].pad = pad;
+    });
+  }, 100);
+}
+
+function gastSigClear(fid) {
+  const p = gastSigPads[fid];
+  if (!p?.pad) return;
+  p.pad.ctx.clearRect(0,0,p.pad.canvas.width,p.pad.canvas.height);
+  p.pad.data = null;
+}
+
+function gastZurueck() {
+  document.getElementById('gast-formular-screen').style.display = 'none';
+  document.getElementById('gast-name-screen').style.display     = '';
+}
+
+async function gastAbschliessen() {
+  const msgEl = document.getElementById('gast-formular-msg');
+  msgEl.textContent = '';
+
+  const name = document.getElementById('gast-name-input').value.trim();
+
+  // Pflicht-Unterschriften prüfen
+  for (const [fid, info] of Object.entries(gastSigPads)) {
+    if (info.pflicht) {
+      const data = info.pad?.data;
+      if (!data) { msgEl.style.color='#dc2626'; msgEl.textContent=`⚠️ Bitte "${info.label}" unterschreiben.`; return; }
+    }
+  }
+
+  msgEl.style.color='#2563eb'; msgEl.textContent='⏳ Wird gespeichert …';
+
+  try {
+    // Felder sammeln
+    const content = document.getElementById('gast-formular-content');
+    const inputs  = content.querySelectorAll('input,select,textarea,canvas');
+    const antworten = {};
+    inputs.forEach(el => {
+      if (!el.id) return;
+      if (el.tagName==='CANVAS') { antworten[el.id] = gastSigPads[el.id]?.pad?.data || ''; }
+      else if (el.type==='checkbox') { antworten[el.id] = el.checked; }
+      else { antworten[el.id] = el.value; }
+    });
+
+    const jetzt = new Date().toISOString();
+    const formId = gastEinladung.zuweisung_id;
+
+    // Formular in Supabase speichern
+    const payload = {
+      id:              formId,
+      antworten:       JSON.stringify(antworten),
+      abgeschlossen:   true,
+      abgeschlossenAm: jetzt,
+      mitarbeiter_name: name,
+      einladung_token: gastToken
+    };
+
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/formulare`, {
+      method:  'POST',
+      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates' },
+      body:    JSON.stringify(payload)
+    });
+
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.message || r.statusText);
+    }
+
+    // Token als genutzt markieren
+    await fetch(`${SUPABASE_URL}/rest/v1/einladungen?id=eq.${gastEinladung.id}`, {
+      method:  'PATCH',
+      headers: { ...SB.h, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ genutzt: true, mitarbeiter_name: name })
+    });
+
+    // Erfolg
+    document.getElementById('gast-formular-screen').style.display = 'none';
+    document.getElementById('gast-fertig-screen').style.display   = '';
+
+  } catch(e) {
+    msgEl.style.color='#dc2626'; msgEl.textContent='❌ Fehler: '+e.message;
+  }
+}
