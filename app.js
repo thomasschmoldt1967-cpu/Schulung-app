@@ -365,17 +365,142 @@ function adminDetailAnzeigen(zuwId) {
 function exportDetailPdf() { if(activeDetailZuwId) generatePdf(activeDetailZuwId, true); }
 function renderAdminVorlagen() {
   document.getElementById('admin-vorlagen-list').innerHTML = SCHULUNG_VORLAGEN.map(v=>`
-    <div class="card">
-      <div class="card-title">📄 ${escHtml(v.titel)}</div>
-      <div style="font-size:.84rem;color:#374151;margin-bottom:8px">${escHtml(v.beschreibung||'')}</div>
-      <div style="font-size:.78rem;color:#6b7280">Wiederholungsintervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate</div>
-      <div style="margin-top:10px">${(v.abschnitte||[]).map(a=>`
-        <div style="margin-bottom:6px">
-          <span style="font-weight:700;font-size:.82rem">${escHtml(a.titel)}</span>
-          <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.length} Felder</span>
-        </div>`).join('')}
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div class="card-title" style="margin-bottom:4px">📄 ${escHtml(v.titel)}</div>
+          <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
+          <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
+        </div>
+        <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
       </div>
-    </div>`).join('');
+      <div style="margin-top:10px;border-top:1px solid #f0f2f5;padding-top:10px">
+        ${(v.abschnitte||[]).map(a=>`
+          <div style="margin-bottom:5px">
+            <span style="font-weight:700;font-size:.82rem;color:#1a3a5c">${escHtml(a.titel)}</span>
+            <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.map(f=>escHtml(f.label)).join(', ')}</span>
+          </div>`).join('')}
+      </div>
+    </div>`).join('') || '<div class="empty-state"><div class="icon">📭</div><p>Noch keine Vorlagen vorhanden</p></div>';
+}
+
+async function vtLoeschen(id) {
+  const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
+  if (!confirm(`Vorlage "${v?.titel}" wirklich löschen?\n\nAcht: Alle Zuweisungen dieser Vorlage werden ebenfalls gelöscht!`)) return;
+  try {
+    // Zuweisungen dieser Vorlage löschen
+    const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
+    for (const z of zuws) {
+      await fetch(`${SUPABASE_URL}/rest/v1/formulare?id=eq.${z.id}`,   { method:'DELETE', headers:SB.h });
+      await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${z.id}`, { method:'DELETE', headers:SB.h });
+      delete formulare[z.id];
+    }
+    zuweisungen = zuweisungen.filter(z=>z.vorlagenId!==id);
+    // Vorlage löschen
+    await fetch(`${SUPABASE_URL}/rest/v1/vorlagen?id=eq.${id}`, { method:'DELETE', headers:SB.h });
+    SCHULUNG_VORLAGEN = SCHULUNG_VORLAGEN.filter(v=>v.id!==id);
+    await sbAudit('LOESCHEN', `Vorlage "${v?.titel}" gelöscht`);
+    showToast('🗑️ Vorlage gelöscht', '#dc2626');
+    renderAdminVorlagen();
+    renderAdminZuweisungen();
+    renderAdminStats();
+    renderAdminTenantTable();
+    populateZuweisungsForm();
+  } catch(e) { alert('Fehler: '+e.message); }
+}
+
+// ── VORLAGEN-EDITOR ──────────────────────────────────────────
+let vtAbschnittCount = 0;
+
+function vtAddAbschnitt() {
+  vtAbschnittCount++;
+  const id = `ab_${vtAbschnittCount}`;
+  const div = document.createElement('div');
+  div.id = id;
+  div.className = 'card';
+  div.style.cssText = 'margin-top:12px;background:#f8faff;border:1px solid #dde8ff';
+  div.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <input type="text" placeholder="Abschnittsname (z.B. Persönliche Angaben)" style="font-weight:700;font-size:.9rem;border:none;background:transparent;flex:1;outline:none" id="ab_titel_${id}">
+      <button class="btn btn-danger btn-sm" onclick="document.getElementById('${id}').remove()">✕</button>
+    </div>
+    <div id="felder_${id}"></div>
+    <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="vtAddFeld('${id}')">+ Feld hinzufügen</button>
+  `;
+  document.getElementById('vt-abschnitte').appendChild(div);
+}
+
+function vtAddFeld(abId) {
+  const feldId = `feld_${abId}_${Date.now()}`;
+  const div = document.createElement('div');
+  div.id = feldId;
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 130px 60px 32px;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML = `
+    <input type="text" placeholder="Feldbezeichnung *" id="label_${feldId}" style="font-size:.82rem">
+    <select id="typ_${feldId}" style="font-size:.82rem">
+      <option value="text">Texteingabe</option>
+      <option value="textarea">Mehrzeilig</option>
+      <option value="select">Auswahl</option>
+      <option value="checkbox">Checkbox</option>
+      <option value="signature">Unterschrift</option>
+      <option value="upload">Datei-Upload</option>
+    </select>
+    <label style="font-size:.78rem;display:flex;align-items:center;gap:3px;cursor:pointer">
+      <input type="checkbox" id="pfl_${feldId}"> Pflicht
+    </label>
+    <button class="btn btn-danger btn-sm" onclick="document.getElementById('${feldId}').remove()">✕</button>
+  `;
+  document.getElementById(`felder_${abId}`).appendChild(div);
+}
+
+async function vtSpeichern() {
+  const titel      = document.getElementById('vt-titel').value.trim();
+  const beschr     = document.getElementById('vt-beschreibung').value.trim();
+  const intervall  = parseInt(document.getElementById('vt-intervall').value) || 12;
+  const msgEl      = document.getElementById('vt-msg');
+  msgEl.classList.remove('show');
+
+  if (!titel) { msgEl.textContent='Bitte einen Titel eingeben.'; msgEl.classList.add('show'); return; }
+
+  // Abschnitte einlesen
+  const abschnitte = [];
+  document.querySelectorAll('#vt-abschnitte > div[id^="ab_"]').forEach(abDiv => {
+    const abId    = abDiv.id;
+    const abTitel = document.getElementById(`ab_titel_${abId}`)?.value.trim() || 'Abschnitt';
+    const felder  = [];
+    abDiv.querySelectorAll('div[id^="feld_"]').forEach(fDiv => {
+      const fId  = fDiv.id;
+      const label = document.getElementById(`label_${fId}`)?.value.trim();
+      const typ   = document.getElementById(`typ_${fId}`)?.value || 'text';
+      const pflicht = document.getElementById(`pfl_${fId}`)?.checked || false;
+      if (label) felder.push({ id: `f_${fId}_${Date.now()}`, label, typ, pflicht });
+    });
+    if (felder.length) abschnitte.push({ titel: abTitel, felder });
+  });
+
+  if (!abschnitte.length) { msgEl.textContent='Bitte mindestens einen Abschnitt mit Feldern anlegen.'; msgEl.classList.add('show'); return; }
+
+  const id = `vorlage_${titel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')}_${Date.now()}`;
+  const vorlage = { id, titel, beschreibung: beschr, intervall_monate: intervall, abschnitte };
+
+  try {
+    await SB.post('vorlagen', vorlage);
+    SCHULUNG_VORLAGEN.push({ ...vorlage, intervallMonate: intervall });
+    await sbAudit('VORLAGE_NEU', `Neue Vorlage "${titel}" erstellt`);
+    showToast(`✅ Vorlage "${titel}" gespeichert`, '#16a34a');
+
+    // Formular zurücksetzen
+    document.getElementById('vt-titel').value       = '';
+    document.getElementById('vt-beschreibung').value = '';
+    document.getElementById('vt-intervall').value    = '12';
+    document.getElementById('vt-abschnitte').innerHTML = '';
+    vtAbschnittCount = 0;
+
+    renderAdminVorlagen();
+    populateZuweisungsForm();
+  } catch(e) {
+    msgEl.textContent = 'Fehler: '+e.message; msgEl.classList.add('show');
+  }
 }
 function renderAdminZuweisungen() {
   const rows = zuweisungen.map(z => {

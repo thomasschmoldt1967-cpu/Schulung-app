@@ -91,6 +91,34 @@
 
     <!-- Tab: Schulungsvorlagen -->
     <div id="tab-schulungen" class="tab-content" style="display:none">
+
+      <!-- Neue Vorlage erstellen -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">➕ Neue Schulungsvorlage erstellen</div>
+        <div class="form-group">
+          <label>Titel *</label>
+          <input type="text" id="vt-titel" placeholder="z.B. PSAgA-Unterweisung 2025">
+        </div>
+        <div class="form-group">
+          <label>Beschreibung</label>
+          <input type="text" id="vt-beschreibung" placeholder="Kurzbeschreibung">
+        </div>
+        <div class="form-group">
+          <label>Wiederholungsintervall (Monate)</label>
+          <input type="number" id="vt-intervall" value="12" min="1" max="120">
+        </div>
+
+        <!-- Abschnitte -->
+        <div id="vt-abschnitte"></div>
+        <button class="btn btn-outline" style="margin-top:8px" onclick="vtAddAbschnitt()">+ Abschnitt hinzufügen</button>
+
+        <div style="margin-top:14px;display:flex;gap:10px">
+          <button class="btn btn-primary" onclick="vtSpeichern()">💾 Vorlage speichern</button>
+        </div>
+        <div id="vt-msg" class="error-msg" style="margin-top:8px"></div>
+      </div>
+
+      <!-- Bestehende Vorlagen -->
       <div id="admin-vorlagen-list"></div>
     </div>
 
