@@ -660,13 +660,16 @@ function generatePdf(zuwId, downloadOnly) {
   const fn=`${dt}_${(vorlage?.titel||zuwId).replace(/\s+/g,'_')}_${zuw.tenantId}.pdf`;
   doc.save(fn);
 
-  // Zu Supabase Storage hochladen
+  // Parallel zu Supabase Storage UND Google Drive hochladen
   if (!downloadOnly && form.abgeschlossen) {
-    const pdfBlob = doc.output('blob');
+    const pdfBlob   = doc.output('blob');
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
     uploadPdfToSupabase(pdfBlob, fn, zuwId, zuw.tenantId);
+    uploadPdfToDrive(pdfBase64, fn, zuw.tenantId);
   }
 }
 
+// ── SUPABASE STORAGE UPLOAD ──────────────────────────────────
 async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
   try {
     const path = `${tenantId}/${filename}`;
@@ -677,17 +680,42 @@ async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
     });
     if (!r.ok) throw new Error(await r.text());
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
-    // URL in DB speichern
     await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: publicUrl });
     if (formulare[zuwId]) formulare[zuwId].pdfPath = publicUrl;
-    // Erfolgsmeldung
-    const msg=document.createElement('div');
-    msg.style.cssText='position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-size:0.85rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
-    msg.innerHTML='☁️ PDF in Supabase gespeichert';
-    document.body.appendChild(msg); setTimeout(()=>msg.remove(),4000);
+    showToast('🗄️ Supabase: PDF gespeichert', '#0047cc');
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
+    showToast('⚠️ Supabase Upload fehlgeschlagen', '#dc2626');
   }
+}
+
+// ── GOOGLE DRIVE UPLOAD (Backup) ─────────────────────────────
+async function uploadPdfToDrive(pdfBase64, filename, tenantId) {
+  try {
+    const resp = await fetch('http://localhost:8765/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf: pdfBase64, filename, tenantId })
+    });
+    const result = await resp.json();
+    if (result.status === 'ok') {
+      showToast('☁️ Google Drive: PDF gespeichert', '#16a34a');
+    } else {
+      console.warn('Drive Upload Fehler:', result.message);
+    }
+  } catch(e) {
+    console.warn('Drive Upload nicht erreichbar:', e.message);
+  }
+}
+
+// ── TOAST HELPER ─────────────────────────────────────────────
+function showToast(text, color='#16a34a') {
+  const msg = document.createElement('div');
+  msg.style.cssText = `position:fixed;bottom:${20 + document.querySelectorAll('.toast-msg').length * 55}px;right:20px;background:${color};color:#fff;padding:12px 18px;border-radius:10px;font-size:0.85rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2)`;
+  msg.className = 'toast-msg';
+  msg.textContent = text;
+  document.body.appendChild(msg);
+  setTimeout(() => msg.remove(), 4000);
 }
 
 // ══════════════════════════════════════════════════════════════
