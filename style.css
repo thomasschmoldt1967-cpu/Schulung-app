@@ -291,3 +291,8 @@ tr:hover td { background: var(--bg); }
   display: inline-block; background: #e0e7ff; color: #3730a3;
   border-radius: 5px; padding: 2px 7px; font-size: 0.72rem; font-weight: 700;
 }
+/* ── LOADING SPIN ─────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── FORM ACTIONS ─────────────────────────────────────────── */
+.form-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
