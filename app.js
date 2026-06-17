@@ -261,6 +261,7 @@ function adminTab(tabName, btn) {
   document.querySelectorAll('#screen-admin .tab-content').forEach(t => t.style.display='none');
   document.getElementById(`tab-${tabName}`).style.display='';
   if (tabName==='protokoll') loadAuditFromDB();
+  if (tabName==='unternehmen') nuRenderListe();
 }
 async function loadAuditFromDB() {
   try {
@@ -1130,3 +1131,98 @@ function showToast(text, color='#16a34a') {
 //  INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', initApp);
+
+// ══════════════════════════════════════════════════════════════
+//  UNTERNEHMEN VERWALTEN
+// ══════════════════════════════════════════════════════════════
+
+function nuGenerierePasswort() {
+  const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!#';
+  let pw = '';
+  for (let i = 0; i < 10; i++) pw += zeichen[Math.floor(Math.random() * zeichen.length)];
+  document.getElementById('nu-passwort').value = pw;
+}
+
+async function nuAnlegen() {
+  const msgEl = document.getElementById('nu-msg');
+  msgEl.textContent = '';
+  msgEl.style.color = '#dc2626';
+
+  const name     = document.getElementById('nu-name').value.trim();
+  const email    = document.getElementById('nu-email').value.trim().toLowerCase();
+  const kontakt  = document.getElementById('nu-kontakt').value.trim();
+  const passwort = document.getElementById('nu-passwort').value.trim();
+
+  if (!name || !email || !kontakt || !passwort) {
+    msgEl.textContent = '⚠️ Bitte alle Felder ausfüllen.'; return;
+  }
+  if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
+    msgEl.textContent = '⚠️ Ungültige E-Mail-Adresse.'; return;
+  }
+
+  msgEl.style.color = '#2563eb';
+  msgEl.textContent = '⏳ Wird angelegt …';
+
+  try {
+    // 1. Tenant anlegen
+    const tenantId = 'tenant_' + Date.now();
+    const tRes = await SB.post('tenants', { id: tenantId, name });
+    if (tRes.error) throw new Error('Tenant: ' + (tRes.error.message || JSON.stringify(tRes.error)));
+
+    // 2. Passwort hashen
+    const hash = await sha256(passwort);
+
+    // 3. User (Verantwortlicher) anlegen
+    const userId = 'user_' + Date.now();
+    const uRes = await SB.post('users', {
+      id: userId,
+      name: kontakt,
+      email,
+      password_hash: hash,
+      role: 'verantwortlicher',
+      tenant_id: tenantId
+    });
+    if (uRes.error) throw new Error('User: ' + (uRes.error.message || JSON.stringify(uRes.error)));
+
+    // 4. App-State aktualisieren
+    APP_TENANTS.push({ id: tenantId, name });
+    await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Verantwortlicher: ${email}`);
+
+    msgEl.style.color = '#16a34a';
+    msgEl.textContent = `✅ "${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
+
+    // Felder leeren
+    ['nu-name','nu-email','nu-kontakt','nu-passwort'].forEach(id => document.getElementById(id).value = '');
+
+    // Listen aktualisieren
+    renderAdminTenantTable();
+    renderAdminStats();
+    nuRenderListe();
+    populateZuweisungsForm();
+
+  } catch(e) {
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = '❌ Fehler: ' + e.message;
+  }
+}
+
+function nuRenderListe() {
+  const el = document.getElementById('nu-liste');
+  if (!el) return;
+  if (!APP_TENANTS.length) {
+    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Unternehmen angelegt.</p>';
+    return;
+  }
+  el.innerHTML = APP_TENANTS.map(t => {
+    const zuws = zuweisungen.filter(z => z.tenantId === t.id);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6">
+      <div>
+        <strong>${escHtml(t.name)}</strong>
+        <span style="font-size:.78rem;color:#6b7280;margin-left:8px">${zuws.length} Zuweisung(en)</span>
+      </div>
+      <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button>
+    </div>`;
+  }).join('');
+}
+
+// Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
