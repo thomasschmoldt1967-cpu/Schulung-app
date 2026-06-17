@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bedienungsanleitung – CSC Schulungsmanagement-App</title>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue-dark:   #1e3a5f;
+      --blue-mid:    #2a5298;
+      --blue-light:  #e8f0fb;
+      --accent:      #2e7bcf;
+      --green:       #2e7d32;
+      --green-bg:    #e8f5e9;
+      --yellow:      #f9a825;
+      --yellow-bg:   #fffde7;
+      --red:         #c62828;
+      --red-bg:      #ffebee;
+      --gray-bg:     #f4f6f9;
+      --gray-border: #dde3ec;
+      --text:        #1a1a2e;
+      --text-light:  #5a6a7a;
+      --white:       #ffffff;
+      --shadow:      0 2px 12px rgba(30,58,95,0.10);
+      --radius:      10px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--gray-bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    /* ===== LAYOUT ===== */
+    .page-wrapper {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 24px 16px 60px;
+    }
+
+    /* ===== COVER ===== */
+    .cover {
+      background: linear-gradient(145deg, var(--blue-dark) 0%, var(--blue-mid) 100%);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 52px 40px 44px;
+      text-align: center;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .cover::before {
+      content: "";
+      position: absolute;
+      top: -60px; right: -60px;
+      width: 220px; height: 220px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .cover::after {
+      content: "";
+      position: absolute;
+      bottom: -80px; left: -40px;
+      width: 260px; height: 260px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 50%;
+    }
+    .cover-logo {
+      background: var(--white);
+      border-radius: 8px;
+      display: inline-block;
+      padding: 12px 24px;
+      margin-bottom: 28px;
+    }
+    .cover-logo img {
+      height: 52px;
+      width: auto;
+      display: block;
+    }
+    .cover h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+    .cover .subtitle {
+      font-size: 1.1rem;
+      opacity: 0.85;
+      margin-bottom: 28px;
+    }
+    .cover-meta {
+      display: flex;
+      justify-content: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-size: 0.88rem;
+      opacity: 0.75;
+      border-top: 1px solid rgba(255,255,255,0.2);
+      padding-top: 18px;
+      margin-top: 4px;
+    }
+    .cover-meta a {
+      color: var(--white);
+      text-decoration: none;
+    }
+
+    /* ===== TABLE OF CONTENTS ===== */
+    .toc-card {
+      background: var(--white);
+      border: 1px solid var(--gray-border);
+      border-left: 5px solid var(--accent);
+      border-radius: var(--radius);
+      padding: 24px 28px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .toc-card h2 {
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--blue-dark);
+      margin-bottom: 14px;
+    }
+    .toc-list {
+      list-style: none;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 24px;
+    }
+    .toc-list li a {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .toc-list li a:hover { text-decoration: underline; }
+    @media (max-width: 540px) {
+      .toc-list { grid-template-columns: 1fr; }
+    }
+
+    /* ===== SECTION CARDS ===== */
+    .section-card {
+      background: var(--white);
+      border: 1px solid var(--gray-border);
+      border-radius: var(--radius);
+      padding: 32px 32px 28px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    @media (max-width: 600px) {
+      .section-card { padding: 22px 18px 20px; }
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid var(--blue-light);
+    }
+    .section-number {
+      background: var(--blue-dark);
+      color: var(--white);
+      font-size: 0.85rem;
+      font-weight: 700;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .section-header h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--blue-dark);
+      line-height: 1.3;
+    }
+    .section-icon {
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    /* ===== STEP LIST ===== */
+    .step-list {
+      list-style: none;
+      counter-reset: steps;
+    }
+    .step-list li {
+      counter-increment: steps;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 16px;
+      padding: 14px 16px;
+      background: var(--gray-bg);
+      border-radius: 8px;
+      border-left: 3px solid var(--accent);
+    }
+    .step-list li::before {
+      content: counter(steps);
+      background: var(--accent);
+      color: var(--white);
+      font-size: 0.8rem;
+      font-weight: 700;
+      min-width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .step-list li .step-content {
+      flex: 1;
+    }
+    .step-list li a {
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    /* ===== TRAFFIC LIGHT ===== */
+    .traffic-light {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .tl-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .tl-green  { background: var(--green-bg);  border-left: 4px solid var(--green); }
+    .tl-yellow { background: var(--yellow-bg); border-left: 4px solid var(--yellow); }
+    .tl-red    { background: var(--red-bg);    border-left: 4px solid var(--red); }
+    .tl-dot { font-size: 1.3rem; }
+    .tl-label { font-weight: 700; min-width: 80px; }
+    .tl-desc  { color: var(--text-light); font-weight: 400; }
+
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 20px;
+    }
+    @media (max-width: 500px) {
+      .tiles-grid { grid-template-columns: 1fr; }
+    }
+    .tile-box {
+      border-radius: 8px;
+      padding: 16px 14px;
+      text-align: center;
+    }
+    .tile-box .tile-icon { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+    .tile-box .tile-name { font-weight: 700; font-size: 0.9rem; }
+    .tile-box .tile-hint { font-size: 0.8rem; margin-top: 4px; }
+    .tile-green  { background: var(--green-bg);  border: 1px solid #a5d6a7; }
+    .tile-yellow { background: var(--yellow-bg); border: 1px solid #ffe082; }
+    .tile-red    { background: var(--red-bg);    border: 1px solid #ef9a9a; }
+
+    /* ===== LANG BADGES ===== */
+    .lang-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 14px 0;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      border: 1px solid #c5d8f5;
+      border-radius: 20px;
+      padding: 4px 14px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ===== INVITE BOX ===== */
+    .invite-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 18px 0;
+    }
+    @media (max-width: 540px) {
+      .invite-options { grid-template-columns: 1fr; }
+    }
+    .invite-option {
+      background: var(--gray-bg);
+      border: 1px solid var(--gray-border);
+      border-radius: 8px;
+      padding: 18px 16px;
+    }
+    .invite-option .opt-icon { font-size: 1.6rem; margin-bottom: 8px; display: block; }
+    .invite-option .opt-title { font-weight: 700; color: var(--blue-dark); margin-bottom: 6px; }
+    .invite-option p { font-size: 0.9rem; color: var(--text-light); }
+
+    .info-box {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 18px;
+      margin-top: 18px;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .info-box .info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== FAQ ===== */
+    .faq-list {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .faq-item {
+      border: 1px solid var(--gray-border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .faq-q {
+      background: var(--blue-light);
+      padding: 14px 18px;
+      font-weight: 600;
+      color: var(--blue-dark);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .faq-q .q-icon { flex-shrink: 0; margin-top: 1px; }
+    .faq-a {
+      padding: 14px 18px;
+      background: var(--white);
+      color: var(--text);
+      font-size: 0.95rem;
+      border-top: 1px solid var(--gray-border);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .faq-a .a-icon { flex-shrink: 0; color: var(--green); font-weight: 700; }
+    .faq-a a { color: var(--accent); }
+
+    /* ===== CONTACT ===== */
+    .contact-card {
+      background: linear-gradient(135deg, var(--blue-dark) 0%, #2a5298 100%);
+      color: var(--white);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .contact-card .section-header {
+      border-bottom-color: rgba(255,255,255,0.2);
+    }
+    .contact-card .section-header h2 {
+      color: var(--white);
+    }
+    .contact-card .section-number {
+      background: rgba(255,255,255,0.2);
+    }
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 4px;
+    }
+    @media (max-width: 500px) {
+      .contact-grid { grid-template-columns: 1fr; }
+    }
+    .contact-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 18px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+    .contact-item .ci-icon { font-size: 1.4rem; flex-shrink: 0; }
+    .contact-item .ci-label { font-size: 0.8rem; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+    .contact-item .ci-val { font-weight: 600; }
+    .contact-item a { color: var(--white); }
+
+    /* ===== PRINT BUTTON ===== */
+    .print-bar {
+      text-align: center;
+      padding: 16px 0 8px;
+    }
+    .btn-print {
+      background: var(--blue-dark);
+      color: var(--white);
+      border: none;
+      border-radius: 8px;
+      padding: 14px 36px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(30,58,95,0.25);
+      transition: background 0.2s;
+    }
+    .btn-print:hover { background: var(--blue-mid); }
+
+    /* ===== FOOTER ===== */
+    .footer {
+      text-align: center;
+      color: var(--text-light);
+      font-size: 0.82rem;
+      padding: 8px 0 4px;
+    }
+
+    /* ===== UTILITY ===== */
+    strong { color: var(--blue-dark); }
+    code {
+      background: var(--blue-light);
+      color: var(--blue-dark);
+      padding: 1px 7px;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+
+    /* ===== PRINT STYLES ===== */
+    @media print {
+      body { background: #fff; color: #000; font-size: 13px; }
+      .page-wrapper { max-width: 100%; padding: 0; }
+      .cover {
+        background: #fff !important;
+        color: #000 !important;
+        border: 2px solid #000;
+        break-after: page;
+      }
+      .cover h1, .cover .subtitle, .cover-meta, .cover-meta a { color: #000 !important; }
+      .cover::before, .cover::after { display: none; }
+      .cover-logo { background: #fff; border: 1px solid #ccc; }
+      .section-card, .toc-card { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
+      .contact-card {
+        background: #fff !important;
+        color: #000 !important;
+        border: 1px solid #ccc;
+      }
+      .contact-card .section-header h2 { color: #000 !important; }
+      .contact-item { background: #f5f5f5; }
+      .contact-item a { color: #000; }
+      .tl-green { background: #f5f5f5 !important; }
+      .tl-yellow { background: #f5f5f5 !important; }
+      .tl-red { background: #f5f5f5 !important; }
+      .tile-green, .tile-yellow, .tile-red { background: #f5f5f5 !important; border-color: #ccc !important; }
+      .faq-q { background: #f0f0f0 !important; }
+      .step-list li { background: #f5f5f5; }
+      .invite-option { background: #f5f5f5; }
+      .info-box { background: #f5f5f5; }
+      .badge { background: #f0f0f0; }
+      .btn-print, .print-bar { display: none; }
+      .section-number { background: #333 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      a { color: #000; }
+    }
+  </style>
+</head>
+<body>
+<div class="page-wrapper">
+
+  <!-- ===== COVER ===== -->
+  <div class="cover">
+    <div class="cover-logo">
+      <img src="https://csc-hannover.de/wp-content/uploads/logo.png" alt="CSC GmbH Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'color:#1e3a5f;font-weight:700;font-size:1.2rem;\'>CSC GmbH</span>'">
+    </div>
+    <h1>Bedienungsanleitung<br>CSC Schulungsmanagement-App</h1>
+    <div class="subtitle">Für Unternehmen und Verantwortliche</div>
+    <div class="cover-meta">
+      <span>📅 Juni 2026</span>
+      <span>🏢 CSC GmbH · Hannover</span>
+      <span>🌐 <a href="https://www.csc-hannover.de" target="_blank">www.csc-hannover.de</a></span>
+    </div>
+  </div>
+
+  <!-- ===== TABLE OF CONTENTS ===== -->
+  <div class="toc-card">
+    <h2>📋 Inhaltsverzeichnis</h2>
+    <ul class="toc-list">
+      <li><a href="#sec1">1 · Erste Schritte: Anmeldung</a></li>
+      <li><a href="#sec2">2 · Übersicht &amp; Ampelsystem</a></li>
+      <li><a href="#sec3">3 · Schulung ausfüllen</a></li>
+      <li><a href="#sec4">4 · Mitarbeiter einladen</a></li>
+      <li><a href="#sec5">5 · Häufige Fragen (FAQ)</a></li>
+      <li><a href="#sec6">6 · Kontakt &amp; Support</a></li>
+    </ul>
+  </div>
+
+  <!-- ===== SECTION 1: ANMELDUNG ===== -->
+  <div class="section-card" id="sec1">
+    <div class="section-header">
+      <div class="section-number">1</div>
+      <div class="section-icon">🚀</div>
+      <h2>Erste Schritte: Anmeldung</h2>
+    </div>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>App aufrufen</strong><br>
+          Öffnen Sie Ihren Browser und navigieren Sie zu:<br>
+          <a href="https://thomasschmoldt1967-cpu.github.io/Schulung-app/" target="_blank">https://thomasschmoldt1967-cpu.github.io/Schulung-app/</a>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Zugangsdaten eingeben</strong><br>
+          Geben Sie Ihre <strong>E-Mail-Adresse</strong> und Ihr <strong>Passwort</strong> ein.<br>
+          Diese Zugangsdaten erhalten Sie von der CSC GmbH.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Auf "Anmelden" tippen</strong><br>
+          Bestätigen Sie Ihre Eingabe durch Tippen auf den Anmelden-Button.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungsübersicht</strong><br>
+          Sie sehen nun die Übersicht aller Ihnen zugewiesenen Schulungen und deren aktuellen Status.
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- ===== SECTION 2: AMPELSYSTEM ===== -->
+  <div class="section-card" id="sec2">
+    <div class="section-header">
+      <div class="section-number">2</div>
+      <div class="section-icon">🚦</div>
+      <h2>Übersicht verstehen – Das Ampelsystem</h2>
+    </div>
+
+    <p style="margin-bottom:16px;color:var(--text-light);">Der Status jeder Schulung wird durch eine farbige Anzeige (Ampelsystem) sofort erkennbar gemacht:</p>
+
+    <div class="traffic-light">
+      <div class="tl-item tl-green">
+        <span class="tl-dot">🟢</span>
+        <span class="tl-label">Grün</span>
+        <span class="tl-desc">Schulung wurde vollständig abgeschlossen und gespeichert</span>
+      </div>
+      <div class="tl-item tl-yellow">
+        <span class="tl-dot">🟡</span>
+        <span class="tl-label">Gelb</span>
+        <span class="tl-desc">Schulung ist in Bearbeitung oder die Frist ist noch offen</span>
+      </div>
+      <div class="tl-item tl-red">
+        <span class="tl-dot">🔴</span>
+        <span class="tl-label">Rot</span>
+        <span class="tl-desc">Schulung wurde nicht begonnen oder die Frist ist überschritten</span>
+      </div>
+    </div>
+
+    <p style="margin-bottom:12px;font-weight:600;color:var(--blue-dark);">Kacheln in der Übersicht:</p>
+    <div class="tiles-grid">
+      <div class="tile-box tile-green">
+        <span class="tile-icon">✅</span>
+        <div class="tile-name">Abgeschlossen</div>
+        <div class="tile-hint" style="color:var(--green);">Alle Pflichtfelder ausgefüllt und unterschrieben</div>
+      </div>
+      <div class="tile-box tile-yellow">
+        <span class="tile-icon">⏳</span>
+        <div class="tile-name">In Bearbeitung</div>
+        <div class="tile-hint" style="color:#f57f17;">Begonnen, aber noch nicht abgeschlossen</div>
+      </div>
+      <div class="tile-box tile-red">
+        <span class="tile-icon">📋</span>
+        <div class="tile-name">Offen</div>
+        <div class="tile-hint" style="color:var(--red);">Noch nicht begonnen oder Frist abgelaufen</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 3: SCHULUNG AUSFÜLLEN ===== -->
+  <div class="section-card" id="sec3">
+    <div class="section-header">
+      <div class="section-number">3</div>
+      <div class="section-icon">📝</div>
+      <h2>Schulung ausfüllen</h2>
+    </div>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Schulung auswählen</strong><br>
+          Tippen Sie in der Schulungsliste auf die gewünschte Schulung, um sie zu öffnen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Formular ausfüllen</strong><br>
+          Füllen Sie das Formular Schritt für Schritt aus. Pflichtfelder sind entsprechend markiert.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Sprache wählen</strong><br>
+          Wählen Sie oben rechts im Formular die gewünschte Sprache:
+          <div class="lang-badges" style="margin-top:10px;">
+            <span class="badge">🇩🇪 DE Deutsch</span>
+            <span class="badge">🇬🇧 EN Englisch</span>
+            <span class="badge">🇹🇷 TR Türkisch</span>
+            <span class="badge">🇸🇦 AR Arabisch</span>
+            <span class="badge">🇪🇸 ES Spanisch</span>
+            <span class="badge">🇷🇺 RU Russisch</span>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Unterschrift leisten</strong><br>
+          Unterschreiben Sie mit dem Finger direkt auf dem Touchscreen im dafür vorgesehenen Unterschriftenfeld.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulung abschließen</strong><br>
+          Tippen Sie auf <code>Abschließen</code> → Die Schulung wird automatisch gespeichert und der Status wechselt auf Grün.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>PDF-Nachweis speichern</strong><br>
+          Als Verantwortlicher können Sie nach dem Abschluss auf <code>PDF speichern</code> tippen, um einen offiziellen Nachweis zu erstellen und zu archivieren.
+        </div>
+      </li>
+    </ol>
+  </div>
+
+  <!-- ===== SECTION 4: EINLADEN ===== -->
+  <div class="section-card" id="sec4">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <div class="section-icon">👥</div>
+      <h2>Mitarbeiter einladen – Einladungslink &amp; QR-Code</h2>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Mit der Einladefunktion können Mitarbeiter Schulungen bequem auf ihrem eigenen Gerät ausfüllen und unterschreiben – ganz ohne eigenes App-Konto.</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Einladen-Button tippen</strong><br>
+          Tippen Sie in der Schulungsliste neben der gewünschten Schulung auf den Button <code>🔗 Einladen</code>.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Link generieren</strong><br>
+          Tippen Sie auf <code>🔗 Link generieren</code> – ein einmaliger Einladungslink wird erstellt.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Link oder QR-Code weitergeben</strong><br>
+          Wählen Sie eine der beiden Möglichkeiten:
+          <div class="invite-options">
+            <div class="invite-option">
+              <span class="opt-icon">📤</span>
+              <div class="opt-title">Link teilen (WhatsApp / SMS)</div>
+              <p>Tippen Sie auf <code>📤 Teilen</code> und senden Sie den Link direkt per WhatsApp, SMS oder E-Mail an Ihren Mitarbeiter.</p>
+            </div>
+            <div class="invite-option">
+              <span class="opt-icon">🖨️</span>
+              <div class="opt-title">QR-Code ausdrucken</div>
+              <p>Tippen Sie auf <code>🖨️ QR-Code drucken</code> und hängen Sie den Ausdruck gut sichtbar aus – z.&nbsp;B. im Pausenraum oder am Schwarzen Brett.</p>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mitarbeiter öffnet die Schulung</strong><br>
+          Der Mitarbeiter öffnet den Link im Browser oder scannt den QR-Code mit dem Smartphone.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Formular ausfüllen &amp; unterschreiben</strong><br>
+          Der Mitarbeiter gibt seinen Namen ein, füllt das Formular aus und leistet seine Unterschrift auf dem Touchscreen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Fertig! ✅</strong><br>
+          Die Unterschrift wird automatisch gespeichert und in Ihrer Schulungsübersicht als abgeschlossen angezeigt.
+        </div>
+      </li>
+    </ol>
+    <div class="info-box">
+      <span class="info-icon">ℹ️</span>
+      <span><strong>Wichtiger Hinweis:</strong> Jeder generierte Link ist <strong>7 Tage gültig</strong> und kann nur <strong>einmal genutzt</strong> werden. Für jeden weiteren Mitarbeiter oder nach Ablauf der Gültigkeit muss ein neuer Link generiert werden.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: FAQ ===== -->
+  <div class="section-card" id="sec5">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <div class="section-icon">❓</div>
+      <h2>Häufige Fragen (FAQ)</h2>
+    </div>
+    <div class="faq-list">
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Was tun, wenn ich mein Passwort vergessen habe?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Bitte kontaktieren Sie die CSC GmbH direkt per E-Mail: <a href="mailto:info@csc-hannover.de">info@csc-hannover.de</a> – Ihr Passwort wird zeitnah zurückgesetzt.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Kann ein Mitarbeiter die Schulung auf jedem Gerät unterzeichnen?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Ja – die App funktioniert auf <strong>Smartphone</strong>, <strong>Tablet</strong> und <strong>PC</strong>. Für die Unterschrift empfiehlt sich ein Gerät mit Touchscreen.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Wie lange ist ein Einladungslink gültig?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Ein Einladungslink ist <strong>7 Tage</strong> gültig. Nach Ablauf dieser Frist muss ein neuer Link generiert werden.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Was passiert, nachdem eine Schulung abgeschlossen wurde?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Die Daten werden <strong>automatisch gespeichert</strong>, der Status wechselt auf Grün, und ein <strong>PDF-Dokument</strong> wird als offizieller Nachweis erstellt.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Kann ein Mitarbeiter denselben Einladungslink zweimal nutzen?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Nein – jeder Link ist <strong>einmalig</strong>. Nach der ersten Nutzung ist der Link nicht mehr gültig. Bitte generieren Sie für jeden Mitarbeiter einen eigenen Link.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>In welchen Sprachen ist die App verfügbar?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <div>
+            Die App ist in folgenden Sprachen verfügbar:
+            <div class="lang-badges" style="margin-top:10px;">
+              <span class="badge">🇩🇪 Deutsch</span>
+              <span class="badge">🇬🇧 Englisch</span>
+              <span class="badge">🇹🇷 Türkisch</span>
+              <span class="badge">🇸🇦 Arabisch</span>
+              <span class="badge">🇪🇸 Spanisch</span>
+              <span class="badge">🇷🇺 Russisch</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===== SECTION 6: CONTACT ===== -->
+  <div class="contact-card" id="sec6">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <div class="section-icon">📞</div>
+      <h2>Kontakt &amp; Support</h2>
+    </div>
+    <p style="margin-bottom:20px;opacity:0.85;">Bei Fragen oder technischen Problemen steht Ihnen das Team der CSC GmbH gerne zur Verfügung:</p>
+    <div class="contact-grid">
+      <div class="contact-item">
+        <div class="ci-icon">🏢</div>
+        <div>
+          <div class="ci-label">Unternehmen</div>
+          <div class="ci-val">CSC GmbH · Hannover</div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">✉️</div>
+        <div>
+          <div class="ci-label">E-Mail</div>
+          <div class="ci-val"><a href="mailto:info@csc-hannover.de">info@csc-hannover.de</a></div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">🌐</div>
+        <div>
+          <div class="ci-label">Website</div>
+          <div class="ci-val"><a href="https://www.csc-hannover.de" target="_blank">www.csc-hannover.de</a></div>
+        </div>
+      </div>
+      <div class="contact-item">
+        <div class="ci-icon">📱</div>
+        <div>
+          <div class="ci-label">App-URL</div>
+          <div class="ci-val" style="font-size:0.82rem;word-break:break-all;"><a href="https://thomasschmoldt1967-cpu.github.io/Schulung-app/" target="_blank">Schulung-App öffnen ↗</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PRINT BUTTON ===== -->
+  <div class="print-bar">
+    <button class="btn-print" onclick="window.print()">
+      🖨️ Anleitung drucken
+    </button>
+  </div>
+
+  <!-- ===== FOOTER ===== -->
+  <div class="footer">
+    <p>© 2026 CSC GmbH · Hannover · <a href="https://www.csc-hannover.de" target="_blank" style="color:var(--text-light);">www.csc-hannover.de</a></p>
+    <p style="margin-top:4px;">Bedienungsanleitung CSC Schulungsmanagement-App · Version Juni 2026</p>
+  </div>
+
+</div>
+</body>
+</html>
