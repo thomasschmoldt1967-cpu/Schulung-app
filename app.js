@@ -955,10 +955,40 @@ function generatePdf(zuwId, downloadOnly) {
     doc.line(PL, 285, 210-PL, 285);
   }
 
-  // Download
+  // Download lokal
   const dt  = new Date().toISOString().slice(0,10);
   const fn  = `${dt}_${(vorlage?.titel||zuwId).replace(/\s+/g,'_')}_${zuw.tenantId}.pdf`;
   doc.save(fn);
+
+  // Automatisch zu Google Drive hochladen (wenn Formular abgeschlossen)
+  if (!downloadOnly && form.abgeschlossen) {
+    uploadPdfToDrive(doc, fn, zuw.tenantId);
+  }
+}
+
+// ── GOOGLE DRIVE UPLOAD ───────────────────────────────────────
+async function uploadPdfToDrive(doc, filename, tenantId) {
+  try {
+    const pdfBase64 = doc.output('datauristring').split(',')[1];
+    const resp = await fetch('http://localhost:8765/upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pdf: pdfBase64, filename, tenantId })
+    });
+    const result = await resp.json();
+    if (result.status === 'ok') {
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#16a34a;color:#fff;padding:12px 18px;border-radius:10px;font-size:0.85rem;z-index:9999;box-shadow:0 4px 12px rgba(0,0,0,0.2)';
+      msg.innerHTML = `☁️ PDF in Google Drive gespeichert`;
+      document.body.appendChild(msg);
+      setTimeout(() => msg.remove(), 4000);
+      console.log('Drive Upload OK:', result.link);
+    } else {
+      console.warn('Drive Upload Fehler:', result.message);
+    }
+  } catch(e) {
+    console.warn('Drive Upload nicht erreichbar:', e.message);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
