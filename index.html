@@ -95,6 +95,20 @@
       <!-- Neue Vorlage erstellen -->
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">➕ Neue Schulungsvorlage erstellen</div>
+
+        <!-- Typ-Auswahl -->
+        <div class="form-group">
+          <label>Vorlagen-Typ</label>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600">
+              <input type="radio" name="vt-typ" value="felder" checked onchange="vtTypWechseln(this.value)"> 📝 Eigene Felder erstellen
+            </label>
+            <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:600">
+              <input type="radio" name="vt-typ" value="pdf" onchange="vtTypWechseln(this.value)"> 📄 CSC-Formular (PDF) hochladen
+            </label>
+          </div>
+        </div>
+
         <div class="form-group">
           <label>Titel *</label>
           <input type="text" id="vt-titel" placeholder="z.B. PSAgA-Unterweisung 2025">
@@ -108,9 +122,37 @@
           <input type="number" id="vt-intervall" value="12" min="1" max="120">
         </div>
 
-        <!-- Abschnitte -->
-        <div id="vt-abschnitte"></div>
-        <button class="btn btn-outline" style="margin-top:8px" onclick="vtAddAbschnitt()">+ Abschnitt hinzufügen</button>
+        <!-- Felder-Editor -->
+        <div id="vt-felder-bereich">
+          <div id="vt-abschnitte"></div>
+          <button class="btn btn-outline" style="margin-top:8px" onclick="vtAddAbschnitt()">+ Abschnitt hinzufügen</button>
+        </div>
+
+        <!-- PDF-Upload Bereich -->
+        <div id="vt-pdf-bereich" style="display:none">
+          <div class="form-group" style="margin-top:10px">
+            <label>📎 CSC-Formular (PDF) hochladen</label>
+            <div class="upload-zone" id="vt-pdf-zone" onclick="document.getElementById('vt-pdf-input').click()" style="margin-top:6px">
+              <div class="upload-icon">📄</div>
+              <p id="vt-pdf-name">PDF auswählen (max. 10 MB)</p>
+              <input type="file" id="vt-pdf-input" accept=".pdf" onchange="vtPdfGewaehlt(this)">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Unterschriftsfelder (werden unter dem PDF angezeigt)</label>
+            <div id="vt-sig-felder">
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                <input type="text" value="Unterschrift Mitarbeiter" id="sig0" style="font-size:.82rem;flex:1">
+                <label style="font-size:.78rem;white-space:nowrap"><input type="checkbox" checked id="sigpfl0"> Pflicht</label>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                <input type="text" value="Unterschrift Vorgesetzter" id="sig1" style="font-size:.82rem;flex:1">
+                <label style="font-size:.78rem;white-space:nowrap"><input type="checkbox" id="sigpfl1"> Pflicht</label>
+              </div>
+            </div>
+            <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="vtAddSigFeld()">+ Unterschriftsfeld</button>
+          </div>
+        </div>
 
         <div style="margin-top:14px;display:flex;gap:10px">
           <button class="btn btn-primary" onclick="vtSpeichern()">💾 Vorlage speichern</button>
@@ -199,6 +241,17 @@
   <div class="content">
     <button class="back-btn" onclick="backFromFormular()">← Zurück</button>
     <div id="formular-status-bar" style="margin-bottom:12px"></div>
+
+    <!-- Sprach-Buttons -->
+    <div id="sprach-buttons" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px">
+      <span style="font-size:.78rem;color:#6b7280;align-self:center">🌐 Sprache:</span>
+      <button class="btn btn-sm sprach-btn active-lang" onclick="spracheWaehlen('de',this)" data-lang="de">🇩🇪 DE</button>
+      <button class="btn btn-sm sprach-btn" onclick="spracheWaehlen('en',this)" data-lang="en">🇬🇧 EN</button>
+      <button class="btn btn-sm sprach-btn" onclick="spracheWaehlen('tr',this)" data-lang="tr">🇹🇷 TR</button>
+      <button class="btn btn-sm sprach-btn" onclick="spracheWaehlen('ar',this)" data-lang="ar">🇸🇦 AR</button>
+      <button class="btn btn-sm sprach-btn" onclick="spracheWaehlen('es',this)" data-lang="es">🇪🇸 ES</button>
+      <button class="btn btn-sm sprach-btn" onclick="spracheWaehlen('ru',this)" data-lang="ru">🇷🇺 RU</button>
+    </div>
     <div id="formular-body"></div>
     <div id="formular-fehler" class="error-msg" style="margin-top:8px"></div>
     <div class="form-actions">

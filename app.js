@@ -411,6 +411,138 @@ async function vtLoeschen(id) {
 
 // ── VORLAGEN-EDITOR ──────────────────────────────────────────
 let vtAbschnittCount = 0;
+let vtSigFeldExtra   = 0;
+let vtPdfFile        = null;
+let aktiveSprache    = 'de';
+
+// Übersetzungstabelle
+const UEBERSETZUNGEN = {
+  de: { pflichtHinweis:'* Pflichtfelder', zwischenspeichern:'💾 Zwischenspeichern', abschliessen:'✅ Abschließen & PDF', richtung:'ltr' },
+  en: { pflichtHinweis:'* Required fields', zwischenspeichern:'💾 Save draft', abschliessen:'✅ Complete & PDF', richtung:'ltr' },
+  tr: { pflichtHinweis:'* Zorunlu alanlar', zwischenspeichern:'💾 Taslak kaydet', abschliessen:'✅ Tamamla & PDF', richtung:'ltr' },
+  ar: { pflichtHinweis:'* الحقول المطلوبة', zwischenspeichern:'💾 حفظ مسودة', abschliessen:'✅ إكمال وPDF', richtung:'rtl' },
+  es: { pflichtHinweis:'* Campos obligatorios', zwischenspeichern:'💾 Guardar borrador', abschliessen:'✅ Completar & PDF', richtung:'ltr' },
+  ru: { pflichtHinweis:'* Обязательные поля', zwischenspeichern:'💾 Сохранить', abschliessen:'✅ Завершить & PDF', richtung:'ltr' }
+};
+
+const FELD_UEBERSETZUNGEN = {
+  'Name':                     { en:'Full Name',            tr:'Ad Soyad',         ar:'الاسم الكامل',      es:'Nombre completo',     ru:'Полное имя' },
+  'Vollständiger Name':       { en:'Full Name',            tr:'Ad Soyad',         ar:'الاسم الكامل',      es:'Nombre completo',     ru:'Полное имя' },
+  'Datum':                    { en:'Date',                 tr:'Tarih',            ar:'التاريخ',            es:'Fecha',               ru:'Дата' },
+  'Schulungsdatum':           { en:'Training date',        tr:'Eğitim tarihi',    ar:'تاريخ التدريب',     es:'Fecha de formación',  ru:'Дата обучения' },
+  'Abteilung':                { en:'Department',           tr:'Departman',        ar:'القسم',              es:'Departamento',        ru:'Отдел' },
+  'Position / Tätigkeit':     { en:'Position / Role',      tr:'Pozisyon',         ar:'المنصب',             es:'Cargo',               ru:'Должность' },
+  'Unterschrift Mitarbeiter': { en:'Employee signature',   tr:'Çalışan imzası',   ar:'توقيع الموظف',      es:'Firma empleado',      ru:'Подпись сотрудника' },
+  'Unterschrift Trainer':     { en:'Trainer signature',    tr:'Eğitmen imzası',   ar:'توقيع المدرب',       es:'Firma formador',      ru:'Подпись тренера' },
+  'Unterschrift Vorgesetzter':{ en:'Supervisor signature', tr:'Amir imzası',      ar:'توقيع المشرف',      es:'Firma supervisor',    ru:'Подпись руководителя' },
+  'Ich habe die PSA erhalten und wurde eingewiesen':
+    { en:'I received and was instructed on PPE', tr:'KKD teslim aldım ve eğitim aldım', ar:'تلقيت معدات الحماية والتعليمات', es:'Recibí el EPI y fui instruido', ru:'Я получил СИЗ и был проинструктирован' },
+  'Fluchtwege sind bekannt':  { en:'Escape routes are known', tr:'Kaçış yolları biliniyor', ar:'مسارات الهروب معروفة', es:'Las rutas de escape son conocidas', ru:'Пути эвакуации известны' },
+  'Notruf 112 bekannt':       { en:'Emergency number 112 known', tr:'Acil numara 112 biliniyor', ar:'رقم الطوارئ 112 معروف', es:'Número de emergencia 112 conocido', ru:'Номер экстренной помощи 112 известен' },
+};
+
+function uebersetzeFeldLabel(label, sprache) {
+  if (sprache === 'de') return label;
+  return FELD_UEBERSETZUNGEN[label]?.[sprache] || label;
+}
+
+function spracheWaehlen(lang, btn) {
+  aktiveSprache = lang;
+  document.querySelectorAll('.sprach-btn').forEach(b => b.classList.remove('active-lang'));
+  if (btn) btn.classList.add('active-lang');
+  // RTL-Support für Arabisch
+  const body = document.getElementById('formular-body');
+  if (body) body.dir = UEBERSETZUNGEN[lang]?.richtung || 'ltr';
+  // Buttons übersetzen
+  const btnSave  = document.querySelector('.form-actions .btn-secondary');
+  const btnDone  = document.querySelector('.form-actions .btn-success');
+  const t = UEBERSETZUNGEN[lang] || UEBERSETZUNGEN.de;
+  if (btnSave) btnSave.textContent = t.zwischenspeichern;
+  if (btnDone) btnDone.textContent = t.abschliessen;
+  // Formular neu rendern
+  if (activeZuwId) oeffneFormularMitSprache(activeZuwId, lang);
+}
+
+function vtTypWechseln(typ) {
+  document.getElementById('vt-felder-bereich').style.display = typ === 'felder' ? '' : 'none';
+  document.getElementById('vt-pdf-bereich').style.display    = typ === 'pdf'    ? '' : 'none';
+}
+
+function vtPdfGewaehlt(input) {
+  const file = input.files[0];
+  if (!file) return;
+  vtPdfFile = file;
+  document.getElementById('vt-pdf-name').textContent = `✅ ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)`;
+  document.getElementById('vt-pdf-zone').classList.add('has-file');
+}
+
+function vtAddSigFeld() {
+  vtSigFeldExtra++;
+  const idx = `extra_${vtSigFeldExtra}`;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:8px;align-items:center;margin-bottom:6px';
+  div.innerHTML = `<input type="text" placeholder="Bezeichnung Unterschrift" id="sig${idx}" style="font-size:.82rem;flex:1"><label style="font-size:.78rem;white-space:nowrap"><input type="checkbox" id="sigpfl${idx}"> Pflicht</label><button class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('vt-sig-felder').appendChild(div);
+}
+
+async function vtSpeichern() {
+  const titel     = document.getElementById('vt-titel').value.trim();
+  const beschr    = document.getElementById('vt-beschreibung').value.trim();
+  const intervall = parseInt(document.getElementById('vt-intervall').value) || 12;
+  const typ       = document.querySelector('input[name="vt-typ"]:checked')?.value || 'felder';
+  const msgEl     = document.getElementById('vt-msg');
+  msgEl.classList.remove('show');
+  if (!titel) { msgEl.textContent='Bitte einen Titel eingeben.'; msgEl.classList.add('show'); return; }
+
+  let pdf_url = null, abschnitte = [];
+
+  if (typ === 'pdf') {
+    if (!vtPdfFile) { msgEl.textContent='Bitte ein PDF auswählen.'; msgEl.classList.add('show'); return; }
+    try {
+      const pfad = `vorlagen/${Date.now()}_${vtPdfFile.name.replace(/\s+/g,'_')}`;
+      const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-vorlagen/${pfad}`, {
+        method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/pdf'}, body:vtPdfFile
+      });
+      if (!r.ok) throw new Error(await r.text());
+      pdf_url = `${SUPABASE_URL}/storage/v1/object/public/schulung-vorlagen/${pfad}`;
+    } catch(e) { msgEl.textContent='PDF-Upload Fehler: '+e.message; msgEl.classList.add('show'); return; }
+    // Unterschriftsfelder
+    const sigFelder = [];
+    document.querySelectorAll('#vt-sig-felder > div').forEach((div,i) => {
+      const inp = div.querySelector('input[type="text"]'), pfl = div.querySelector('input[type="checkbox"]');
+      if (inp?.value.trim()) sigFelder.push({id:`sig_${i}`,label:inp.value.trim(),typ:'signature',pflicht:pfl?.checked||false});
+    });
+    abschnitte = [{titel:'Unterschriften', felder:sigFelder}];
+  } else {
+    document.querySelectorAll('#vt-abschnitte > div[id^="ab_"]').forEach(abDiv => {
+      const abId=abDiv.id, abTitel=document.getElementById(`ab_titel_${abId}`)?.value.trim()||'Abschnitt', felder=[];
+      abDiv.querySelectorAll('div[id^="feld_"]').forEach(fDiv => {
+        const fId=fDiv.id, label=document.getElementById(`label_${fId}`)?.value.trim();
+        const ftyp=document.getElementById(`typ_${fId}`)?.value||'text', pfl=document.getElementById(`pfl_${fId}`)?.checked||false;
+        if (label) felder.push({id:`f_${Date.now()}_${Math.random().toString(36).slice(2)}`,label,typ:ftyp,pflicht:pfl});
+      });
+      if (felder.length) abschnitte.push({titel:abTitel,felder});
+    });
+    if (!abschnitte.length) { msgEl.textContent='Bitte mindestens einen Abschnitt mit Feldern anlegen.'; msgEl.classList.add('show'); return; }
+  }
+
+  const id = `vorlage_${titel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')}_${Date.now()}`;
+  const vorlage = {id,titel,beschreibung:beschr,intervall_monate:intervall,abschnitte,typ,pdf_url:pdf_url||null};
+  try {
+    await SB.post('vorlagen', vorlage);
+    SCHULUNG_VORLAGEN.push({...vorlage,intervallMonate:intervall});
+    await sbAudit('VORLAGE_NEU',`Neue Vorlage "${titel}" (${typ}) erstellt`);
+    showToast(`✅ Vorlage "${titel}" gespeichert`,'#16a34a');
+    document.getElementById('vt-titel').value=''; document.getElementById('vt-beschreibung').value='';
+    document.getElementById('vt-intervall').value='12'; document.getElementById('vt-abschnitte').innerHTML='';
+    document.getElementById('vt-pdf-name').textContent='PDF auswählen (max. 10 MB)';
+    document.getElementById('vt-pdf-zone').classList.remove('has-file');
+    document.getElementById('vt-pdf-input').value='';
+    vtPdfFile=null; vtAbschnittCount=0;
+    document.querySelector('input[name="vt-typ"][value="felder"]').checked=true; vtTypWechseln('felder');
+    renderAdminVorlagen(); populateZuweisungsForm();
+  } catch(e) { msgEl.textContent='Fehler: '+e.message; msgEl.classList.add('show'); }
+}
 
 function vtAddAbschnitt() {
   vtAbschnittCount++;
@@ -586,38 +718,99 @@ function renderSubDashboard() {
 //  FORMULAR
 // ══════════════════════════════════════════════════════════════
 function oeffneFormular(zuwId) {
-  activeZuwId=zuwId; sigPads={}; uploadFiles={};
-  const zuw=zuweisungen.find(z=>z.id===zuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
-  const form=formulare[zuwId]||{}, status=berechneStatus(zuw), readOnly=!!form.abgeschlossen;
-  document.getElementById('formular-titel').textContent = vorlage?vorlage.titel:zuwId;
-  document.getElementById('formular-user-info').textContent = currentUser.name;
-  document.getElementById('formular-status-bar').innerHTML = `
+  aktiveSprache = 'de';
+  document.querySelectorAll('.sprach-btn').forEach(b => b.classList.remove('active-lang'));
+  const deBtn = document.querySelector('.sprach-btn[data-lang="de"]');
+  if (deBtn) deBtn.classList.add('active-lang');
+  oeffneFormularMitSprache(zuwId, 'de');
+}
+
+function oeffneFormularMitSprache(zuwId, sprache) {
+  activeZuwId = zuwId;
+  if (sprache === 'de') { sigPads={}; uploadFiles={}; }
+
+  const zuw     = zuweisungen.find(z=>z.id===zuwId);
+  const vorlage = SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
+  const form    = formulare[zuwId]||{};
+  const status  = berechneStatus(zuw);
+  const readOnly = !!form.abgeschlossen;
+  const t = UEBERSETZUNGEN[sprache] || UEBERSETZUNGEN.de;
+
+  document.getElementById('formular-titel').textContent      = vorlage?vorlage.titel:zuwId;
+  document.getElementById('formular-user-info').textContent  = currentUser.name;
+  document.getElementById('formular-status-bar').innerHTML   = `
     ${statusBadgeHtml(status)}
     <span style="font-size:.8rem;color:#6b7280;margin-left:8px">Frist: ${zuw.frist||'–'}</span>
     ${readOnly?'<span style="font-size:.8rem;color:#16a34a;margin-left:8px">🔒 Schreibgeschützt</span>':''}`;
+
   const btnArea = document.querySelector('#screen-formular .form-actions');
-  if (btnArea) btnArea.style.display = readOnly ? 'none' : 'flex';
-  let html = `<p class="pflicht-hinweis"><span>*</span> Pflichtfelder</p>`;
-  if (vorlage) vorlage.abschnitte.forEach(ab => {
-    html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
-    ab.felder.forEach(feld => { html += renderFeld(feld, (form.felder||{})[feld.id]||'', readOnly); });
+  if (btnArea) {
+    btnArea.style.display = readOnly ? 'none' : 'flex';
+    const btnSave = btnArea.querySelector('.btn-secondary');
+    const btnDone = btnArea.querySelector('.btn-success');
+    if (btnSave) btnSave.textContent = t.zwischenspeichern;
+    if (btnDone) btnDone.textContent = t.abschliessen;
+  }
+
+  const body = document.getElementById('formular-body');
+  body.dir = t.richtung || 'ltr';
+
+  // PDF-Vorlage oder Felder anzeigen
+  if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
+    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    // PDF einbetten
+    html += `
+      <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9">
+        <div style="background:#1a3a5c;color:#fff;padding:8px 14px;font-size:.82rem;font-weight:600">📄 ${escHtml(vorlage.titel)}</div>
+        <iframe src="${vorlage.pdf_url}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}"></iframe>
+        <div style="padding:8px 14px;background:#f8faff;font-size:.75rem;color:#6b7280">
+          <a href="${vorlage.pdf_url}" target="_blank" style="color:#0047cc">📥 PDF herunterladen</a>
+        </div>
+      </div>`;
+    // Unterschriftsfelder darunter
+    html += `<div class="form-section"><div class="form-section-title">✍️ ${sprache==='de'?'Unterschriften':sprache==='en'?'Signatures':sprache==='tr'?'İmzalar':sprache==='ar'?'التوقيعات':sprache==='es'?'Firmas':'Подписи'}</div>`;
+    (vorlage.abschnitte||[]).forEach(ab => {
+      ab.felder.forEach(feld => {
+        const label = uebersetzeFeldLabel(feld.label, sprache);
+        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+      });
+    });
     html += '</div>';
-  });
-  document.getElementById('formular-body').innerHTML = html;
+    body.innerHTML = html;
+  } else {
+    // Standard-Felder-Formular
+    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    if (vorlage) vorlage.abschnitte.forEach(ab => {
+      html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
+      ab.felder.forEach(feld => {
+        const label = uebersetzeFeldLabel(feld.label, sprache);
+        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+      });
+      html += '</div>';
+    });
+    body.innerHTML = html;
+  }
+
   document.getElementById('formular-fehler').classList.remove('show');
   document.getElementById('formular-success').classList.remove('show');
+
+  // Sig-Pads + Upload-Events nur beim ersten Laden (de) initialisieren
+  if (!readOnly && vorlage && sprache === 'de') {
+    sigPads={}; uploadFiles={};
+  }
   if (!readOnly && vorlage) {
     vorlage.abschnitte.forEach(ab => {
-      ab.felder.filter(f=>f.typ==='signature').forEach(f => initSigPad(f.id,(form.felder||{})[f.id]));
-      ab.felder.filter(f=>f.typ==='upload').forEach(f => {
+      ab.felder.filter(f=>f.typ==='signature').forEach(f=>initSigPad(f.id,(form.felder||{})[f.id]));
+      ab.felder.filter(f=>f.typ==='upload').forEach(f=>{
         const inp=document.getElementById(`upload_${f.id}`);
-        if (inp) inp.addEventListener('change', e => {
+        if(inp) inp.addEventListener('change',e=>{
           const file=e.target.files[0];
-          if (file) { uploadFiles[f.id]=file; const zone=document.getElementById(`zone_${f.id}`); if(zone){zone.classList.add('has-file');zone.querySelector('p').textContent=file.name;} }
+          if(file){uploadFiles[f.id]=file;const zone=document.getElementById(`zone_${f.id}`);if(zone){zone.classList.add('has-file');zone.querySelector('p').textContent=file.name;}}
         });
       });
     });
   }
+
   showScreen('screen-formular');
 }
 
