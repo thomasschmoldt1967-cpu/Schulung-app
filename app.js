@@ -665,7 +665,7 @@ function generatePdf(zuwId, downloadOnly) {
     const pdfBlob   = doc.output('blob');
     const pdfBase64 = doc.output('datauristring').split(',')[1];
     uploadPdfToSupabase(pdfBlob, fn, zuwId, zuw.tenantId);
-    uploadPdfToDrive(pdfBase64, fn, zuw.tenantId);
+    uploadPdfToDrive(pdfBase64, fn, zuw.tenantId, zuwId);
   }
 }
 
@@ -690,7 +690,7 @@ async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
 }
 
 // ── GOOGLE DRIVE UPLOAD (Backup) ─────────────────────────────
-async function uploadPdfToDrive(pdfBase64, filename, tenantId) {
+async function uploadPdfToDrive(pdfBase64, filename, tenantId, zuwId) {
   try {
     const resp = await fetch('http://localhost:8765/upload', {
       method: 'POST',
@@ -699,13 +699,83 @@ async function uploadPdfToDrive(pdfBase64, filename, tenantId) {
     });
     const result = await resp.json();
     if (result.status === 'ok') {
+      // Drive-Link in DB speichern
+      await SB.patch('formulare', `id=eq.${zuwId}`, { drive_link: result.link });
+      if (formulare[zuwId]) formulare[zuwId].driveLink = result.link;
       showToast('☁️ Google Drive: PDF gespeichert', '#16a34a');
+      return result.link;
     } else {
       console.warn('Drive Upload Fehler:', result.message);
+      return null;
     }
   } catch(e) {
     console.warn('Drive Upload nicht erreichbar:', e.message);
+    return null;
   }
+}
+
+// ── GOOGLE DRIVE SYNC (fehlende Uploads nachholen) ───────────
+async function syncMissingToDrive() {
+  const btn = document.getElementById('drive-sync-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Synchronisiere…'; }
+
+  try {
+    // Alle abgeschlossenen Formulare ohne Drive-Link laden
+    const missing = await SB.get('formulare',
+      'abgeschlossen=eq.true&drive_link=is.null&pdf_path=not.is.null'
+    );
+
+    if (!missing.length) {
+      showToast('✅ Alle Formulare bereits in Google Drive', '#16a34a');
+      if (btn) { btn.disabled = false; btn.textContent = '☁️ Drive-Sync'; }
+      return;
+    }
+
+    showToast(`🔄 ${missing.length} Formular(e) werden nachgesendet…`, '#0047cc');
+    let ok = 0, fehler = 0;
+
+    for (const form of missing) {
+      try {
+        // PDF von Supabase Storage laden
+        const pdfResp = await fetch(form.pdf_path);
+        if (!pdfResp.ok) throw new Error('PDF nicht ladbar');
+        const pdfBlob   = await pdfResp.blob();
+        const pdfBase64 = await blobToBase64(pdfBlob);
+
+        // Dateiname aus pdf_path extrahieren
+        const filename = form.pdf_path.split('/').pop();
+        const tenantId = form.id.includes('tenant_a') ? 'tenant_a' :
+                         form.id.includes('tenant_b') ? 'tenant_b' :
+                         form.id.includes('tenant_c') ? 'tenant_c' :
+                         form.pdf_path.split('/').slice(-2,-1)[0] || 'tenant_a';
+
+        const link = await uploadPdfToDrive(pdfBase64, filename, tenantId, form.id);
+        if (link) ok++; else fehler++;
+      } catch(e) {
+        console.warn('Sync Fehler für', form.id, e.message);
+        fehler++;
+      }
+    }
+
+    if (fehler === 0) {
+      showToast(`✅ ${ok} Formular(e) erfolgreich zu Google Drive gesendet`, '#16a34a');
+    } else {
+      showToast(`⚠️ ${ok} OK, ${fehler} fehlgeschlagen — Drive evtl. offline`, '#dc2626');
+    }
+  } catch(e) {
+    showToast('❌ Sync-Fehler: ' + e.message, '#dc2626');
+  }
+
+  if (btn) { btn.disabled = false; btn.textContent = '☁️ Drive-Sync'; }
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result.split(',')[1]);
+    reader.onerror  = reject;
+    reader.readAsDataURL(blob);
+  });
 }
 
 // ── TOAST HELPER ─────────────────────────────────────────────
