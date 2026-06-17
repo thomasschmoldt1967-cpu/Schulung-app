@@ -170,8 +170,21 @@ function doLogout() {
   showScreen('screen-login');
 }
 function routeAfterLogin() {
-  if (currentUser.role === 'admin') { renderAdminDashboard(); showScreen('screen-admin'); }
-  else { renderSubDashboard(); showScreen('screen-sub'); }
+  if (currentUser.role === 'admin') {
+    renderAdminDashboard();
+    showScreen('screen-admin');
+  } else {
+    // ── MANDANTENTRENNUNG: Sub-User sieht NUR eigene Daten ──
+    // APP_TENANTS auf eigenen Tenant beschränken
+    APP_TENANTS = APP_TENANTS.filter(t => t.id === currentUser.tenantId);
+    // Zuweisungen nur für eigenen Tenant
+    zuweisungen = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
+    // Formulare nur für eigene Zuweisungen
+    const eigeneZuwIds = new Set(zuweisungen.map(z => z.id));
+    Object.keys(formulare).forEach(k => { if (!eigeneZuwIds.has(k)) delete formulare[k]; });
+    renderSubDashboard();
+    showScreen('screen-sub');
+  }
 }
 
 // ── LOGIN ────────────────────────────────────────────────────
