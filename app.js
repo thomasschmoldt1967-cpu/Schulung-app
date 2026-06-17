@@ -704,12 +704,16 @@ function renderSubDashboard() {
   }
   document.getElementById('sub-schulungen-list').innerHTML = meineZuws.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
+    const kannPdfSpeichern = currentUser.role === 'verantwortlicher' && f.abgeschlossen;
     return `<div class="schulung-item" onclick="oeffneFormular('${z.id}')">
       <div>
         <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
         <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• Abgeschlossen: ${dateStr(f.abgeschlossenAm)}`:''}</div>
       </div>
-      <div class="right">${statusBadgeHtml(s)}${f.abgeschlossen?'<div style="font-size:.72rem;color:#16a34a;margin-top:4px">📄 PDF gespeichert</div>':''}</div>
+      <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        ${statusBadgeHtml(s)}
+        ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF speichern</button>` : ''}
+      </div>
     </div>`;
   }).join('');
 }
@@ -764,7 +768,7 @@ function oeffneFormularMitSprache(zuwId, sprache) {
         <div style="background:#1a3a5c;color:#fff;padding:8px 14px;font-size:.82rem;font-weight:600">📄 ${escHtml(vorlage.titel)}</div>
         <iframe src="${vorlage.pdf_url}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}"></iframe>
         <div style="padding:8px 14px;background:#f8faff;font-size:.75rem;color:#6b7280">
-          <a href="${vorlage.pdf_url}" target="_blank" style="color:#0047cc">📥 PDF herunterladen</a>
+          📄 ${escHtml(vorlage.titel)}
         </div>
       </div>`;
     // Unterschriftsfelder darunter
@@ -974,9 +978,12 @@ function generatePdf(zuwId, downloadOnly) {
   const pc=doc.internal.getNumberOfPages();
   for(let i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(7);doc.setTextColor(150,150,150);doc.text(`Seite ${i}/${pc}  •  ${new Date().toLocaleString('de-DE')}`,105,290,{align:'center'});doc.line(PL,285,210-PL,285);}
 
-  const dt=new Date().toISOString().slice(0,10);
-  const fn=`${dt}_${(vorlage?.titel||zuwId).replace(/\s+/g,'_')}_${zuw.tenantId}.pdf`;
-  doc.save(fn);
+  // Lokaler Download nur für Admin und Verantwortlicher (nicht für Mitarbeiter)
+  const dt  = new Date().toISOString().slice(0,10);
+  const fn  = `${dt}_${(vorlage?.titel||zuwId).replace(/\s+/g,'_')}_${zuw.tenantId}.pdf`;
+  if (downloadOnly || currentUser?.role === 'admin' || currentUser?.role === 'verantwortlicher') {
+    doc.save(fn);
+  }
 
   // Parallel zu Supabase Storage UND Google Drive hochladen
   if (!downloadOnly && form.abgeschlossen) {
