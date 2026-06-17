@@ -1,212 +1,213 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-  <title>Schulungsverwaltung</title>
-  <meta name="description" content="Schulungsverwaltung für Auftraggeber und Subunternehmen">
-  <link rel="stylesheet" href="style.css">
-  <!-- jsPDF für PDF-Export -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-</head>
-<body>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: LOGIN
-══════════════════════════════════════════════════════════ -->
-<div id="screen-login" class="screen active">
-  <div class="login-box">
-    <div class="login-logo">
-      <div style="font-size:2.8rem">📋</div>
-      <h2>Schulungsverwaltung</h2>
-      <div class="subtitle">Bitte melden Sie sich an</div>
-    </div>
-    <div id="login-fehler" class="error-msg"></div>
-    <div class="form-group">
-      <label for="login-email">E-Mail-Adresse</label>
-      <input type="email" id="login-email" placeholder="name@firma.de" autocomplete="email">
-    </div>
-    <div class="form-group">
-      <label for="login-password">Passwort</label>
-      <div class="pw-wrap">
-        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
-        <button type="button" class="pw-toggle" id="pw-toggle-btn">👁</button>
-      </div>
-    </div>
-    <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
-
-    <!-- Demo-Logins für Test -->
-    <details style="margin-top:18px">
-      <summary style="font-size:0.78rem;color:#6b7280;cursor:pointer">Demo-Zugänge anzeigen</summary>
-      <div style="margin-top:10px;font-size:0.78rem;line-height:1.8;color:#374151;">
-        <strong>Admin:</strong> admin@csc.de / Admin2024!<br>
-        <strong>Subunternehmen A (Verantwortlicher):</strong> mueller@reinigung-a.de / SubA2024!<br>
-        <strong>Subunternehmen A (Mitarbeiter):</strong> schmidt@reinigung-a.de / MitA2024!<br>
-        <strong>Subunternehmen B:</strong> weber@sicherheit-b.de / SubB2024!<br>
-        <strong>Subunternehmen C:</strong> fischer@service-c.de / SubC2024!
-      </div>
-    </details>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: ADMIN-DASHBOARD
-══════════════════════════════════════════════════════════ -->
-<div id="screen-admin" class="screen">
-  <header class="app-header">
-    <h1>📋 Schulungsverwaltung</h1>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
-    </div>
-  </header>
-  <div class="content">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="adminTab('uebersicht',this)">Übersicht</button>
-      <button class="tab-btn" onclick="adminTab('schulungen',this)">Schulungsvorlagen</button>
-      <button class="tab-btn" onclick="adminTab('zuweisungen',this)">Zuweisungen</button>
-      <button class="tab-btn" onclick="adminTab('audit',this)">Protokoll</button>
-    </div>
-
-    <!-- Tab: Gesamtübersicht -->
-    <div id="tab-uebersicht" class="tab-content">
-      <div id="admin-stats" class="stats-grid"></div>
-      <div class="card">
-        <div class="card-title">🏢 Status aller Subunternehmen</div>
-        <div id="admin-tenant-table"></div>
-      </div>
-    </div>
-
-    <!-- Tab: Schulungsvorlagen -->
-    <div id="tab-schulungen" class="tab-content" style="display:none">
-      <div id="admin-vorlagen-list"></div>
-    </div>
-
-    <!-- Tab: Zuweisungen -->
-    <div id="tab-zuweisungen" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-title">➕ Neue Zuweisung</div>
-        <div class="assign-form">
-          <div class="form-group">
-            <label>Schulungsvorlage</label>
-            <select id="az-vorlage"></select>
-          </div>
-          <div class="form-group">
-            <label>Subunternehmen</label>
-            <select id="az-tenant">
-              <option value="">— alle Subunternehmen —</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Frist</label>
-            <input type="date" id="az-frist">
-          </div>
-          <div class="form-group" style="display:flex;align-items:center;gap:8px">
-            <input type="checkbox" id="az-pflicht" style="width:auto">
-            <label for="az-pflicht" style="margin:0;font-weight:400">Pflichtschulung</label>
-          </div>
-          <button class="btn btn-primary" onclick="createZuweisung()">Zuweisung erstellen</button>
-          <div id="az-msg" class="success-msg"></div>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-title">📋 Aktive Zuweisungen</div>
-        <div id="admin-zuw-list"></div>
-      </div>
-    </div>
-
-    <!-- Tab: Audit-Trail -->
-    <div id="tab-audit" class="tab-content" style="display:none">
-      <div class="card">
-        <div class="card-title">🔍 Änderungsprotokoll</div>
-        <div id="audit-list"></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: SUBUNTERNEHMEN-DASHBOARD
-══════════════════════════════════════════════════════════ -->
-<div id="screen-sub" class="screen">
-  <header class="app-header">
-    <h1>📋 Meine Schulungen</h1>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="user-info">
-        <div id="sub-username"></div>
-        <div id="sub-tenantname" style="font-size:.68rem;opacity:.7"></div>
-      </div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
-    </div>
-  </header>
-  <div class="content">
-    <div id="sub-stats" class="stats-grid"></div>
-    <div id="sub-schulungen-list"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: FORMULAR BEARBEITEN
-══════════════════════════════════════════════════════════ -->
-<div id="screen-formular" class="screen">
-  <header class="app-header">
-    <h1 id="formular-titel">Schulung bearbeiten</h1>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="user-info" id="formular-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
-    </div>
-  </header>
-  <div class="content">
-    <button class="back-btn" onclick="backFromFormular()">← Zurück</button>
-    <div id="formular-status-bar" style="margin-bottom:12px"></div>
-    <div id="formular-body"></div>
-    <div id="formular-fehler" class="error-msg" style="margin-top:8px"></div>
-    <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
-      <button class="btn btn-secondary" onclick="formularSpeichern(false)">💾 Zwischenspeichern</button>
-      <button class="btn btn-success" onclick="formularSpeichern(true)">✅ Abschließen & PDF</button>
-    </div>
-    <div id="formular-success" class="success-msg" style="margin-top:10px"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     SCREEN: ADMIN – SCHULUNG DETAIL (read-only)
-══════════════════════════════════════════════════════════ -->
-<div id="screen-admin-detail" class="screen">
-  <header class="app-header">
-    <h1>Schulungsdetail</h1>
-    <div style="display:flex;align-items:center;gap:10px">
-      <div class="user-info" id="detail-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
-    </div>
-  </header>
-  <div class="content">
-    <button class="back-btn" onclick="showScreen('screen-admin')">← Zurück zur Übersicht</button>
-    <div id="detail-body"></div>
-    <div style="margin-top:12px">
-      <button class="btn btn-outline" onclick="exportDetailPdf()">📄 PDF exportieren</button>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════════
-     MODAL: Bestätigung Abschließen
-══════════════════════════════════════════════════════════ -->
-<div id="modal-abschluss" class="modal-overlay">
-  <div class="modal-box">
-    <div class="modal-title">✅ Schulung abschließen?</div>
-    <p style="font-size:0.88rem;color:#374151">
-      Nach dem Abschließen wird die Schulung als <strong>erledigt</strong> markiert, mit Zeitstempel versehen und als PDF exportiert. Änderungen sind danach nicht mehr möglich.
-    </p>
-    <div class="modal-actions">
-      <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
-      <button class="btn btn-success" onclick="abschlussBestaetigt()">Jetzt abschließen</button>
-    </div>
-  </div>
-</div>
-
-<!-- DATA + APP LOGIC -->
-<script src="data.js"></script>
-<script src="app.js"></script>
-</body>
-</html>
+     1|<!DOCTYPE html>
+     2|<html lang="de">
+     3|<head>
+     4|  <meta charset="UTF-8">
+     5|  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+     6|  <title>Schulungsverwaltung</title>
+     7|  <meta name="description" content="Schulungsverwaltung für Auftraggeber und Unternehmen">
+     8|  <link rel="stylesheet" href="style.css">
+     9|  <!-- jsPDF für PDF-Export -->
+    10|  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    11|</head>
+    12|<body>
+    13|
+    14|<!-- ══════════════════════════════════════════════════════════
+    15|     SCREEN: LOGIN
+    16|══════════════════════════════════════════════════════════ -->
+    17|<div id="screen-login" class="screen active">
+    18|  <div class="login-box">
+    19|    <div class="login-logo">
+    20|      <div style="font-size:2.8rem">📋</div>
+    21|      <h2>Schulungsverwaltung</h2>
+    22|      <div class="subtitle">Bitte melden Sie sich an</div>
+    23|    </div>
+    24|    <div id="login-fehler" class="error-msg"></div>
+    25|    <div class="form-group">
+    26|      <label for="login-email">E-Mail-Adresse</label>
+    27|      <input type="email" id="login-email" placeholder="name@firma.de" autocomplete="email">
+    28|    </div>
+    29|    <div class="form-group">
+    30|      <label for="login-password">Passwort</label>
+    31|      <div class="pw-wrap">
+    32|        <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+    33|        <button type="button" class="pw-toggle" id="pw-toggle-btn">👁</button>
+    34|      </div>
+    35|    </div>
+    36|    <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
+    37|
+    38|    <!-- Demo-Logins für Test -->
+    39|    <details style="margin-top:18px">
+    40|      <summary style="font-size:0.78rem;color:#6b7280;cursor:pointer">Demo-Zugänge anzeigen</summary>
+    41|      <div style="margin-top:10px;font-size:0.78rem;line-height:1.8;color:#374151;">
+    42|        <strong>Admin:</strong> admin@csc.de / Admin2024!<br>
+    43|        <strong>Unternehmen A (Verantwortlicher):</strong> mueller@reinigung-a.de / UnternehmenA2024!<br>
+    44|        <strong>Unternehmen A (Mitarbeiter):</strong> schmidt@reinigung-a.de / MitA2024!<br>
+    45|        <strong>Unternehmen B:</strong> weber@sicherheit-b.de / UnternehmenB2024!<br>
+    46|        <strong>Unternehmen C:</strong> fischer@service-c.de / UnternehmenC2024!
+    47|      </div>
+    48|    </details>
+    49|  </div>
+    50|</div>
+    51|
+    52|<!-- ══════════════════════════════════════════════════════════
+    53|     SCREEN: ADMIN-DASHBOARD
+    54|══════════════════════════════════════════════════════════ -->
+    55|<div id="screen-admin" class="screen">
+    56|  <header class="app-header">
+    57|    <h1>📋 Schulungsverwaltung</h1>
+    58|    <div style="display:flex;align-items:center;gap:10px">
+    59|      <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
+    60|      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+    61|    </div>
+    62|  </header>
+    63|  <div class="content">
+    64|    <div class="tabs">
+    65|      <button class="tab-btn active" onclick="adminTab('uebersicht',this)">Übersicht</button>
+    66|      <button class="tab-btn" onclick="adminTab('schulungen',this)">Schulungsvorlagen</button>
+    67|      <button class="tab-btn" onclick="adminTab('zuweisungen',this)">Zuweisungen</button>
+    68|      <button class="tab-btn" onclick="adminTab('audit',this)">Protokoll</button>
+    69|    </div>
+    70|
+    71|    <!-- Tab: Gesamtübersicht -->
+    72|    <div id="tab-uebersicht" class="tab-content">
+    73|      <div id="admin-stats" class="stats-grid"></div>
+    74|      <div class="card">
+    75|        <div class="card-title">🏢 Status aller Unternehmen</div>
+    76|        <div id="admin-tenant-table"></div>
+    77|      </div>
+    78|    </div>
+    79|
+    80|    <!-- Tab: Schulungsvorlagen -->
+    81|    <div id="tab-schulungen" class="tab-content" style="display:none">
+    82|      <div id="admin-vorlagen-list"></div>
+    83|    </div>
+    84|
+    85|    <!-- Tab: Zuweisungen -->
+    86|    <div id="tab-zuweisungen" class="tab-content" style="display:none">
+    87|      <div class="card">
+    88|        <div class="card-title">➕ Neue Zuweisung</div>
+    89|        <div class="assign-form">
+    90|          <div class="form-group">
+    91|            <label>Schulungsvorlage</label>
+    92|            <select id="az-vorlage"></select>
+    93|          </div>
+    94|          <div class="form-group">
+    95|            <label>Unternehmen</label>
+    96|            <select id="az-tenant">
+    97|              <option value="">— alle Unternehmen —</option>
+    98|            </select>
+    99|          </div>
+   100|          <div class="form-group">
+   101|            <label>Frist</label>
+   102|            <input type="date" id="az-frist">
+   103|          </div>
+   104|          <div class="form-group" style="display:flex;align-items:center;gap:8px">
+   105|            <input type="checkbox" id="az-pflicht" style="width:auto">
+   106|            <label for="az-pflicht" style="margin:0;font-weight:400">Pflichtschulung</label>
+   107|          </div>
+   108|          <button class="btn btn-primary" onclick="createZuweisung()">Zuweisung erstellen</button>
+   109|          <div id="az-msg" class="success-msg"></div>
+   110|        </div>
+   111|      </div>
+   112|      <div class="card">
+   113|        <div class="card-title">📋 Aktive Zuweisungen</div>
+   114|        <div id="admin-zuw-list"></div>
+   115|      </div>
+   116|    </div>
+   117|
+   118|    <!-- Tab: Audit-Trail -->
+   119|    <div id="tab-audit" class="tab-content" style="display:none">
+   120|      <div class="card">
+   121|        <div class="card-title">🔍 Änderungsprotokoll</div>
+   122|        <div id="audit-list"></div>
+   123|      </div>
+   124|    </div>
+   125|  </div>
+   126|</div>
+   127|
+   128|<!-- ══════════════════════════════════════════════════════════
+   129|     SCREEN: SUBUNTERNEHMEN-DASHBOARD
+   130|══════════════════════════════════════════════════════════ -->
+   131|<div id="screen-sub" class="screen">
+   132|  <header class="app-header">
+   133|    <h1>📋 Meine Schulungen</h1>
+   134|    <div style="display:flex;align-items:center;gap:10px">
+   135|      <div class="user-info">
+   136|        <div id="sub-username"></div>
+   137|        <div id="sub-tenantname" style="font-size:.68rem;opacity:.7"></div>
+   138|      </div>
+   139|      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+   140|    </div>
+   141|  </header>
+   142|  <div class="content">
+   143|    <div id="sub-stats" class="stats-grid"></div>
+   144|    <div id="sub-schulungen-list"></div>
+   145|  </div>
+   146|</div>
+   147|
+   148|<!-- ══════════════════════════════════════════════════════════
+   149|     SCREEN: FORMULAR BEARBEITEN
+   150|══════════════════════════════════════════════════════════ -->
+   151|<div id="screen-formular" class="screen">
+   152|  <header class="app-header">
+   153|    <h1 id="formular-titel">Schulung bearbeiten</h1>
+   154|    <div style="display:flex;align-items:center;gap:10px">
+   155|      <div class="user-info" id="formular-user-info"></div>
+   156|      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+   157|    </div>
+   158|  </header>
+   159|  <div class="content">
+   160|    <button class="back-btn" onclick="backFromFormular()">← Zurück</button>
+   161|    <div id="formular-status-bar" style="margin-bottom:12px"></div>
+   162|    <div id="formular-body"></div>
+   163|    <div id="formular-fehler" class="error-msg" style="margin-top:8px"></div>
+   164|    <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+   165|      <button class="btn btn-secondary" onclick="formularSpeichern(false)">💾 Zwischenspeichern</button>
+   166|      <button class="btn btn-success" onclick="formularSpeichern(true)">✅ Abschließen & PDF</button>
+   167|    </div>
+   168|    <div id="formular-success" class="success-msg" style="margin-top:10px"></div>
+   169|  </div>
+   170|</div>
+   171|
+   172|<!-- ══════════════════════════════════════════════════════════
+   173|     SCREEN: ADMIN – SCHULUNG DETAIL (read-only)
+   174|══════════════════════════════════════════════════════════ -->
+   175|<div id="screen-admin-detail" class="screen">
+   176|  <header class="app-header">
+   177|    <h1>Schulungsdetail</h1>
+   178|    <div style="display:flex;align-items:center;gap:10px">
+   179|      <div class="user-info" id="detail-user-info"></div>
+   180|      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+   181|    </div>
+   182|  </header>
+   183|  <div class="content">
+   184|    <button class="back-btn" onclick="showScreen('screen-admin')">← Zurück zur Übersicht</button>
+   185|    <div id="detail-body"></div>
+   186|    <div style="margin-top:12px">
+   187|      <button class="btn btn-outline" onclick="exportDetailPdf()">📄 PDF exportieren</button>
+   188|    </div>
+   189|  </div>
+   190|</div>
+   191|
+   192|<!-- ══════════════════════════════════════════════════════════
+   193|     MODAL: Bestätigung Abschließen
+   194|══════════════════════════════════════════════════════════ -->
+   195|<div id="modal-abschluss" class="modal-overlay">
+   196|  <div class="modal-box">
+   197|    <div class="modal-title">✅ Schulung abschließen?</div>
+   198|    <p style="font-size:0.88rem;color:#374151">
+   199|      Nach dem Abschließen wird die Schulung als <strong>erledigt</strong> markiert, mit Zeitstempel versehen und als PDF exportiert. Änderungen sind danach nicht mehr möglich.
+   200|    </p>
+   201|    <div class="modal-actions">
+   202|      <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+   203|      <button class="btn btn-success" onclick="abschlussBestaetigt()">Jetzt abschließen</button>
+   204|    </div>
+   205|  </div>
+   206|</div>
+   207|
+   208|<!-- DATA + APP LOGIC -->
+   209|<script src="data.js"></script>
+   210|<script src="app.js"></script>
+   211|</body>
+   212|</html>
+   213|
