@@ -42,20 +42,29 @@ async function sha256(text) {
 
 // ── Passwort-Hashing mit bcrypt (DSGVO-konform) ──────────────
 const BCRYPT_ROUNDS = 10;
-async function hashPasswort(text) {
-  // bcryptjs ist synchron — in Promise wrappen um UI nicht zu blockieren
-  return new Promise(resolve => setTimeout(() => {
-    resolve(dcodeIO.bcrypt.hashSync(text, BCRYPT_ROUNDS));
-  }, 0));
+
+function bcryptVerfuegbar() {
+  try { return typeof dcodeIO !== 'undefined' && dcodeIO.bcrypt; } catch(e) { return false; }
 }
+
+async function hashPasswort(text) {
+  if (bcryptVerfuegbar()) {
+    return new Promise(resolve => setTimeout(() => {
+      resolve(dcodeIO.bcrypt.hashSync(text, BCRYPT_ROUNDS));
+    }, 0));
+  }
+  // Fallback: SHA-256
+  return sha256(text);
+}
+
 async function verifyPasswort(text, hash) {
-  // Abwärtskompatibel: wenn Hash mit "$2" beginnt → bcrypt, sonst SHA-256
-  if (hash && hash.startsWith('$2')) {
+  // bcrypt-Hash erkennen ($2a$, $2b$)
+  if (hash && hash.startsWith('$2') && bcryptVerfuegbar()) {
     return new Promise(resolve => setTimeout(() => {
       resolve(dcodeIO.bcrypt.compareSync(text, hash));
     }, 0));
   }
-  // Legacy: SHA-256-Vergleich (alte Accounts)
+  // Legacy SHA-256
   return (await sha256(text)) === hash;
 }
 
