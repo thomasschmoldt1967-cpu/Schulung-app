@@ -8,6 +8,8 @@
   <link rel="stylesheet" href="style.css">
   <!-- jsPDF für PDF-Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- bcryptjs für sicheres Passwort-Hashing -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
 </head>
 <body>
 
@@ -45,6 +47,10 @@
       </div>
     </div>
     <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
+    <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:12px 0 0;line-height:1.5">
+      Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
+      <a href="#" onclick="zeigeDS();return false;" style="color:#3b82f6;text-decoration:underline">Datenschutzinformation</a> zu.
+    </p>
 
     <!-- Demo-Logins für Test -->
     <details style="margin-top:18px">
@@ -405,6 +411,33 @@
       <h2 style="color:#16a34a;margin:16px 0 8px">Erfolgreich abgeschlossen!</h2>
       <p style="color:#6b7280;font-size:.9rem">Ihre Unterschrift wurde gespeichert.<br>Sie können dieses Fenster schließen.</p>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     DATENSCHUTZ-MODAL (DSGVO Art. 13)
+══════════════════════════════════════════════════════════ -->
+<div id="ds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;overflow-y:auto;padding:20px">
+  <div style="background:#fff;border-radius:16px;max-width:600px;margin:0 auto;padding:28px 24px;font-size:.87rem;line-height:1.7;color:#374151">
+    <h2 style="margin:0 0 16px;font-size:1.1rem;color:#1e3a5f">🔒 Datenschutzinformation (Art. 13 DSGVO)</h2>
+    <p><strong>Verantwortlicher:</strong><br>CSC GmbH Hannover<br>Gebäudedienste &amp; Höhenarbeiten<br>E-Mail: info@csc-hannover.de · Web: www.csc-hannover.de</p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+    <p><strong>Zweck der Verarbeitung:</strong><br>
+    Verwaltung und Dokumentation von Schulungsnachweisen für Mitarbeiter und Subunternehmen im Rahmen der Arbeitssicherheit (PSAgA, Höhenarbeiten, Gebäudereinigung). Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO (gesetzliche Pflicht zur Dokumentation) sowie Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).</p>
+    <p><strong>Verarbeitete Daten:</strong><br>
+    Name, E-Mail-Adresse, Unterschrift (digital), Schulungsnachweise, Zeitstempel, IP-Adressen (Audit-Log).</p>
+    <p><strong>Empfänger / Auftragsverarbeiter:</strong><br>
+    • <strong>Supabase Inc.</strong> (Datenbankserver EU-West, Frankfurt) — Auftragsverarbeitung gemäß Art. 28 DSGVO<br>
+    • <strong>Google LLC</strong> (Drive-Backup) — Standardvertragsklauseln (SCC) · <a href="https://workspace.google.com/intl/de/terms/dpa_terms.html" target="_blank" style="color:#3b82f6">AVV Google</a><br>
+    • <strong>GitHub Inc.</strong> (Hosting via GitHub Pages) — nur statische Dateien, keine personenbezogenen Daten</p>
+    <p><strong>Speicherdauer:</strong><br>
+    Schulungsnachweise: 5 Jahre (berufsgenossenschaftliche Aufbewahrungspflicht). Audit-Protokoll: 2 Jahre. Danach automatische Löschung.</p>
+    <p><strong>Ihre Rechte (Art. 15–22 DSGVO):</strong><br>
+    Auskunft · Berichtigung · Löschung · Einschränkung · Widerspruch · Datenübertragbarkeit.<br>
+    Anfragen an: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a></p>
+    <p><strong>Beschwerderecht:</strong><br>
+    Landesbeauftragte für Datenschutz Niedersachsen · <a href="https://lfd.niedersachsen.de" target="_blank" style="color:#3b82f6">lfd.niedersachsen.de</a></p>
+    <button onclick="document.getElementById('ds-modal').style.display='none'" style="margin-top:16px;width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer">Schließen</button>
   </div>
 </div>
 

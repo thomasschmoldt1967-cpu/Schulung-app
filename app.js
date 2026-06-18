@@ -34,10 +34,34 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── SHA-256 ──────────────────────────────────────────────────
+// ── SHA-256 (Fallback für alte Hashes) ───────────────────────
 async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+// ── Passwort-Hashing mit bcrypt (DSGVO-konform) ──────────────
+const BCRYPT_ROUNDS = 10;
+async function hashPasswort(text) {
+  // bcryptjs ist synchron — in Promise wrappen um UI nicht zu blockieren
+  return new Promise(resolve => setTimeout(() => {
+    resolve(dcodeIO.bcrypt.hashSync(text, BCRYPT_ROUNDS));
+  }, 0));
+}
+async function verifyPasswort(text, hash) {
+  // Abwärtskompatibel: wenn Hash mit "$2" beginnt → bcrypt, sonst SHA-256
+  if (hash && hash.startsWith('$2')) {
+    return new Promise(resolve => setTimeout(() => {
+      resolve(dcodeIO.bcrypt.compareSync(text, hash));
+    }, 0));
+  }
+  // Legacy: SHA-256-Vergleich (alte Accounts)
+  return (await sha256(text)) === hash;
+}
+
+// ── Datenschutz-Modal ────────────────────────────────────────
+function zeigeDS() {
+  document.getElementById('ds-modal').style.display = 'block';
 }
 
 // ── SUPABASE ─────────────────────────────────────────────────
@@ -86,6 +110,13 @@ const SB = {
     });
     if (!r.ok) { const t = await r.text(); throw new Error(t); }
     return `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
+  },
+  async delete(table, filter) {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
+      method:'DELETE', headers: this.h
+    });
+    if (!r.ok) throw new Error(await r.text());
+    return r.status;
   }
 };
 
@@ -96,6 +127,12 @@ async function initApp() {
   // Einladungslink prüfen — wenn vorhanden, Gast-Flow starten
   const istGast = await pruefeEinladungsToken();
   if (istGast) return;
+
+  // DSGVO: Audit-Einträge älter als 2 Jahre löschen
+  try {
+    const zweiJahreAgo = new Date(Date.now() - 2*365*24*60*60*1000).toISOString();
+    await SB.delete('audit', `ts=lt.${zweiJahreAgo}`);
+  } catch(e) { /* nicht kritisch */ }
 
   try {
     const [tenants, vorlagen, zuws] = await Promise.all([
@@ -205,13 +242,17 @@ async function doLogin() {
   loginBtn.disabled = true;
 
   try {
-    const hash  = await sha256(pw);
-    const users = await SB.get('users', `email=eq.${encodeURIComponent(email)}&password_hash=eq.${hash}`);
+    const users = await SB.get('users', `email=eq.${encodeURIComponent(email)}`);
     if (!users.length) {
       errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
     const user = users[0];
+    const ok = await verifyPasswort(pw, user.password_hash);
+    if (!ok) {
+      errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
+      loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
+    }
     const session = {
       userId: user.id, name: user.name, email: user.email,
       role: user.role, tenantId: user.tenant_id,
@@ -1175,8 +1216,8 @@ async function nuAnlegen() {
     const tRes = await SB.post('tenants', { id: tenantId, name });
     if (tRes.error) throw new Error('Tenant: ' + (tRes.error.message || JSON.stringify(tRes.error)));
 
-    // 2. Passwort hashen
-    const hash = await sha256(passwort);
+    // 2. Passwort hashen (bcrypt)
+    const hash = await hashPasswort(passwort);
 
     // 3. User (Verantwortlicher) anlegen
     const userId = 'user_' + Date.now();
