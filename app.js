@@ -105,6 +105,23 @@ function zeigeDS() {
   document.getElementById('ds-modal').style.display = 'block';
 }
 
+// ── Impressum-Modal ──────────────────────────────────────────
+function zeigeImpressum() {
+  document.getElementById('impressum-modal').style.display = 'flex';
+}
+
+// ── Cookie-Consent ───────────────────────────────────────────
+function cookieAkzeptieren() {
+  localStorage.setItem('schulung_cookie_consent', '1');
+  document.getElementById('cookie-banner').style.display = 'none';
+}
+
+function pruefeCookieConsent() {
+  if (!localStorage.getItem('schulung_cookie_consent')) {
+    document.getElementById('cookie-banner').style.display = 'block';
+  }
+}
+
 // ══════════════════════════════════════════════════════════════
 //  SESSION-TIMEOUT (8h Inaktivität)
 // ══════════════════════════════════════════════════════════════
@@ -347,6 +364,7 @@ const SB = {
 // ── APP INITIALISIEREN ───────────────────────────────────────
 async function initApp() {
   initDarkMode();
+  pruefeCookieConsent();
   showScreen('screen-loading');
 
   // Passwort-Reset-Token prüfen
@@ -423,6 +441,12 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo(0,0);
+  // Legal-Footer: nur im eingeloggten Bereich anzeigen (nicht auf Login/Loading/Gast)
+  const lf = document.getElementById('legal-footer');
+  if (lf) {
+    const hiddenScreens = ['screen-login','screen-loading','screen-gast'];
+    lf.style.display = hiddenScreens.includes(id) ? 'none' : 'flex';
+  }
 }
 
 // ── SESSION ──────────────────────────────────────────────────

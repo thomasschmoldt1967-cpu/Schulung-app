@@ -54,8 +54,12 @@
     </div>
     <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:8px 0 0;line-height:1.5">
       Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
-      <a href="#" onclick="zeigeDS();return false;" style="color:#3b82f6;text-decoration:underline">Datenschutzinformation</a> zu.
+      <a href="#" onclick="zeigeDS();return false;" style="color:#3b82f6;text-decoration:underline">Datenschutzerklärung</a> zu.
     </p>
+    <div style="display:flex;justify-content:center;gap:16px;margin-top:10px;font-size:0.72rem">
+      <a href="#" onclick="zeigeImpressum();return false;" style="color:#9ca3af;text-decoration:none;border-bottom:1px dotted #d1d5db">📄 Impressum</a>
+      <a href="#" onclick="zeigeDS();return false;" style="color:#9ca3af;text-decoration:none;border-bottom:1px dotted #d1d5db">🔒 Datenschutz</a>
+    </div>
 
     <!-- Demo-Logins für Test -->
     <details style="margin-top:18px">
@@ -389,6 +393,15 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     GLOBALE LEGAL-FOOTER-LEISTE
+══════════════════════════════════════════════════════════ -->
+<div id="legal-footer" style="position:fixed;bottom:0;left:0;right:0;z-index:900;background:rgba(30,58,95,0.92);backdrop-filter:blur(4px);padding:6px 16px;display:none;align-items:center;justify-content:center;gap:20px;font-size:.72rem">
+  <span style="color:rgba(255,255,255,.5)">© 2026 CSC GmbH</span>
+  <a href="#" onclick="zeigeImpressum();return false;" style="color:rgba(255,255,255,.7);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.3)">📄 Impressum</a>
+  <a href="#" onclick="zeigeDS();return false;" style="color:rgba(255,255,255,.7);text-decoration:none;border-bottom:1px dotted rgba(255,255,255,.3)">🔒 Datenschutz</a>
+</div>
+
 <!-- DATA + APP LOGIC -->
 <!-- data.js nicht mehr benötigt — Daten kommen aus Supabase -->
 <script src="app.js"></script>
@@ -478,29 +491,171 @@
 </div>
 
 <!-- ══════════════════════════════════════════════════════════
+     COOKIE-CONSENT-BANNER
+══════════════════════════════════════════════════════════ -->
+<div id="cookie-banner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:10000;background:#1e3a5f;color:#fff;padding:16px 20px;box-shadow:0 -4px 20px rgba(0,0,0,.3)">
+  <div style="max-width:800px;margin:0 auto">
+    <div style="display:flex;align-items:flex-start;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <p style="margin:0 0 6px;font-size:.9rem;font-weight:700">🍪 Hinweis zur Datenspeicherung</p>
+        <p style="margin:0;font-size:.8rem;line-height:1.5;color:#cbd5e1">
+          Diese App verwendet ausschließlich <strong>technisch notwendigen lokalen Speicher</strong> (localStorage) für Ihre Anmelde-Session und Einstellungen (z.B. Sprachauswahl, Dark Mode). Es werden <strong>keine</strong> Tracking- oder Marketing-Cookies eingesetzt. Mehr Informationen in unserer
+          <a href="#" onclick="document.getElementById('cookie-banner').style.display='none'; zeigeDS(); return false;" style="color:#93c5fd;text-decoration:underline">Datenschutzerklärung</a> und im
+          <a href="#" onclick="document.getElementById('cookie-banner').style.display='none'; zeigeImpressum(); return false;" style="color:#93c5fd;text-decoration:underline">Impressum</a>.
+        </p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex-shrink:0">
+        <button onclick="cookieAkzeptieren()" style="padding:10px 20px;background:#16a34a;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;white-space:nowrap">✅ Verstanden &amp; Akzeptieren</button>
+        <button onclick="document.getElementById('cookie-banner').style.display='none'; zeigeDS(); return false;" style="padding:8px 20px;background:transparent;color:#cbd5e1;border:1px solid #475569;border-radius:8px;font-size:.78rem;cursor:pointer;white-space:nowrap">Mehr erfahren</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
      DATENSCHUTZ-MODAL (DSGVO Art. 13)
 ══════════════════════════════════════════════════════════ -->
-<div id="ds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;overflow-y:auto;padding:20px">
-  <div style="background:#fff;border-radius:16px;max-width:600px;margin:0 auto;padding:28px 24px;font-size:.87rem;line-height:1.7;color:#374151">
-    <h2 style="margin:0 0 16px;font-size:1.1rem;color:#1e3a5f">🔒 Datenschutzinformation (Art. 13 DSGVO)</h2>
-    <p><strong>Verantwortlicher:</strong><br>CSC GmbH Hannover<br>Gebäudedienste &amp; Höhenarbeiten<br>E-Mail: info@csc-hannover.de · Web: www.csc-hannover.de</p>
+<div id="ds-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:20px">
+  <div style="background:#fff;border-radius:16px;max-width:660px;margin:20px auto;padding:28px 24px;font-size:.87rem;line-height:1.7;color:#374151;position:relative">
+    <button onclick="document.getElementById('ds-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af" title="Schließen">✕</button>
+    <h2 style="margin:0 0 4px;font-size:1.2rem;color:#1e3a5f">🔒 Datenschutzerklärung</h2>
+    <p style="margin:0 0 16px;font-size:.78rem;color:#6b7280">Gemäß Art. 13 DSGVO — CSC GmbH Schulungsmanagement-App</p>
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">1. Verantwortlicher</h3>
+    <p style="margin:0 0 12px">
+      <strong>CSC GmbH</strong><br>
+      Peiner Straße 39a · 30880 Laatzen<br>
+      Telefon: <a href="tel:+4951029319730" style="color:#3b82f6">05102 9319730</a><br>
+      Fax: 05102 93197-39<br>
+      E-Mail: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a><br>
+      Web: <a href="https://www.csc-hannover.de" target="_blank" style="color:#3b82f6">www.csc-hannover.de</a><br>
+      Geschäftsführer: Thomas Schmoldt
+    </p>
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
-    <p><strong>Zweck der Verarbeitung:</strong><br>
-    Verwaltung und Dokumentation von Schulungsnachweisen für Mitarbeiter und Subunternehmen im Rahmen der Arbeitssicherheit (PSAgA, Höhenarbeiten, Gebäudereinigung). Rechtsgrundlage: Art. 6 Abs. 1 lit. c DSGVO (gesetzliche Pflicht zur Dokumentation) sowie Art. 6 Abs. 1 lit. b DSGVO (Vertragserfüllung).</p>
-    <p><strong>Verarbeitete Daten:</strong><br>
-    Name, E-Mail-Adresse, Unterschrift (digital), Schulungsnachweise, Zeitstempel, IP-Adressen (Audit-Log).</p>
-    <p><strong>Empfänger / Auftragsverarbeiter:</strong><br>
-    • <strong>Supabase Inc.</strong> (Datenbankserver EU-West, Frankfurt) — Auftragsverarbeitung gemäß Art. 28 DSGVO<br>
-    • <strong>Google LLC</strong> (Drive-Backup) — Standardvertragsklauseln (SCC) · <a href="https://workspace.google.com/intl/de/terms/dpa_terms.html" target="_blank" style="color:#3b82f6">AVV Google</a><br>
-    • <strong>GitHub Inc.</strong> (Hosting via GitHub Pages) — nur statische Dateien, keine personenbezogenen Daten</p>
-    <p><strong>Speicherdauer:</strong><br>
-    Schulungsnachweise: 5 Jahre (berufsgenossenschaftliche Aufbewahrungspflicht). Audit-Protokoll: 2 Jahre. Danach automatische Löschung.</p>
-    <p><strong>Ihre Rechte (Art. 15–22 DSGVO):</strong><br>
-    Auskunft · Berichtigung · Löschung · Einschränkung · Widerspruch · Datenübertragbarkeit.<br>
-    Anfragen an: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a></p>
-    <p><strong>Beschwerderecht:</strong><br>
-    Landesbeauftragte für Datenschutz Niedersachsen · <a href="https://lfd.niedersachsen.de" target="_blank" style="color:#3b82f6">lfd.niedersachsen.de</a></p>
-    <button onclick="document.getElementById('ds-modal').style.display='none'" style="margin-top:16px;width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer">Schließen</button>
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">2. Zweck &amp; Rechtsgrundlage</h3>
+    <p style="margin:0 0 12px">
+      Diese App dient der <strong>Verwaltung und Dokumentation von Schulungsnachweisen</strong> für Mitarbeiter und Subunternehmen im Rahmen der Arbeitssicherheit (PSAgA, Höhenarbeiten, Gebäudereinigung).<br><br>
+      <strong>Rechtsgrundlagen:</strong><br>
+      • Art. 6 Abs. 1 lit. b DSGVO — Vertragserfüllung (Beschäftigungsverhältnis / Subunternehmervertrag)<br>
+      • Art. 6 Abs. 1 lit. c DSGVO — Erfüllung gesetzlicher Pflichten (Dokumentationspflicht Arbeitssicherheit)
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">3. Verarbeitete Daten</h3>
+    <p style="margin:0 0 12px">
+      • Name und E-Mail-Adresse (für Login und Schulungsnachweis)<br>
+      • Digitale Unterschrift (als Bild-Datei im Schulungsformular)<br>
+      • Schulungsnachweise (Datum, Ergebnis, Formularinhalte)<br>
+      • Session-Daten (lokal im Browser-Speicher, kein Tracking)<br>
+      • Audit-Protokoll (Zeitstempel, Benutzeraktionen — für Revisionssicherheit)
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">4. Technische Speicherung (kein Tracking)</h3>
+    <p style="margin:0 0 12px">
+      Die App nutzt ausschließlich <strong>technisch notwendigen Browser-Speicher (localStorage)</strong> für:<br>
+      • Anmelde-Session (kein Passwort gespeichert)<br>
+      • Sprachauswahl und Dark-Mode-Einstellung<br>
+      • Cookie-Consent-Status<br><br>
+      <strong>Es werden keine Tracking-, Analyse- oder Marketing-Cookies verwendet.</strong>
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">5. Empfänger &amp; Auftragsverarbeiter</h3>
+    <p style="margin:0 0 12px">
+      • <strong>Supabase Inc.</strong> — Datenbankserver EU-West (Frankfurt), Auftragsverarbeitung gem. Art. 28 DSGVO, EU-DSGVO-konform<br>
+      • <strong>GitHub Inc.</strong> (Microsoft) — Hosting der App via GitHub Pages; nur statische Dateien, keine personenbezogenen Daten auf GitHub-Servern<br>
+      • <strong>Hostinger</strong> — lokaler Backup-Server für PDF-Dokumente (EU-Server)
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">6. Speicherdauer</h3>
+    <p style="margin:0 0 12px">
+      • Schulungsnachweise &amp; Unterschriften: <strong>5 Jahre</strong> (gesetzliche Aufbewahrungspflicht gem. DGUV)<br>
+      • Audit-Protokoll: <strong>2 Jahre</strong> (automatische Löschung beim App-Start)<br>
+      • Browser-Speicher (localStorage): Bis zur Abmeldung bzw. Browser-Bereinigung
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">7. Ihre Rechte (Art. 15–22 DSGVO)</h3>
+    <p style="margin:0 0 12px">
+      Sie haben das Recht auf: <strong>Auskunft · Berichtigung · Löschung · Einschränkung · Widerspruch · Datenübertragbarkeit</strong><br><br>
+      Anfragen bitte an: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a><br>
+      oder schriftlich: CSC GmbH, Peiner Straße 39a, 30880 Laatzen
+    </p>
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
+
+    <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">8. Beschwerderecht</h3>
+    <p style="margin:0 0 16px">
+      Sie haben das Recht, sich bei der zuständigen Datenschutzbehörde zu beschweren:<br>
+      <strong>Landesbeauftragte für Datenschutz Niedersachsen</strong><br>
+      Prinzenstraße 5 · 30159 Hannover<br>
+      <a href="https://lfd.niedersachsen.de" target="_blank" style="color:#3b82f6">lfd.niedersachsen.de</a>
+    </p>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onclick="document.getElementById('ds-modal').style.display='none'" style="flex:1;min-width:140px;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer;font-weight:600">✅ Verstanden</button>
+      <button onclick="document.getElementById('ds-modal').style.display='none';document.getElementById('impressum-modal').style.display='flex'" style="flex:1;min-width:140px;padding:12px;background:#f1f5f9;color:#374151;border:1px solid #e2e8f0;border-radius:10px;font-size:.9rem;cursor:pointer">📄 Impressum anzeigen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     IMPRESSUM-MODAL
+══════════════════════════════════════════════════════════ -->
+<div id="impressum-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;overflow-y:auto;padding:20px;align-items:flex-start;justify-content:center">
+  <div style="background:#fff;border-radius:16px;max-width:560px;margin:20px auto;padding:28px 24px;font-size:.87rem;line-height:1.7;color:#374151;position:relative">
+    <button onclick="document.getElementById('impressum-modal').style.display='none'" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af" title="Schließen">✕</button>
+    <h2 style="margin:0 0 4px;font-size:1.2rem;color:#1e3a5f">📄 Impressum</h2>
+    <p style="margin:0 0 16px;font-size:.78rem;color:#6b7280">Angaben gemäß § 5 TMG</p>
+
+    <p style="margin:0 0 12px">
+      <strong>CSC GmbH</strong><br>
+      Peiner Straße 39a<br>
+      30880 Laatzen
+    </p>
+
+    <p style="margin:0 0 12px">
+      <strong>Kontakt:</strong><br>
+      Telefon: <a href="tel:+4951029319730" style="color:#3b82f6">05102 9319730</a><br>
+      Fax: 05102 93197-39<br>
+      E-Mail: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a><br>
+      Web: <a href="https://www.csc-hannover.de" target="_blank" style="color:#3b82f6">www.csc-hannover.de</a>
+    </p>
+
+    <p style="margin:0 0 12px">
+      <strong>Vertreten durch:</strong><br>
+      Geschäftsführer Thomas Schmoldt
+    </p>
+
+    <p style="margin:0 0 12px">
+      <strong>Handelsregister:</strong><br>
+      Amtsgericht Hannover, HRB 204033
+    </p>
+
+    <p style="margin:0 0 12px">
+      <strong>Umsatzsteuer-ID:</strong><br>
+      DE 240 107 716
+    </p>
+
+    <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
+
+    <h3 style="font-size:.9rem;color:#1e3a5f;margin:0 0 6px">Verantwortlich für den Inhalt (§ 18 Abs. 2 MStV)</h3>
+    <p style="margin:0 0 12px">Thomas Schmoldt<br>Peiner Straße 39a · 30880 Laatzen</p>
+
+    <h3 style="font-size:.9rem;color:#1e3a5f;margin:12px 0 6px">Haftungsausschluss</h3>
+    <p style="margin:0 0 12px;font-size:.82rem;color:#6b7280">
+      Als Diensteanbieter sind wir gemäß § 7 Abs. 1 TMG für eigene Inhalte verantwortlich. Für übermittelte oder gespeicherte fremde Informationen sind wir gem. §§ 8–10 TMG nicht verpflichtet, diese zu überwachen. Bei Bekanntwerden von Rechtsverletzungen entfernen wir entsprechende Inhalte umgehend.
+    </p>
+
+    <h3 style="font-size:.9rem;color:#1e3a5f;margin:12px 0 6px">Datenschutz</h3>
+    <p style="margin:0 0 16px;font-size:.82rem;color:#6b7280">
+      Details zur Datenverarbeitung in dieser App finden Sie in unserer
+      <a href="#" onclick="document.getElementById('impressum-modal').style.display='none';document.getElementById('ds-modal').style.display='block'" style="color:#3b82f6">Datenschutzerklärung</a>.
+    </p>
+
+    <button onclick="document.getElementById('impressum-modal').style.display='none'" style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer;font-weight:600">Schließen</button>
   </div>
 </div>
 
