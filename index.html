@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>Schulungsmanagement</title>
   <meta name="description" content="Schulungsmanagement für Auftraggeber und Unternehmen">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1e3a5f">
   <link rel="stylesheet" href="style.css">
   <!-- jsPDF für PDF-Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -47,7 +49,10 @@
       </div>
     </div>
     <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
-    <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:12px 0 0;line-height:1.5">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.78rem;color:#3b82f6;text-decoration:none">🔑 Passwort vergessen?</a>
+    </div>
+    <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:8px 0 0;line-height:1.5">
       Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
       <a href="#" onclick="zeigeDS();return false;" style="color:#3b82f6;text-decoration:underline">Datenschutzinformation</a> zu.
     </p>
@@ -72,9 +77,11 @@
 <div id="screen-admin" class="screen">
   <header class="app-header">
     <h1>📋 Schulungsmanagement</h1>
-    <div style="display:flex;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px">
       <img src="csc-logo.png" alt="CSC GmbH" style="height:36px;filter:brightness(0) invert(1);opacity:.9">
       <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
+      <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
       <button class="btn-logout" onclick="doLogout()">Abmelden</button>
     </div>
   </header>
@@ -83,6 +90,8 @@
       <button class="tab-btn active" onclick="adminTab('uebersicht',this)">Übersicht</button>
       <button class="tab-btn" onclick="adminTab('schulungen',this)">Schulungsvorlagen</button>
       <button class="tab-btn" onclick="adminTab('zuweisungen',this)">Zuweisungen</button>
+      <button class="tab-btn" onclick="adminTab('kalender',this)">📅 Kalender</button>
+      <button class="tab-btn" onclick="adminTab('archiv',this)">📦 Archiv</button>
       <button class="tab-btn" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
       <button class="tab-btn" onclick="adminTab('audit',this)">Protokoll</button>
       <button class="tab-btn" id="drive-sync-btn" onclick="syncMissingToDrive()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0">☁️ Drive-Sync</button>
@@ -103,11 +112,18 @@
     <!-- Tab: Gesamtübersicht -->
     <div id="tab-uebersicht" class="tab-content">
       <div id="admin-stats" class="stats-grid"></div>
+      <div id="admin-charts" style="margin-bottom:14px"></div>
       <div class="card">
         <div class="card-title">🏢 Status aller Unternehmen</div>
         <div id="admin-tenant-table"></div>
       </div>
     </div>
+
+    <!-- Tab: Kalender -->
+    <div id="tab-kalender" class="tab-content" style="display:none"></div>
+
+    <!-- Tab: Archiv -->
+    <div id="tab-archiv" class="tab-content" style="display:none"></div>
 
     <!-- Tab: Schulungsvorlagen -->
     <div id="tab-schulungen" class="tab-content" style="display:none">
@@ -271,17 +287,20 @@
 <div id="screen-sub" class="screen">
   <header class="app-header">
     <h1>📋 Meine Schulungen</h1>
-    <div style="display:flex;align-items:center;gap:14px">
+    <div style="display:flex;align-items:center;gap:10px">
       <img src="csc-logo.png" alt="CSC GmbH" style="height:36px;filter:brightness(0) invert(1);opacity:.9">
       <div class="user-info">
         <div id="sub-username"></div>
         <div id="sub-tenantname" style="font-size:.68rem;opacity:.7"></div>
       </div>
+      <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
       <button class="btn-logout" onclick="doLogout()">Abmelden</button>
     </div>
   </header>
   <div class="content">
     <div id="sub-stats" class="stats-grid"></div>
+    <div id="sub-kalender" style="display:none"></div>
     <!-- Bedienungsanleitung Button -->
     <div style="margin-bottom:14px">
       <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25)">
@@ -373,6 +392,50 @@
 <!-- DATA + APP LOGIC -->
 <!-- data.js nicht mehr benötigt — Daten kommen aus Supabase -->
 <script src="app.js"></script>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: Passwort vergessen
+══════════════════════════════════════════════════════════ -->
+<div id="pw-reset-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9100;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 16px;font-size:1.1rem;color:#1e3a5f">🔑 Passwort zurücksetzen</h3>
+    <div class="form-group">
+      <label>E-Mail-Adresse</label>
+      <input type="email" id="pw-reset-email" placeholder="name@firma.de">
+    </div>
+    <div id="pw-reset-msg" style="font-size:.82rem;margin:8px 0;min-height:20px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button id="pw-reset-btn" class="btn btn-primary" style="flex:1" onclick="pwResetAnfordern()">🔑 Link generieren</button>
+      <button class="btn btn-outline" onclick="schliessePwReset()">✕</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: Passwort ändern
+══════════════════════════════════════════════════════════ -->
+<div id="pw-aendern-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9100;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 16px;font-size:1.1rem;color:#1e3a5f">🔐 Passwort ändern</h3>
+    <div class="form-group">
+      <label>Aktuelles Passwort</label>
+      <input type="password" id="pw-alt" placeholder="••••••••">
+    </div>
+    <div class="form-group">
+      <label>Neues Passwort (min. 8 Zeichen)</label>
+      <input type="password" id="pw-neu" placeholder="••••••••">
+    </div>
+    <div class="form-group">
+      <label>Neues Passwort bestätigen</label>
+      <input type="password" id="pw-neu2" placeholder="••••••••">
+    </div>
+    <div id="pw-aendern-msg" style="font-size:.82rem;margin:8px 0;min-height:20px"></div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button id="pw-aendern-btn" class="btn btn-primary" style="flex:1" onclick="pwAendernSpeichern()">💾 Passwort ändern</button>
+      <button class="btn btn-outline" onclick="schliessePwAendern()">✕</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════════════════════════════════════════════════
      SCREEN: GAST / EINLADUNG (kein Login nötig)

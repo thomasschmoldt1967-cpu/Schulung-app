@@ -1,12 +1,15 @@
 // ============================================================
 //  app.js  —  Schulungsverwaltungs-App (Supabase Edition)
 //  Multi-Tenant | Ampelsystem | Audit-Trail | PDF-Export
+//  v2.1 – Dark Mode | Kalender | Archiv | PW-Reset | Charts
+//         Session-Timeout | bcrypt-Migration | Offline-PWA
 // ============================================================
 'use strict';
 
 // ── KONSTANTEN ───────────────────────────────────────────────
-const SESSION_KEY   = 'schulung_session';
-const SESSION_HOURS = 24;
+const SESSION_KEY        = 'schulung_session';
+const SESSION_HOURS      = 8;    // Session-Timeout: 8h Inaktivität
+const INACTIVITY_MINUTES = 8 * 60; // Minuten bis Auto-Logout
 
 // ── GLOBALER APP-ZUSTAND ─────────────────────────────────────
 let currentUser       = null;
@@ -22,6 +25,7 @@ let activeAdminTab    = 'uebersicht';
 let activeDetailZuwId = null;
 let sigPads           = {};
 let uploadFiles       = {};
+let inactivityTimer   = null; // Session-Timeout Timer
 
 // ── UTILS ────────────────────────────────────────────────────
 function now()     { return new Date().toISOString(); }
@@ -101,6 +105,189 @@ function zeigeDS() {
   document.getElementById('ds-modal').style.display = 'block';
 }
 
+// ══════════════════════════════════════════════════════════════
+//  SESSION-TIMEOUT (8h Inaktivität)
+// ══════════════════════════════════════════════════════════════
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  if (!currentUser) return;
+  inactivityTimer = setTimeout(() => {
+    showToast('⏰ Sie wurden wegen Inaktivität abgemeldet.', '#6b7280');
+    setTimeout(doLogout, 2000);
+  }, INACTIVITY_MINUTES * 60 * 1000);
+  // Ablaufzeit in Session speichern
+  try {
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
+    if (s) { s.expires = Date.now() + SESSION_HOURS * 3600 * 1000; localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
+  } catch(e) {}
+}
+function startInactivityWatcher() {
+  ['click','keydown','touchstart','scroll','mousemove'].forEach(ev =>
+    document.addEventListener(ev, resetInactivityTimer, { passive: true })
+  );
+  resetInactivityTimer();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  DARK MODE
+// ══════════════════════════════════════════════════════════════
+function toggleDarkMode() {
+  const isDark = document.body.classList.toggle('dark-mode');
+  localStorage.setItem('schulung_darkmode', isDark ? '1' : '0');
+  updateDarkModeBtn();
+}
+function updateDarkModeBtn() {
+  const isDark = document.body.classList.contains('dark-mode');
+  document.querySelectorAll('.dark-mode-btn').forEach(btn => {
+    btn.textContent = isDark ? '☀️' : '🌙';
+    btn.title = isDark ? 'Helles Design' : 'Dunkles Design';
+  });
+}
+function initDarkMode() {
+  if (localStorage.getItem('schulung_darkmode') === '1') {
+    document.body.classList.add('dark-mode');
+  }
+  updateDarkModeBtn();
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PASSWORT VERGESSEN / RESET
+// ══════════════════════════════════════════════════════════════
+function zeigePwReset() {
+  document.getElementById('pw-reset-modal').style.display = 'flex';
+  document.getElementById('pw-reset-email').value = document.getElementById('login-email').value || '';
+  document.getElementById('pw-reset-msg').textContent = '';
+}
+function schliessePwReset() {
+  document.getElementById('pw-reset-modal').style.display = 'none';
+}
+async function pwResetAnfordern() {
+  const email  = document.getElementById('pw-reset-email').value.trim().toLowerCase();
+  const msgEl  = document.getElementById('pw-reset-msg');
+  const btn    = document.getElementById('pw-reset-btn');
+  msgEl.textContent = '';
+  if (!email) { msgEl.style.color='#dc2626'; msgEl.textContent='Bitte E-Mail eingeben.'; return; }
+
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const users = await SB.get('users', `email=eq.${encodeURIComponent(email)}`);
+    // Immer gleiche Meldung (Sicherheit: kein User-Enumeration)
+    if (users.length) {
+      // Token generieren und speichern
+      const arr = new Uint8Array(24);
+      crypto.getRandomValues(arr);
+      const token = Array.from(arr).map(b=>b.toString(16).padStart(2,'0')).join('');
+      const gueltigBis = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(); // 2h gültig
+      const userId = users[0].id;
+      // Token in reset_tokens-Tabelle (oder als einladung mit besonderem Typ)
+      await SB.upsert('pw_reset_tokens', {
+        id: 'pwreset_' + Date.now(),
+        user_id: userId,
+        token,
+        gueltig_bis: gueltigBis,
+        genutzt: false
+      });
+      // Reset-Link anzeigen (in echter Prod: per E-Mail senden)
+      const baseUrl = window.location.href.split('?')[0].split('#')[0];
+      const link = `${baseUrl}?pwreset=${token}`;
+      msgEl.style.color = '#16a34a';
+      msgEl.innerHTML = `✅ Reset-Link generiert (2h gültig):<br>
+        <textarea style="width:100%;font-size:.72rem;margin-top:6px;padding:6px;border-radius:6px;border:1px solid #d1d5db;resize:none" rows="2" readonly>${link}</textarea>
+        <button class="btn btn-outline btn-sm" style="margin-top:4px" onclick="navigator.clipboard.writeText('${link}').then(()=>showToast('✅ Link kopiert!'))">📋 Kopieren</button>
+        <div style="font-size:.72rem;color:#6b7280;margin-top:4px">⚠️ Diesen Link per E-Mail oder WhatsApp an den Nutzer senden.</div>`;
+    } else {
+      msgEl.style.color = '#16a34a';
+      msgEl.textContent = '✅ Falls die E-Mail bekannt ist, wurde ein Link generiert.';
+    }
+  } catch(e) {
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = 'Fehler: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '🔑 Link generieren';
+}
+async function pruefePasswordResetToken() {
+  const params = new URLSearchParams(window.location.search);
+  const token  = params.get('pwreset');
+  if (!token) return false;
+
+  try {
+    const res = await SB.get('pw_reset_tokens', `token=eq.${token}`);
+    if (!res.length) { alert('Ungültiger oder abgelaufener Reset-Link.'); return false; }
+    const rec = res[0];
+    if (rec.genutzt || new Date(rec.gueltig_bis) < new Date()) {
+      alert('Dieser Reset-Link ist bereits abgelaufen oder wurde verwendet.'); return false;
+    }
+    // Neues Passwort eingeben
+    const newPw = prompt('Neues Passwort eingeben (min. 8 Zeichen):');
+    if (!newPw || newPw.length < 8) { alert('Passwort zu kurz.'); return false; }
+    const hash = await hashPasswort(newPw);
+    await SB.patch('users', `id=eq.${rec.user_id}`, { password_hash: hash });
+    await SB.patch('pw_reset_tokens', `id=eq.${rec.id}`, { genutzt: true });
+    // URL säubern
+    window.history.replaceState({}, '', window.location.pathname);
+    alert('✅ Passwort erfolgreich geändert! Sie können sich jetzt anmelden.');
+    return false; // Normalen Login-Flow starten
+  } catch(e) {
+    alert('Fehler beim Passwort-Reset: ' + e.message);
+    return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PASSWORT ÄNDERN (für eingeloggte Nutzer)
+// ══════════════════════════════════════════════════════════════
+function zeigePwAendern() {
+  document.getElementById('pw-aendern-modal').style.display = 'flex';
+  document.getElementById('pw-alt').value = '';
+  document.getElementById('pw-neu').value = '';
+  document.getElementById('pw-neu2').value = '';
+  document.getElementById('pw-aendern-msg').textContent = '';
+}
+function schliessePwAendern() {
+  document.getElementById('pw-aendern-modal').style.display = 'none';
+}
+async function pwAendernSpeichern() {
+  const alt  = document.getElementById('pw-alt').value;
+  const neu  = document.getElementById('pw-neu').value;
+  const neu2 = document.getElementById('pw-neu2').value;
+  const msgEl = document.getElementById('pw-aendern-msg');
+  msgEl.textContent = '';
+  if (!alt || !neu || !neu2) { msgEl.style.color='#dc2626'; msgEl.textContent='Bitte alle Felder ausfüllen.'; return; }
+  if (neu !== neu2) { msgEl.style.color='#dc2626'; msgEl.textContent='Die neuen Passwörter stimmen nicht überein.'; return; }
+  if (neu.length < 8) { msgEl.style.color='#dc2626'; msgEl.textContent='Neues Passwort muss mindestens 8 Zeichen haben.'; return; }
+
+  const btn = document.getElementById('pw-aendern-btn');
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const users = await SB.get('users', `id=eq.${currentUser.userId}`);
+    if (!users.length) throw new Error('Benutzer nicht gefunden');
+    const ok = await verifyPasswort(alt, users[0].password_hash);
+    if (!ok) { msgEl.style.color='#dc2626'; msgEl.textContent='Altes Passwort falsch.'; btn.disabled=false; btn.textContent='💾 Passwort ändern'; return; }
+    const newHash = await hashPasswort(neu);
+    await SB.patch('users', `id=eq.${currentUser.userId}`, { password_hash: newHash });
+    await sbAudit('PW_AENDERUNG', 'Passwort geändert');
+    msgEl.style.color = '#16a34a';
+    msgEl.textContent = '✅ Passwort erfolgreich geändert!';
+    setTimeout(schliessePwAendern, 2000);
+  } catch(e) {
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = 'Fehler: ' + e.message;
+  }
+  btn.disabled = false; btn.textContent = '💾 Passwort ändern';
+}
+
+// ══════════════════════════════════════════════════════════════
+//  bcrypt AUTO-MIGRATION beim Login
+// ══════════════════════════════════════════════════════════════
+async function migriereSHA256ZuBcrypt(userId, klartext) {
+  if (!bcryptVerfuegbar()) return;
+  try {
+    const newHash = await hashPasswort(klartext);
+    await SB.patch('users', `id=eq.${userId}`, { password_hash: newHash });
+    console.info('bcrypt-Migration abgeschlossen für', userId);
+  } catch(e) { console.warn('bcrypt-Migration fehlgeschlagen:', e.message); }
+}
+
 // ── SUPABASE ─────────────────────────────────────────────────
 const SUPABASE_URL = 'https://vziankbxuiqwekdbjewg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6aWFua2J4dWlxd2VrZGJqZXdnIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTcwODUxOCwiZXhwIjoyMDk3Mjg0NTE4fQ.HDQx0CkmFHfjMxWuiLleIa9E7nEkljOLZYt14UJESSE';
@@ -159,7 +346,11 @@ const SB = {
 
 // ── APP INITIALISIEREN ───────────────────────────────────────
 async function initApp() {
+  initDarkMode();
   showScreen('screen-loading');
+
+  // Passwort-Reset-Token prüfen
+  await pruefePasswordResetToken();
 
   // Einladungslink prüfen — wenn vorhanden, Gast-Flow starten
   const istGast = await pruefeEinladungsToken();
@@ -201,7 +392,7 @@ async function initApp() {
     });
 
     const session = checkSession();
-    if (session) { currentUser = session; routeAfterLogin(); }
+    if (session) { currentUser = session; startInactivityWatcher(); routeAfterLogin(); }
     else { showScreen('screen-login'); }
   } catch(e) {
     console.error('Init Fehler:', e);
@@ -290,6 +481,10 @@ async function doLogin() {
       errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
+    // SHA-256 → bcrypt Auto-Migration (im Hintergrund)
+    if (user.password_hash && !user.password_hash.startsWith('$2')) {
+      migriereSHA256ZuBcrypt(user.id, pw); // async, kein await
+    }
     const session = {
       userId: user.id, name: user.name, email: user.email,
       role: user.role, tenantId: user.tenant_id,
@@ -297,6 +492,7 @@ async function doLogin() {
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     currentUser = session;
+    startInactivityWatcher();
     await sbAudit('LOGIN','Benutzer angemeldet');
     routeAfterLogin();
   } catch(e) {
@@ -345,6 +541,9 @@ function adminTab(tabName, btn) {
   document.getElementById(`tab-${tabName}`).style.display='';
   if (tabName==='protokoll') loadAuditFromDB();
   if (tabName==='unternehmen') nuRenderListe();
+  if (tabName==='kalender') renderKalender();
+  if (tabName==='archiv') renderArchiv();
+  if (tabName==='uebersicht') renderAdminCharts();
 }
 async function loadAuditFromDB() {
   try {
@@ -372,6 +571,198 @@ function renderAdminStats() {
     <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Überfällig</div></div>
   `;
+  // Charts beim ersten Übersicht-Tab ebenfalls aktualisieren
+  setTimeout(renderAdminCharts, 0);
+}
+
+// ── ADMIN CHARTS ──────────────────────────────────────────────
+function renderAdminCharts() {
+  const el = document.getElementById('admin-charts');
+  if (!el) return;
+
+  // Top-5 Unternehmen mit meisten offenen Schulungen
+  const topOffen = APP_TENANTS.map(t => {
+    const zuws = zuweisungen.filter(z => z.tenantId === t.id);
+    const offen = zuws.filter(z => berechneStatus(z) === 'rot').length;
+    return { name: t.name, offen };
+  }).sort((a,b) => b.offen - a.offen).slice(0, 5);
+
+  // Balkendiagramm (CSS-basiert, kein externe Lib nötig)
+  const maxOffen = Math.max(...topOffen.map(t=>t.offen), 1);
+  const barsHtml = topOffen.map(t => {
+    const pct = Math.round(t.offen / maxOffen * 100);
+    const color = t.offen === 0 ? '#16a34a' : t.offen <= 2 ? '#f59e0b' : '#dc2626';
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:3px">
+        <span>${escHtml(t.name)}</span>
+        <strong style="color:${color}">${t.offen} offen</strong>
+      </div>
+      <div style="background:#f3f4f6;border-radius:6px;height:14px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;background:${color};border-radius:6px;transition:width .5s"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  // Gesamtfortschritt Donut (SVG)
+  let g=0,y=0,r=0;
+  zuweisungen.forEach(z => { const s=berechneStatus(z); if(s==='gruen')g++; else if(s==='gelb')y++; else r++; });
+  const total = g+y+r || 1;
+  const grPct = g/total, ylPct = y/total, rtPct = r/total;
+  const R=40, C=2*Math.PI*R;
+  const grArc=C*grPct, ylArc=C*ylPct, rtArc=C*rtPct;
+  const grOff=0, ylOff=-grArc, rtOff=-(grArc+ylArc);
+
+  el.innerHTML = `
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">📊 Gesamtfortschritt</div>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <svg width="100" height="100" viewBox="0 0 100 100" style="flex-shrink:0">
+          <circle cx="50" cy="50" r="${R}" fill="none" stroke="#f3f4f6" stroke-width="14"/>
+          ${r>0?`<circle cx="50" cy="50" r="${R}" fill="none" stroke="#dc2626" stroke-width="14" stroke-dasharray="${rtArc} ${C}" stroke-dashoffset="${rtOff}" transform="rotate(-90 50 50)"/>`:''}
+          ${y>0?`<circle cx="50" cy="50" r="${R}" fill="none" stroke="#f59e0b" stroke-width="14" stroke-dasharray="${ylArc} ${C}" stroke-dashoffset="${ylOff}" transform="rotate(-90 50 50)"/>`:''}
+          ${g>0?`<circle cx="50" cy="50" r="${R}" fill="none" stroke="#16a34a" stroke-width="14" stroke-dasharray="${grArc} ${C}" stroke-dashoffset="${grOff}" transform="rotate(-90 50 50)"/>`:''}
+          <text x="50" y="55" text-anchor="middle" font-size="16" font-weight="700" fill="#1a3a5c">${Math.round(grPct*100)}%</text>
+        </svg>
+        <div style="flex:1">
+          <div style="font-size:.82rem;margin-bottom:4px"><span style="color:#16a34a">●</span> ${g} Abgeschlossen</div>
+          <div style="font-size:.82rem;margin-bottom:4px"><span style="color:#f59e0b">●</span> ${y} In Bearbeitung</div>
+          <div style="font-size:.82rem"><span style="color:#dc2626">●</span> ${r} Offen / Überfällig</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Unternehmen mit offenen Schulungen</div>
+      ${barsHtml || '<div style="color:#6b7280;font-size:.85rem">✅ Alle Schulungen erledigt!</div>'}
+    </div>`;
+}
+
+// ── SCHULUNGS-KALENDER ────────────────────────────────────────
+function renderKalender() {
+  const el = document.getElementById('tab-kalender');
+  if (!el) return;
+
+  const jetzt = new Date();
+  const monat = jetzt.getMonth();
+  const jahr  = jetzt.getFullYear();
+
+  // Nächste 3 Monate anzeigen
+  let html = '';
+  for (let m = 0; m < 3; m++) {
+    const d = new Date(jahr, monat + m, 1);
+    const monatName = d.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+    const events = zuweisungen
+      .filter(z => z.frist && new Date(z.frist).getFullYear() === d.getFullYear() && new Date(z.frist).getMonth() === d.getMonth())
+      .map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const t = APP_TENANTS.find(tn=>tn.id===z.tenantId);
+        const s = berechneStatus(z);
+        return { frist: z.frist, titel: v?.titel||z.vorlagenId, tenant: t?.name||z.tenantId, status: s };
+      })
+      .sort((a,b) => new Date(a.frist) - new Date(b.frist));
+
+    html += `<div class="card" style="margin-bottom:12px">
+      <div class="card-title">📅 ${monatName}</div>`;
+    if (events.length === 0) {
+      html += '<div style="color:#6b7280;font-size:.85rem;padding:8px 0">Keine Fristen in diesem Monat</div>';
+    } else {
+      html += events.map(e => `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+          <div style="min-width:32px;text-align:center;font-size:.85rem;font-weight:700;color:#1a3a5c">${new Date(e.frist).getDate()}.</div>
+          <div style="flex:1">
+            <div style="font-size:.88rem;font-weight:600">${escHtml(e.titel)}</div>
+            <div style="font-size:.76rem;color:#6b7280">${escHtml(e.tenant)}</div>
+          </div>
+          <div>${statusBadgeHtml(e.status)}</div>
+        </div>`).join('');
+    }
+    html += '</div>';
+  }
+  el.innerHTML = `<div class="card-title" style="font-size:1.1rem;margin-bottom:12px">📅 Schulungs-Kalender</div>${html}`;
+}
+
+// ── ARCHIV ────────────────────────────────────────────────────
+async function renderArchiv() {
+  const el = document.getElementById('tab-archiv');
+  if (!el) return;
+  el.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280">⏳ Wird geladen…</div>';
+
+  try {
+    // Alle abgeschlossenen Formulare laden
+    const abgeschlossene = await SB.get('formulare',
+      'abgeschlossen=eq.true&order=abgeschlossen_am.desc&limit=200'
+    );
+    if (!abgeschlossene.length) {
+      el.innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📦</div><p>Noch keine abgeschlossenen Schulungen</p></div></div>';
+      return;
+    }
+
+    // Nach Jahr gruppieren
+    const byJahr = {};
+    abgeschlossene.forEach(f => {
+      const jahr = f.abgeschlossen_am ? new Date(f.abgeschlossen_am).getFullYear() : 'Unbekannt';
+      if (!byJahr[jahr]) byJahr[jahr] = [];
+      const zuw = zuweisungen.find(z=>z.id===f.id);
+      const v   = zuw ? SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw.vorlagenId) : null;
+      const t   = zuw ? APP_TENANTS.find(tn=>tn.id===zuw.tenantId) : null;
+      byJahr[jahr].push({ ...f, titel: v?.titel||f.id, tenant: t?.name||zuw?.tenantId||'–' });
+    });
+
+    let html = '';
+    Object.keys(byJahr).sort((a,b)=>b-a).forEach(jahr => {
+      html += `<div class="card" style="margin-bottom:12px">
+        <div class="card-title">📁 ${jahr} (${byJahr[jahr].length} Schulungen)</div>`;
+      byJahr[jahr].forEach(f => {
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
+          <div style="font-size:1.2rem">✅</div>
+          <div style="flex:1">
+            <div style="font-size:.88rem;font-weight:600">${escHtml(f.titel)}</div>
+            <div style="font-size:.76rem;color:#6b7280">${escHtml(f.tenant)} · ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'} ${f.mitarbeiter_name?`· ${escHtml(f.mitarbeiter_name)}`:''}</div>
+          </div>
+          ${f.pdf_path?`<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>`:''}
+        </div>`;
+      });
+      html += '</div>';
+    });
+
+    el.innerHTML = `<div class="card-title" style="font-size:1.1rem;margin-bottom:12px">📦 Schulungsarchiv</div>${html}`;
+  } catch(e) {
+    el.innerHTML = `<div class="card"><div style="color:#dc2626">Fehler: ${escHtml(e.message)}</div></div>`;
+  }
+}
+
+// ── SUB-KALENDER ──────────────────────────────────────────────
+function renderSubKalender() {
+  const el = document.getElementById('sub-kalender');
+  if (!el) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId && z.frist);
+  if (!meineZuws.length) { el.style.display = 'none'; return; }
+
+  const naechste = meineZuws
+    .map(z => ({ ...z, v: SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s: berechneStatus(z) }))
+    .filter(z => !z.s || z.s !== 'gruen')
+    .sort((a,b) => new Date(a.frist) - new Date(b.frist))
+    .slice(0, 5);
+
+  if (!naechste.length) { el.style.display = 'none'; return; }
+
+  el.style.display = '';
+  el.innerHTML = `<div class="card" style="margin-bottom:14px">
+    <div class="card-title">📅 Nächste Fristen</div>
+    ${naechste.map(z => {
+      const tage = Math.ceil((new Date(z.frist) - new Date()) / 86400000);
+      const tageFarbe = tage < 0 ? '#dc2626' : tage < 14 ? '#f59e0b' : '#16a34a';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+        <div style="min-width:48px;text-align:center;font-size:.78rem;font-weight:700;color:${tageFarbe}">
+          ${tage < 0 ? `${Math.abs(tage)}d<br>über` : `${tage}d`}
+        </div>
+        <div style="flex:1">
+          <div style="font-size:.88rem;font-weight:600">${z.v?escHtml(z.v.titel):z.vorlagenId}</div>
+          <div style="font-size:.76rem;color:#6b7280">Frist: ${z.frist}</div>
+        </div>
+        ${statusBadgeHtml(z.s)}
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 function renderAdminTenantTable() {
   const rows = APP_TENANTS.map(t => {
@@ -795,6 +1186,8 @@ function renderSubDashboard() {
     <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
     <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Dringend</div></div>`;
+  // Kalender rendern
+  renderSubKalender();
   if (!meineZuws.length) {
     document.getElementById('sub-schulungen-list').innerHTML='<div class="empty-state"><div class="icon">🎉</div><p>Keine Schulungen zugewiesen</p></div>';
     return;
@@ -1215,6 +1608,13 @@ function showToast(text, color='#16a34a') {
 //  INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', initApp);
+
+// ── SERVICE WORKER REGISTRIERUNG (Offline-Modus) ─────────────
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(e => console.warn('SW:', e));
+  });
+}
 
 // ══════════════════════════════════════════════════════════════
 //  UNTERNEHMEN VERWALTEN
