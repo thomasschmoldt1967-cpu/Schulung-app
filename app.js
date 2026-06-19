@@ -2091,3 +2091,216 @@ async function gastAbschliessen() {
     msgEl.style.color='#dc2626'; msgEl.textContent='❌ Fehler: '+e.message;
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+//  MITARBEITER EXCEL-IMPORT (Sub-Dashboard / Verantwortlicher)
+// ══════════════════════════════════════════════════════════════
+
+let importDaten = []; // Parsed rows from Excel
+
+function mitarbeiterImportOeffnen() {
+  // Nur für Verantwortliche (nicht Mitarbeiter-Rolle)
+  if (currentUser && currentUser.role === 'mitarbeiter') {
+    alert('Diese Funktion steht nur Verantwortlichen zur Verfügung.');
+    return;
+  }
+  importDaten = [];
+  // Reset Modal-Schritte
+  document.getElementById('import-step-upload').style.display   = '';
+  document.getElementById('import-step-vorschau').style.display = 'none';
+  document.getElementById('import-step-ergebnis').style.display = 'none';
+  document.getElementById('import-status-msg').textContent = '';
+  const fi = document.getElementById('import-datei');
+  if (fi) fi.value = '';
+  const modal = document.getElementById('mitarbeiter-import-modal');
+  modal.style.display = 'flex';
+}
+
+function mitarbeiterImportSchliessen() {
+  document.getElementById('mitarbeiter-import-modal').style.display = 'none';
+  importDaten = [];
+}
+
+function mitarbeiterImportZurueck() {
+  document.getElementById('import-step-vorschau').style.display = 'none';
+  document.getElementById('import-step-upload').style.display   = '';
+  document.getElementById('import-status-msg').textContent = '';
+  const fi = document.getElementById('import-datei');
+  if (fi) fi.value = '';
+  importDaten = [];
+}
+
+function mitarbeiterImportDateiLesen(input) {
+  const datei = input.files[0];
+  if (!datei) return;
+
+  if (typeof XLSX === 'undefined') {
+    document.getElementById('import-status-msg').style.color = '#dc2626';
+    document.getElementById('import-status-msg').textContent = '❌ Excel-Bibliothek nicht geladen. Bitte Internetverbindung prüfen.';
+    return;
+  }
+
+  document.getElementById('import-lade-msg').style.display = '';
+  document.getElementById('import-status-msg').textContent = '';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data     = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet    = workbook.Sheets[workbook.SheetNames[0]];
+      const rows     = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+      // Erste Zeile = Kopfzeile überspringen
+      const datenZeilen = rows.slice(1).filter(r => r[0] || r[1]); // mind. Name oder E-Mail vorhanden
+
+      importDaten = datenZeilen.map((r, idx) => {
+        const name  = String(r[0] || '').trim();
+        const email = String(r[1] || '').trim().toLowerCase();
+        const pw    = String(r[2] || '').trim();
+        return { idx: idx + 2, name, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
+      });
+
+      document.getElementById('import-lade-msg').style.display = 'none';
+      mitarbeiterImportZeigeVorschau();
+    } catch(err) {
+      document.getElementById('import-lade-msg').style.display = 'none';
+      document.getElementById('import-status-msg').style.color = '#dc2626';
+      document.getElementById('import-status-msg').textContent = '❌ Datei konnte nicht gelesen werden: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(datei);
+}
+
+function mitarbeiterImportZeigeVorschau() {
+  const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!#';
+  function genPw() {
+    let pw = '';
+    for (let i = 0; i < 10; i++) pw += zeichen[Math.floor(Math.random() * zeichen.length)];
+    return pw;
+  }
+
+  // Passwörter generieren falls leer
+  importDaten.forEach(r => { if (!r.pw) r.pw = genPw(); });
+
+  // Validierung
+  const fehler = [];
+  const emailSet = new Set();
+  importDaten.forEach(r => {
+    if (!r.name) fehler.push(`Zeile ${r.idx}: Name fehlt`);
+    if (!r.email) {
+      fehler.push(`Zeile ${r.idx}: E-Mail fehlt`);
+    } else if (!/^[^@]+@[^@]+\.[^@]+$/.test(r.email)) {
+      fehler.push(`Zeile ${r.idx}: Ungültige E-Mail „${escHtml(r.email)}"`);
+    } else if (emailSet.has(r.email)) {
+      fehler.push(`Zeile ${r.idx}: E-Mail „${escHtml(r.email)}" doppelt`);
+    }
+    emailSet.add(r.email);
+  });
+
+  // Gültige Zeilen
+  const gueltig = importDaten.filter(r =>
+    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+  );
+
+  document.getElementById('import-anzahl').textContent = gueltig.length;
+
+  // Vorschau-Liste aufbauen
+  const listEl = document.getElementById('import-vorschau-liste');
+  if (gueltig.length === 0) {
+    listEl.innerHTML = '<div style="padding:12px;color:#9ca3af;text-align:center">Keine gültigen Einträge gefunden.</div>';
+  } else {
+    listEl.innerHTML = gueltig.map(r =>
+      `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f3f4f6">
+        <div>
+          <div style="font-weight:600">${escHtml(r.name)}</div>
+          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.email)}</div>
+        </div>
+        <div style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:6px;font-family:monospace">${escHtml(r.pw)}</div>
+      </div>`
+    ).join('');
+  }
+
+  // Fehlerliste
+  const fehlerEl = document.getElementById('import-fehler-liste');
+  if (fehler.length > 0) {
+    fehlerEl.style.display = '';
+    fehlerEl.innerHTML = '<strong>⚠️ Folgende Zeilen werden übersprungen:</strong><br>' + fehler.map(f => `• ${f}`).join('<br>');
+  } else {
+    fehlerEl.style.display = 'none';
+  }
+
+  // Import-Button deaktivieren wenn keine gültigen Einträge
+  document.getElementById('import-start-btn').disabled = gueltig.length === 0;
+
+  document.getElementById('import-step-upload').style.display   = 'none';
+  document.getElementById('import-step-vorschau').style.display = '';
+}
+
+async function mitarbeiterImportStarten() {
+  const btn = document.getElementById('import-start-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Wird importiert …';
+
+  const gueltig = importDaten.filter(r =>
+    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+  );
+
+  let erfolg = 0, fehler = 0;
+  const details = [];
+
+  for (const r of gueltig) {
+    try {
+      const hash   = await hashPasswort(r.pw);
+      const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      const res    = await SB.post('users', {
+        id:            userId,
+        name:          r.name,
+        email:         r.email,
+        password_hash: hash,
+        role:          'mitarbeiter',
+        tenant_id:     currentUser.tenantId
+      });
+      if (res && res.error) {
+        const errMsg = res.error.message || JSON.stringify(res.error);
+        if (errMsg.includes('duplicate') || errMsg.includes('unique')) {
+          details.push({ name: r.name, email: r.email, status: 'skip', msg: 'Bereits vorhanden' });
+        } else {
+          details.push({ name: r.name, email: r.email, status: 'err', msg: errMsg });
+          fehler++;
+        }
+      } else {
+        await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.email}) importiert`);
+        details.push({ name: r.name, email: r.email, status: 'ok', pw: r.pw });
+        erfolg++;
+      }
+    } catch(e) {
+      details.push({ name: r.name, email: r.email, status: 'err', msg: e.message });
+      fehler++;
+    }
+    // Kleine Pause um Rate-Limiting zu vermeiden
+    await new Promise(res => setTimeout(res, 120));
+  }
+
+  // Ergebnis anzeigen
+  document.getElementById('import-step-vorschau').style.display = 'none';
+  document.getElementById('import-step-ergebnis').style.display = '';
+
+  const msgEl = document.getElementById('import-ergebnis-msg');
+  if (fehler === 0) {
+    msgEl.innerHTML = `<div style="font-size:2rem;margin-bottom:8px">✅</div>
+      <div style="font-weight:700;font-size:1rem;color:#16a34a">${erfolg} Mitarbeiter erfolgreich angelegt!</div>
+      ${details.filter(d=>d.status==='skip').length ? `<div style="font-size:.82rem;color:#6b7280;margin-top:4px">${details.filter(d=>d.status==='skip').length} bereits vorhanden (übersprungen)</div>` : ''}`;
+  } else {
+    msgEl.innerHTML = `<div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+      <div style="font-weight:700;font-size:.95rem;color:#b45309">${erfolg} importiert, ${fehler} Fehler</div>`;
+  }
+
+  const detailEl = document.getElementById('import-ergebnis-details');
+  detailEl.innerHTML = details.map(d => {
+    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
+    if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
+    return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
+  }).join('');
+}
+

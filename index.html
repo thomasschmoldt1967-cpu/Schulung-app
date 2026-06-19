@@ -305,6 +305,19 @@
   <div class="content">
     <div id="sub-stats" class="stats-grid"></div>
     <div id="sub-kalender" style="display:none"></div>
+
+    <!-- Mitarbeiter importieren Button -->
+    <div style="margin-bottom:14px">
+      <button onclick="mitarbeiterImportOeffnen()" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;width:100%;cursor:pointer;text-align:left">
+        <span style="font-size:1.6rem">👥</span>
+        <div>
+          <div style="font-weight:700;font-size:.95rem">Mitarbeiter importieren</div>
+          <div style="font-size:.75rem;opacity:.8;margin-top:2px">Excel-Tabelle (.xlsx) hochladen und Mitarbeiter anlegen</div>
+        </div>
+        <span style="margin-left:auto;font-size:1.1rem;opacity:.7">›</span>
+      </button>
+    </div>
+
     <!-- Bedienungsanleitung Button -->
     <div style="margin-bottom:14px">
       <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25)">
@@ -404,6 +417,8 @@
 
 <!-- DATA + APP LOGIC -->
 <!-- data.js nicht mehr benötigt — Daten kommen aus Supabase -->
+<!-- SheetJS für Excel-Import -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 
 <!-- ══════════════════════════════════════════════════════════
@@ -673,6 +688,52 @@
     </p>
 
     <button onclick="document.getElementById('impressum-modal').style.display='none'" style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer;font-weight:600">Schließen</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: Mitarbeiter Excel-Import
+══════════════════════════════════════════════════════════ -->
+<div id="mitarbeiter-import-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:500px;width:100%;margin:auto;box-shadow:0 20px 60px rgba(0,0,0,.3);margin-top:20px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <h3 style="margin:0;font-size:1.1rem;color:#1e3a5f">👥 Mitarbeiter importieren</h3>
+      <button onclick="mitarbeiterImportSchliessen()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    </div>
+
+    <!-- Schritt 1: Datei hochladen -->
+    <div id="import-step-upload">
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:16px;font-size:.83rem;color:#0369a1">
+        <strong>📋 Excel-Format:</strong><br>
+        Spalte A: <strong>Name</strong> (Pflicht) · Spalte B: <strong>E-Mail</strong> (Pflicht) · Spalte C: <strong>Passwort</strong> (optional – wird automatisch generiert)<br>
+        <span style="font-size:.75rem;opacity:.8">Erste Zeile = Kopfzeile (wird übersprungen)</span>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:8px;color:#374151">Excel-Datei auswählen (.xlsx, .xls):</label>
+        <input type="file" id="import-datei" accept=".xlsx,.xls" onchange="mitarbeiterImportDateiLesen(this)" style="width:100%;padding:10px;border:2px dashed #d1d5db;border-radius:8px;font-size:.85rem;cursor:pointer">
+      </div>
+      <div id="import-lade-msg" style="display:none;color:#2563eb;font-size:.85rem;padding:8px 0">⏳ Datei wird gelesen …</div>
+    </div>
+
+    <!-- Schritt 2: Vorschau + Bestätigen -->
+    <div id="import-step-vorschau" style="display:none">
+      <div style="font-weight:600;font-size:.88rem;color:#374151;margin-bottom:8px">Vorschau (<span id="import-anzahl">0</span> Mitarbeiter erkannt):</div>
+      <div id="import-vorschau-liste" style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;font-size:.82rem;margin-bottom:14px"></div>
+      <div id="import-fehler-liste" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;font-size:.82rem;color:#dc2626;margin-bottom:14px"></div>
+      <div style="display:flex;gap:10px">
+        <button onclick="mitarbeiterImportZurueck()" class="btn btn-outline" style="flex:1">← Andere Datei</button>
+        <button onclick="mitarbeiterImportStarten()" class="btn btn-primary" style="flex:1" id="import-start-btn">✅ Importieren</button>
+      </div>
+    </div>
+
+    <!-- Schritt 3: Ergebnis -->
+    <div id="import-step-ergebnis" style="display:none">
+      <div id="import-ergebnis-msg" style="text-align:center;padding:20px 0"></div>
+      <div id="import-ergebnis-details" style="max-height:200px;overflow-y:auto;font-size:.82rem;margin-bottom:14px;border:1px solid #e5e7eb;border-radius:8px"></div>
+      <button onclick="mitarbeiterImportSchliessen()" class="btn btn-primary" style="width:100%">✓ Fertig</button>
+    </div>
+
+    <div id="import-status-msg" style="margin-top:8px;font-size:.83rem"></div>
   </div>
 </div>
 
