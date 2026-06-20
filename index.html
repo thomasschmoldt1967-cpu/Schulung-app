@@ -117,8 +117,17 @@
     <div id="tab-uebersicht" class="tab-content">
       <div id="admin-stats" class="stats-grid"></div>
       <div id="admin-charts" style="margin-bottom:14px"></div>
+      <!-- Wiederkehrende Hinweise -->
+      <div id="wiederkehrende-hinweise" style="display:none"></div>
       <div class="card">
-        <div class="card-title">🏢 Status aller Unternehmen</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin:0">🏢 Status aller Unternehmen</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="search" placeholder="🔍 Unternehmen suchen…" oninput="adminSucheAnwenden(this.value)" style="font-size:.82rem;padding:6px 12px;border:1px solid #e2e8f0;border-radius:8px;outline:none;width:200px">
+            <button onclick="pdfBerichtOeffnen()" class="btn btn-outline btn-sm" style="font-size:.75rem;white-space:nowrap">📄 PDF-Bericht</button>
+            <button onclick="emailTestSenden()" class="btn btn-outline btn-sm" style="font-size:.75rem;white-space:nowrap" title="E-Mail-Versand testen">📧</button>
+          </div>
+        </div>
         <div id="admin-tenant-table"></div>
       </div>
     </div>
@@ -795,6 +804,65 @@
     </div>
 
     <div id="import-status-msg" style="margin-top:8px;font-size:.83rem"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: PDF-BERICHT
+══════════════════════════════════════════════════════════ -->
+<div id="pdf-bericht-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:420px;width:100%;position:relative;max-height:90vh;overflow-y:auto">
+    <button onclick="pdfBerichtSchliessen()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    <div style="font-size:1.3rem;font-weight:700;color:#1a3a5c;margin-bottom:16px">📄 PDF-Bericht erstellen</div>
+    <div class="form-group">
+      <label>Unternehmen</label>
+      <select id="pb-tenant-select" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem"></select>
+    </div>
+    <div class="form-group">
+      <label>Zeitraum</label>
+      <select id="pb-zeitraum" style="width:100%;padding:10px;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem">
+        <option value="alle">Alle Schulungen</option>
+        <option value="3">Letzte 3 Monate</option>
+        <option value="6">Letzte 6 Monate</option>
+        <option value="12">Letztes Jahr</option>
+      </select>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:10px">
+      <button onclick="pdfBerichtSchliessen()" class="btn btn-outline" style="flex:1">Abbrechen</button>
+      <button id="pb-generieren-btn" onclick="pdfBerichtGenerieren()" class="btn btn-primary" style="flex:1">📄 PDF erstellen</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: QR-CODE-LOGIN
+══════════════════════════════════════════════════════════ -->
+<div id="qr-login-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:380px;width:100%;position:relative;text-align:center">
+    <button onclick="qrLoginSchliessen()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    <div style="font-size:1.3rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">🔑 QR-Login</div>
+    <div id="qr-login-name" style="font-weight:600;color:#374151;margin-bottom:2px"></div>
+    <div id="qr-login-email" style="font-size:.8rem;color:#6b7280;margin-bottom:14px"></div>
+    <img id="qr-login-img" src="" alt="QR-Code" style="width:200px;height:200px;border:1px solid #e2e8f0;border-radius:12px;margin:0 auto 12px;display:block">
+    <div style="font-size:.76rem;color:#6b7280;margin-bottom:14px">QR-Code scannen → direkt einloggen (kein Passwort nötig)</div>
+    <div id="qr-login-url" style="font-size:.65rem;color:#9ca3af;word-break:break-all;background:#f8faff;padding:6px 10px;border-radius:6px;margin-bottom:14px;text-align:left"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="qrLoginSchliessen()" class="btn btn-outline" style="flex:1">Schließen</button>
+      <button id="qr-login-drucken-btn" class="btn btn-primary" style="flex:1">🖨️ Drucken</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: SCHULUNGSHISTORIE
+══════════════════════════════════════════════════════════ -->
+<div id="historie-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:480px;width:100%;position:relative;max-height:85vh;display:flex;flex-direction:column">
+    <button onclick="historieSchliessen()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    <div style="font-size:1.2rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Schulungshistorie</div>
+    <div id="historie-name" style="font-size:.9rem;color:#6b7280;margin-bottom:14px"></div>
+    <div id="historie-inhalt" style="flex:1;overflow-y:auto"></div>
+    <button onclick="historieSchliessen()" class="btn btn-primary" style="margin-top:14px;width:100%">Schließen</button>
   </div>
 </div>
 

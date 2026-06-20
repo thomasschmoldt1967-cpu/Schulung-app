@@ -1,8 +1,9 @@
 // ============================================================
 //  app.js  —  Schulungsverwaltungs-App (Supabase Edition)
 //  Multi-Tenant | Ampelsystem | Audit-Trail | PDF-Export
-//  v2.1 – Dark Mode | Kalender | Archiv | PW-Reset | Charts
-//         Session-Timeout | bcrypt-Migration | Offline-PWA
+//  v2.6 – Push-Benachrichtigungen | PDF-Bericht | Wiederkehrende
+//         Schulungen | QR-Login | Kalender-Ampel | Admin-Suche
+//         E-Mail-Benachrichtigungen | Schulungshistorie
 // ============================================================
 'use strict';
 
@@ -26,6 +27,8 @@ let activeDetailZuwId = null;
 let sigPads           = {};
 let uploadFiles       = {};
 let inactivityTimer   = null; // Session-Timeout Timer
+let pushSubscription  = null; // Push-Benachrichtigungen
+let adminSuchFilter   = '';   // Admin-Suche Filter
 
 // ── UTILS ────────────────────────────────────────────────────
 function now()     { return new Date().toISOString(); }
@@ -377,6 +380,10 @@ async function initApp() {
   // Passwort-Reset-Token prüfen
   await pruefePasswordResetToken();
 
+  // QR-Login prüfen
+  const istQrLogin = await pruefeQrLogin();
+  if (istQrLogin) return;
+
   // Einladungslink prüfen — wenn vorhanden, Gast-Flow starten
   const istGast = await pruefeEinladungsToken();
   if (istGast) return;
@@ -598,6 +605,21 @@ function renderAdminDashboard() {
   renderAdminZuweisungen();
   renderAuditTrail();
   populateZuweisungsForm();
+  // Wiederkehrende Schulungen prüfen
+  setTimeout(pruefeWiederkehrendeSchulungen, 1000);
+  // Push-Benachrichtigungen Status im Header
+  setTimeout(() => {
+    const headerBtns = document.querySelector('#screen-admin .app-header > div');
+    if (headerBtns && 'Notification' in window && Notification.permission !== 'granted') {
+      const pushBtn = document.createElement('button');
+      pushBtn.className = 'btn btn-outline btn-sm';
+      pushBtn.style.cssText = 'font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)';
+      pushBtn.innerHTML = '🔔';
+      pushBtn.title = 'Benachrichtigungen aktivieren';
+      pushBtn.onclick = pushBenachrichtigungAnfordern;
+      headerBtns.insertBefore(pushBtn, headerBtns.firstChild);
+    }
+  }, 500);
 }
 function adminTab(tabName, btn) {
   activeAdminTab = tabName;
@@ -702,48 +724,9 @@ function renderAdminCharts() {
     </div>`;
 }
 
-// ── SCHULUNGS-KALENDER ────────────────────────────────────────
+// ── SCHULUNGS-KALENDER (leitet auf verbesserte Version weiter) ─
 function renderKalender() {
-  const el = document.getElementById('tab-kalender');
-  if (!el) return;
-
-  const jetzt = new Date();
-  const monat = jetzt.getMonth();
-  const jahr  = jetzt.getFullYear();
-
-  // Nächste 3 Monate anzeigen
-  let html = '';
-  for (let m = 0; m < 3; m++) {
-    const d = new Date(jahr, monat + m, 1);
-    const monatName = d.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
-    const events = zuweisungen
-      .filter(z => z.frist && new Date(z.frist).getFullYear() === d.getFullYear() && new Date(z.frist).getMonth() === d.getMonth())
-      .map(z => {
-        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
-        const t = APP_TENANTS.find(tn=>tn.id===z.tenantId);
-        const s = berechneStatus(z);
-        return { frist: z.frist, titel: v?.titel||z.vorlagenId, tenant: t?.name||z.tenantId, status: s };
-      })
-      .sort((a,b) => new Date(a.frist) - new Date(b.frist));
-
-    html += `<div class="card" style="margin-bottom:12px">
-      <div class="card-title">📅 ${monatName}</div>`;
-    if (events.length === 0) {
-      html += '<div style="color:#6b7280;font-size:.85rem;padding:8px 0">Keine Fristen in diesem Monat</div>';
-    } else {
-      html += events.map(e => `
-        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
-          <div style="min-width:32px;text-align:center;font-size:.85rem;font-weight:700;color:#1a3a5c">${new Date(e.frist).getDate()}.</div>
-          <div style="flex:1">
-            <div style="font-size:.88rem;font-weight:600">${escHtml(e.titel)}</div>
-            <div style="font-size:.76rem;color:#6b7280">${escHtml(e.tenant)}</div>
-          </div>
-          <div>${statusBadgeHtml(e.status)}</div>
-        </div>`).join('');
-    }
-    html += '</div>';
-  }
-  el.innerHTML = `<div class="card-title" style="font-size:1.1rem;margin-bottom:12px">📅 Schulungs-Kalender</div>${html}`;
+  renderKalenderVerbessert();
 }
 
 // ── ARCHIV ────────────────────────────────────────────────────
@@ -863,6 +846,14 @@ function renderSubKalender() {
   </div>`;
 }
 function renderAdminTenantTable() {
+  // Mit Suchfunktion — nutzt renderAdminTenantTableMitSuche wenn Suche aktiv
+  const el = document.getElementById('admin-tenant-table');
+  if (!el) return;
+  if (adminSuchFilter) {
+    renderAdminTenantTableMitSuche();
+    return;
+  }
+
   const rows = APP_TENANTS.map(t => {
     const zuws  = zuweisungen.filter(z => z.tenantId===t.id);
     const stati = zuws.map(z => berechneStatus(z));
@@ -1397,10 +1388,16 @@ async function renderMitarbeiterListe() {
           ${istAktiv ? '⏸ Passiv' : '▶ Aktiv'}
         </button>` : '';
       const btnArchiv = !istArchiviert ? `
-        <button onclick="mitarbeiterArchivieren('${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}')"
+        <button onclick="mitarbeiterArchivieren('${m.id}','${escHtml(m.name).replace(/'/g,"\\\'")}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#6b7280;cursor:pointer;white-space:nowrap;margin-top:3px">
           📦 Archivieren
         </button>` : `<span style="font-size:.7rem;color:#9ca3af">Archiviert: ${m.archiviert_am ? dateStr(m.archiviert_am) : '–'}</span>`;
+      const btnQr = `<button onclick="qrLoginOeffnen('${m.id}')"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;cursor:pointer;white-space:nowrap;margin-top:3px"
+          title="QR-Login-Code generieren">🔑 QR-Login</button>`;
+      const btnHistorie = `<button onclick="zeigeSchulungshistorie('${m.id}')"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
+          title="Schulungshistorie anzeigen">📋 Historie</button>`;
 
       return `
         <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
@@ -1415,7 +1412,7 @@ async function renderMitarbeiterListe() {
               ${escHtml(m.email)}
             </div>
             <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
-              ${btnToggle}${btnArchiv}
+              ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0">
@@ -1682,10 +1679,13 @@ async function saveFormularToDB(felder, abschliessen, abgeschlossenAm, abgeschlo
 
 async function doAbschluss(felder) {
   const zuw=zuweisungen.find(z=>z.id===activeZuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
+  const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId);
   const ts=now();
   closeModal();
   await saveFormularToDB(felder, true, ts, currentUser.id);
   await sbAudit('ABSCHLUSS', `Schulung "${vorlage.titel}" abgeschlossen (${zuw.tenantId})`);
+  // Push-Benachrichtigung senden
+  pushSchulungsAbschluss(vorlage, tenant);
   // PDF generieren und zu Supabase Storage hochladen
   generatePdf(activeZuwId, false);
   setTimeout(() => {
@@ -2675,3 +2675,777 @@ async function mitarbeiterImportStarten() {
   }).join('');
 }
 
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 1: PUSH-BENACHRICHTIGUNGEN (PWA Web Push)
+// ══════════════════════════════════════════════════════════════
+
+// VAPID Public Key (selbst generiert, kein Server-Einsatz nötig für lokale Benachrichtigungen)
+// Für echte Push-Benachrichtigungen via Server: Key in Supabase Edge Function einsetzen
+const VAPID_PUBLIC_KEY = '';  // Leer = nur lokale Notifications ohne Server-Push
+
+async function pushBenachrichtigungAnfordern() {
+  if (!('Notification' in window)) {
+    showToast('⚠️ Benachrichtigungen werden in diesem Browser nicht unterstützt.', '#f59e0b');
+    return false;
+  }
+  if (Notification.permission === 'granted') return true;
+  if (Notification.permission === 'denied') {
+    showToast('🔕 Benachrichtigungen sind blockiert. Bitte in den Browser-Einstellungen freigeben.', '#dc2626');
+    return false;
+  }
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    showToast('🔔 Benachrichtigungen aktiviert!', '#16a34a');
+    // Service Worker Push-Subscription registrieren
+    if ('serviceWorker' in navigator && VAPID_PUBLIC_KEY) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        pushSubscription = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        });
+        await sbAudit('PUSH_AKTIVIERT', 'Push-Benachrichtigungen aktiviert');
+      } catch(e) { console.warn('Push-Subscription fehlgeschlagen:', e); }
+    }
+    return true;
+  }
+  return false;
+}
+
+// Lokale Benachrichtigung anzeigen (kein Server nötig)
+function zeigeLokaleBenachrichtigung(titel, text, url) {
+  if (Notification.permission !== 'granted') return;
+  const n = new Notification(titel, {
+    body:    text,
+    icon:    '/csc-logo.png',
+    badge:   '/csc-logo.png',
+    tag:     'schulung-local',
+    vibrate: [200, 100, 200]
+  });
+  if (url) n.onclick = () => { window.focus(); n.close(); };
+  setTimeout(() => n.close(), 8000);
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  return new Uint8Array([...rawData].map(char => char.charCodeAt(0)));
+}
+
+function pushStatusHtml() {
+  const granted = Notification.permission === 'granted';
+  const supported = 'Notification' in window;
+  if (!supported) return '';
+  if (granted) {
+    return `<button onclick="pushTestBenachrichtigung()" class="btn btn-outline btn-sm" style="font-size:.75rem;border-color:#16a34a;color:#16a34a">🔔 Test-Benachrichtigung</button>`;
+  }
+  return `<button onclick="pushBenachrichtigungAnfordern()" class="btn btn-outline btn-sm" style="font-size:.75rem">🔔 Benachrichtigungen aktivieren</button>`;
+}
+
+function pushTestBenachrichtigung() {
+  zeigeLokaleBenachrichtigung('✅ Schulungsmanagement', 'Benachrichtigungen funktionieren korrekt!', null);
+  showToast('🔔 Test-Benachrichtigung gesendet!', '#16a34a');
+}
+
+// Beim Abschluss einer Schulung Benachrichtigung an Admin senden
+function pushSchulungsAbschluss(vorlage, tenant) {
+  if (Notification.permission !== 'granted') return;
+  zeigeLokaleBenachrichtigung(
+    '✅ Schulung abgeschlossen',
+    `${tenant?.name || 'Unbekannt'}: ${vorlage?.titel || 'Schulung'} wurde abgeschlossen.`
+  );
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 2: PDF-BERICHT (Druckbarer Schulungsnachweis)
+// ══════════════════════════════════════════════════════════════
+
+function pdfBerichtOeffnen() {
+  const modal = document.getElementById('pdf-bericht-modal');
+  if (!modal) return;
+  // Tenant-Dropdown befüllen
+  const sel = document.getElementById('pb-tenant-select');
+  if (sel) {
+    sel.innerHTML = currentUser.role === 'admin'
+      ? `<option value="">— Alle Unternehmen —</option>` + APP_TENANTS.map(t => `<option value="${t.id}">${escHtml(t.name)}</option>`).join('')
+      : `<option value="${currentUser.tenantId}">${escHtml(APP_TENANTS.find(t=>t.id===currentUser.tenantId)?.name||'Mein Unternehmen')}</option>`;
+  }
+  modal.style.display = 'flex';
+}
+function pdfBerichtSchliessen() {
+  const modal = document.getElementById('pdf-bericht-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function pdfBerichtGenerieren() {
+  const selEl   = document.getElementById('pb-tenant-select');
+  const zeitraum = document.getElementById('pb-zeitraum')?.value || 'alle';
+  const tenantId = selEl?.value || null;
+  const btn = document.getElementById('pb-generieren-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Wird erstellt…'; }
+
+  try {
+    // Daten filtern
+    let filteredZuws = zuweisungen;
+    let filteredTenants = APP_TENANTS;
+    if (tenantId) {
+      filteredZuws = zuweisungen.filter(z => z.tenantId === tenantId);
+      filteredTenants = APP_TENANTS.filter(t => t.id === tenantId);
+    }
+
+    // Zeitraum-Filter
+    const jetzt = new Date();
+    if (zeitraum !== 'alle') {
+      const monate = parseInt(zeitraum);
+      const vonDatum = new Date(jetzt.getFullYear(), jetzt.getMonth() - monate, 1);
+      filteredZuws = filteredZuws.filter(z => {
+        const form = formulare[z.id];
+        if (!form?.abgeschlossenAm) return true;
+        return new Date(form.abgeschlossenAm) >= vonDatum;
+      });
+    }
+
+    // jsPDF laden
+    if (typeof window.jspdf === 'undefined' && typeof window.jsPDF === 'undefined') {
+      showToast('⚠️ PDF-Bibliothek wird geladen…', '#f59e0b');
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+    const { jsPDF } = window.jspdf || window;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+    // ── Deckblatt ──────────────────────────────────────────
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, 0, 210, 45, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Schulungsbericht', 15, 22);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    const tenantLabel = tenantId ? (filteredTenants[0]?.name || '') : 'Alle Unternehmen';
+    doc.text(`${tenantLabel} | Erstellt: ${new Date().toLocaleDateString('de-DE')}`, 15, 32);
+    doc.text('CSC GmbH — Schulungsmanagement', 15, 39);
+
+    // ── Zusammenfassung ────────────────────────────────────
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Zusammenfassung', 15, 58);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'normal');
+
+    const stats = { gruen: 0, gelb: 0, rot: 0 };
+    filteredZuws.forEach(z => { const s = berechneStatus(z); if (s in stats) stats[s]++; });
+    const total = filteredZuws.length;
+
+    doc.setFillColor(240, 249, 244);
+    doc.rect(15, 62, 52, 20, 'F');
+    doc.setTextColor(22, 163, 74);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text(String(stats.gruen), 41, 75, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.text('Abgeschlossen', 41, 80, { align: 'center' });
+
+    doc.setFillColor(255, 251, 235);
+    doc.rect(71, 62, 52, 20, 'F');
+    doc.setTextColor(245, 158, 11);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text(String(stats.gelb), 97, 75, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.text('In Bearbeitung', 97, 80, { align: 'center' });
+
+    doc.setFillColor(254, 242, 242);
+    doc.rect(127, 62, 52, 20, 'F');
+    doc.setTextColor(220, 38, 38);
+    doc.setFontSize(18); doc.setFont('helvetica', 'bold');
+    doc.text(String(stats.rot), 153, 75, { align: 'center' });
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.text('Offen/Überfällig', 153, 80, { align: 'center' });
+
+    // ── Tabelle der Schulungen ─────────────────────────────
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Schulungsübersicht', 15, 96);
+
+    // Tabellenheader
+    let yPos = 100;
+    doc.setFillColor(26, 58, 92);
+    doc.rect(15, yPos, 180, 7, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.text('Schulung', 17, yPos + 5);
+    doc.text('Unternehmen', 80, yPos + 5);
+    doc.text('Frist', 130, yPos + 5);
+    doc.text('Status', 165, yPos + 5);
+    yPos += 9;
+
+    const gruppiertNachTenant = {};
+    filteredZuws.forEach(z => {
+      if (!gruppiertNachTenant[z.tenantId]) gruppiertNachTenant[z.tenantId] = [];
+      gruppiertNachTenant[z.tenantId].push(z);
+    });
+
+    let zeilenNr = 0;
+    for (const [tid, zuws] of Object.entries(gruppiertNachTenant)) {
+      const t = APP_TENANTS.find(tn => tn.id === tid);
+      for (const z of zuws) {
+        const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+        const s = berechneStatus(z);
+        const form = formulare[z.id] || {};
+
+        if (yPos > 270) {
+          doc.addPage();
+          yPos = 15;
+        }
+
+        // Zeilenfarbe abwechselnd
+        if (zeilenNr % 2 === 0) {
+          doc.setFillColor(248, 250, 252);
+          doc.rect(15, yPos - 1, 180, 7, 'F');
+        }
+
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+
+        const titel = (v?.titel || z.vorlagenId || '').substring(0, 38);
+        const firma = (t?.name || '').substring(0, 25);
+        const frist = z.frist ? new Date(z.frist).toLocaleDateString('de-DE') : '–';
+        const statusText = s === 'gruen' ? 'Abgeschlossen' : s === 'gelb' ? 'In Bearbeitung' : 'Offen';
+        const statusColor = s === 'gruen' ? [22, 163, 74] : s === 'gelb' ? [245, 158, 11] : [220, 38, 38];
+
+        doc.text(titel, 17, yPos + 4);
+        doc.text(firma, 80, yPos + 4);
+        doc.text(frist, 130, yPos + 4);
+        doc.setTextColor(...statusColor);
+        doc.setFont('helvetica', 'bold');
+        doc.text(statusText, 165, yPos + 4);
+        doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+
+        yPos += 7;
+        zeilenNr++;
+      }
+    }
+
+    // Footer
+    const pageCount = doc.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text(`CSC GmbH Schulungsmanagement • Seite ${i} von ${pageCount} • ${new Date().toLocaleDateString('de-DE')}`, 105, 290, { align: 'center' });
+    }
+
+    const dateiname = `Schulungsbericht_${tenantId ? filteredTenants[0]?.name?.replace(/\s/g,'_') || 'Unternehmen' : 'Gesamt'}_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(dateiname);
+    await sbAudit('BERICHT_PDF', `Schulungsbericht erstellt: ${dateiname}`);
+    showToast('✅ PDF-Bericht wurde heruntergeladen!', '#16a34a');
+    pdfBerichtSchliessen();
+  } catch(e) {
+    console.error('PDF-Bericht Fehler:', e);
+    showToast('❌ Fehler beim Erstellen des Berichts: ' + e.message, '#dc2626');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📄 PDF erstellen'; }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 3: WIEDERKEHRENDE SCHULUNGEN (Auto-Neuzuweisung)
+// ══════════════════════════════════════════════════════════════
+
+async function pruefeWiederkehrendeSchulungen() {
+  // Wird beim Admin-Login aufgerufen — prüft ob Schulungen erneut zugewiesen werden müssen
+  if (currentUser?.role !== 'admin') return;
+  const jetzt = new Date();
+  const neuZuweisungen = [];
+
+  for (const zuw of zuweisungen) {
+    const form = formulare[zuw.id];
+    if (!form?.abgeschlossen || !form.abgeschlossenAm) continue;
+
+    const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw.vorlagenId);
+    if (!vorlage?.intervallMonate || vorlage.intervallMonate <= 0) continue;
+
+    // Nächste Fälligkeit berechnen
+    const abgeschlossenAm = new Date(form.abgeschlossenAm);
+    const naechsteFaelligkeit = new Date(abgeschlossenAm);
+    naechsteFaelligkeit.setMonth(naechsteFaelligkeit.getMonth() + vorlage.intervallMonate);
+
+    // Frist 30 Tage vor Fälligkeit — beginne Benachrichtigung
+    const erinnerungAb = new Date(naechsteFaelligkeit);
+    erinnerungAb.setDate(erinnerungAb.getDate() - 30);
+
+    if (jetzt >= erinnerungAb) {
+      // Prüfen ob es bereits eine neue Zuweisung für diese Vorlage+Tenant gibt, die neuere Frist hat
+      const neuereFrist = zuw.frist ? new Date(zuw.frist) : null;
+      const hatNeueZuweisung = zuweisungen.some(z =>
+        z.id !== zuw.id &&
+        z.vorlagenId === zuw.vorlagenId &&
+        z.tenantId === zuw.tenantId &&
+        z.frist &&
+        new Date(z.frist) >= abgeschlossenAm
+      );
+      if (!hatNeueZuweisung) {
+        neuZuweisungen.push({ vorlage, zuw, naechsteFaelligkeit });
+      }
+    }
+  }
+
+  if (neuZuweisungen.length > 0) {
+    zeigeWiederkehrendeHinweise(neuZuweisungen);
+  }
+}
+
+function zeigeWiederkehrendeHinweise(liste) {
+  const el = document.getElementById('wiederkehrende-hinweise');
+  if (!el) return;
+
+  const html = liste.map(({ vorlage, zuw, naechsteFaelligkeit }) => {
+    const tenant = APP_TENANTS.find(t => t.id === zuw.tenantId);
+    const fristStr = naechsteFaelligkeit.toISOString().slice(0, 10);
+    return `<div style="padding:10px 14px;border-bottom:1px solid #fde68a;display:flex;align-items:center;gap:12px">
+      <div style="font-size:1.2rem">🔄</div>
+      <div style="flex:1">
+        <div style="font-size:.88rem;font-weight:600">${escHtml(vorlage.titel)}</div>
+        <div style="font-size:.76rem;color:#92400e">${escHtml(tenant?.name||'')} • Nächste Fälligkeit: ${new Date(fristStr).toLocaleDateString('de-DE')}</div>
+      </div>
+      <button onclick="wiederkehrendeZuweisen('${zuw.vorlagenId}','${zuw.tenantId}','${fristStr}')" class="btn btn-sm" style="background:#f59e0b;color:#fff;font-size:.72rem;white-space:nowrap">➕ Neu zuweisen</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = `<div class="card" style="margin-bottom:14px;border:2px solid #fde68a;background:#fffbeb">
+    <div class="card-title" style="color:#92400e">🔄 Wiederkehrende Schulungen fällig (${liste.length})</div>
+    ${html}
+  </div>`;
+  el.style.display = '';
+}
+
+async function wiederkehrendeZuweisen(vorlagenId, tenantId, frist) {
+  const id = 'zuw_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  try {
+    const res = await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId, tenant_id: tenantId, frist, pflicht: true
+    });
+    if (res?.error) throw new Error(res.error.message);
+    zuweisungen.push({ id, vorlagenId, tenantId, frist, pflicht: true });
+    formulare[id] = {};
+    await sbAudit('WIEDERKEHREND_NEU', `Wiederkehrende Zuweisung: ${vorlagenId} → ${tenantId}, Frist: ${frist}`);
+    showToast('✅ Neue Zuweisung erstellt!', '#16a34a');
+    // Hinweis entfernen
+    const btn = event?.target;
+    if (btn) btn.closest('div[style*="padding"]')?.remove();
+    renderAdminStats();
+    renderAdminTenantTable();
+    renderAdminZuweisungen();
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 4: QR-CODE-LOGIN FÜR MITARBEITER
+// ══════════════════════════════════════════════════════════════
+
+function qrLoginOeffnen(userId) {
+  const user = APP_USERS.find(u => u.id === userId);
+  if (!user) return;
+  const modal = document.getElementById('qr-login-modal');
+  if (!modal) return;
+
+  // QR-Login-Link generieren (Token = userId als Base64)
+  const token = btoa(JSON.stringify({ userId, ts: Date.now() }));
+  const url = `${location.origin}${location.pathname}?qrlogin=${encodeURIComponent(token)}`;
+
+  document.getElementById('qr-login-name').textContent = user.name;
+  document.getElementById('qr-login-email').textContent = user.email;
+  document.getElementById('qr-login-url').textContent = url;
+
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+  document.getElementById('qr-login-img').src = qrUrl;
+  document.getElementById('qr-login-drucken-btn').onclick = () => {
+    const win = window.open('', '_blank');
+    win.document.write(`<!DOCTYPE html><html><head><title>QR-Login: ${escHtml(user.name)}</title>
+    <style>body{font-family:sans-serif;text-align:center;padding:40px}img{margin:20px auto;display:block}@media print{button{display:none}}</style></head>
+    <body><h2>🔑 QR-Login</h2><h3>${escHtml(user.name)}</h3><p>${escHtml(user.email)}</p>
+    <img src="${qrUrl}" width="200" height="200"><p style="font-size:.8em;color:#666">QR-Code scannen → direkt einloggen (kein Passwort nötig)</p>
+    <p style="font-size:.7em;color:#999">Gültig für: ${escHtml(user.email)}</p>
+    <button onclick="window.print()">🖨️ Drucken</button></body></html>`);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
+  };
+  modal.style.display = 'flex';
+}
+
+function qrLoginSchliessen() {
+  const modal = document.getElementById('qr-login-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+async function pruefeQrLogin() {
+  const params = new URLSearchParams(location.search);
+  const token = params.get('qrlogin');
+  if (!token) return false;
+
+  try {
+    const data = JSON.parse(atob(decodeURIComponent(token)));
+    const userId = data.userId;
+    if (!userId) return false;
+
+    // Token-Alter prüfen (max. 365 Tage — QR-Codes sind langlebig)
+    const alter = Date.now() - (data.ts || 0);
+    if (alter > 365 * 24 * 60 * 60 * 1000) {
+      showToast('⚠️ Dieser QR-Login-Link ist abgelaufen. Bitte neuen QR-Code anfordern.', '#f59e0b');
+      setTimeout(() => { history.replaceState({}, '', location.pathname); showScreen('screen-login'); }, 3000);
+      return true;
+    }
+
+    showScreen('screen-loading');
+    document.getElementById('loading-msg').textContent = 'QR-Login wird verarbeitet…';
+
+    // User aus DB laden
+    await initApp_loadData();
+    const user = APP_USERS.find(u => u.id === userId);
+    if (!user) {
+      showToast('❌ Benutzer nicht gefunden.', '#dc2626');
+      setTimeout(() => showScreen('screen-login'), 2000);
+      return true;
+    }
+
+    // URL-Parameter entfernen
+    history.replaceState({}, '', location.pathname);
+
+    // Session setzen
+    const session = {
+      id: user.id, name: user.name, email: user.email,
+      role: user.role, tenantId: user.tenant_id,
+      aktiv: user.aktiv !== false, archiviert: !!user.archiviert,
+      expires: new Date(Date.now() + SESSION_HOURS * 60 * 60 * 1000).toISOString()
+    };
+    localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    currentUser = session;
+    startInactivityWatcher();
+    await sbAudit('QR_LOGIN', `QR-Login: ${user.name} (${user.email})`);
+    routeAfterLogin();
+    return true;
+  } catch(e) {
+    console.warn('QR-Login Fehler:', e);
+    return false;
+  }
+}
+
+// Hilfsfunktion: Daten laden ohne vollen initApp()-Flow
+async function initApp_loadData() {
+  const [tenants, vorlagen, zuws, users] = await Promise.all([
+    SB.get('tenants'),
+    SB.get('vorlagen'),
+    SB.get('zuweisungen'),
+    SB.get('users', 'select=id,name,email,tenant_id,role,aktiv,archiviert')
+  ]);
+  APP_TENANTS = tenants;
+  APP_USERS = users;
+  SCHULUNG_VORLAGEN = vorlagen.map(v => ({
+    ...v, intervallMonate: v.intervall_monate,
+    abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
+  }));
+  zuweisungen = zuws.map(z => ({
+    id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht
+  }));
+  const forms = await SB.get('formulare');
+  formulare = {};
+  forms.forEach(f => {
+    formulare[f.id] = {
+      felder: typeof f.felder === 'string' ? JSON.parse(f.felder) : (f.felder || {}),
+      gestartet: f.gestartet, abgeschlossen: f.abgeschlossen,
+      abgeschlossenAm: f.abgeschlossen_am, abgeschlossenVon: f.abgeschlossen_von,
+      pdfPath: f.pdf_path
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 5: KALENDER-AMPEL (verbesserte Darstellung)
+// ══════════════════════════════════════════════════════════════
+
+function renderKalenderVerbessert() {
+  const el = document.getElementById('tab-kalender');
+  if (!el) return;
+
+  const jetzt = new Date();
+  const monat = jetzt.getMonth();
+  const jahr  = jetzt.getFullYear();
+
+  // Filter-Optionen
+  const filterHtml = `
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button onclick="kalenderFilter('alle',this)" class="btn btn-outline btn-sm active-kalender-filter" style="font-size:.78rem" id="kf-alle">🔍 Alle</button>
+      <button onclick="kalenderFilter('rot',this)" class="btn btn-outline btn-sm" style="font-size:.78rem;border-color:#dc2626;color:#dc2626" id="kf-rot">🔴 Überfällig</button>
+      <button onclick="kalenderFilter('gelb',this)" class="btn btn-outline btn-sm" style="font-size:.78rem;border-color:#f59e0b;color:#f59e0b" id="kf-gelb">🟡 Bald fällig</button>
+      <button onclick="kalenderFilter('gruen',this)" class="btn btn-outline btn-sm" style="font-size:.78rem;border-color:#16a34a;color:#16a34a" id="kf-gruen">🟢 Abgeschlossen</button>
+      <div style="margin-left:auto">
+        <button onclick="pdfBerichtOeffnen()" class="btn btn-sm" style="background:#1a3a5c;color:#fff;font-size:.78rem">📄 PDF-Bericht</button>
+      </div>
+    </div>`;
+
+  window._kalenderAktivFilter = 'alle';
+  el.innerHTML = `<div class="card-title" style="font-size:1.1rem;margin-bottom:12px">📅 Schulungs-Kalender</div>${filterHtml}<div id="kalender-inhalt"></div>`;
+  renderKalenderInhalt('alle');
+}
+
+function kalenderFilter(filter, btn) {
+  window._kalenderAktivFilter = filter;
+  document.querySelectorAll('.active-kalender-filter').forEach(b => b.classList.remove('active-kalender-filter'));
+  if (btn) btn.classList.add('active-kalender-filter');
+  renderKalenderInhalt(filter);
+}
+
+function renderKalenderInhalt(filter) {
+  const el = document.getElementById('kalender-inhalt');
+  if (!el) return;
+
+  const jetzt = new Date();
+  const monat = jetzt.getMonth();
+  const jahr  = jetzt.getFullYear();
+
+  let allEvents = [];
+  // Nächste 6 Monate + Vergangenheit
+  for (let m = -1; m < 6; m++) {
+    const d = new Date(jahr, monat + m, 1);
+    const events = zuweisungen
+      .filter(z => {
+        if (!z.frist) return false;
+        const fd = new Date(z.frist);
+        return fd.getFullYear() === d.getFullYear() && fd.getMonth() === d.getMonth();
+      })
+      .map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+        const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
+        const s = berechneStatus(z);
+        const fristDate = new Date(z.frist);
+        const tage = Math.ceil((fristDate - jetzt) / 86400000);
+        return { frist: z.frist, fristDate, titel: v?.titel || z.vorlagenId, tenant: t?.name || z.tenantId, status: s, tage, monat: d };
+      })
+      .filter(e => filter === 'alle' || e.status === filter)
+      .sort((a, b) => a.fristDate - b.fristDate);
+    if (events.length > 0) allEvents.push({ monat: d, events });
+  }
+
+  if (allEvents.length === 0) {
+    el.innerHTML = `<div class="card"><div style="text-align:center;padding:24px;color:#6b7280">✅ Keine Schulungen in diesem Zeitraum</div></div>`;
+    return;
+  }
+
+  let html = '';
+  allEvents.forEach(({ monat: d, events }) => {
+    const monatName = d.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+    const istAktuell = d.getMonth() === jetzt.getMonth() && d.getFullYear() === jetzt.getFullYear();
+    html += `<div class="card" style="margin-bottom:12px${istAktuell ? ';border:2px solid #1a3a5c' : ''}">
+      <div class="card-title">${istAktuell ? '📍 ' : ''}📅 ${monatName}</div>`;
+    html += events.map(e => {
+      const ampelFarbe = e.status === 'gruen' ? '#16a34a' : e.status === 'gelb' ? '#f59e0b' : '#dc2626';
+      const ampelBg   = e.status === 'gruen' ? '#f0fdf4' : e.status === 'gelb' ? '#fffbeb' : '#fef2f2';
+      const tageText  = e.tage < 0 ? `${Math.abs(e.tage)} Tage überfällig` : e.tage === 0 ? 'Heute!' : `${e.tage} Tage`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
+        <div style="min-width:36px;text-align:center;background:${ampelBg};border-radius:8px;padding:4px 2px">
+          <div style="font-size:1rem;font-weight:800;color:${ampelFarbe}">${new Date(e.frist).getDate()}.</div>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:.88rem;font-weight:600">${escHtml(e.titel)}</div>
+          <div style="font-size:.76rem;color:#6b7280">${escHtml(e.tenant)}</div>
+        </div>
+        <div style="text-align:right">
+          ${statusBadgeHtml(e.status)}
+          <div style="font-size:.72rem;color:${ampelFarbe};font-weight:600;margin-top:2px">${tageText}</div>
+        </div>
+      </div>`;
+    }).join('');
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 6: SUCHE / FILTER IM ADMIN-DASHBOARD
+// ══════════════════════════════════════════════════════════════
+
+function adminSucheAnwenden(suchtext) {
+  adminSuchFilter = (suchtext || '').toLowerCase().trim();
+  renderAdminTenantTable();
+}
+
+function renderAdminTenantTableMitSuche() {
+  // Ersetzt die normale renderAdminTenantTable mit Suchfunktion
+  const el = document.getElementById('admin-tenant-table');
+  if (!el) return;
+
+  let gefiltert = APP_TENANTS;
+  if (adminSuchFilter) {
+    gefiltert = APP_TENANTS.filter(t =>
+      t.name.toLowerCase().includes(adminSuchFilter) ||
+      (t.email || '').toLowerCase().includes(adminSuchFilter)
+    );
+  }
+
+  if (!gefiltert.length) {
+    el.innerHTML = `<div style="text-align:center;padding:20px;color:#6b7280">
+      ${adminSuchFilter ? `Kein Unternehmen gefunden für "<strong>${escHtml(adminSuchFilter)}</strong>"` : 'Noch keine Unternehmen angelegt'}
+    </div>`;
+    return;
+  }
+
+  const rows = gefiltert.map(t => {
+    const zuws    = zuweisungen.filter(z => z.tenantId === t.id);
+    const gruen   = zuws.filter(z => berechneStatus(z) === 'gruen').length;
+    const gesamt  = zuws.length;
+    const pct     = gesamt > 0 ? Math.round(gruen / gesamt * 100) : 0;
+    const farbe   = pct === 100 ? '#16a34a' : pct >= 50 ? '#f59e0b' : '#dc2626';
+    const offen   = zuws.filter(z => berechneStatus(z) === 'rot').length;
+    return `<div onclick="zeigeAdminDetail('${t.id}')" style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6;cursor:pointer">
+      <div style="flex:1">
+        <div style="font-size:.9rem;font-weight:600">${escHtml(t.name)}</div>
+        <div style="font-size:.75rem;color:#6b7280">${gesamt} Schulung${gesamt !== 1 ? 'en' : ''} • ${gruen} abgeschlossen</div>
+      </div>
+      <div style="min-width:80px">
+        <div style="display:flex;justify-content:space-between;font-size:.72rem;margin-bottom:3px">
+          <span style="color:${farbe};font-weight:700">${pct}%</span>
+          ${offen > 0 ? `<span style="color:#dc2626;font-size:.7rem">⚠️ ${offen} offen</span>` : '<span style="color:#16a34a;font-size:.7rem">✅</span>'}
+        </div>
+        <div style="background:#f3f4f6;border-radius:6px;height:8px;overflow:hidden">
+          <div style="width:${pct}%;height:100%;background:${farbe};border-radius:6px"></div>
+        </div>
+      </div>
+      <div style="font-size:1rem;color:#9ca3af">›</div>
+    </div>`;
+  }).join('');
+
+  el.innerHTML = rows;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 7: E-MAIL-BENACHRICHTIGUNGEN via Supabase Edge Fn.
+// ══════════════════════════════════════════════════════════════
+
+// Supabase Edge Function URL (muss in Supabase deployed werden)
+const EDGE_FN_URL = 'https://vziankbxuiqwekdbjewg.supabase.co/functions/v1/send-email';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6aWFua2J4dWlxd2VrZGJqZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDg1MTgsImV4cCI6MjA5NzI4NDUxOH0.placeholder';
+
+async function emailBenachrichtigungSenden({ an, betreff, inhalt }) {
+  // Prüft ob Edge Function verfügbar ist
+  try {
+    const res = await fetch(EDGE_FN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+      },
+      body: JSON.stringify({ to: an, subject: betreff, html: inhalt })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return true;
+  } catch(e) {
+    console.warn('E-Mail senden fehlgeschlagen (Edge Function nicht aktiv):', e.message);
+    return false;
+  }
+}
+
+function emailBetreffFrist(vorlage, tenant, tage) {
+  return `⚠️ Schulungsfrist: ${vorlage} (${tenant}) – noch ${tage} Tage`;
+}
+
+function emailInhaltFrist(vorlage, tenant, frist, tage) {
+  return `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">
+      <h2 style="margin:0">⚠️ Schulungsfrist läuft ab</h2>
+    </div>
+    <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+      <p>Guten Tag,</p>
+      <p>die folgende Schulung läuft bald ab:</p>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0">
+        <strong>${vorlage}</strong><br>
+        Unternehmen: ${tenant}<br>
+        Frist: <strong>${new Date(frist).toLocaleDateString('de-DE')}</strong><br>
+        Verbleibende Tage: <strong style="color:${tage < 7 ? '#dc2626' : '#f59e0b'}">${tage} Tage</strong>
+      </div>
+      <p>Bitte stellen Sie sicher, dass die Schulung rechtzeitig abgeschlossen wird.</p>
+      <p><a href="https://schulung.csc-hannover.de" style="background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">🔗 Zur Schulungsapp</a></p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+      <p style="font-size:.8rem;color:#6b7280">CSC GmbH Schulungsmanagement • <a href="https://schulung.csc-hannover.de">schulung.csc-hannover.de</a></p>
+    </div>
+  </div>`;
+}
+
+// E-Mail-Test (Admin → Einstellungen)
+async function emailTestSenden() {
+  const ergebnis = await emailBenachrichtigungSenden({
+    an: currentUser.email,
+    betreff: '✅ Test-E-Mail Schulungsmanagement',
+    inhalt: `<p>Dies ist eine Test-E-Mail vom CSC Schulungsmanagement-System.<br>Wenn Sie diese E-Mail erhalten, funktioniert der E-Mail-Versand korrekt.</p>`
+  });
+  showToast(ergebnis ? '✅ Test-E-Mail gesendet!' : '⚠️ E-Mail-Versand nicht konfiguriert (Edge Function fehlt)', ergebnis ? '#16a34a' : '#f59e0b');
+}
+
+// ══════════════════════════════════════════════════════════════
+//  FEATURE 8: SCHULUNGSHISTORIE PRO MITARBEITER
+// ══════════════════════════════════════════════════════════════
+
+async function zeigeSchulungshistorie(userId) {
+  const user = APP_USERS.find(u => u.id === userId);
+  if (!user) return;
+
+  const modal = document.getElementById('historie-modal');
+  if (!modal) return;
+
+  document.getElementById('historie-name').textContent = user.name;
+  document.getElementById('historie-inhalt').innerHTML = '<div style="text-align:center;padding:24px;color:#6b7280">⏳ Wird geladen…</div>';
+  modal.style.display = 'flex';
+
+  try {
+    // Alle abgeschlossenen Formulare für diesen User laden
+    const alleFormulare = await SB.get('formulare',
+      `abgeschlossen_von=eq.${encodeURIComponent(userId)}&order=abgeschlossen_am.desc&limit=100`
+    );
+
+    if (!alleFormulare.length) {
+      document.getElementById('historie-inhalt').innerHTML =
+        '<div style="text-align:center;padding:24px;color:#6b7280">📋 Noch keine abgeschlossenen Schulungen</div>';
+      return;
+    }
+
+    const html = alleFormulare.map(f => {
+      const zuw = zuweisungen.find(z => z.id === f.id);
+      const v = zuw ? SCHULUNG_VORLAGEN.find(vl => vl.id === zuw.vorlagenId) : null;
+      const t = zuw ? APP_TENANTS.find(tn => tn.id === zuw.tenantId) : null;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6">
+        <div style="font-size:1.4rem">✅</div>
+        <div style="flex:1">
+          <div style="font-size:.9rem;font-weight:600">${escHtml(v?.titel || f.id)}</div>
+          <div style="font-size:.76rem;color:#6b7280">
+            ${t ? escHtml(t.name) + ' • ' : ''}
+            Abgeschlossen: ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'}
+          </div>
+        </div>
+        ${f.pdf_path ? `<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>` : ''}
+      </div>`;
+    }).join('');
+
+    document.getElementById('historie-inhalt').innerHTML = `
+      <div style="margin-bottom:10px;font-size:.85rem;color:#6b7280">${alleFormulare.length} Schulung${alleFormulare.length !== 1 ? 'en' : ''} abgeschlossen</div>
+      ${html}`;
+  } catch(e) {
+    document.getElementById('historie-inhalt').innerHTML =
+      `<div style="color:#dc2626;padding:12px">Fehler: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function historieSchliessen() {
+  const modal = document.getElementById('historie-modal');
+  if (modal) modal.style.display = 'none';
+}

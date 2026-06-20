@@ -1,8 +1,8 @@
 // ============================================================
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
-//  Caches: App-Shell (HTML/CSS/JS), Bilder, Fonts
+//  v3.1 – Push-Benachrichtigungen + Offline-Modus
 // ============================================================
-const CACHE_NAME = 'schulung-v3';
+const CACHE_NAME = 'schulung-v4';
 const OFFLINE_URL = '/';
 
 const APP_SHELL = [
@@ -68,4 +68,42 @@ self.addEventListener('fetch', event => {
       });
     })
   );
+});
+
+// ── PUSH: Benachrichtigung empfangen und anzeigen ─────────────
+self.addEventListener('push', event => {
+  let data = { title: 'Schulungsmanagement', body: 'Neue Benachrichtigung', icon: '/csc-logo.png' };
+  try {
+    if (event.data) data = { ...data, ...event.data.json() };
+  } catch(e) {
+    if (event.data) data.body = event.data.text();
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    data.icon || '/csc-logo.png',
+      badge:   '/csc-logo.png',
+      tag:     data.tag || 'schulung',
+      data:    data.url ? { url: data.url } : {},
+      vibrate: [200, 100, 200]
+    })
+  );
+});
+
+// ── NOTIFICATION CLICK: App öffnen ────────────────────────────
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || '/';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(wins => {
+      const existing = wins.find(w => w.url.includes(self.location.origin));
+      if (existing) { existing.focus(); return existing.navigate(url); }
+      return clients.openWindow(url);
+    })
+  );
+});
+
+// ── PUSH SUBSCRIPTION CHANGE ──────────────────────────────────
+self.addEventListener('pushsubscriptionchange', event => {
+  event.waitUntil(self.registration.pushManager.subscribe({ userVisibleOnly: true }));
 });
