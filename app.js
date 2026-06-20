@@ -479,6 +479,12 @@ function doLogout() {
   showScreen('screen-login');
 }
 function routeAfterLogin() {
+  // Archivierte Mitarbeiter dürfen sich nicht anmelden
+  if (currentUser.archiviert) {
+    showToast('📦 Dieses Konto ist archiviert. Bitte wenden Sie sich an Ihren Verantwortlichen.', '#6b7280');
+    setTimeout(doLogout, 4500);
+    return;
+  }
   if (currentUser.role === 'admin') {
     renderAdminDashboard();
     showScreen('screen-admin');
@@ -546,6 +552,8 @@ async function doLogin() {
     const session = {
       userId: user.id, name: user.name, email: user.email,
       role: user.role, tenantId: user.tenant_id,
+      aktiv: user.aktiv !== false,        // passiv-Schutz
+      archiviert: !!user.archiviert,      // archiviert-Schutz
       expires: Date.now() + SESSION_HOURS * 3600 * 1000
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -964,10 +972,16 @@ function renderAdminVorlagen() {
 
 async function vtLoeschen(id) {
   const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
+  // Prüfen ob abgeschlossene Formulare existieren
+  const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
+  const abgeschlosseneAnzahl = zuws.filter(z => formulare[z.id]?.abgeschlossen).length;
+  if (abgeschlosseneAnzahl > 0) {
+    alert(`⚠️ Vorlage "${v?.titel}" kann nicht gelöscht werden!\n\n${abgeschlosseneAnzahl} Zuweisung(en) haben bereits abgeschlossene Schulungsnachweise.\n\nAbgeschlossene Formulare dürfen nicht gelöscht werden (Dokumentationspflicht).`);
+    return;
+  }
   if (!confirm(`Vorlage "${v?.titel}" wirklich löschen?\n\nAcht: Alle Zuweisungen dieser Vorlage werden ebenfalls gelöscht!`)) return;
   try {
     // Zuweisungen dieser Vorlage löschen
-    const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
     for (const z of zuws) {
       await fetch(`${SUPABASE_URL}/rest/v1/formulare?id=eq.${z.id}`,   { method:'DELETE', headers:SB.h });
       await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${z.id}`, { method:'DELETE', headers:SB.h });
@@ -1203,7 +1217,17 @@ async function createZuweisung() {
   } catch(e) { msgEl.textContent='Fehler: '+e.message; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); }
 }
 async function deleteZuweisung(id) {
-  if (!confirm('Zuweisung wirklich löschen?')) return;
+  // Sicherheitsprüfung: abgeschlossene Formulare NICHT löschen
+  const form = formulare[id];
+  if (form && form.abgeschlossen) {
+    alert('⚠️ Diese Zuweisung kann nicht gelöscht werden, da bereits ein ausgefülltes Formular existiert.\n\nAbgeschlossene Schulungsnachweise dürfen nicht entfernt werden (Dokumentationspflicht).');
+    return;
+  }
+  const hatEintrag = form && form.gestartet;
+  const warnung = hatEintrag
+    ? 'Zuweisung löschen?\n\n⚠️ Es gibt bereits einen begonnenen Eintrag. Dieser wird ebenfalls gelöscht.'
+    : 'Zuweisung wirklich löschen?';
+  if (!confirm(warnung)) return;
   try {
     await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${id}`, { method:'DELETE', headers:SB.h });
     await fetch(`${SUPABASE_URL}/rest/v1/formulare?id=eq.${id}`,   { method:'DELETE', headers:SB.h });
@@ -1454,6 +1478,22 @@ function renderSubDashboard() {
 //  FORMULAR
 // ══════════════════════════════════════════════════════════════
 function oeffneFormular(zuwId) {
+  // Passiv/archivierte Mitarbeiter dürfen keine neuen Formulare starten
+  if (currentUser && currentUser.role === 'mitarbeiter') {
+    const userAktiv = currentUser.aktiv !== false;
+    const userArchiviert = !!currentUser.archiviert;
+    if (userArchiviert) {
+      showToast('📦 Archivierte Mitarbeiter können keine Formulare öffnen.', '#6b7280');
+      return;
+    }
+    if (!userAktiv) {
+      const form = formulare[zuwId] || {};
+      if (!form.abgeschlossen) {
+        showToast('⏸ Passive Mitarbeiter können keine neuen Schulungen starten.', '#6d28d9');
+        return;
+      }
+    }
+  }
   aktiveSprache = 'de';
   document.querySelectorAll('.sprach-btn').forEach(b => b.classList.remove('active-lang'));
   const deBtn = document.querySelector('.sprach-btn[data-lang="de"]');
