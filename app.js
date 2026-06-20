@@ -1097,55 +1097,7 @@ function vtAddFeld(abId) {
   document.getElementById(`felder_${abId}`).appendChild(div);
 }
 
-async function vtSpeichern() {
-  const titel      = document.getElementById('vt-titel').value.trim();
-  const beschr     = document.getElementById('vt-beschreibung').value.trim();
-  const intervall  = parseInt(document.getElementById('vt-intervall').value) || 12;
-  const msgEl      = document.getElementById('vt-msg');
-  msgEl.classList.remove('show');
 
-  if (!titel) { msgEl.textContent='Bitte einen Titel eingeben.'; msgEl.classList.add('show'); return; }
-
-  // Abschnitte einlesen
-  const abschnitte = [];
-  document.querySelectorAll('#vt-abschnitte > div[id^="ab_"]').forEach(abDiv => {
-    const abId    = abDiv.id;
-    const abTitel = document.getElementById(`ab_titel_${abId}`)?.value.trim() || 'Abschnitt';
-    const felder  = [];
-    abDiv.querySelectorAll('div[id^="feld_"]').forEach(fDiv => {
-      const fId  = fDiv.id;
-      const label = document.getElementById(`label_${fId}`)?.value.trim();
-      const typ   = document.getElementById(`typ_${fId}`)?.value || 'text';
-      const pflicht = document.getElementById(`pfl_${fId}`)?.checked || false;
-      if (label) felder.push({ id: `f_${fId}_${Date.now()}`, label, typ, pflicht });
-    });
-    if (felder.length) abschnitte.push({ titel: abTitel, felder });
-  });
-
-  if (!abschnitte.length) { msgEl.textContent='Bitte mindestens einen Abschnitt mit Feldern anlegen.'; msgEl.classList.add('show'); return; }
-
-  const id = `vorlage_${titel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')}_${Date.now()}`;
-  const vorlage = { id, titel, beschreibung: beschr, intervall_monate: intervall, abschnitte };
-
-  try {
-    await SB.post('vorlagen', vorlage);
-    SCHULUNG_VORLAGEN.push({ ...vorlage, intervallMonate: intervall });
-    await sbAudit('VORLAGE_NEU', `Neue Vorlage "${titel}" erstellt`);
-    showToast(`✅ Vorlage "${titel}" gespeichert`, '#16a34a');
-
-    // Formular zurücksetzen
-    document.getElementById('vt-titel').value       = '';
-    document.getElementById('vt-beschreibung').value = '';
-    document.getElementById('vt-intervall').value    = '12';
-    document.getElementById('vt-abschnitte').innerHTML = '';
-    vtAbschnittCount = 0;
-
-    renderAdminVorlagen();
-    populateZuweisungsForm();
-  } catch(e) {
-    msgEl.textContent = 'Fehler: '+e.message; msgEl.classList.add('show');
-  }
-}
 function renderAdminZuweisungen() {
   const rows = zuweisungen.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
