@@ -2,7 +2,7 @@
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
 //  Caches: App-Shell (HTML/CSS/JS), Bilder, Fonts
 // ============================================================
-const CACHE_NAME = 'schulung-v2';
+const CACHE_NAME = 'schulung-v3';
 const OFFLINE_URL = '/';
 
 const APP_SHELL = [

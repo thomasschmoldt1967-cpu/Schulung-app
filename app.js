@@ -749,38 +749,70 @@ async function renderArchiv() {
     const abgeschlossene = await SB.get('formulare',
       'abgeschlossen=eq.true&order=abgeschlossen_am.desc&limit=200'
     );
-    if (!abgeschlossene.length) {
-      el.innerHTML = '<div class="card"><div class="empty-state"><div class="icon">📦</div><p>Noch keine abgeschlossenen Schulungen</p></div></div>';
-      return;
-    }
 
-    // Nach Jahr gruppieren
-    const byJahr = {};
-    abgeschlossene.forEach(f => {
-      const jahr = f.abgeschlossen_am ? new Date(f.abgeschlossen_am).getFullYear() : 'Unbekannt';
-      if (!byJahr[jahr]) byJahr[jahr] = [];
-      const zuw = zuweisungen.find(z=>z.id===f.id);
-      const v   = zuw ? SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw.vorlagenId) : null;
-      const t   = zuw ? APP_TENANTS.find(tn=>tn.id===zuw.tenantId) : null;
-      byJahr[jahr].push({ ...f, titel: v?.titel||f.id, tenant: t?.name||zuw?.tenantId||'–' });
-    });
+    // Archivierte Mitarbeiter laden
+    let archivierteMa = [];
+    try {
+      archivierteMa = await SB.get('users',
+        `role=eq.mitarbeiter&archiviert=eq.true&order=archiviert_am.desc&limit=200`
+      );
+      // Auf eigene Tenants beschränken (für Non-Admin)
+      if (currentUser && currentUser.role !== 'admin' && currentUser.tenantId) {
+        archivierteMa = archivierteMa.filter(m => m.tenant_id === currentUser.tenantId);
+      }
+    } catch(e) { /* ignorieren falls Feld fehlt */ }
 
     let html = '';
-    Object.keys(byJahr).sort((a,b)=>b-a).forEach(jahr => {
-      html += `<div class="card" style="margin-bottom:12px">
-        <div class="card-title">📁 ${jahr} (${byJahr[jahr].length} Schulungen)</div>`;
-      byJahr[jahr].forEach(f => {
-        html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
-          <div style="font-size:1.2rem">✅</div>
+
+    // ── Abgeschlossene Schulungen ──────────────────────────────
+    if (!abgeschlossene.length) {
+      html += '<div class="card"><div class="empty-state"><div class="icon">📦</div><p>Noch keine abgeschlossenen Schulungen</p></div></div>';
+    } else {
+      // Nach Jahr gruppieren
+      const byJahr = {};
+      abgeschlossene.forEach(f => {
+        const jahr = f.abgeschlossen_am ? new Date(f.abgeschlossen_am).getFullYear() : 'Unbekannt';
+        if (!byJahr[jahr]) byJahr[jahr] = [];
+        const zuw = zuweisungen.find(z=>z.id===f.id);
+        const v   = zuw ? SCHULUNG_VORLAGEN.find(vl=>vl.id===zuw.vorlagenId) : null;
+        const t   = zuw ? APP_TENANTS.find(tn=>tn.id===zuw.tenantId) : null;
+        byJahr[jahr].push({ ...f, titel: v?.titel||f.id, tenant: t?.name||zuw?.tenantId||'–' });
+      });
+
+      Object.keys(byJahr).sort((a,b)=>b-a).forEach(jahr => {
+        html += `<div class="card" style="margin-bottom:12px">
+          <div class="card-title">📁 ${jahr} (${byJahr[jahr].length} Schulungen)</div>`;
+        byJahr[jahr].forEach(f => {
+          html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
+            <div style="font-size:1.2rem">✅</div>
+            <div style="flex:1">
+              <div style="font-size:.88rem;font-weight:600">${escHtml(f.titel)}</div>
+              <div style="font-size:.76rem;color:#6b7280">${escHtml(f.tenant)} · ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'} ${f.mitarbeiter_name?`· ${escHtml(f.mitarbeiter_name)}`:''}</div>
+            </div>
+            ${f.pdf_path?`<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>`:''}\n          </div>`;
+        });
+        html += '</div>';
+      });
+    }
+
+    // ── Archivierte Mitarbeiter ───────────────────────────────
+    html += `<div class="card" style="margin-top:12px">
+      <div class="card-title">👤 Archivierte Mitarbeiter (${archivierteMa.length})</div>`;
+    if (!archivierteMa.length) {
+      html += '<div style="font-size:.85rem;color:#6b7280;padding:12px 0">Keine archivierten Mitarbeiter.</div>';
+    } else {
+      archivierteMa.forEach(m => {
+        const tenant = APP_TENANTS.find(t => t.id === m.tenant_id);
+        html += `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6;opacity:0.8">
+          <div style="font-size:1.2rem">📦</div>
           <div style="flex:1">
-            <div style="font-size:.88rem;font-weight:600">${escHtml(f.titel)}</div>
-            <div style="font-size:.76rem;color:#6b7280">${escHtml(f.tenant)} · ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'} ${f.mitarbeiter_name?`· ${escHtml(f.mitarbeiter_name)}`:''}</div>
+            <div style="font-size:.88rem;font-weight:600">${escHtml(m.name)}</div>
+            <div style="font-size:.76rem;color:#6b7280">${escHtml(m.email)} ${tenant?`· ${escHtml(tenant.name)}`:''} · Archiviert: ${m.archiviert_am ? dateStr(m.archiviert_am) : '–'}</div>
           </div>
-          ${f.pdf_path?`<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>`:''}
         </div>`;
       });
-      html += '</div>';
-    });
+    }
+    html += '</div>';
 
     el.innerHTML = `<div class="card-title" style="font-size:1.1rem;margin-bottom:12px">📦 Schulungsarchiv</div>${html}`;
   } catch(e) {
@@ -1188,6 +1220,43 @@ async function deleteZuweisung(id) {
 // ══════════════════════════════════════════════════════════════
 //  MITARBEITERLISTE (Verantwortlicher)
 // ══════════════════════════════════════════════════════════════
+// ── MITARBEITER: AKTIV/PASSIV/ARCHIV ───────────────────────────
+async function mitarbeiterToggleAktiv(userId, jetztAktiv) {
+  if (!confirm(jetztAktiv
+    ? 'Mitarbeiter auf PASSIV setzen? Er erhält dann keine neuen Schulungen.'
+    : 'Mitarbeiter wieder auf AKTIV setzen?')) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ aktiv: !jetztAktiv })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    sbAudit(jetztAktiv ? 'MITARBEITER_PASSIV' : 'MITARBEITER_AKTIV', { userId, tenantId: currentUser.tenantId });
+    showToast(jetztAktiv ? '⏸ Mitarbeiter auf Passiv gesetzt' : '▶ Mitarbeiter wieder aktiv', '#2563eb');
+    renderMitarbeiterListe();
+  } catch(e) {
+    showToast('Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+async function mitarbeiterArchivieren(userId, name) {
+  if (!confirm(`Mitarbeiter „${name}" wirklich archivieren?\n\nEr wird aus der aktiven Liste entfernt und im Archiv gespeichert.`)) return;
+  try {
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
+      method: 'PATCH',
+      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ archiviert: true, archiviert_am: new Date().toISOString(), aktiv: false })
+    });
+    if (!r.ok) throw new Error(await r.text());
+    sbAudit('MITARBEITER_ARCHIVIERT', { userId, name, tenantId: currentUser.tenantId });
+    showToast('📦 Mitarbeiter archiviert', '#6b7280');
+    renderMitarbeiterListe();
+  } catch(e) {
+    showToast('Fehler: ' + e.message, '#dc2626');
+  }
+}
+
 async function renderMitarbeiterListe() {
   const section = document.getElementById('sub-mitarbeiter-section');
   const listEl  = document.getElementById('sub-mitarbeiter-list');
@@ -1202,19 +1271,44 @@ async function renderMitarbeiterListe() {
   section.style.display = 'block';
   listEl.innerHTML = '<div style="color:#6b7280;font-size:.88rem;padding:12px 0">⏳ Mitarbeiter werden geladen …</div>';
 
+  // Filter-State ermitteln (Standard: nur aktive)
+  const filterEl = document.getElementById('ma-filter-select');
+  const filter = filterEl ? filterEl.value : 'aktiv';
+
   try {
-    // Mitarbeiter des Tenants laden
-    const mitarbeiter = await SB.get('users',
-      `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&role=eq.mitarbeiter&order=name.asc`
-    );
+    // Alle nicht-archivierten Mitarbeiter laden (oder alle inkl. archiviert je nach Filter)
+    let query = `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&role=eq.mitarbeiter&order=name.asc`;
+    if (filter === 'aktiv')     query += '&aktiv=eq.true&archiviert=eq.false';
+    else if (filter === 'passiv') query += '&aktiv=eq.false&archiviert=eq.false';
+    else if (filter === 'archiviert') query += '&archiviert=eq.true';
+    // 'alle' = kein weiterer Filter
+
+    const mitarbeiter = await SB.get('users', query);
+
+    // Filter-Zeile rendern (Header-Bereich)
+    const headerEl = document.getElementById('sub-mitarbeiter-header');
+    if (headerEl) {
+      const currentVal = filter;
+      headerEl.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <select id="ma-filter-select" onchange="renderMitarbeiterListe()"
+            style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:.8rem;background:#fff;cursor:pointer">
+            <option value="aktiv"      ${currentVal==='aktiv'?'selected':''}>👤 Aktive</option>
+            <option value="passiv"     ${currentVal==='passiv'?'selected':''}>⏸ Passive</option>
+            <option value="archiviert" ${currentVal==='archiviert'?'selected':''}>📦 Archivierte</option>
+            <option value="alle"       ${currentVal==='alle'?'selected':''}>🔍 Alle</option>
+          </select>
+        </div>`;
+    }
 
     if (!mitarbeiter || mitarbeiter.length === 0) {
-      countEl.textContent = '0 Mitarbeiter';
+      const labels = { aktiv: 'aktive', passiv: 'passive', archiviert: 'archivierte', alle: '' };
+      countEl.textContent = `0 ${labels[filter]||''} Mitarbeiter`.trim();
       listEl.innerHTML = `
         <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:20px;text-align:center;color:#6b7280;font-size:.9rem">
           <div style="font-size:1.8rem;margin-bottom:8px">👤</div>
-          Noch keine Mitarbeiter angelegt.<br>
-          <span style="font-size:.82rem">Nutzen Sie „➕ Mitarbeiter anlegen\" oder „👥 Importieren\".</span>
+          Keine ${labels[filter]||''} Mitarbeiter vorhanden.<br>
+          ${filter==='aktiv'?'<span style="font-size:.82rem">Nutzen Sie „➕ Mitarbeiter anlegen\" oder „👥 Importieren\".</span>':''}
         </div>`;
       return;
     }
@@ -1225,34 +1319,29 @@ async function renderMitarbeiterListe() {
     const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
 
     // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
-    // Logik: Für jede Schulungszuweisung prüfen ob der Mitarbeiter sie abgeschlossen hat
-    // Farbe des Mitarbeiters = schlechtester Status aller Zuweisungen, an denen er beteiligt ist
-    // Kein Formular vorhanden → rot (noch nicht gestartet)
-
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
-      // Matching ausschließlich über m.id (User-ID) — kein Name/E-Mail-Matching (verhindert Verwechslung bei gleichen Namen)
       const mFormulare = Object.entries(formulare)
         .filter(([zuwId, f]) => {
           const zuw = meineZuws.find(z => z.id === zuwId);
-          // Zuweisung muss zum eigenen Tenant gehören UND Formular vom exakten Mitarbeiter (via ID)
           return zuw && zuw.tenantId === currentUser.tenantId && f.abgeschlossenVon === m.id;
         });
 
-      // Alle Zuweisungen zählen
       const gesamtZuws  = meineZuws.length;
       const abgeschl    = mFormulare.filter(([,f]) => f.abgeschlossen).length;
       const gestartet   = mFormulare.filter(([,f]) => f.gestartet && !f.abgeschlossen).length;
       const offen       = Math.max(0, gesamtZuws - abgeschl - gestartet);
 
-      // Gesamtampel: rot wenn irgend etwas offen/überfällig, gelb wenn alles gestartet, grün wenn alles fertig
       let ampel = 'gruen';
-      if (gesamtZuws === 0) {
+      if (m.archiviert) {
+        ampel = 'archiv';
+      } else if (!m.aktiv) {
+        ampel = 'passiv';
+      } else if (gesamtZuws === 0) {
         ampel = 'grau';
       } else if (abgeschl === gesamtZuws) {
         ampel = 'gruen';
       } else if (offen > 0) {
-        // Prüfe ob eine offene Zuweisung überfällig ist
         const hatUeberfaellig = meineZuws.some(z => {
           const f = formulare[z.id] || {};
           if (f.abgeschlossen) return false;
@@ -1261,21 +1350,39 @@ async function renderMitarbeiterListe() {
         });
         ampel = hatUeberfaellig ? 'rot' : 'gelb';
       } else {
-        ampel = 'gelb'; // alles gestartet aber nichts fertig
+        ampel = 'gelb';
       }
 
       const ampelFarben = {
-        gruen: { bg: '#f0fdf4', border: '#86efac', dot: '🟢', label: 'Alle abgeschlossen',    text: '#166534' },
-        gelb:  { bg: '#fffbeb', border: '#fde68a', dot: '🟡', label: 'In Bearbeitung',        text: '#92400e' },
-        rot:   { bg: '#fef2f2', border: '#fca5a5', dot: '🔴', label: 'Offen / Überfällig',    text: '#991b1b' },
-        grau:  { bg: '#f9fafb', border: '#e5e7eb', dot: '⚪', label: 'Keine Schulungen',       text: '#6b7280' }
+        gruen:  { bg: '#f0fdf4', border: '#86efac', dot: '🟢', label: 'Alle abgeschlossen',  text: '#166534' },
+        gelb:   { bg: '#fffbeb', border: '#fde68a', dot: '🟡', label: 'In Bearbeitung',       text: '#92400e' },
+        rot:    { bg: '#fef2f2', border: '#fca5a5', dot: '🔴', label: 'Offen / Überfällig',   text: '#991b1b' },
+        grau:   { bg: '#f9fafb', border: '#e5e7eb', dot: '⚪', label: 'Keine Schulungen',      text: '#6b7280' },
+        passiv: { bg: '#f5f3ff', border: '#c4b5fd', dot: '⏸', label: 'Passiv',                text: '#6d28d9' },
+        archiv: { bg: '#f3f4f6', border: '#d1d5db', dot: '📦', label: 'Archiviert',            text: '#4b5563' }
       };
       const c = ampelFarben[ampel];
+      const istAktiv     = !m.archiviert && m.aktiv !== false;
+      const istPassiv    = !m.archiviert && m.aktiv === false;
+      const istArchiviert = !!m.archiviert;
+
+      // Aktionsbuttons je nach Status
+      const btnToggle = !istArchiviert ? `
+        <button onclick="mitarbeiterToggleAktiv('${m.id}',${istAktiv})"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #c4b5fd;background:#f5f3ff;color:#6d28d9;cursor:pointer;white-space:nowrap">
+          ${istAktiv ? '⏸ Passiv' : '▶ Aktiv'}
+        </button>` : '';
+      const btnArchiv = !istArchiviert ? `
+        <button onclick="mitarbeiterArchivieren('${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}')"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#6b7280;cursor:pointer;white-space:nowrap;margin-top:3px">
+          📦 Archivieren
+        </button>` : `<span style="font-size:.7rem;color:#9ca3af">Archiviert: ${m.archiviert_am ? dateStr(m.archiviert_am) : '–'}</span>`;
 
       return `
-        <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:14px 16px;
-                    display:flex;align-items:center;gap:14px;margin-bottom:8px">
-          <div style="font-size:1.4rem;flex-shrink:0">${c.dot}</div>
+        <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
+                    display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;
+                    ${istArchiviert?'opacity:0.7':''}">
+          <div style="font-size:1.3rem;flex-shrink:0;padding-top:2px">${c.dot}</div>
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:.92rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
               ${escHtml(m.name)}
@@ -1283,10 +1390,13 @@ async function renderMitarbeiterListe() {
             <div style="font-size:.78rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
               ${escHtml(m.email)}
             </div>
+            <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+              ${btnToggle}${btnArchiv}
+            </div>
           </div>
           <div style="text-align:right;flex-shrink:0">
             <div style="font-size:.78rem;font-weight:700;color:${c.text}">${c.label}</div>
-            ${gesamtZuws > 0 ? `<div style="font-size:.72rem;color:#6b7280;margin-top:2px">
+            ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.72rem;color:#6b7280;margin-top:2px">
               🟢 ${abgeschl} · 🟡 ${gestartet} · 🔴 ${offen}
             </div>` : ''}
           </div>
@@ -1294,6 +1404,10 @@ async function renderMitarbeiterListe() {
     });
 
     listEl.innerHTML = rows.join('');
+
+    // Filter-Select wiederherstellen (nach innerHTML-Neuaufbau)
+    const newFilter = document.getElementById('ma-filter-select');
+    if (newFilter) newFilter.value = filter;
 
   } catch(e) {
     listEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;padding:8px">Fehler beim Laden: ${escHtml(e.message)}</div>`;
