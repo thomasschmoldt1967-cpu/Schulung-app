@@ -29,6 +29,13 @@ let inactivityTimer   = null; // Session-Timeout Timer
 
 // ── UTILS ────────────────────────────────────────────────────
 function now()     { return new Date().toISOString(); }
+// Löst User-ID auf lesbare Name auf (für PDFs, Archiv etc.)
+// Nur innerhalb desselben Tenants — verhindert Cross-Tenant-Datenlecks
+function userNameVonId(userId, tenantId) {
+  if (!userId) return '–';
+  const u = APP_USERS.find(u => u.id === userId && u.tenant_id === tenantId);
+  return u ? u.name : userId; // Fallback: ID anzeigen wenn User nicht gefunden
+}
 function dateStr(iso) {
   if (!iso) return '–';
   return new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
@@ -381,12 +388,14 @@ async function initApp() {
   } catch(e) { /* nicht kritisch */ }
 
   try {
-    const [tenants, vorlagen, zuws] = await Promise.all([
+    const [tenants, vorlagen, zuws, users] = await Promise.all([
       SB.get('tenants'),
       SB.get('vorlagen'),
-      SB.get('zuweisungen')
+      SB.get('zuweisungen'),
+      SB.get('users', 'select=id,name,email,tenant_id,role')
     ]);
     APP_TENANTS       = tenants;
+    APP_USERS         = users; // Für ID→Name Auflösung (z.B. im PDF)
     SCHULUNG_VORLAGEN = vorlagen.map(v => ({
       ...v, intervallMonate: v.intervall_monate,
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
@@ -1196,15 +1205,13 @@ async function renderMitarbeiterListe() {
     // Kein Formular vorhanden → rot (noch nicht gestartet)
 
     const rows = mitarbeiter.map(m => {
-      // Formulare die dieser Mitarbeiter ausgefüllt hat
+      // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
+      // Matching ausschließlich über m.id (User-ID) — kein Name/E-Mail-Matching (verhindert Verwechslung bei gleichen Namen)
       const mFormulare = Object.entries(formulare)
         .filter(([zuwId, f]) => {
           const zuw = meineZuws.find(z => z.id === zuwId);
-          return zuw && (
-            f.abgeschlossenVon === m.id ||
-            f.abgeschlossenVon === m.email ||
-            f.abgeschlossenVon === m.name
-          );
+          // Zuweisung muss zum eigenen Tenant gehören UND Formular vom exakten Mitarbeiter (via ID)
+          return zuw && zuw.tenantId === currentUser.tenantId && f.abgeschlossenVon === m.id;
         });
 
       // Alle Zuweisungen zählen
@@ -1498,7 +1505,7 @@ async function doAbschluss(felder) {
   const zuw=zuweisungen.find(z=>z.id===activeZuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const ts=now();
   closeModal();
-  await saveFormularToDB(felder, true, ts, currentUser.name);
+  await saveFormularToDB(felder, true, ts, currentUser.id);
   await sbAudit('ABSCHLUSS', `Schulung "${vorlage.titel}" abgeschlossen (${zuw.tenantId})`);
   // PDF generieren und zu Supabase Storage hochladen
   generatePdf(activeZuwId, false);
@@ -1535,7 +1542,7 @@ function generatePdf(zuwId, downloadOnly) {
   doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(80,80,80);
   doc.text(`Unternehmen: ${tenant?tenant.name:zuw.tenantId}`,PL,y); y+=5;
   doc.text(`Frist: ${zuw.frist||'–'}  •  Pflichtschulung: ${zuw.pflicht?'Ja':'Nein'}`,PL,y); y+=5;
-  if (form.abgeschlossen) { doc.text(`Abgeschlossen: ${dateStr(form.abgeschlossenAm)} von ${form.abgeschlossenVon||'–'}`,PL,y); y+=5; }
+  if (form.abgeschlossen) { doc.text(`Abgeschlossen: ${dateStr(form.abgeschlossenAm)} von ${userNameVonId(form.abgeschlossenVon, zuw.tenantId)}`,PL,y); y+=5; }
   const ac=status==='gruen'?[22,163,74]:status==='gelb'?[202,138,4]:[220,38,38];
   doc.setFillColor(...ac); doc.roundedRect(PL,y,38,7,2,2,'F');
   doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
