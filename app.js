@@ -470,6 +470,12 @@ function doLogout() {
   sbAudit('LOGOUT','Benutzer abgemeldet');
   localStorage.removeItem(SESSION_KEY);
   currentUser = null;
+  // SICHERHEIT: Alle globalen Datenarrays leeren — kein Datenleck beim Benutzerwechsel
+  APP_TENANTS       = [];
+  APP_USERS         = [];
+  SCHULUNG_VORLAGEN = [];
+  zuweisungen       = [];
+  formulare         = {};
   showScreen('screen-login');
 }
 function routeAfterLogin() {
@@ -477,14 +483,33 @@ function routeAfterLogin() {
     renderAdminDashboard();
     showScreen('screen-admin');
   } else {
-    // ── MANDANTENTRENNUNG: Sub-User sieht NUR eigene Daten ──
-    // APP_TENANTS auf eigenen Tenant beschränken
-    APP_TENANTS = APP_TENANTS.filter(t => t.id === currentUser.tenantId);
-    // Zuweisungen nur für eigenen Tenant
-    zuweisungen = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
-    // Formulare nur für eigene Zuweisungen
+    // ══════════════════════════════════════════════════════
+    // MANDANTENTRENNUNG — Sub-User sieht AUSSCHLIESSLICH
+    // eigene Daten. Alle globalen Arrays werden hier auf
+    // den eigenen Tenant reduziert. Fremde Daten werden
+    // vollständig aus dem Arbeitsspeicher entfernt.
+    // ══════════════════════════════════════════════════════
+    const tid = currentUser.tenantId;
+
+    // 1. Nur eigener Tenant sichtbar
+    APP_TENANTS = APP_TENANTS.filter(t => t.id === tid);
+
+    // 2. Nur eigene Zuweisungen
+    zuweisungen = zuweisungen.filter(z => z.tenantId === tid);
+
+    // 3. Nur Formulare der eigenen Zuweisungen
     const eigeneZuwIds = new Set(zuweisungen.map(z => z.id));
-    Object.keys(formulare).forEach(k => { if (!eigeneZuwIds.has(k)) delete formulare[k]; });
+    Object.keys(formulare).forEach(k => {
+      if (!eigeneZuwIds.has(k)) delete formulare[k];
+    });
+
+    // 4. Nur Vorlagen die in eigenen Zuweisungen vorkommen
+    const eigeneVorlagenIds = new Set(zuweisungen.map(z => z.vorlagenId));
+    SCHULUNG_VORLAGEN = SCHULUNG_VORLAGEN.filter(v => eigeneVorlagenIds.has(v.id));
+
+    // 5. Nur User des eigenen Tenants (für ID→Name Auflösung)
+    APP_USERS = APP_USERS.filter(u => u.tenant_id === tid);
+
     renderSubDashboard();
     showScreen('screen-sub');
   }
