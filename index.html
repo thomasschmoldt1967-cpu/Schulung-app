@@ -306,15 +306,21 @@
     <div id="sub-stats" class="stats-grid"></div>
     <div id="sub-kalender" style="display:none"></div>
 
-    <!-- Mitarbeiter importieren Button -->
-    <div style="margin-bottom:14px">
-      <button onclick="mitarbeiterImportOeffnen()" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;width:100%;cursor:pointer;text-align:left">
-        <span style="font-size:1.6rem">👥</span>
+    <!-- Mitarbeiter Buttons -->
+    <div style="margin-bottom:14px;display:flex;gap:10px">
+      <button onclick="mitarbeiterEinzelnOeffnen()" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;flex:1;cursor:pointer;text-align:left">
+        <span style="font-size:1.5rem">➕</span>
         <div>
-          <div style="font-weight:700;font-size:.95rem">Mitarbeiter importieren</div>
-          <div style="font-size:.75rem;opacity:.8;margin-top:2px">Excel-Tabelle (.xlsx) hochladen und Mitarbeiter anlegen</div>
+          <div style="font-weight:700;font-size:.9rem">Mitarbeiter anlegen</div>
+          <div style="font-size:.72rem;opacity:.8;margin-top:2px">Einzelnen Mitarbeiter manuell hinzufügen</div>
         </div>
-        <span style="margin-left:auto;font-size:1.1rem;opacity:.7">›</span>
+      </button>
+      <button onclick="mitarbeiterImportOeffnen()" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;flex:1;cursor:pointer;text-align:left">
+        <span style="font-size:1.5rem">👥</span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem">Mitarbeiter importieren</div>
+          <div style="font-size:.72rem;opacity:.8;margin-top:2px">Excel-Tabelle (.xlsx) hochladen</div>
+        </div>
       </button>
     </div>
 
@@ -688,6 +694,50 @@
     </p>
 
     <button onclick="document.getElementById('impressum-modal').style.display='none'" style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;cursor:pointer;font-weight:600">Schließen</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: Einzelnen Mitarbeiter anlegen
+══════════════════════════════════════════════════════════ -->
+<div id="mitarbeiter-einzel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;font-size:1.1rem;color:#1e3a5f">➕ Mitarbeiter anlegen</h3>
+      <button onclick="mitarbeiterEinzelnSchliessen()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    </div>
+
+    <div id="einzel-formular">
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">Name *</label>
+        <input type="text" id="einzel-name" placeholder="z.B. Max Mustermann" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">E-Mail *</label>
+        <input type="email" id="einzel-email" placeholder="max@beispiel.de" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:6px">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">Passwort</label>
+        <div style="display:flex;gap:8px">
+          <input type="text" id="einzel-passwort" placeholder="Leer lassen = automatisch generiert" style="flex:1;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
+          <button onclick="mitarbeiterEinzelnGenerierePasswort()" title="Passwort generieren" style="padding:10px 12px;background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:1rem">🎲</button>
+        </div>
+        <div style="font-size:.75rem;color:#6b7280;margin-top:4px">Leer lassen → wird automatisch generiert</div>
+      </div>
+      <div id="einzel-fehler" style="display:none;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px;font-size:.83rem;color:#dc2626;margin-top:12px"></div>
+      <div style="display:flex;gap:10px;margin-top:20px">
+        <button onclick="mitarbeiterEinzelnSchliessen()" class="btn btn-outline" style="flex:1">Abbrechen</button>
+        <button onclick="mitarbeiterEinzelnSpeichern()" class="btn btn-primary" style="flex:1" id="einzel-speichern-btn">✅ Anlegen</button>
+      </div>
+    </div>
+
+    <div id="einzel-ergebnis" style="display:none;text-align:center;padding:10px 0">
+      <div style="font-size:2.5rem;margin-bottom:12px">✅</div>
+      <div style="font-weight:700;font-size:1rem;color:#065f46;margin-bottom:16px">Mitarbeiter erfolgreich angelegt!</div>
+      <div id="einzel-ergebnis-daten" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;text-align:left;font-size:.85rem;margin-bottom:16px"></div>
+      <div style="font-size:.78rem;color:#dc2626;margin-bottom:16px">⚠️ Passwort jetzt notieren – wird danach nicht mehr angezeigt!</div>
+      <button onclick="mitarbeiterEinzelnSchliessen()" class="btn btn-primary" style="width:100%">✓ Fertig</button>
+    </div>
   </div>
 </div>
 

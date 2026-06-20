@@ -2050,7 +2050,115 @@ async function gastAbschliessen() {
 
 let importDaten = []; // Parsed rows from Excel
 
-function mitarbeiterImportOeffnen() {
+// ══════════════════════════════════════════════════════════
+// Einzelnen Mitarbeiter anlegen
+// ══════════════════════════════════════════════════════════
+function mitarbeiterEinzelnOeffnen() {
+  if (currentUser && currentUser.role === 'mitarbeiter') {
+    alert('Diese Funktion steht nur Verantwortlichen zur Verfügung.');
+    return;
+  }
+  // Reset
+  document.getElementById('einzel-name').value = '';
+  document.getElementById('einzel-email').value = '';
+  document.getElementById('einzel-passwort').value = '';
+  document.getElementById('einzel-fehler').style.display = 'none';
+  document.getElementById('einzel-formular').style.display = 'block';
+  document.getElementById('einzel-ergebnis').style.display = 'none';
+  document.getElementById('einzel-speichern-btn').disabled = false;
+  document.getElementById('einzel-speichern-btn').textContent = '✅ Anlegen';
+  document.getElementById('mitarbeiter-einzel-modal').style.display = 'flex';
+}
+
+function mitarbeiterEinzelnSchliessen() {
+  document.getElementById('mitarbeiter-einzel-modal').style.display = 'none';
+}
+
+function mitarbeiterEinzelnGenerierePasswort() {
+  const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$';
+  let pw = '';
+  const arr = new Uint8Array(10);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => { pw += chars[b % chars.length]; });
+  document.getElementById('einzel-passwort').value = pw;
+}
+
+async function mitarbeiterEinzelnSpeichern() {
+  const name  = document.getElementById('einzel-name').value.trim();
+  const email = document.getElementById('einzel-email').value.trim().toLowerCase();
+  let   pw    = document.getElementById('einzel-passwort').value.trim();
+
+  const fehlerEl = document.getElementById('einzel-fehler');
+  fehlerEl.style.display = 'none';
+
+  // Validierung
+  if (!name) {
+    fehlerEl.textContent = 'Bitte einen Namen eingeben.';
+    fehlerEl.style.display = 'block';
+    return;
+  }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    fehlerEl.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.';
+    fehlerEl.style.display = 'block';
+    return;
+  }
+
+  // Passwort auto-generieren wenn leer
+  if (!pw) {
+    const chars = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789!@#$';
+    const arr = new Uint8Array(10);
+    crypto.getRandomValues(arr);
+    arr.forEach(b => { pw += chars[b % chars.length]; });
+  }
+
+  const btn = document.getElementById('einzel-speichern-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Wird angelegt …';
+
+  try {
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id: 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+      name,
+      email,
+      password_hash: hash,
+      role: 'mitarbeiter',
+      tenant_id: currentUser.tenantId
+    });
+
+    if (res && res.error) {
+      const msg = res.error.message || JSON.stringify(res.error);
+      if (msg.includes('duplicate') || msg.includes('unique') || msg.includes('23505')) {
+        fehlerEl.textContent = 'Diese E-Mail-Adresse ist bereits registriert.';
+      } else {
+        fehlerEl.textContent = 'Fehler beim Anlegen: ' + msg;
+      }
+      fehlerEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '✅ Anlegen';
+      return;
+    }
+
+    sbAudit('MITARBEITER_EINZEL', { name, email, tenantId: currentUser.tenantId });
+
+    // Ergebnis anzeigen
+    document.getElementById('einzel-formular').style.display = 'none';
+    document.getElementById('einzel-ergebnis-daten').innerHTML =
+      `<div style="margin-bottom:6px"><strong>Name:</strong> ${name}</div>` +
+      `<div style="margin-bottom:6px"><strong>E-Mail:</strong> ${email}</div>` +
+      `<div><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>`;
+    document.getElementById('einzel-ergebnis').style.display = 'block';
+
+  } catch(e) {
+    fehlerEl.textContent = 'Fehler: ' + e.message;
+    fehlerEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '✅ Anlegen';
+  }
+}
+
+
+  function mitarbeiterImportOeffnen() {
   // Nur für Verantwortliche (nicht Mitarbeiter-Rolle)
   if (currentUser && currentUser.role === 'mitarbeiter') {
     alert('Diese Funktion steht nur Verantwortlichen zur Verfügung.');
