@@ -1151,6 +1151,123 @@ async function deleteZuweisung(id) {
 // ══════════════════════════════════════════════════════════════
 //  UNTERNEHMEN DASHBOARD
 // ══════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════
+//  MITARBEITERLISTE (Verantwortlicher)
+// ══════════════════════════════════════════════════════════════
+async function renderMitarbeiterListe() {
+  const section = document.getElementById('sub-mitarbeiter-section');
+  const listEl  = document.getElementById('sub-mitarbeiter-list');
+  const countEl = document.getElementById('sub-mitarbeiter-count');
+
+  // Nur für Verantwortliche anzeigen
+  if (!currentUser || currentUser.role !== 'verantwortlicher') {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+  listEl.innerHTML = '<div style="color:#6b7280;font-size:.88rem;padding:12px 0">⏳ Mitarbeiter werden geladen …</div>';
+
+  try {
+    // Mitarbeiter des Tenants laden
+    const mitarbeiter = await SB.get('users',
+      `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&role=eq.mitarbeiter&order=name.asc`
+    );
+
+    if (!mitarbeiter || mitarbeiter.length === 0) {
+      countEl.textContent = '0 Mitarbeiter';
+      listEl.innerHTML = `
+        <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:20px;text-align:center;color:#6b7280;font-size:.9rem">
+          <div style="font-size:1.8rem;margin-bottom:8px">👤</div>
+          Noch keine Mitarbeiter angelegt.<br>
+          <span style="font-size:.82rem">Nutzen Sie „➕ Mitarbeiter anlegen\" oder „👥 Importieren\".</span>
+        </div>`;
+      return;
+    }
+
+    countEl.textContent = mitarbeiter.length + ' Mitarbeiter';
+
+    // Alle Zuweisungen des Tenants
+    const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
+
+    // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
+    // Logik: Für jede Schulungszuweisung prüfen ob der Mitarbeiter sie abgeschlossen hat
+    // Farbe des Mitarbeiters = schlechtester Status aller Zuweisungen, an denen er beteiligt ist
+    // Kein Formular vorhanden → rot (noch nicht gestartet)
+
+    const rows = mitarbeiter.map(m => {
+      // Formulare die dieser Mitarbeiter ausgefüllt hat
+      const mFormulare = Object.entries(formulare)
+        .filter(([zuwId, f]) => {
+          const zuw = meineZuws.find(z => z.id === zuwId);
+          return zuw && (
+            f.abgeschlossenVon === m.id ||
+            f.abgeschlossenVon === m.email ||
+            f.abgeschlossenVon === m.name
+          );
+        });
+
+      // Alle Zuweisungen zählen
+      const gesamtZuws  = meineZuws.length;
+      const abgeschl    = mFormulare.filter(([,f]) => f.abgeschlossen).length;
+      const gestartet   = mFormulare.filter(([,f]) => f.gestartet && !f.abgeschlossen).length;
+      const offen       = Math.max(0, gesamtZuws - abgeschl - gestartet);
+
+      // Gesamtampel: rot wenn irgend etwas offen/überfällig, gelb wenn alles gestartet, grün wenn alles fertig
+      let ampel = 'gruen';
+      if (gesamtZuws === 0) {
+        ampel = 'grau';
+      } else if (abgeschl === gesamtZuws) {
+        ampel = 'gruen';
+      } else if (offen > 0) {
+        // Prüfe ob eine offene Zuweisung überfällig ist
+        const hatUeberfaellig = meineZuws.some(z => {
+          const f = formulare[z.id] || {};
+          if (f.abgeschlossen) return false;
+          const fristDate = z.frist ? new Date(z.frist) : null;
+          return fristDate && fristDate < new Date();
+        });
+        ampel = hatUeberfaellig ? 'rot' : 'gelb';
+      } else {
+        ampel = 'gelb'; // alles gestartet aber nichts fertig
+      }
+
+      const ampelFarben = {
+        gruen: { bg: '#f0fdf4', border: '#86efac', dot: '🟢', label: 'Alle abgeschlossen',    text: '#166534' },
+        gelb:  { bg: '#fffbeb', border: '#fde68a', dot: '🟡', label: 'In Bearbeitung',        text: '#92400e' },
+        rot:   { bg: '#fef2f2', border: '#fca5a5', dot: '🔴', label: 'Offen / Überfällig',    text: '#991b1b' },
+        grau:  { bg: '#f9fafb', border: '#e5e7eb', dot: '⚪', label: 'Keine Schulungen',       text: '#6b7280' }
+      };
+      const c = ampelFarben[ampel];
+
+      return `
+        <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:14px 16px;
+                    display:flex;align-items:center;gap:14px;margin-bottom:8px">
+          <div style="font-size:1.4rem;flex-shrink:0">${c.dot}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:700;font-size:.92rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${escHtml(m.name)}
+            </div>
+            <div style="font-size:.78rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+              ${escHtml(m.email)}
+            </div>
+          </div>
+          <div style="text-align:right;flex-shrink:0">
+            <div style="font-size:.78rem;font-weight:700;color:${c.text}">${c.label}</div>
+            ${gesamtZuws > 0 ? `<div style="font-size:.72rem;color:#6b7280;margin-top:2px">
+              🟢 ${abgeschl} · 🟡 ${gestartet} · 🔴 ${offen}
+            </div>` : ''}
+          </div>
+        </div>`;
+    });
+
+    listEl.innerHTML = rows.join('');
+
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;padding:8px">Fehler beim Laden: ${escHtml(e.message)}</div>`;
+  }
+}
+
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -1164,6 +1281,8 @@ function renderSubDashboard() {
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Dringend</div></div>`;
   // Kalender rendern
   renderSubKalender();
+  // Mitarbeiterliste rendern (nur für Verantwortliche)
+  renderMitarbeiterListe();
   if (!meineZuws.length) {
     document.getElementById('sub-schulungen-list').innerHTML='<div class="empty-state"><div class="icon">🎉</div><p>Keine Schulungen zugewiesen</p></div>';
     return;
@@ -2141,6 +2260,9 @@ async function mitarbeiterEinzelnSpeichern() {
 
     sbAudit('MITARBEITER_EINZEL', { name, email, tenantId: currentUser.tenantId });
 
+    // Mitarbeiterliste aktualisieren
+    renderMitarbeiterListe();
+
     // Ergebnis anzeigen
     document.getElementById('einzel-formular').style.display = 'none';
     document.getElementById('einzel-ergebnis-daten').innerHTML =
@@ -2345,6 +2467,9 @@ async function mitarbeiterImportStarten() {
   // Ergebnis anzeigen
   document.getElementById('import-step-vorschau').style.display = 'none';
   document.getElementById('import-step-ergebnis').style.display = '';
+
+  // Mitarbeiterliste aktualisieren
+  renderMitarbeiterListe();
 
   const msgEl = document.getElementById('import-ergebnis-msg');
   if (fehler === 0) {
