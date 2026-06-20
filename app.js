@@ -1293,9 +1293,13 @@ async function renderMitarbeiterListe() {
   try {
     // Alle nicht-archivierten Mitarbeiter laden (oder alle inkl. archiviert je nach Filter)
     let query = `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&role=eq.mitarbeiter&order=name.asc`;
-    if (filter === 'aktiv')     query += '&aktiv=eq.true&archiviert=eq.false';
-    else if (filter === 'passiv') query += '&aktiv=eq.false&archiviert=eq.false';
+    if (filter === 'aktiv')          query += '&aktiv=eq.true&archiviert=eq.false';
+    else if (filter === 'passiv')    query += '&aktiv=eq.false&archiviert=eq.false';
     else if (filter === 'archiviert') query += '&archiviert=eq.true';
+    else if (filter.startsWith('bereich:')) {
+      const b = filter.slice('bereich:'.length);
+      query += `&archiviert=eq.false&bereich=eq.${encodeURIComponent(b)}`;
+    }
     // 'alle' = kein weiterer Filter
 
     const mitarbeiter = await SB.get('users', query);
@@ -1304,6 +1308,11 @@ async function renderMitarbeiterListe() {
     const headerEl = document.getElementById('sub-mitarbeiter-header');
     if (headerEl) {
       const currentVal = filter;
+      // Eindeutige Bereiche aus geladener Mitarbeiterliste sammeln
+      const bereiche = [...new Set((mitarbeiter||[]).map(m=>m.bereich).filter(Boolean))].sort();
+      const bereichOptions = bereiche.map(b =>
+        `<option value="bereich:${escHtml(b)}" ${currentVal===`bereich:${b}`?'selected':''}>${escHtml(b)}</option>`
+      ).join('');
       headerEl.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <select id="ma-filter-select" onchange="renderMitarbeiterListe()"
@@ -1312,6 +1321,7 @@ async function renderMitarbeiterListe() {
             <option value="passiv"     ${currentVal==='passiv'?'selected':''}>⏸ Passive</option>
             <option value="archiviert" ${currentVal==='archiviert'?'selected':''}>📦 Archivierte</option>
             <option value="alle"       ${currentVal==='alle'?'selected':''}>🔍 Alle</option>
+            ${bereiche.length ? `<optgroup label="── Bereich ──">${bereichOptions}</optgroup>` : ''}
           </select>
         </div>`;
     }
@@ -1411,6 +1421,10 @@ async function renderMitarbeiterListe() {
             <div style="font-size:.78rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
               ${escHtml(m.email)}
             </div>
+            ${(m.standort||m.bereich) ? `<div style="font-size:.75rem;color:#4b5563;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
+              ${m.standort ? `<span>📍 ${escHtml(m.standort)}</span>` : ''}
+              ${m.bereich  ? `<span>🏷 ${escHtml(m.bereich)}</span>` : ''}
+            </div>` : ''}
             <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
               ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}
             </div>
@@ -1422,6 +1436,7 @@ async function renderMitarbeiterListe() {
             </div>` : ''}
           </div>
         </div>`;
+
     });
 
     listEl.innerHTML = rows.join('');
@@ -2366,6 +2381,8 @@ function mitarbeiterEinzelnOeffnen() {
   // Reset
   document.getElementById('einzel-name').value = '';
   document.getElementById('einzel-email').value = '';
+  document.getElementById('einzel-standort').value = '';
+  document.getElementById('einzel-bereich').value = '';
   document.getElementById('einzel-passwort').value = '';
   document.getElementById('einzel-fehler').style.display = 'none';
   document.getElementById('einzel-formular').style.display = 'block';
@@ -2389,9 +2406,11 @@ function mitarbeiterEinzelnGenerierePasswort() {
 }
 
 async function mitarbeiterEinzelnSpeichern() {
-  const name  = document.getElementById('einzel-name').value.trim();
-  const email = document.getElementById('einzel-email').value.trim().toLowerCase();
-  let   pw    = document.getElementById('einzel-passwort').value.trim();
+  const name     = document.getElementById('einzel-name').value.trim();
+  const email    = document.getElementById('einzel-email').value.trim().toLowerCase();
+  const standort = document.getElementById('einzel-standort').value.trim();
+  const bereich  = document.getElementById('einzel-bereich').value.trim();
+  let   pw       = document.getElementById('einzel-passwort').value.trim();
 
   const fehlerEl = document.getElementById('einzel-fehler');
   fehlerEl.style.display = 'none';
@@ -2428,7 +2447,9 @@ async function mitarbeiterEinzelnSpeichern() {
       email,
       password_hash: hash,
       role: 'mitarbeiter',
-      tenant_id: currentUser.tenantId
+      tenant_id: currentUser.tenantId,
+      standort: standort || null,
+      bereich:  bereich  || null
     });
 
     if (res && res.error) {
@@ -2454,6 +2475,8 @@ async function mitarbeiterEinzelnSpeichern() {
     document.getElementById('einzel-ergebnis-daten').innerHTML =
       `<div style="margin-bottom:6px"><strong>Name:</strong> ${name}</div>` +
       `<div style="margin-bottom:6px"><strong>E-Mail:</strong> ${email}</div>` +
+      (standort ? `<div style="margin-bottom:6px"><strong>Standort:</strong> ${escHtml(standort)}</div>` : '') +
+      (bereich  ? `<div style="margin-bottom:6px"><strong>Bereich:</strong> ${escHtml(bereich)}</div>` : '') +
       `<div><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>`;
     document.getElementById('einzel-ergebnis').style.display = 'block';
 
