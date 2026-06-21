@@ -2277,9 +2277,14 @@ function renderSubDashboard() {
     </div>`;
   }).join('');
 
-  // Anzahl im Button-Untertitel aktualisieren
+  // Anzahl im Button-Untertitel aktualisieren, Liste sicherstellen geschlossen
   const subEl = document.getElementById('btn-unterweisungen-sub');
-  if (subEl) subEl.textContent = meineZuws.length + ' Thema' + (meineZuws.length !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
+  const liste = document.getElementById('sub-schulungen-list');
+  if (liste) liste.style.display = 'none';
+  const n = meineZuws.length;
+  if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
+  const pfeil = document.getElementById('btn-unterweisungen-pfeil');
+  if (pfeil) pfeil.style.transform = '';
 }
 
 function unterweisungenToggle() {
@@ -2287,14 +2292,14 @@ function unterweisungenToggle() {
   const pfeil = document.getElementById('btn-unterweisungen-pfeil');
   const sub   = document.getElementById('btn-unterweisungen-sub');
   if (!liste) return;
-  const offen = liste.style.display !== 'none';
-  liste.style.display = offen ? 'none' : 'block';
-  if (pfeil) pfeil.style.transform = offen ? '' : 'rotate(180deg)';
+  const istGeschlossen = liste.style.display === 'none' || liste.style.display === '';
+  liste.style.display = istGeschlossen ? 'block' : 'none';
+  if (pfeil) pfeil.style.transform = istGeschlossen ? 'rotate(180deg)' : '';
   if (sub) {
-    const n = document.querySelectorAll('#sub-schulungen-list .schulung-item').length;
-    sub.textContent = offen
-      ? n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen'
-      : n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Schließen';
+    const n = liste.querySelectorAll('.schulung-item').length;
+    sub.textContent = istGeschlossen
+      ? n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Schließen'
+      : n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
   }
 }
 
