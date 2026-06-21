@@ -3756,20 +3756,76 @@ async function zeigeSchulungshistorie(userId) {
       return;
     }
 
-    const html = alleFormulare.map(f => {
+    const html = alleFormulare.map((f, idx) => {
       const zuw = zuweisungen.find(z => z.id === f.id);
       const v = zuw ? SCHULUNG_VORLAGEN.find(vl => vl.id === zuw.vorlagenId) : null;
       const t = zuw ? APP_TENANTS.find(tn => tn.id === zuw.tenantId) : null;
-      return `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid #f3f4f6">
-        <div style="font-size:1.4rem">✅</div>
-        <div style="flex:1">
-          <div style="font-size:.9rem;font-weight:600">${escHtml(v?.titel || f.id)}</div>
-          <div style="font-size:.76rem;color:#6b7280">
-            ${t ? escHtml(t.name) + ' • ' : ''}
-            Abgeschlossen: ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'}
+
+      // Formular-Felder aus DB (als Objekt oder JSON-String)
+      const felder = (typeof f.felder === 'string') ? (() => { try { return JSON.parse(f.felder); } catch(e) { return {}; } })() : (f.felder || {});
+
+      // Inhalt der Schulung aufbauen (Abschnitte + Felder)
+      let detailHtml = '';
+      if (v && v.abschnitte && v.abschnitte.length) {
+        detailHtml = v.abschnitte.map(ab => {
+          const felderHtml = ab.felder.map(feld => {
+            const val = felder[feld.id];
+            let anzeigeWert = '';
+            if (feld.typ === 'signature') {
+              anzeigeWert = val
+                ? `<span style="color:#16a34a;font-weight:600">✍️ Unterschrift vorhanden</span><br><img src="${val}" style="max-width:180px;max-height:60px;border:1px solid #e5e7eb;border-radius:4px;margin-top:3px" alt="Unterschrift">`
+                : `<span style="color:#9ca3af">– keine Unterschrift –</span>`;
+            } else if (feld.typ === 'checkbox') {
+              anzeigeWert = val ? '☑ Ja' : '☐ Nein';
+            } else if (feld.typ === 'upload') {
+              anzeigeWert = val ? `📎 ${escHtml(val)}` : '–';
+            } else {
+              anzeigeWert = val ? escHtml(String(val)) : '<span style="color:#9ca3af">–</span>';
+            }
+            return `<div style="margin-bottom:6px">
+              <div style="font-size:.72rem;color:#6b7280;margin-bottom:1px">${escHtml(feld.label)}${feld.pflicht ? ' <span style="color:#dc2626">*</span>' : ''}</div>
+              <div style="font-size:.82rem;color:#1f2937">${anzeigeWert}</div>
+            </div>`;
+          }).join('');
+          return `<div style="margin-bottom:10px">
+            <div style="font-size:.72rem;font-weight:700;color:#1e3a5f;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;padding-bottom:3px;border-bottom:1px solid #e5e7eb">${escHtml(ab.titel)}</div>
+            ${felderHtml}
+          </div>`;
+        }).join('');
+      } else if (Object.keys(felder).length) {
+        // Keine Vorlage mehr vorhanden — rohe Feldwerte anzeigen
+        detailHtml = Object.entries(felder).map(([k, val]) => {
+          const anzeigeWert = (typeof val === 'string' && val.startsWith('data:image'))
+            ? `<img src="${val}" style="max-width:180px;max-height:60px;border:1px solid #e5e7eb;border-radius:4px" alt="Unterschrift">`
+            : escHtml(String(val || '–'));
+          return `<div style="margin-bottom:5px"><span style="font-size:.72rem;color:#6b7280">${escHtml(k)}: </span><span style="font-size:.82rem">${anzeigeWert}</span></div>`;
+        }).join('');
+      } else {
+        detailHtml = '<div style="color:#9ca3af;font-size:.8rem">Kein Formularinhalt gespeichert.</div>';
+      }
+
+      const detailId = `hd-${idx}`;
+      return `<div style="border:1px solid #e5e7eb;border-radius:10px;margin-bottom:10px;overflow:hidden">
+        <!-- Kopfzeile (klickbar) -->
+        <div onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none';this.querySelector('.hd-arrow').textContent=document.getElementById('${detailId}').style.display==='block'?'▲':'▼'"
+             style="display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;background:#f9fafb;user-select:none">
+          <div style="font-size:1.3rem">✅</div>
+          <div style="flex:1">
+            <div style="font-size:.9rem;font-weight:600">${escHtml(v?.titel || f.id)}</div>
+            <div style="font-size:.75rem;color:#6b7280">
+              ${t ? escHtml(t.name) + ' · ' : ''}Abgeschlossen: ${f.abgeschlossen_am ? datumStr(f.abgeschlossen_am) : '–'}
+              ${f.abgeschlossen_von ? ' · Von: ' + escHtml(userNameVonId(f.abgeschlossen_von, zuw?.tenantId) || f.abgeschlossen_von) : ''}
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${f.pdf_path ? `<a href="${f.pdf_path}" target="_blank" onclick="event.stopPropagation()" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>` : ''}
+            <span class="hd-arrow" style="font-size:.75rem;color:#6b7280">▼</span>
           </div>
         </div>
-        ${f.pdf_path ? `<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>` : ''}
+        <!-- Formular-Inhalt (ausgeklappt) -->
+        <div id="${detailId}" style="display:none;padding:14px;background:#fff;border-top:1px solid #e5e7eb">
+          ${detailHtml}
+        </div>
       </div>`;
     }).join('');
 
