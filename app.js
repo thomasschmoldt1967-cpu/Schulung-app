@@ -939,21 +939,38 @@ function renderSubKalender() {
 
   if (!naechste.length) { el.style.display = 'none'; return; }
 
+  const ampelFarbe = { rot:'#dc2626', gelb:'#f59e0b', gruen:'#16a34a', grau:'#9ca3af' };
+  const ampelBg    = { rot:'#fef2f2', gelb:'#fffbeb', gruen:'#f0fdf4', grau:'#f9fafb' };
+  const ampelBorder= { rot:'#fca5a5', gelb:'#fde68a', gruen:'#86efac', grau:'#e5e7eb' };
+  const ampelDot   = { rot:'🔴', gelb:'🟡', gruen:'🟢', grau:'⚪' };
+
   el.style.display = '';
   el.innerHTML = `<div class="card" style="margin-bottom:14px">
     <div class="card-title">📅 Nächste Fristen</div>
     ${naechste.map(z => {
       const tage = Math.ceil((new Date(z.frist) - new Date()) / 86400000);
-      const tageFarbe = tage < 0 ? '#dc2626' : tage < 14 ? '#f59e0b' : '#16a34a';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6">
-        <div style="min-width:48px;text-align:center;font-size:.78rem;font-weight:700;color:${tageFarbe}">
-          ${tage < 0 ? `${Math.abs(tage)}d<br>über` : `${tage}d`}
+      const s = z.s || 'grau';
+      const farbe  = ampelFarbe[s]  || '#9ca3af';
+      const bg     = ampelBg[s]     || '#f9fafb';
+      const border = ampelBorder[s] || '#e5e7eb';
+      const dot    = ampelDot[s]    || '⚪';
+      const tageText = tage < 0
+        ? `<span style="color:#dc2626;font-weight:700">${Math.abs(tage)} Tage überfällig</span>`
+        : tage === 0
+          ? `<span style="color:#dc2626;font-weight:700">Heute fällig!</span>`
+          : `<span style="color:${farbe};font-weight:600">noch ${tage} Tag${tage===1?'':'e'}</span>`;
+      return `<div style="display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:6px;
+                border-radius:8px;background:${bg};border:1px solid ${border}">
+        <span style="font-size:1.2rem;flex-shrink:0">${dot}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.88rem;font-weight:700;color:#1e3a5f;
+                white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+            ${z.v ? escHtml(z.v.titel) : z.vorlagenId}
+          </div>
+          <div style="font-size:.76rem;color:#6b7280">
+            Termin bis: <strong>${datumStr(z.frist)}</strong> · ${tageText}
+          </div>
         </div>
-        <div style="flex:1">
-          <div style="font-size:.88rem;font-weight:600">${z.v?escHtml(z.v.titel):z.vorlagenId}</div>
-          <div style="font-size:.76rem;color:#6b7280">Frist: ${z.frist}</div>
-        </div>
-        ${statusBadgeHtml(z.s)}
       </div>`;
     }).join('')}
   </div>`;
