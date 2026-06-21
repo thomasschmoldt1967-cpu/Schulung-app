@@ -3860,8 +3860,34 @@ async function zeigeSchulungshistorie(userId) {
         });
       }
 
+      // Fallback: rohe sig_0/sig_1/... Keys direkt aus felder anzeigen (alte Formulare)
       if (!abschnitteHtml) {
-        abschnitteHtml = '<div style="color:#9ca3af;font-size:.8rem;padding:8px 0">Kein Formularinhalt gespeichert.</div>';
+        const sigEntries = Object.entries(felder).filter(([k,v]) => typeof v === 'string' && v.startsWith('data:image'));
+        const textEntries = Object.entries(felder).filter(([k,v]) => typeof v === 'string' && !v.startsWith('data:image') && v.trim());
+        if (sigEntries.length || textEntries.length) {
+          let fallbackHtml = '';
+          if (textEntries.length) {
+            fallbackHtml += textEntries.map(([k,v]) =>
+              `<div style="margin-bottom:5px">
+                <div style="font-size:.68rem;color:#9ca3af">${escHtml(k)}</div>
+                <div style="font-size:.82rem;color:#1f2937">${escHtml(v)}</div>
+              </div>`).join('');
+          }
+          if (sigEntries.length) {
+            fallbackHtml += `<div style="margin-bottom:10px">
+              <div style="font-size:.7rem;font-weight:700;color:#1e3a5f;text-transform:uppercase;letter-spacing:.06em;
+                          padding:3px 6px;background:#eff6ff;border-left:3px solid #1e3a5f;margin-bottom:6px">Unterschriften</div>
+              ${sigEntries.map(([k,v]) => `
+                <div style="margin-bottom:8px">
+                  <div style="font-size:.72rem;color:#6b7280;margin-bottom:3px;font-weight:600">✍️ Unterschrift</div>
+                  <img src="${v}" style="max-width:220px;max-height:70px;border:1px solid #d1d5db;border-radius:6px;background:#fff;padding:3px;display:block">
+                </div>`).join('')}
+            </div>`;
+          }
+          abschnitteHtml = fallbackHtml;
+        } else {
+          abschnitteHtml = '<div style="color:#9ca3af;font-size:.8rem;padding:8px 0">Kein Formularinhalt gespeichert.</div>';
+        }
       }
 
       return `<div style="border:1px solid #d1d5db;border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
