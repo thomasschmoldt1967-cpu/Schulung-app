@@ -1034,7 +1034,10 @@ function renderAdminVorlagen() {
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
           <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
         </div>
-        <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
+        <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
+          <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
+        </div>
       </div>
       <div style="margin-top:10px;border-top:1px solid #f0f2f5;padding-top:10px">
         ${(v.abschnitte||[]).map(a=>`
@@ -1044,6 +1047,105 @@ function renderAdminVorlagen() {
           </div>`).join('')}
       </div>
     </div>`).join('') || '<div class="empty-state"><div class="icon">📭</div><p>Noch keine Vorlagen vorhanden</p></div>';
+}
+
+// ── Vorlage bearbeiten: Editor mit bestehenden Daten vorausfüllen ──
+function vtBearbeiten(id) {
+  const v = SCHULUNG_VORLAGEN.find(vl => vl.id === id);
+  if (!v) return;
+
+  // Nur Felder-Vorlagen bearbeitbar (kein PDF-Typ)
+  if (v.typ === 'pdf') {
+    alert('PDF-Vorlagen können nicht direkt bearbeitet werden.\n\nBitte legen Sie eine neue Vorlage an oder löschen und ersetzen Sie die bestehende.');
+    return;
+  }
+
+  vtEditId = id;
+
+  // Zum Editor scrollen (Tab öffnen falls nötig)
+  const tab = document.getElementById('tab-schulungen');
+  if (tab && tab.style.display === 'none') {
+    document.querySelectorAll('#screen-admin .tab-btn').forEach(b => {
+      if (b.getAttribute('onclick')?.includes('schulungen')) b.click();
+    });
+  }
+
+  // Felder vorausfüllen
+  document.getElementById('vt-titel').value       = v.titel || '';
+  document.getElementById('vt-beschreibung').value = v.beschreibung || '';
+  document.getElementById('vt-intervall').value   = v.intervallMonate || v.intervall_monate || 12;
+
+  // Typ auf "felder" setzen
+  const radioFelder = document.querySelector('input[name="vt-typ"][value="felder"]');
+  if (radioFelder) { radioFelder.checked = true; vtTypWechseln('felder'); }
+
+  // Abschnitte leeren und neu befüllen
+  const container = document.getElementById('vt-abschnitte');
+  container.innerHTML = '';
+  vtAbschnittCount = 0;
+
+  (v.abschnitte || []).forEach(ab => {
+    vtAbschnittCount++;
+    const abId = `ab_${vtAbschnittCount}`;
+    const div = document.createElement('div');
+    div.id = abId;
+    div.className = 'card';
+    div.style.cssText = 'margin-top:12px;background:#f8faff;border:1px solid #dde8ff';
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <input type="text" placeholder="Abschnittsname" style="font-weight:700;font-size:.9rem;border:none;background:transparent;flex:1;outline:none" id="ab_titel_${abId}" value="${escHtml(ab.titel||'')}">
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('${abId}').remove()">✕</button>
+      </div>
+      <div id="felder_${abId}"></div>
+      <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="vtAddFeld('${abId}')">+ Feld hinzufügen</button>
+    `;
+    container.appendChild(div);
+
+    // Felder des Abschnitts befüllen
+    (ab.felder || []).forEach(f => {
+      const feldId = `feld_${abId}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+      const fDiv = document.createElement('div');
+      fDiv.id = feldId;
+      fDiv.style.cssText = 'display:grid;grid-template-columns:1fr 130px 60px 32px;gap:6px;align-items:center;margin-bottom:6px';
+      fDiv.innerHTML = `
+        <input type="text" placeholder="Feldbezeichnung *" id="label_${feldId}" style="font-size:.82rem" value="${escHtml(f.label||'')}">
+        <select id="typ_${feldId}" style="font-size:.82rem">
+          <option value="text"${f.typ==='text'?' selected':''}>Texteingabe</option>
+          <option value="textarea"${f.typ==='textarea'?' selected':''}>Mehrzeilig</option>
+          <option value="select"${f.typ==='select'?' selected':''}>Auswahl</option>
+          <option value="checkbox"${f.typ==='checkbox'?' selected':''}>Checkbox</option>
+          <option value="signature"${f.typ==='signature'?' selected':''}>Unterschrift</option>
+          <option value="upload"${f.typ==='upload'?' selected':''}>Datei-Upload</option>
+        </select>
+        <label style="font-size:.78rem;display:flex;align-items:center;gap:3px;cursor:pointer">
+          <input type="checkbox" id="pfl_${feldId}"${f.pflicht?' checked':''}> Pflicht
+        </label>
+        <button class="btn btn-danger btn-sm" onclick="document.getElementById('${feldId}').remove()">✕</button>
+      `;
+      document.getElementById(`felder_${abId}`).appendChild(fDiv);
+    });
+  });
+
+  // Titel + Buttons des Editor-Blocks umschalten
+  document.getElementById('vt-card-titel').textContent = `✏️ Vorlage bearbeiten: ${escHtml(v.titel)}`;
+  document.getElementById('vt-speichern-btn').textContent = '💾 Änderungen speichern';
+  document.getElementById('vt-abbrechen-btn').style.display = '';
+
+  // Nach oben scrollen zum Editor
+  document.getElementById('vt-card-titel').scrollIntoView({ behavior:'smooth', block:'start' });
+}
+
+function vtBearbeitenAbbrechen() {
+  vtEditId = null;
+  document.getElementById('vt-titel').value = '';
+  document.getElementById('vt-beschreibung').value = '';
+  document.getElementById('vt-intervall').value = '12';
+  document.getElementById('vt-abschnitte').innerHTML = '';
+  vtAbschnittCount = 0;
+  document.getElementById('vt-card-titel').textContent = '➕ Neue Schulungsvorlage erstellen';
+  document.getElementById('vt-speichern-btn').textContent = '💾 Vorlage speichern';
+  document.getElementById('vt-abbrechen-btn').style.display = 'none';
+  document.getElementById('vt-msg').classList.remove('show');
 }
 
 async function vtLoeschen(id) {
@@ -1081,6 +1183,7 @@ async function vtLoeschen(id) {
 let vtAbschnittCount = 0;
 let vtSigFeldExtra   = 0;
 let vtPdfFile        = null;
+let vtEditId         = null; // null = Neu-Modus, string = Bearbeiten-Modus
 let aktiveSprache    = 'de';
 
 // Übersetzungstabelle
@@ -1335,15 +1438,35 @@ async function vtSpeichern() {
   const id = `vorlage_${titel.toLowerCase().replace(/\s+/g,'_').replace(/[^a-z0-9_]/g,'')}_${Date.now()}`;
   const vorlage = {id,titel,beschreibung:beschr,intervall_monate:intervall,abschnitte,typ,pdf_url:pdf_url||null};
   try {
-    await SB.post('vorlagen', vorlage);
-    SCHULUNG_VORLAGEN.push({...vorlage,intervallMonate:intervall});
-    await sbAudit('VORLAGE_NEU',`Neue Vorlage "${titel}" (${typ}) erstellt`);
-    showToast(`✅ Vorlage "${titel}" gespeichert`,'#16a34a');
+    if (vtEditId) {
+      // ── Bearbeiten-Modus: PATCH (Update in Supabase) ──
+      const updates = { titel, beschreibung: beschr, intervall_monate: intervall, abschnitte };
+      await fetch(`${SUPABASE_URL}/rest/v1/vorlagen?id=eq.${vtEditId}`, {
+        method: 'PATCH',
+        headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(updates)
+      });
+      const idx = SCHULUNG_VORLAGEN.findIndex(v => v.id === vtEditId);
+      if (idx !== -1) SCHULUNG_VORLAGEN[idx] = { ...SCHULUNG_VORLAGEN[idx], ...updates, intervallMonate: intervall };
+      await sbAudit('VORLAGE_EDIT', `Vorlage "${titel}" bearbeitet`);
+      showToast(`✅ Vorlage "${titel}" aktualisiert`, '#16a34a');
+    } else {
+      // ── Neu-Modus: POST ──
+      await SB.post('vorlagen', vorlage);
+      SCHULUNG_VORLAGEN.push({...vorlage,intervallMonate:intervall});
+      await sbAudit('VORLAGE_NEU',`Neue Vorlage "${titel}" (${typ}) erstellt`);
+      showToast(`✅ Vorlage "${titel}" gespeichert`,'#16a34a');
+    }
+    // Editor zurücksetzen
+    vtEditId = null;
     document.getElementById('vt-titel').value=''; document.getElementById('vt-beschreibung').value='';
     document.getElementById('vt-intervall').value='12'; document.getElementById('vt-abschnitte').innerHTML='';
     document.getElementById('vt-pdf-name').textContent='PDF auswählen (max. 10 MB)';
     document.getElementById('vt-pdf-zone').classList.remove('has-file');
     document.getElementById('vt-pdf-input').value='';
+    document.getElementById('vt-card-titel').textContent = '➕ Neue Schulungsvorlage erstellen';
+    document.getElementById('vt-speichern-btn').textContent = '💾 Vorlage speichern';
+    document.getElementById('vt-abbrechen-btn').style.display = 'none';
     vtPdfFile=null; vtAbschnittCount=0;
     document.querySelector('input[name="vt-typ"][value="felder"]').checked=true; vtTypWechseln('felder');
     renderAdminVorlagen(); populateZuweisungsForm();

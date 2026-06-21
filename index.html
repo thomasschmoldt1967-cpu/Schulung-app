@@ -142,7 +142,7 @@
 
       <!-- Neue Vorlage erstellen -->
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">➕ Neue Schulungsvorlage erstellen</div>
+        <div class="card-title" id="vt-card-titel">➕ Neue Schulungsvorlage erstellen</div>
 
         <!-- Typ-Auswahl -->
         <div class="form-group">
@@ -203,7 +203,8 @@
         </div>
 
         <div style="margin-top:14px;display:flex;gap:10px">
-          <button class="btn btn-primary" onclick="vtSpeichern()">💾 Vorlage speichern</button>
+          <button class="btn btn-primary" id="vt-speichern-btn" onclick="vtSpeichern()">💾 Vorlage speichern</button>
+          <button class="btn btn-outline" id="vt-abbrechen-btn" onclick="vtBearbeitenAbbrechen()" style="display:none">✕ Abbrechen</button>
         </div>
         <div id="vt-msg" class="error-msg" style="margin-top:8px"></div>
       </div>
