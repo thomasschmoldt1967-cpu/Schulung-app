@@ -220,7 +220,7 @@ async function pwResetAnfordern() {
         genutzt: false
       });
       // Reset-Link anzeigen (in echter Prod: per E-Mail senden)
-      const baseUrl = window.location.href.split('?')[0].split('#')[0];
+      const baseUrl = window.location.href.split('?')[0].split('#')[0].replace(/^http:\/\//i, 'https://');
       const link = `${baseUrl}?pwreset=${token}`;
       msgEl.style.color = '#16a34a';
       msgEl.innerHTML = `✅ Reset-Link generiert (2h gültig):<br>
@@ -2396,7 +2396,7 @@ async function einladungGenerieren() {
     });
     if (res.error) throw new Error(res.error.message || JSON.stringify(res.error));
 
-    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+    const baseUrl = window.location.href.split('?')[0].split('#')[0].replace(/^http:\/\//i, 'https://');
     const link = `${baseUrl}?einladung=${token}`;
 
     // Link anzeigen
@@ -3410,7 +3410,7 @@ function qrLoginOeffnen(userId) {
 
   // QR-Login-Link generieren (Token = userId als Base64)
   const token = btoa(JSON.stringify({ userId, ts: Date.now() }));
-  const url = `${location.origin}${location.pathname}?qrlogin=${encodeURIComponent(token)}`;
+  const url = `${location.origin.replace(/^http:\/\//i, 'https://')}${location.pathname}?qrlogin=${encodeURIComponent(token)}`;
 
   document.getElementById('qr-login-name').textContent = user.name;
   document.getElementById('qr-login-email').textContent = user.email;
