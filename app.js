@@ -2009,24 +2009,74 @@ function generatePdf(zuwId, downloadOnly) {
   doc.text(statusLabel(status).toUpperCase(),PL+19,y+4.5,{align:'center'}); y+=13;
   doc.setDrawColor(200,200,200); doc.line(PL,y,210-PL,y); y+=8;
 
-  if (form.felder&&vorlage) {
+  // ── Formularinhalt: alle Abschnitte + Felder ──
+  if (form.felder && vorlage && vorlage.abschnitte) {
     vorlage.abschnitte.forEach(ab => {
-      checkY(12); doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(26,58,92);
-      doc.text(ab.titel.toUpperCase(),PL,y); y+=6;
+      checkY(14);
+      // Abschnittsüberschrift — blauer Balken
+      doc.setFillColor(26,58,92);
+      doc.rect(PL, y-4, PW, 7, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+      doc.text(ab.titel.toUpperCase(), PL+2, y+0.5);
+      y += 8;
+
       ab.felder.forEach(feld => {
-        const val=form.felder[feld.id]; checkY(10);
-        doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(60,60,60);
-        doc.text(feld.label+(feld.pflicht?' *':''),PL,y); y+=4.5;
-        doc.setFont('helvetica','normal'); doc.setTextColor(30,30,30);
-        if (feld.typ==='signature') {
-          if(val){checkY(30);try{doc.addImage(val,'PNG',PL,y,60,22);y+=26;}catch(e){doc.text('[Unterschrift]',PL,y);y+=6;}}
-          else{doc.setTextColor(180,180,180);doc.text('–',PL,y);y+=5;}
-        } else if(feld.typ==='checkbox'){doc.text(val?'☑ Ja':'☐ Nein',PL,y);y+=5;}
-        else if(feld.typ==='upload'){doc.text(val?`📎 ${val}`:'–',PL,y);y+=5;}
-        else{const lines=doc.splitTextToSize(String(val||'–'),PW);doc.text(lines,PL,y);y+=lines.length*4.5+1;}
-        y+=1;
-      }); y+=4;
+        const val = form.felder[feld.id];
+        checkY(14);
+
+        // Feldbezeichnung
+        doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(80,80,80);
+        doc.text(feld.label + (feld.pflicht ? ' *' : ''), PL+2, y);
+        y += 4;
+
+        // Feldwert
+        doc.setFont('helvetica','normal'); doc.setTextColor(20,20,20);
+
+        if (feld.typ === 'signature') {
+          if (val) {
+            checkY(30);
+            try {
+              // Rahmen für Unterschrift
+              doc.setDrawColor(200,200,200); doc.setFillColor(252,252,252);
+              doc.roundedRect(PL+2, y, 70, 24, 1, 1, 'FD');
+              doc.addImage(val, 'PNG', PL+3, y+1, 68, 22);
+              y += 27;
+            } catch(e) {
+              doc.setTextColor(150,150,150); doc.text('[Unterschrift vorhanden]', PL+2, y); y += 6;
+            }
+          } else {
+            doc.setTextColor(180,180,180); doc.text('– keine Unterschrift –', PL+2, y); y += 5;
+          }
+        } else if (feld.typ === 'checkbox') {
+          // Checkbox als Kästchen zeichnen (kein Unicode)
+          doc.setDrawColor(80,80,80);
+          doc.rect(PL+2, y-3.5, 4, 4);
+          if (val) {
+            doc.setLineWidth(0.6); doc.setDrawColor(22,163,74);
+            doc.line(PL+2.7, y-1.8, PL+4, y-3.2);
+            doc.line(PL+4, y-3.2, PL+5.5, y-5);
+            doc.setLineWidth(0.2); doc.setDrawColor(80,80,80);
+          }
+          doc.setTextColor(20,20,20); doc.setFontSize(8);
+          doc.text(val ? 'Ja' : 'Nein', PL+8, y-0.5);
+          y += 5;
+        } else if (feld.typ === 'upload') {
+          doc.setTextColor(100,100,200); doc.text(val ? val : '–', PL+2, y); y += 5;
+        } else {
+          const anzeigeVal = (val !== undefined && val !== null && val !== '') ? String(val) : '–';
+          const lines = doc.splitTextToSize(anzeigeVal, PW-4);
+          if (!val) doc.setTextColor(180,180,180);
+          doc.text(lines, PL+2, y);
+          y += lines.length * 4.5 + 1;
+        }
+        y += 2; // Abstand zwischen Feldern
+      });
+      y += 5; // Abstand nach Abschnitt
     });
+  } else if (!vorlage) {
+    checkY(10);
+    doc.setFontSize(8); doc.setTextColor(150,150,150);
+    doc.text('(Vorlage nicht mehr verfügbar – Inhalt im PDF-Nachweis gespeichert)', PL, y); y += 8;
   }
   const pc=doc.internal.getNumberOfPages();
   for(let i=1;i<=pc;i++){doc.setPage(i);doc.setFontSize(7);doc.setTextColor(150,150,150);doc.text(`Seite ${i}/${pc}  •  ${new Date().toLocaleString('de-DE')}`,105,290,{align:'center'});doc.line(PL,285,210-PL,285);}
