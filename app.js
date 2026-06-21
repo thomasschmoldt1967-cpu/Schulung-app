@@ -1472,24 +1472,31 @@ async function renderMitarbeiterListe() {
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
-        let dot, statusText, statusColor;
+        let dot, ampelBg, ampelBorder;
         if (f.abgeschlossen && f.abgeschlossenVon === m.id) {
-          dot = '🟢'; statusText = 'Abgeschlossen'; statusColor = '#16a34a';
-          if (f.abgeschlossenAm) statusText += ' ' + dateStr(f.abgeschlossenAm);
-        } else if (f.gestartet && f.abgeschlossenVon === m.id) {
-          dot = '🟡'; statusText = 'In Bearbeitung'; statusColor = '#d97706';
+          dot = '🟢'; ampelBg = '#f0fdf4'; ampelBorder = '#86efac';
         } else if (fristDate && fristDate < heute) {
-          dot = '🔴'; statusText = 'Überfällig seit ' + dateStr(z.frist); statusColor = '#dc2626';
+          dot = '🔴'; ampelBg = '#fef2f2'; ampelBorder = '#fca5a5';
+        } else if (f.gestartet && f.abgeschlossenVon === m.id) {
+          dot = '🟡'; ampelBg = '#fffbeb'; ampelBorder = '#fde68a';
         } else if (fristDate) {
           const tage = Math.ceil((fristDate - heute) / 86400000);
-          dot = '🟡'; statusText = `Frist: ${dateStr(z.frist)} (${tage}T)`; statusColor = '#d97706';
+          dot = tage <= 14 ? '🔴' : '🟡';
+          ampelBg = tage <= 14 ? '#fef2f2' : '#fffbeb';
+          ampelBorder = tage <= 14 ? '#fca5a5' : '#fde68a';
         } else {
-          dot = '🔴'; statusText = 'Offen'; statusColor = '#dc2626';
+          dot = '🔴'; ampelBg = '#fef2f2'; ampelBorder = '#fca5a5';
         }
-        return `<div style="display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.05)">
-          <span style="flex-shrink:0;font-size:.85rem">${dot}</span>
-          <span style="flex:1;font-size:.78rem;color:#374151;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(titel)}</span>
-          <span style="font-size:.72rem;color:${statusColor};white-space:nowrap;flex-shrink:0">${statusText}</span>
+        const fristAnzeige = z.frist ? `Termin bis: ${dateStr(z.frist)}` : 'Kein Termin';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;
+                  margin-bottom:4px;border-radius:6px;
+                  background:${ampelBg};border:1px solid ${ampelBorder}">
+          <span style="font-size:1.1rem;flex-shrink:0">${dot}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:.8rem;font-weight:700;color:#1e3a5f;
+                  white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(titel)}</div>
+            <div style="font-size:.72rem;color:#6b7280">${fristAnzeige}</div>
+          </div>
         </div>`;
       }).join('');
 
