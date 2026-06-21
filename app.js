@@ -43,6 +43,11 @@ function dateStr(iso) {
   if (!iso) return '–';
   return new Date(iso).toLocaleString('de-DE', { dateStyle: 'short', timeStyle: 'short' });
 }
+function datumStr(iso) {
+  if (!iso) return '–';
+  const d = new Date(iso);
+  return d.toLocaleDateString('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1487,7 +1492,7 @@ async function renderMitarbeiterListe() {
         } else {
           dot = '🔴'; ampelBg = '#fef2f2'; ampelBorder = '#fca5a5';
         }
-        const fristAnzeige = z.frist ? `Termin bis: ${dateStr(z.frist)}` : 'Kein Termin';
+        const fristAnzeige = z.frist ? `Termin bis: ${datumStr(z.frist)}` : 'Kein Termin';
         return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;
                   margin-bottom:4px;border-radius:6px;
                   background:${ampelBg};border:1px solid ${ampelBorder}">
