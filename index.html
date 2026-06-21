@@ -333,15 +333,21 @@
       </button>
     </div>
 
-    <!-- Bedienungsanleitung Button -->
-    <div style="margin-bottom:14px">
-      <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25)">
-        <span style="font-size:1.6rem">📖</span>
+    <!-- Kalender + Bedienungsanleitung Buttons -->
+    <div style="margin-bottom:14px;display:flex;gap:10px">
+      <button onclick="subKalenderOeffnen()" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;flex:1;cursor:pointer;text-align:left">
+        <span style="font-size:1.5rem">📅</span>
         <div>
-          <div style="font-weight:700;font-size:.95rem">Bedienungsanleitung</div>
-          <div style="font-size:.75rem;opacity:.8;margin-top:2px">Schritt-für-Schritt Anleitung zur App</div>
+          <div style="font-weight:700;font-size:.9rem">Kalender</div>
+          <div style="font-size:.72rem;opacity:.8;margin-top:2px">Alle Schulungsfristen im Überblick</div>
         </div>
-        <span style="margin-left:auto;font-size:1.1rem;opacity:.7">›</span>
+      </button>
+      <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:14px 16px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25);flex:1">
+        <span style="font-size:1.5rem">📖</span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem">Anleitung</div>
+          <div style="font-size:.72rem;opacity:.8;margin-top:2px">Schritt-für-Schritt Anleitung</div>
+        </div>
       </a>
     </div>
     <div id="sub-schulungen-list"></div>
@@ -720,6 +726,29 @@
 <!-- ══════════════════════════════════════════════════════════
      MODAL: Einzelnen Mitarbeiter anlegen
 ══════════════════════════════════════════════════════════ -->
+<!-- Sub-Kalender Modal -->
+<div id="sub-kalender-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9200;overflow-y:auto;padding:0">
+  <div style="min-height:100%;background:var(--bg,#f8fafc);max-width:600px;margin:0 auto;padding:0 0 40px">
+    <!-- Header -->
+    <div style="background:#1e3a5f;color:#fff;padding:16px 18px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10">
+      <button onclick="subKalenderSchliessen()" style="background:none;border:none;color:#fff;font-size:1.5rem;cursor:pointer;padding:0;line-height:1">←</button>
+      <div style="flex:1">
+        <div style="font-weight:700;font-size:1rem">📅 Schulungs-Kalender</div>
+        <div id="sub-kal-unternehmen" style="font-size:.73rem;opacity:.75;margin-top:1px"></div>
+      </div>
+    </div>
+    <!-- Filter-Buttons -->
+    <div style="padding:14px 16px 8px;display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="subKalenderFilter('alle',this)" id="skf-alle" style="padding:7px 14px;border-radius:20px;border:2px solid #1e3a5f;background:#1e3a5f;color:#fff;font-size:.8rem;font-weight:600;cursor:pointer">🔍 Alle</button>
+      <button onclick="subKalenderFilter('rot',this)" id="skf-rot" style="padding:7px 14px;border-radius:20px;border:2px solid #dc2626;background:#fff;color:#dc2626;font-size:.8rem;font-weight:600;cursor:pointer">🔴 Überfällig</button>
+      <button onclick="subKalenderFilter('gelb',this)" id="skf-gelb" style="padding:7px 14px;border-radius:20px;border:2px solid #f59e0b;background:#fff;color:#f59e0b;font-size:.8rem;font-weight:600;cursor:pointer">🟡 Bald fällig</button>
+      <button onclick="subKalenderFilter('gruen',this)" id="skf-gruen" style="padding:7px 14px;border-radius:20px;border:2px solid #16a34a;background:#fff;color:#16a34a;font-size:.8rem;font-weight:600;cursor:pointer">🟢 Erledigt</button>
+    </div>
+    <!-- Kalender-Inhalt -->
+    <div id="sub-kal-inhalt" style="padding:8px 16px"></div>
+  </div>
+</div>
+
 <div id="mitarbeiter-einzel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9000;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
   <div style="background:#fff;border-radius:16px;padding:24px;max-width:440px;width:100%;margin:20px auto;box-shadow:0 20px 60px rgba(0,0,0,.3)">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">

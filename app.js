@@ -811,7 +811,115 @@ async function renderArchiv() {
   }
 }
 
-// ── SUB-KALENDER ──────────────────────────────────────────────
+// ── SUB-KALENDER VOLLBILD ─────────────────────────────────────
+function subKalenderOeffnen() {
+  const modal = document.getElementById('sub-kalender-modal');
+  if (!modal) return;
+  const el = document.getElementById('sub-kal-unternehmen');
+  if (el && currentUser) {
+    const t = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+    el.textContent = t ? t.name : '';
+  }
+  modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  window._subKalFilter = 'alle';
+  subKalenderRenderInhalt('alle');
+  ['alle','rot','gelb','gruen'].forEach(f => {
+    const btn = document.getElementById('skf-' + f);
+    if (!btn) return;
+    if (f === 'alle') { btn.style.background = '#1e3a5f'; btn.style.color = '#fff'; }
+    else { btn.style.background = '#fff'; btn.style.color = f==='rot'?'#dc2626':f==='gelb'?'#f59e0b':'#16a34a'; }
+  });
+}
+function subKalenderSchliessen() {
+  const modal = document.getElementById('sub-kalender-modal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+function subKalenderFilter(filter, btn) {
+  window._subKalFilter = filter;
+  [
+    {id:'skf-alle', ab:{bg:'#1e3a5f',c:'#fff'}, ib:{bg:'#f1f5f9',c:'#374151'}},
+    {id:'skf-rot',  ab:{bg:'#dc2626',c:'#fff'}, ib:{bg:'#fff',c:'#dc2626'}},
+    {id:'skf-gelb', ab:{bg:'#f59e0b',c:'#fff'}, ib:{bg:'#fff',c:'#f59e0b'}},
+    {id:'skf-gruen',ab:{bg:'#16a34a',c:'#fff'}, ib:{bg:'#fff',c:'#16a34a'}},
+  ].forEach(({id,ab,ib}) => {
+    const b = document.getElementById(id);
+    if (!b) return;
+    const a = id === 'skf-' + filter;
+    b.style.background = a ? ab.bg : ib.bg;
+    b.style.color      = a ? ab.c  : ib.c;
+  });
+  subKalenderRenderInhalt(filter);
+}
+function subKalenderRenderInhalt(filter) {
+  const el = document.getElementById('sub-kal-inhalt');
+  if (!el) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId && z.frist);
+  if (!meineZuws.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#6b7280">Keine Schulungsfristen vorhanden.</div>';
+    return;
+  }
+  let liste = meineZuws.map(z => {
+    const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+    const s = berechneStatus(z);
+    const tage = Math.ceil((new Date(z.frist) - new Date()) / 86400000);
+    return { ...z, v, s, tage };
+  }).sort((a, b) => new Date(a.frist) - new Date(b.frist));
+  if (filter === 'rot')   liste = liste.filter(z => z.s === 'rot');
+  if (filter === 'gelb')  liste = liste.filter(z => z.s === 'gelb');
+  if (filter === 'gruen') liste = liste.filter(z => z.s === 'gruen');
+  if (!liste.length) {
+    const labels = {rot:'Überfällige', gelb:'Bald fällige', gruen:'Abgeschlossene'};
+    el.innerHTML = `<div style="text-align:center;padding:40px 16px;color:#6b7280">Keine ${labels[filter]||''} Schulungen.</div>`;
+    return;
+  }
+  const gruppen = {};
+  liste.forEach(z => {
+    const d = new Date(z.frist);
+    const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const label = d.toLocaleDateString('de-DE', {month:'long', year:'numeric'});
+    if (!gruppen[key]) gruppen[key] = {label, items: []};
+    gruppen[key].items.push(z);
+  });
+  const ampelFarbe = {rot:'#dc2626', gelb:'#f59e0b', gruen:'#16a34a', grau:'#9ca3af'};
+  const ampelBadge = {rot:'🔴 Offen', gelb:'🟡 In Bearbeitung', gruen:'🟢 Abgeschlossen', grau:'⚪ Keine'};
+  let html = '';
+  Object.values(gruppen).forEach(gruppe => {
+    html += `<div style="margin-bottom:20px">
+      <div style="font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#6b7280;margin-bottom:8px;padding:0 2px">${gruppe.label}</div>`;
+    gruppe.items.forEach(z => {
+      const farbe = ampelFarbe[z.s] || '#9ca3af';
+      const badge = ampelBadge[z.s] || '';
+      const tageText = z.tage < 0
+        ? `<span style="color:#dc2626;font-weight:700">${Math.abs(z.tage)} Tage überfällig</span>`
+        : z.tage === 0 ? `<span style="color:#dc2626;font-weight:700">Heute fällig!</span>`
+        : `<span style="color:${farbe};font-weight:600">in ${z.tage} Tag${z.tage===1?'':'en'}</span>`;
+      const datumFormatiert = new Date(z.frist).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
+      const icon = z.s==='gruen'?'✅':z.s==='rot'?'⚠️':z.s==='gelb'?'⏳':'📋';
+      html += `<div style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px">
+        <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
+          <div style="margin-top:6px"><span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span></div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  const anzRot = liste.filter(z=>z.s==='rot').length;
+  const anzGelb = liste.filter(z=>z.s==='gelb').length;
+  const anzGruen = liste.filter(z=>z.s==='gruen').length;
+  const summaryHtml = filter === 'alle' ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+    ${anzRot>0   ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:8px 14px;font-size:.82rem;color:#dc2626;font-weight:600">🔴 ${anzRot} Überfällig</div>` : ''}
+    ${anzGelb>0  ? `<div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:8px 14px;font-size:.82rem;color:#b45309;font-weight:600">🟡 ${anzGelb} Bald fällig</div>` : ''}
+    ${anzGruen>0 ? `<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px 14px;font-size:.82rem;color:#16a34a;font-weight:600">🟢 ${anzGruen} Abgeschlossen</div>` : ''}
+  </div>` : '';
+  el.innerHTML = summaryHtml + html;
+}
+
+// ── SUB-KALENDER (Dashboard-Widget) ──────────────────────────
 function renderSubKalender() {
   const el = document.getElementById('sub-kalender');
   if (!el) return;
