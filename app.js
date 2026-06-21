@@ -1093,25 +1093,163 @@ const UEBERSETZUNGEN = {
   ru: { pflichtHinweis:'* Обязательные поля', zwischenspeichern:'💾 Сохранить', abschliessen:'✅ Завершить & PDF', richtung:'ltr' }
 };
 
+// ── ABSCHNITT-ÜBERSETZUNGEN ──────────────────────────────────
+const ABSCHNITT_UEBERSETZUNGEN = {
+  // Formular-Metafelder
+  'Mitarbeiterinformationen':     { en:'Employee Information',     tr:'Çalışan Bilgileri',      ar:'معلومات الموظف',           es:'Datos del empleado',         ru:'Данные сотрудника' },
+  // Sicherheitsunterweisung Abschnitte
+  'Chemie / Reinigungsmittel':    { en:'Chemicals / Cleaning Agents', tr:'Kimyasallar / Temizlik Maddeleri', ar:'المواد الكيميائية / منظفات', es:'Químicos / Productos de limpieza', ru:'Химия / Чистящие средства' },
+  'Elektrische Geräte':           { en:'Electrical Devices',       tr:'Elektrikli Cihazlar',    ar:'الأجهزة الكهربائية',       es:'Equipos eléctricos',         ru:'Электрооборудование' },
+  'Gefahrstoffe':                 { en:'Hazardous Substances',     tr:'Tehlikeli Maddeler',     ar:'المواد الخطرة',             es:'Sustancias peligrosas',      ru:'Опасные вещества' },
+  'Leitern und Tritte':           { en:'Ladders and Steps',        tr:'Merdivenler ve Basamaklar', ar:'السلالم والدرجات',       es:'Escaleras y peldaños',       ru:'Лестницы и ступени' },
+  'Alkohol & Drogen':             { en:'Alcohol & Drugs',          tr:'Alkol ve Uyuşturucu',    ar:'الكحول والمخدرات',         es:'Alcohol y drogas',           ru:'Алкоголь и наркотики' },
+  'Datenschutz (DSGVO)':          { en:'Data Protection (GDPR)',   tr:'Veri Koruma (KVKK)',     ar:'حماية البيانات (GDPR)',     es:'Protección de datos (RGPD)', ru:'Защита данных (GDPR)' },
+  'Fluchtwege & Brandschutz':     { en:'Escape Routes & Fire Protection', tr:'Kaçış Yolları ve Yangın Güvenliği', ar:'مسارات الإخلاء ومكافحة الحرائق', es:'Vías de evacuación y protección contra incendios', ru:'Пути эвакуации и пожарная безопасность' },
+  'Erste Hilfe':                  { en:'First Aid',                tr:'İlk Yardım',             ar:'الإسعافات الأولية',        es:'Primeros auxilios',          ru:'Первая помощь' },
+  'Schäden & Mängel':             { en:'Damage & Defects',         tr:'Hasarlar ve Eksiklikler', ar:'الأضرار والعيوب',          es:'Daños y defectos',           ru:'Повреждения и недостатки' },
+  'Qualitätsmanagement (QM)':     { en:'Quality Management (QM)', tr:'Kalite Yönetimi',        ar:'إدارة الجودة',              es:'Gestión de calidad (GC)',     ru:'Управление качеством' },
+  'Bestätigung':                  { en:'Confirmation',             tr:'Onay',                   ar:'التأكيد',                   es:'Confirmación',               ru:'Подтверждение' },
+  'Unterschriften':               { en:'Signatures',               tr:'İmzalar',                ar:'التوقيعات',                 es:'Firmas',                     ru:'Подписи' },
+  'Allgemeine Angaben':           { en:'General Information',      tr:'Genel Bilgiler',         ar:'المعلومات العامة',          es:'Datos generales',            ru:'Общие сведения' },
+  'Inhalte':                      { en:'Contents',                 tr:'İçerikler',              ar:'المحتويات',                 es:'Contenidos',                 ru:'Содержание' },
+};
+
+// ── FELD-ÜBERSETZUNGEN ────────────────────────────────────────
 const FELD_UEBERSETZUNGEN = {
-  'Name':                     { en:'Full Name',            tr:'Ad Soyad',         ar:'الاسم الكامل',      es:'Nombre completo',     ru:'Полное имя' },
-  'Vollständiger Name':       { en:'Full Name',            tr:'Ad Soyad',         ar:'الاسم الكامل',      es:'Nombre completo',     ru:'Полное имя' },
-  'Datum':                    { en:'Date',                 tr:'Tarih',            ar:'التاريخ',            es:'Fecha',               ru:'Дата' },
-  'Schulungsdatum':           { en:'Training date',        tr:'Eğitim tarihi',    ar:'تاريخ التدريب',     es:'Fecha de formación',  ru:'Дата обучения' },
-  'Abteilung':                { en:'Department',           tr:'Departman',        ar:'القسم',              es:'Departamento',        ru:'Отдел' },
-  'Position / Tätigkeit':     { en:'Position / Role',      tr:'Pozisyon',         ar:'المنصب',             es:'Cargo',               ru:'Должность' },
-  'Unterschrift Mitarbeiter': { en:'Employee signature',   tr:'Çalışan imzası',   ar:'توقيع الموظف',      es:'Firma empleado',      ru:'Подпись сотрудника' },
-  'Unterschrift Trainer':     { en:'Trainer signature',    tr:'Eğitmen imzası',   ar:'توقيع المدرب',       es:'Firma formador',      ru:'Подпись тренера' },
-  'Unterschrift Vorgesetzter':{ en:'Supervisor signature', tr:'Amir imzası',      ar:'توقيع المشرف',      es:'Firma supervisor',    ru:'Подпись руководителя' },
+  // ── Meta / Stammdaten ──
+  'Name':                         { en:'Name',                     tr:'Ad',                     ar:'الاسم',                     es:'Nombre',                     ru:'Имя' },
+  'Vollständiger Name':           { en:'Full Name',                tr:'Ad Soyad',               ar:'الاسم الكامل',              es:'Nombre completo',            ru:'Полное имя' },
+  'Mitarbeiter':                  { en:'Employee',                 tr:'Çalışan',                ar:'الموظف',                    es:'Empleado',                   ru:'Сотрудник' },
+  'Datum':                        { en:'Date',                     tr:'Tarih',                  ar:'التاريخ',                   es:'Fecha',                      ru:'Дата' },
+  'Schulungsdatum':               { en:'Training date',            tr:'Eğitim tarihi',          ar:'تاريخ التدريب',             es:'Fecha de formación',         ru:'Дата обучения' },
+  'Objekt / Bereich':             { en:'Object / Area',            tr:'Nesne / Alan',           ar:'الموقع / القسم',            es:'Objeto / Área',              ru:'Объект / Зона' },
+  'Abteilung':                    { en:'Department',               tr:'Departman',              ar:'القسم',                     es:'Departamento',               ru:'Отдел' },
+  'Position / Tätigkeit':         { en:'Position / Role',          tr:'Pozisyon / Görev',       ar:'المنصب / الوظيفة',          es:'Cargo / Actividad',          ru:'Должность / Деятельность' },
+  // ── Unterschriften ──
+  'Unterschrift Mitarbeiter':     { en:'Employee signature',       tr:'Çalışan imzası',         ar:'توقيع الموظف',              es:'Firma del empleado',         ru:'Подпись сотрудника' },
+  'Unterschrift Trainer':         { en:'Trainer signature',        tr:'Eğitmen imzası',         ar:'توقيع المدرب',              es:'Firma del formador',         ru:'Подпись тренера' },
+  'Unterschrift Vorgesetzter':    { en:'Supervisor signature',     tr:'Amir imzası',            ar:'توقيع المشرف',              es:'Firma del supervisor',       ru:'Подпись руководителя' },
+  'Unterschrift Unterweisender':  { en:'Instructor signature',     tr:'Eğitici imzası',         ar:'توقيع المعلم',              es:'Firma del instructor',       ru:'Подпись инструктора' },
+  // ── PSA / Allgemein ──
   'Ich habe die PSA erhalten und wurde eingewiesen':
-    { en:'I received and was instructed on PPE', tr:'KKD teslim aldım ve eğitim aldım', ar:'تلقيت معدات الحماية والتعليمات', es:'Recibí el EPI y fui instruido', ru:'Я получил СИЗ и был проинструктирован' },
-  'Fluchtwege sind bekannt':  { en:'Escape routes are known', tr:'Kaçış yolları biliniyor', ar:'مسارات الهروب معروفة', es:'Las rutas de escape son conocidas', ru:'Пути эвакуации известны' },
-  'Notruf 112 bekannt':       { en:'Emergency number 112 known', tr:'Acil numara 112 biliniyor', ar:'رقم الطوارئ 112 معروف', es:'Número de emergencia 112 conocido', ru:'Номер экстренной помощи 112 известен' },
+    { en:'I received the PPE and was instructed', tr:'KKD teslim aldım ve eğitim aldım', ar:'تلقيت معدات الحماية الشخصية والتعليمات اللازمة', es:'Recibí el EPI y recibí instrucciones', ru:'Я получил СИЗ и прошёл инструктаж' },
+  'Fluchtwege sind bekannt':      { en:'Escape routes are known',  tr:'Kaçış yolları bilinmektedir', ar:'مسارات الهروب معروفة',  es:'Las rutas de escape son conocidas', ru:'Пути эвакуации известны' },
+  'Notruf 112 bekannt':           { en:'Emergency number 112 known', tr:'Acil numara 112 biliniyor', ar:'رقم الطوارئ 112 معروف', es:'Número de emergencia 112 conocido', ru:'Номер экстренной помощи 112 известен' },
+  // ── Chemie / Reinigungsmittel ──
+  'Nur zugelassene Reinigungsmittel verwenden':
+    { en:'Use only approved cleaning agents',    tr:'Yalnızca onaylı temizlik maddeleri kullanın', ar:'استخدم فقط منظفات معتمدة', es:'Usar solo productos de limpieza autorizados', ru:'Использовать только разрешённые чистящие средства' },
+  'Keine Reinigungsmittel mischen':
+    { en:'Do not mix cleaning agents',           tr:'Temizlik maddelerini karıştırmayın', ar:'لا تخلط المنظفات',            es:'No mezclar productos de limpieza', ru:'Не смешивать чистящие средства' },
+  'Dosierung nach Herstellerangaben einhalten':
+    { en:'Follow manufacturer dosage instructions', tr:'Üretici talimatlarına göre dozajı uygulayın', ar:'اتبع تعليمات الجرعة من الشركة المصنعة', es:'Respetar la dosis indicada por el fabricante', ru:'Соблюдать дозировку согласно инструкции производителя' },
+  'Schutzhandschuhe / PSA tragen':
+    { en:'Wear protective gloves / PPE',         tr:'Koruyucu eldiven / KKD takın',    ar:'ارتدِ القفازات الواقية / معدات الحماية', es:'Usar guantes protectores / EPI', ru:'Надевать защитные перчатки / СИЗ' },
+  'Chemikalien korrekt beschriften und lagern':
+    { en:'Label and store chemicals correctly',  tr:'Kimyasalları doğru şekilde etiketleyip depolayın', ar:'ضع تسميات صحيحة وخزّن المواد الكيميائية بشكل صحيح', es:'Etiquetar y almacenar correctamente los productos químicos', ru:'Правильно маркировать и хранить химикаты' },
+  // ── Elektrische Geräte ──
+  'Geräte vor Benutzung auf Schäden prüfen':
+    { en:'Check devices for damage before use',  tr:'Kullanmadan önce cihazlarda hasar olup olmadığını kontrol edin', ar:'افحص الأجهزة بحثاً عن أضرار قبل الاستخدام', es:'Revisar los equipos en busca de daños antes de usarlos', ru:'Проверять оборудование на наличие повреждений перед использованием' },
+  'Vor Reinigung Stecker ziehen':
+    { en:'Unplug before cleaning',               tr:'Temizlemeden önce fişi çekin',    ar:'افصل القابس قبل التنظيف',       es:'Desenchufar antes de limpiar',   ru:'Отключать от сети перед уборкой' },
+  'Defekte Geräte nicht benutzen':
+    { en:'Do not use defective devices',         tr:'Arızalı cihazları kullanmayın',   ar:'لا تستخدم الأجهزة المعطوبة',    es:'No usar equipos defectuosos',    ru:'Не использовать неисправное оборудование' },
+  'Schäden sofort melden':
+    { en:'Report damage immediately',            tr:'Hasarı derhal bildirin',           ar:'أبلغ عن الأضرار فوراً',          es:'Informar daños de inmediato',    ru:'Немедленно сообщать о повреждениях' },
+  'Keine Reparaturen selbst durchführen':
+    { en:'Do not carry out repairs yourself',    tr:'Onarımları kendiniz yapmayın',    ar:'لا تُجرِ الإصلاحات بنفسك',      es:'No realizar reparaciones por cuenta propia', ru:'Не проводить ремонт самостоятельно' },
+  // ── Gefahrstoffe ──
+  'Sicherheitsdatenblätter bekannt':
+    { en:'Safety data sheets are known',         tr:'Güvenlik veri sayfaları bilinmektedir', ar:'صحائف بيانات السلامة معروفة', es:'Fichas de datos de seguridad conocidas', ru:'Паспорта безопасности известны' },
+  'Warnsymbole verstanden':
+    { en:'Warning symbols understood',           tr:'Uyarı sembolleri anlaşılmıştır',  ar:'رموز التحذير مفهومة',           es:'Símbolos de advertencia comprendidos', ru:'Предупредительные символы понятны' },
+  'Gefahrstoffe ordnungsgemäß lagern':
+    { en:'Store hazardous substances properly',  tr:'Tehlikeli maddeleri uygun şekilde depolayın', ar:'خزّن المواد الخطرة بشكل صحيح', es:'Almacenar correctamente las sustancias peligrosas', ru:'Хранить опасные вещества надлежащим образом' },
+  'Bei Kontakt mit Haut/Augen sofort handeln':
+    { en:'Act immediately on skin/eye contact',  tr:'Deri/göz temasında derhal harekete geçin', ar:'تصرف فوراً عند ملامسة الجلد أو العينين', es:'Actuar de inmediato en caso de contacto con piel u ojos', ru:'Немедленно действовать при контакте с кожей / глазами' },
+  'Vorgesetzte bei Vorfällen informieren':
+    { en:'Inform supervisors of incidents',      tr:'Olaylar hakkında amirlerinizi bilgilendirin', ar:'أبلغ المشرفين عن الحوادث',  es:'Informar a los superiores sobre incidentes', ru:'Информировать руководство об инцидентах' },
+  // ── Leitern und Tritte ──
+  'Nur geprüfte Leitern/Tritte verwenden':
+    { en:'Use only inspected ladders/steps',     tr:'Yalnızca denetimli merdiven/basamak kullanın', ar:'استخدم فقط السلالم المعتمدة', es:'Usar solo escaleras/peldaños inspeccionados', ru:'Использовать только проверенные лестницы / ступени' },
+  'Standsicherheit prüfen':
+    { en:'Check stability',                      tr:'Stabiliteyi kontrol edin',        ar:'تحقق من الاستقرار',              es:'Comprobar la estabilidad',       ru:'Проверять устойчивость' },
+  'Nicht auf oberste Stufe steigen':
+    { en:'Do not stand on the top step',         tr:'En üst basamağa çıkmayın',        ar:'لا تقف على الدرجة العليا',       es:'No subir al escalón superior',   ru:'Не становиться на верхнюю ступень' },
+  'Leitern nicht zweckentfremden':
+    { en:'Do not misuse ladders',                tr:'Merdivenleri yanlış amaçla kullanmayın', ar:'لا تستخدم السلالم لأغراض غير مقصودة', es:'No usar las escaleras de forma indebida', ru:'Не использовать лестницы не по назначению' },
+  // ── Alkohol & Drogen ──
+  'Alkoholverbot während der Arbeitszeit bekannt':
+    { en:'Alcohol ban during working hours is known', tr:'Çalışma saatlerinde alkol yasağı bilinmektedir', ar:'حظر الكحول أثناء ساعات العمل معروف', es:'Prohibición de alcohol durante el horario laboral conocida', ru:'Запрет на алкоголь в рабочее время известен' },
+  'Kein Arbeitsantritt unter Alkohol/Drogen/Cannabis':
+    { en:'No starting work under alcohol/drugs/cannabis', tr:'Alkol/uyuşturucu/esrar etkisi altında işe başlamayın', ar:'لا تبدأ العمل تحت تأثير الكحول أو المخدرات أو الحشيش', es:'No comenzar a trabajar bajo los efectos de alcohol/drogas/cannabis', ru:'Не приступать к работе под воздействием алкоголя / наркотиков / каннабиса' },
+  'Medikamente mit Wirkung melden':
+    { en:'Report medication with side effects',  tr:'Etkisi olan ilaçları bildirin',   ar:'أبلغ عن الأدوية ذات الآثار الجانبية', es:'Informar sobre medicamentos con efectos', ru:'Сообщать о приёме лекарств с побочными эффектами' },
+  'Sicherheitsrisiken bewusst':
+    { en:'Aware of safety risks',                tr:'Güvenlik riskleri hakkında bilinçli', ar:'على دراية بمخاطر السلامة',    es:'Consciente de los riesgos de seguridad', ru:'Осведомлён о рисках безопасности' },
+  // ── Datenschutz ──
+  'Vertrauliche Informationen schützen':
+    { en:'Protect confidential information',     tr:'Gizli bilgileri koruyun',         ar:'احمِ المعلومات السرية',          es:'Proteger información confidencial', ru:'Защищать конфиденциальную информацию' },
+  'Keine Fotos im Kundenobjekt':
+    { en:'No photos in customer premises',       tr:'Müşteri alanında fotoğraf çekmeyin', ar:'لا تلتقط صوراً في مواقع العملاء', es:'No tomar fotos en instalaciones del cliente', ru:'Не фотографировать на объектах клиентов' },
+  'Keine Daten weitergeben':
+    { en:'Do not pass on data',                  tr:'Verileri paylaşmayın',            ar:'لا تنقل البيانات',               es:'No transmitir datos',            ru:'Не передавать данные' },
+  'Dokumente nicht lesen oder mitnehmen':
+    { en:'Do not read or take documents',        tr:'Belgeleri okumayın veya almayın', ar:'لا تقرأ الوثائق ولا تأخذها',    es:'No leer ni llevarse documentos', ru:'Не читать и не уtnehmen документы' },
+  // ── Fluchtwege & Brandschutz ──
+  'Fluchtwege freihalten':
+    { en:'Keep escape routes clear',             tr:'Kaçış yollarını açık tutun',      ar:'ابقِ مسارات الهروب خالية',       es:'Mantener despejadas las vías de evacuación', ru:'Держать пути эвакуации свободными' },
+  'Notausgänge/Sammelplätze bekannt':
+    { en:'Emergency exits / assembly points known', tr:'Acil çıkışlar / toplanma alanları bilinmektedir', ar:'مخارج الطوارئ ونقاط التجمع معروفة', es:'Salidas de emergencia / puntos de encuentro conocidos', ru:'Аварийные выходы / места сбора известны' },
+  'Feuerlöscher nicht blockieren':
+    { en:'Do not block fire extinguishers',      tr:'Yangın söndürücüleri engellemeyin', ar:'لا تعيق وصول طفايات الحريق',   es:'No bloquear los extintores',     ru:'Не загораживать огнетушители' },
+  'Brandmeldeeinrichtungen nicht verstellen':
+    { en:'Do not obstruct fire alarm devices',   tr:'Yangın alarm cihazlarını engellemeyin', ar:'لا تعترض أجهزة إنذار الحريق', es:'No obstruir los dispositivos de alarma contra incendios', ru:'Не загораживать пожарную сигнализацию' },
+  'Verhalten im Brandfall bekannt':
+    { en:'Behaviour in case of fire is known',   tr:'Yangın durumunda davranış bilinmektedir', ar:'سلوك الحريق معروف',        es:'Comportamiento en caso de incendio conocido', ru:'Поведение при пожаре известно' },
+  // ── Erste Hilfe ──
+  'Erste-Hilfe-Kasten / Ersthelfer bekannt':
+    { en:'First aid kit / first aider known',    tr:'İlk yardım çantası / ilkyardımcı bilinmektedir', ar:'حقيبة الإسعافات الأولية والمسعف الأول معروفان', es:'Botiquín / primer interviniente conocidos', ru:'Аптечка / ответственный за первую помощь известны' },
+  'Notrufnummern bekannt':
+    { en:'Emergency numbers known',              tr:'Acil numaralar bilinmektedir',    ar:'أرقام الطوارئ معروفة',           es:'Números de emergencia conocidos', ru:'Номера экстренных служб известны' },
+  'Unfälle sofort melden':
+    { en:'Report accidents immediately',         tr:'Kazaları derhal bildirin',        ar:'أبلغ عن الحوادث فوراً',          es:'Informar accidentes de inmediato', ru:'Немедленно сообщать о несчастных случаях' },
+  'Notruf 112 bei schweren Unfällen':
+    { en:'Emergency call 112 for serious accidents', tr:'Ciddi kazalar için 112 arayın', ar:'اتصل بـ 112 للحوادث الخطيرة',  es:'Llamar al 112 en caso de accidentes graves', ru:'Звонить 112 при серьёзных несчастных случаях' },
+  // ── Schäden & Mängel ──
+  'Schäden sofort melden':
+    { en:'Report damage immediately',            tr:'Hasarı derhal bildirin',          ar:'أبلغ عن الأضرار فوراً',          es:'Informar daños de inmediato',    ru:'Немедленно сообщать о повреждениях' },
+  'Keine Vertuschung von Fehlern':
+    { en:'No concealment of errors',             tr:'Hataları gizlemeyiniz',           ar:'لا تُخفِ الأخطاء',               es:'No ocultar errores',             ru:'Не скрывать ошибки' },
+  'Mängel und Gefahrenstellen melden':
+    { en:'Report defects and hazardous locations', tr:'Kusurları ve tehlikeli alanları bildirin', ar:'أبلغ عن العيوب والمواقع الخطرة', es:'Informar defectos y zonas peligrosas', ru:'Сообщать о дефектах и опасных местах' },
+  // ── Qualitätsmanagement ──
+  'Reinigungspläne/Leistungsverzeichnisse einhalten':
+    { en:'Follow cleaning plans / service specifications', tr:'Temizlik planlarını / hizmet özelliklerini takip edin', ar:'اتبع خطط التنظيف / مواصفات الخدمة', es:'Cumplir planes de limpieza / pliegos de prestaciones', ru:'Соблюдать планы уборки / технические условия' },
+  'Arbeitsanweisungen befolgen':
+    { en:'Follow work instructions',             tr:'Çalışma talimatlarına uyun',      ar:'اتبع تعليمات العمل',             es:'Seguir instrucciones de trabajo', ru:'Следовать рабочим инструкциям' },
+  'Sorgfältig und ordentlich arbeiten':
+    { en:'Work carefully and tidily',            tr:'Dikkatli ve düzenli çalışın',     ar:'اعمل بعناية ونظام',              es:'Trabajar con cuidado y orden',   ru:'Работать аккуратно и организованно' },
+  'Kundenanforderungen beachten':
+    { en:'Observe customer requirements',        tr:'Müşteri gereksinimlerine uyun',   ar:'الالتزام بمتطلبات العميل',       es:'Cumplir con los requisitos del cliente', ru:'Соблюдать требования клиента' },
+  'Verbesserungsvorschläge weitergeben':
+    { en:'Pass on improvement suggestions',      tr:'İyileştirme önerilerini iletin',  ar:'أرسل اقتراحات التحسين',          es:'Transmitir sugerencias de mejora', ru:'Передавать предложения по улучшению' },
+  // ── Bestätigung ──
+  'Unterweisung vollständig durchgeführt':
+    { en:'Instruction fully completed',          tr:'Eğitim eksiksiz tamamlandı',      ar:'تم تنفيذ التعليمات بالكامل',     es:'Instrucción completamente realizada', ru:'Инструктаж проведён в полном объёме' },
+  'Inhalte verstanden':
+    { en:'Contents understood',                  tr:'İçerikler anlaşılmıştır',         ar:'تم فهم المحتويات',               es:'Contenidos comprendidos',        ru:'Содержание усвоено' },
+  'Fragen wurden beantwortet':
+    { en:'Questions were answered',              tr:'Sorular yanıtlandı',              ar:'تمت الإجابة على الأسئلة',        es:'Preguntas respondidas',          ru:'Вопросы были отвечены' },
 };
 
 function uebersetzeFeldLabel(label, sprache) {
   if (sprache === 'de') return label;
   return FELD_UEBERSETZUNGEN[label]?.[sprache] || label;
+}
+
+function uebersetzeAbschnitt(titel, sprache) {
+  if (sprache === 'de') return titel;
+  return ABSCHNITT_UEBERSETZUNGEN[titel]?.[sprache] || titel;
 }
 
 function spracheWaehlen(lang, btn) {
@@ -1684,7 +1822,7 @@ function oeffneFormularMitSprache(zuwId, sprache) {
         </div>
       </div>`;
     // Unterschriftsfelder darunter
-    html += `<div class="form-section"><div class="form-section-title">✍️ ${sprache==='de'?'Unterschriften':sprache==='en'?'Signatures':sprache==='tr'?'İmzalar':sprache==='ar'?'التوقيعات':sprache==='es'?'Firmas':'Подписи'}</div>`;
+    html += `<div class="form-section"><div class="form-section-title">✍️ ${uebersetzeAbschnitt('Unterschriften', sprache)}</div>`;
     (vorlage.abschnitte||[]).forEach(ab => {
       ab.felder.forEach(feld => {
         const label = uebersetzeFeldLabel(feld.label, sprache);
@@ -1697,7 +1835,7 @@ function oeffneFormularMitSprache(zuwId, sprache) {
     // Standard-Felder-Formular
     let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     if (vorlage) vorlage.abschnitte.forEach(ab => {
-      html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
+      html += `<div class="form-section"><div class="form-section-title">${escHtml(uebersetzeAbschnitt(ab.titel, sprache))}</div>`;
       ab.felder.forEach(feld => {
         const label = uebersetzeFeldLabel(feld.label, sprache);
         html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
