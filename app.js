@@ -2438,9 +2438,11 @@ async function gastAbschliessen() {
     // Formular in Supabase speichern
     const payload = {
       id:              formId,
-      antworten:       JSON.stringify(antworten),
+      zuweisung_id:    formId,
+      felder:          antworten,
       abgeschlossen:   true,
-      abgeschlossenAm: jetzt,
+      abgeschlossen_am: jetzt,
+      abgeschlossen_von: name,
       mitarbeiter_name: name,
       einladung_token: gastToken
     };
