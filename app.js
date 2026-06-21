@@ -1465,6 +1465,34 @@ async function renderMitarbeiterListe() {
       const gestartet   = mFormulare.filter(([,f]) => f.gestartet && !f.abgeschlossen).length;
       const offen       = Math.max(0, gesamtZuws - abgeschl - gestartet);
 
+      // Pro Zuweisung: Status für diesen Mitarbeiter ermitteln
+      const unterweisungsZeilen = meineZuws.map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+        const titel = v ? v.titel : z.vorlagenId;
+        const f = formulare[z.id] || {};
+        const fristDate = z.frist ? new Date(z.frist) : null;
+        const heute = new Date();
+        let dot, statusText, statusColor;
+        if (f.abgeschlossen && f.abgeschlossenVon === m.id) {
+          dot = '🟢'; statusText = 'Abgeschlossen'; statusColor = '#16a34a';
+          if (f.abgeschlossenAm) statusText += ' ' + dateStr(f.abgeschlossenAm);
+        } else if (f.gestartet && f.abgeschlossenVon === m.id) {
+          dot = '🟡'; statusText = 'In Bearbeitung'; statusColor = '#d97706';
+        } else if (fristDate && fristDate < heute) {
+          dot = '🔴'; statusText = 'Überfällig seit ' + dateStr(z.frist); statusColor = '#dc2626';
+        } else if (fristDate) {
+          const tage = Math.ceil((fristDate - heute) / 86400000);
+          dot = '🟡'; statusText = `Frist: ${dateStr(z.frist)} (${tage}T)`; statusColor = '#d97706';
+        } else {
+          dot = '🔴'; statusText = 'Offen'; statusColor = '#dc2626';
+        }
+        return `<div style="display:flex;align-items:baseline;gap:6px;padding:3px 0;border-bottom:1px solid rgba(0,0,0,.05)">
+          <span style="flex-shrink:0;font-size:.85rem">${dot}</span>
+          <span style="flex:1;font-size:.78rem;color:#374151;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(titel)}</span>
+          <span style="font-size:.72rem;color:${statusColor};white-space:nowrap;flex-shrink:0">${statusText}</span>
+        </div>`;
+      }).join('');
+
       let ampel = 'gruen';
       if (m.archiviert) {
         ampel = 'archiv';
@@ -1543,8 +1571,12 @@ async function renderMitarbeiterListe() {
               🟢 ${abgeschl} · 🟡 ${gestartet} · 🔴 ${offen}
             </div>` : ''}
           </div>
-        </div>`;
-
+        </div>
+        ${gesamtZuws > 0 && !istArchiviert ? `
+        <div style="margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.6);border-radius:7px;border:1px solid rgba(0,0,0,.06)">
+          ${unterweisungsZeilen}
+        </div>` : ''}
+      `;
     });
 
     listEl.innerHTML = rows.join('');
