@@ -1028,10 +1028,20 @@ function adminDetailAnzeigen(zuwId) {
 }
 function exportDetailPdf() { if(activeDetailZuwId) generatePdf(activeDetailZuwId, true); }
 function renderAdminVorlagen() {
-  document.getElementById('admin-vorlagen-list').innerHTML = SCHULUNG_VORLAGEN.map(v=>`
+  const liste = SCHULUNG_VORLAGEN;
+  const anzEl = document.getElementById('vt-suche-anzahl');
+  if (anzEl) anzEl.textContent = `${liste.length} Vorlage${liste.length !== 1 ? 'n' : ''} gespeichert`;
+
+  // Suchfilter anwenden falls aktiv
+  const suche = document.getElementById('vt-suche')?.value?.toLowerCase().trim() || '';
+  const gefiltert = suche
+    ? liste.filter(v => v.titel.toLowerCase().includes(suche) || (v.beschreibung||'').toLowerCase().includes(suche))
+    : liste;
+
+  document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
     <div class="card" style="margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="card-title" style="margin-bottom:4px">📄 ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
           <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
@@ -1041,14 +1051,48 @@ function renderAdminVorlagen() {
           <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
         </div>
       </div>
-      <div style="margin-top:10px;border-top:1px solid #f0f2f5;padding-top:10px">
-        ${(v.abschnitte||[]).map(a=>`
-          <div style="margin-bottom:5px">
-            <span style="font-weight:700;font-size:.82rem;color:#1a3a5c">${escHtml(a.titel)}</span>
-            <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.map(f=>escHtml(f.label)).join(', ')}</span>
-          </div>`).join('')}
-      </div>
-    </div>`).join('') || '<div class="empty-state"><div class="icon">📭</div><p>Noch keine Vorlagen vorhanden</p></div>';
+      <details style="margin-top:10px">
+        <summary style="font-size:.8rem;color:#6b7280;cursor:pointer;user-select:none">📑 Abschnitte anzeigen</summary>
+        <div style="margin-top:8px;border-top:1px solid #f0f2f5;padding-top:8px">
+          ${(v.abschnitte||[]).map(a=>`
+            <div style="margin-bottom:5px">
+              <span style="font-weight:700;font-size:.82rem;color:#1a3a5c">${escHtml(a.titel)}</span>
+              <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.map(f=>escHtml(f.label)).join(', ')}</span>
+            </div>`).join('')}
+        </div>
+      </details>
+    </div>`).join('')
+    || `<div class="empty-state"><div class="icon">${suche ? '🔍' : '📭'}</div><p>${suche ? `Keine Vorlage für „${escHtml(suche)}" gefunden` : 'Noch keine Vorlagen vorhanden'}</p></div>`;
+
+  // Anzahl-Anzeige mit Suchergebnis
+  if (anzEl && suche) {
+    anzEl.textContent = `${gefiltert.length} von ${liste.length} Vorlagen gefunden`;
+  }
+}
+
+// Toggle: Vorlagenliste auf/zuklappen
+function vtVorlagenListeToggle() {
+  const container = document.getElementById('vt-liste-container');
+  const icon = document.getElementById('vt-liste-toggle-icon');
+  const btn = document.getElementById('vt-liste-toggle-btn');
+  const offen = container.style.display !== 'none';
+  if (offen) {
+    container.style.display = 'none';
+    icon.style.transform = '';
+    btn.querySelector('span:first-child').textContent = `📋 Bestehende Vorlagen anzeigen`;
+  } else {
+    container.style.display = '';
+    icon.style.transform = 'rotate(180deg)';
+    btn.querySelector('span:first-child').textContent = `📋 Vorlagen schließen`;
+    renderAdminVorlagen(); // Beim Öffnen immer frisch rendern
+    document.getElementById('vt-suche').value = '';
+    setTimeout(() => document.getElementById('vt-suche').focus(), 150);
+  }
+}
+
+// Suchfunktion
+function vtVorlagenSuche(wert) {
+  renderAdminVorlagen();
 }
 
 // ── Vorlage bearbeiten: Editor mit bestehenden Daten vorausfüllen ──
@@ -1064,6 +1108,16 @@ function vtBearbeiten(id) {
   }
 
   vtEditId = id;
+
+  // Vorlagenliste schließen beim Bearbeiten
+  const listeContainer = document.getElementById('vt-liste-container');
+  const listeIcon = document.getElementById('vt-liste-toggle-icon');
+  const listeBtn = document.getElementById('vt-liste-toggle-btn');
+  if (listeContainer && listeContainer.style.display !== 'none') {
+    listeContainer.style.display = 'none';
+    if (listeIcon) listeIcon.style.transform = '';
+    if (listeBtn) listeBtn.querySelector('span:first-child').textContent = '📋 Bestehende Vorlagen anzeigen';
+  }
 
   // Zum Editor scrollen (Tab öffnen falls nötig)
   const tab = document.getElementById('tab-schulungen');
