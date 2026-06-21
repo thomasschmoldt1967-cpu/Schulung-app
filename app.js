@@ -1383,6 +1383,193 @@ function vtPdfGewaehlt(input) {
   vtPdfFile = file;
   document.getElementById('vt-pdf-name').textContent = `✅ ${file.name} (${(file.size/1024/1024).toFixed(1)} MB)`;
   document.getElementById('vt-pdf-zone').classList.add('has-file');
+  // "Felder erkennen"-Button einblenden
+  document.getElementById('vt-pdf-erkennen-btn').style.display = '';
+  document.getElementById('vt-pdf-erkenne-status').style.display = 'none';
+}
+
+// PDF-Text auslesen und in Felder-Editor übertragen
+async function vtPdfFelderErkennen() {
+  if (!vtPdfFile) return;
+  const statusEl = document.getElementById('vt-pdf-erkenne-status');
+  const btn = document.getElementById('vt-pdf-erkennen-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analysiere PDF…';
+  statusEl.style.display = '';
+  statusEl.textContent = 'Lese Text aus PDF…';
+
+  try {
+    // pdf.js Worker-URL setzen
+    if (typeof pdfjsLib !== 'undefined') {
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    } else {
+      throw new Error('pdf.js nicht geladen');
+    }
+
+    const arrayBuffer = await vtPdfFile.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const numPages = pdf.numPages;
+
+    // Text seitenweise extrahieren
+    let alleZeilen = [];
+    for (let p = 1; p <= numPages; p++) {
+      statusEl.textContent = `Lese Seite ${p} von ${numPages}…`;
+      const page = await pdf.getPage(p);
+      const content = await page.getTextContent();
+      // Zeilen aus Items zusammenbauen (nach Y-Position gruppieren)
+      const itemsNachY = {};
+      content.items.forEach(item => {
+        if (!item.str?.trim()) return;
+        const y = Math.round(item.transform[5]);
+        if (!itemsNachY[y]) itemsNachY[y] = [];
+        itemsNachY[y].push(item.str.trim());
+      });
+      // Sortiert nach Y (oben=groß → unten=klein)
+      Object.keys(itemsNachY).sort((a,b)=>b-a).forEach(y => {
+        const zeile = itemsNachY[y].join(' ').trim();
+        if (zeile) alleZeilen.push(zeile);
+      });
+    }
+
+    // Text intelligent in Abschnitte und Felder aufteilen
+    const abschnitte = vtPdfTextZuAbschnitte(alleZeilen);
+
+    if (!abschnitte.length) {
+      statusEl.textContent = '⚠️ Kein Text erkannt. Das PDF enthält möglicherweise nur Bilder.';
+      btn.disabled = false;
+      btn.textContent = '🔍 Felder aus PDF erkennen & bearbeiten';
+      return;
+    }
+
+    // Auf "Eigene Felder" umschalten und Abschnitte in den Editor laden
+    const radioFelder = document.querySelector('input[name="vt-typ"][value="felder"]');
+    if (radioFelder) { radioFelder.checked = true; vtTypWechseln('felder'); }
+
+    const container = document.getElementById('vt-abschnitte');
+    container.innerHTML = '';
+    vtAbschnittCount = 0;
+
+    abschnitte.forEach(ab => {
+      vtAbschnittCount++;
+      const abId = `ab_${vtAbschnittCount}`;
+      const div = document.createElement('div');
+      div.id = abId;
+      div.className = 'card';
+      div.style.cssText = 'margin-top:12px;background:#f8faff;border:1px solid #dde8ff';
+      div.innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <input type="text" placeholder="Abschnittsname" style="font-weight:700;font-size:.9rem;border:none;background:transparent;flex:1;outline:none" id="ab_titel_${abId}" value="${escHtml(ab.titel)}">
+          <button class="btn btn-danger btn-sm" onclick="document.getElementById('${abId}').remove()">✕</button>
+        </div>
+        <div id="felder_${abId}"></div>
+        <button class="btn btn-outline btn-sm" style="margin-top:6px" onclick="vtAddFeld('${abId}')">+ Feld hinzufügen</button>
+      `;
+      container.appendChild(div);
+
+      ab.felder.forEach(f => {
+        const feldId = `feld_${abId}_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const fDiv = document.createElement('div');
+        fDiv.id = feldId;
+        fDiv.style.cssText = 'display:grid;grid-template-columns:1fr 130px 60px 32px;gap:6px;align-items:center;margin-bottom:6px';
+        fDiv.innerHTML = `
+          <input type="text" placeholder="Feldbezeichnung *" id="label_${feldId}" style="font-size:.82rem" value="${escHtml(f.label)}">
+          <select id="typ_${feldId}" style="font-size:.82rem">
+            <option value="text">Texteingabe</option>
+            <option value="textarea">Mehrzeilig</option>
+            <option value="select">Auswahl</option>
+            <option value="checkbox"${f.typ==='checkbox'?' selected':''}>Checkbox</option>
+            <option value="signature"${f.typ==='signature'?' selected':''}>Unterschrift</option>
+            <option value="upload">Datei-Upload</option>
+          </select>
+          <label style="font-size:.78rem;display:flex;align-items:center;gap:3px;cursor:pointer">
+            <input type="checkbox" id="pfl_${feldId}"${f.pflicht?' checked':''}> Pflicht
+          </label>
+          <button class="btn btn-danger btn-sm" onclick="document.getElementById('${feldId}').remove()">✕</button>
+        `;
+        document.getElementById(`felder_${abId}`).appendChild(fDiv);
+      });
+    });
+
+    const gesamt = abschnitte.reduce((s,a)=>s+a.felder.length,0);
+    statusEl.textContent = `✅ ${abschnitte.length} Abschnitte, ${gesamt} Felder erkannt. Bitte prüfen und ggf. anpassen.`;
+    statusEl.style.color = '#16a34a';
+    btn.textContent = '🔄 Erneut erkennen';
+    btn.disabled = false;
+
+    // Nach Abschnitte scrollen
+    container.scrollIntoView({ behavior:'smooth', block:'start' });
+
+  } catch(e) {
+    statusEl.textContent = '❌ Fehler: ' + e.message;
+    statusEl.style.color = '#dc2626';
+    btn.disabled = false;
+    btn.textContent = '🔍 Felder aus PDF erkennen & bearbeiten';
+  }
+}
+
+// Rohe PDF-Zeilen intelligent in Abschnitte + Felder aufteilen
+function vtPdfTextZuAbschnitte(zeilen) {
+  // Schlüsselwörter die auf Abschnittsüberschriften hinweisen
+  const ABSCHNITT_MUSTER = /^(\d+[\.\)]\s+|[A-ZÄÖÜ]{3,}|[A-Z][a-zäöüßA-ZÄÖÜ]+\s*[:\/])/;
+  // Zeilen die wahrscheinlich Checkboxen/Prüfpunkte sind
+  const CHECKBOX_MUSTER = /^[□✓✗●○■☐☑▪•\-–—]\s+|^\d+[\.\)]\s+/;
+  // Sehr kurze oder nur-Zahlen-Zeilen ignorieren
+  const IGNORIEREN = /^[\d\s\.\-\/:,]+$|^.{1,2}$|^(Seite|Page|Datum|Date)\s*\d*/i;
+
+  const abschnitte = [];
+  let aktAbschnitt = null;
+
+  zeilen.forEach(zeile => {
+    zeile = zeile.trim();
+    if (!zeile || IGNORIEREN.test(zeile)) return;
+
+    // Unterschrift-Zeilen → eigener Abschnitt am Ende
+    if (/unterschrift|signatur|signature/i.test(zeile)) {
+      if (!abschnitte.find(a=>a.titel==='Unterschriften')) {
+        abschnitte.push({ titel:'Unterschriften', felder:[
+          {label:'Unterschrift Mitarbeiter', typ:'signature', pflicht:true},
+          {label:'Unterschrift Unterweisender', typ:'signature', pflicht:false}
+        ]});
+      }
+      return;
+    }
+
+    // Erkennt Abschnittsüberschrift
+    const istUeberschrift = ABSCHNITT_MUSTER.test(zeile) && zeile.length < 80 && !CHECKBOX_MUSTER.test(zeile);
+
+    if (istUeberschrift && zeile.length > 5) {
+      aktAbschnitt = { titel: zeile.replace(/^\d+[\.\)]\s+/, '').replace(/:$/, '').trim(), felder: [] };
+      abschnitte.push(aktAbschnitt);
+    } else {
+      // Kein Abschnitt noch → Allgemein anlegen
+      if (!aktAbschnitt) {
+        aktAbschnitt = { titel: 'Allgemeine Informationen', felder: [] };
+        abschnitte.push(aktAbschnitt);
+      }
+      // Typ bestimmen
+      let typ = 'checkbox';
+      let pflicht = false;
+      let label = zeile.replace(/^[□✓✗●○■☐☑▪•\-–—]\s+/, '').trim();
+
+      if (/name|datum|ort|uhrzeit|objekt|bereich|abteilung|unterschrift|geburtsdatum/i.test(label)) {
+        typ = 'text'; pflicht = true;
+      } else if (/bemerkung|notiz|anmerkung|beschreibung/i.test(label)) {
+        typ = 'textarea';
+      } else if (/unterschrift|signatur/i.test(label)) {
+        typ = 'signature'; pflicht = true;
+      }
+
+      if (label.length > 3 && label.length < 200) {
+        aktAbschnitt.felder.push({ label, typ, pflicht });
+      }
+    }
+  });
+
+  // Leere Abschnitte entfernen, max 30 Felder pro Abschnitt
+  return abschnitte
+    .filter(a => a.felder.length > 0)
+    .map(a => ({ ...a, felder: a.felder.slice(0, 30) }));
 }
 
 function vtAddSigFeld() {

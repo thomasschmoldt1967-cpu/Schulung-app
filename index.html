@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="style.css">
   <!-- jsPDF für PDF-Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- pdf.js für PDF-Text-Extraktion (Vorlage aus PDF konvertieren) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <!-- bcryptjs für sicheres Passwort-Hashing -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js"></script>
 </head>
@@ -179,15 +181,19 @@
         <!-- PDF-Upload Bereich -->
         <div id="vt-pdf-bereich" style="display:none">
           <div class="form-group" style="margin-top:10px">
-            <label>📎 CSC-Formular (PDF) hochladen</label>
+            <label>📎 CSC-Formular (PDF) hochladen & in bearbeitbare Felder umwandeln</label>
             <div class="upload-zone" id="vt-pdf-zone" onclick="document.getElementById('vt-pdf-input').click()" style="margin-top:6px">
               <div class="upload-icon">📄</div>
               <p id="vt-pdf-name">PDF auswählen (max. 10 MB)</p>
               <input type="file" id="vt-pdf-input" accept=".pdf" onchange="vtPdfGewaehlt(this)">
             </div>
+            <button class="btn btn-outline" id="vt-pdf-erkennen-btn" onclick="vtPdfFelderErkennen()" style="display:none;margin-top:8px;width:100%">
+              🔍 Felder aus PDF erkennen & bearbeiten
+            </button>
+            <div id="vt-pdf-erkenne-status" style="font-size:.8rem;color:#6b7280;margin-top:4px;display:none"></div>
           </div>
           <div class="form-group">
-            <label>Unterschriftsfelder (werden unter dem PDF angezeigt)</label>
+            <label>Unterschriftsfelder (werden am Ende angezeigt)</label>
             <div id="vt-sig-felder">
               <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
                 <input type="text" value="Unterschrift Mitarbeiter" id="sig0" style="font-size:.82rem;flex:1">
