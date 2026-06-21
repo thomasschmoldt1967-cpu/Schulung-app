@@ -1658,7 +1658,11 @@ function oeffneFormularMitSprache(zuwId, sprache) {
     html += `
       <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9">
         <div style="background:#1a3a5c;color:#fff;padding:8px 14px;font-size:.82rem;font-weight:600">📄 ${escHtml(vorlage.titel)}</div>
-        <iframe src="${vorlage.pdf_url}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}"></iframe>
+        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(vorlage.pdf_url)}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}" id="pdf-iframe-main"></iframe>
+        <div style="padding:6px 14px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px">
+          📄 PDF wird nicht angezeigt?
+          <a href="${vorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+        </div>
         <div style="padding:8px 14px;background:#f8faff;font-size:.75rem;color:#6b7280">
           📄 ${escHtml(vorlage.titel)}
         </div>
@@ -2336,7 +2340,13 @@ function gastWeiter() {
   gastSigPads = {};
 
   if (gastVorlage.typ === 'pdf' && gastVorlage.pdf_url) {
-    html += `<div class="card"><iframe src="${gastVorlage.pdf_url}" style="width:100%;height:500px;border:none;border-radius:8px"></iframe></div>`;
+    html += `<div class="card">
+      <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(gastVorlage.pdf_url)}" style="width:100%;height:500px;border:none;border-radius:8px;display:block"></iframe>
+      <div style="padding:6px 12px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px;border-top:1px solid #dde2e9">
+        📄 PDF wird nicht angezeigt?
+        <a href="${gastVorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+      </div>
+    </div>`;
   }
 
   abschnitte.forEach((ab, ai) => {
