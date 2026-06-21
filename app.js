@@ -1776,15 +1776,75 @@ function renderAdminZuweisungen() {
   document.getElementById('admin-zuw-list').innerHTML = rows;
 }
 function populateZuweisungsForm() {
-  document.getElementById('az-vorlage').innerHTML = SCHULUNG_VORLAGEN.map(v=>`<option value="${v.id}">${escHtml(v.titel)}</option>`).join('');
-  document.getElementById('az-tenant').innerHTML  = `<option value="">— alle Unternehmen —</option>` +
+  // Tenant-Dropdown füllen
+  document.getElementById('az-tenant').innerHTML = `<option value="">— alle Unternehmen —</option>` +
     APP_TENANTS.map(t=>`<option value="${t.id}">${escHtml(t.name)}</option>`).join('');
   document.getElementById('az-frist').value = '';
+  // Vorlage-Picker initialisieren (Auswahl zurücksetzen)
+  document.getElementById('az-vorlage').value = '';
+  azVorlagePicker(true);
+  azVorlagenListeRendern('');
+}
+
+// Vorlagen-Picker: true = offen (Suche), false = Auswahl anzeigen
+function azVorlagePicker(oeffnen) {
+  const picker = document.getElementById('az-vorlage-picker');
+  const sel    = document.getElementById('az-vorlage-selected');
+  if (oeffnen) {
+    picker.style.display = '';
+    sel.style.display = 'none';
+    setTimeout(() => document.getElementById('az-vorlage-suche')?.focus(), 100);
+  } else {
+    picker.style.display = 'none';
+    sel.style.display = 'flex';
+  }
+}
+
+// Vorlage aus Picker wählen
+function azVorlageWaehlen(id, titel) {
+  document.getElementById('az-vorlage').value = id;
+  document.getElementById('az-vorlage-selected-label').textContent = `📄 ${titel}`;
+  azVorlagePicker(false);
+  document.getElementById('az-vorlage-suche').value = '';
+}
+
+// Suche in Picker-Liste
+function azVorlageSuche(wert) {
+  azVorlagenListeRendern(wert);
+}
+
+// Vorlagen-Liste im Picker rendern (gefiltert)
+function azVorlagenListeRendern(suche) {
+  const el = document.getElementById('az-vorlage-liste');
+  if (!el) return;
+  const s = (suche || '').toLowerCase().trim();
+  const gefiltert = s
+    ? SCHULUNG_VORLAGEN.filter(v => v.titel.toLowerCase().includes(s) || (v.beschreibung||'').toLowerCase().includes(s))
+    : SCHULUNG_VORLAGEN;
+
+  if (!gefiltert.length) {
+    el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
+    return;
+  }
+
+  el.innerHTML = gefiltert.map((v, i) => `
+    <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
+      onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">📄 ${escHtml(v.titel)}</div>
+      <div style="font-size:.76rem;color:#6b7280;margin-top:2px">
+        🔁 ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;·&nbsp;
+        📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;·&nbsp;
+        🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder
+        ${v.beschreibung ? `&nbsp;·&nbsp; ${escHtml(v.beschreibung)}` : ''}
+      </div>
+    </div>`).join('');
 }
 async function createZuweisung() {
   const vorlagenId=document.getElementById('az-vorlage').value, tenantSel=document.getElementById('az-tenant').value;
   const frist=document.getElementById('az-frist').value, pflicht=document.getElementById('az-pflicht').checked;
   const msgEl=document.getElementById('az-msg');
+  if (!vorlagenId) { msgEl.textContent='Bitte eine Schulungsvorlage auswählen.'; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); return; }
   if (!frist) { msgEl.textContent='Bitte eine Frist angeben.'; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); return; }
   const tenants = tenantSel ? [tenantSel] : APP_TENANTS.map(t=>t.id);
   const neu = tenants.map(tid => ({ id:`z_${tid}_${vorlagenId}_${Date.now()}`, vorlage_id:vorlagenId, tenant_id:tid, frist, pflicht }));
