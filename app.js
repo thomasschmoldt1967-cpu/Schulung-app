@@ -2774,7 +2774,14 @@ function showToast(text, color='#16a34a') {
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
-document.addEventListener('DOMContentLoaded', initApp);
+document.addEventListener('DOMContentLoaded', () => {
+  initApp();
+  // Unterweisungsthemen-Button Event Listener (robuster als onclick-Attribut)
+  document.addEventListener('click', e => {
+    const btn = e.target.closest('#btn-unterweisungen');
+    if (btn) { e.preventDefault(); unterweisungenToggle(); }
+  });
+});
 
 // ── SERVICE WORKER REGISTRIERUNG (Offline-Modus) ─────────────
 if ('serviceWorker' in navigator) {
