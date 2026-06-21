@@ -413,7 +413,9 @@ async function initApp() {
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
     }));
     zuweisungen = zuws.map(z => ({
-      id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht
+      id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
+      frist: z.frist, pflicht: z.pflicht,
+      intervallMonate: z.intervall_monate || null
     }));
 
     // Formulare laden
@@ -2023,6 +2025,81 @@ async function renderMitarbeiterListe() {
   }
 }
 
+// ── Intervall einer Zuweisung ändern (Verantwortlicher) ──────
+async function zuwIntervallAendern(zuwId, wert) {
+  const intervall = wert ? parseInt(wert) : null;
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${zuwId}`, {
+      method: 'PATCH',
+      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({ intervall_monate: intervall })
+    });
+    const z = zuweisungen.find(z => z.id === zuwId);
+    if (z) z.intervallMonate = intervall;
+    showToast(intervall
+      ? `🔁 Intervall auf ${intervall} Monat${intervall > 1 ? 'e' : ''} gesetzt`
+      : '🔁 Kein automatisches Intervall', '#1a3a5c');
+    renderSubDashboard();
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+// ── Zuweisung neu starten: altes Formular archivieren + neue Frist setzen ──
+async function zuwNeuStarten(zuwId) {
+  const z = zuweisungen.find(zw => zw.id === zuwId);
+  const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z?.vorlagenId);
+  const f = formulare[zuwId] || {};
+  if (!f.abgeschlossen) { showToast('Schulung noch nicht abgeschlossen.', '#dc2626'); return; }
+
+  const intervall = z.intervallMonate || v?.intervallMonate || null;
+  let neueFrist = '';
+  if (intervall && f.abgeschlossenAm) {
+    const d = new Date(f.abgeschlossenAm);
+    d.setMonth(d.getMonth() + parseInt(intervall));
+    neueFrist = d.toISOString().split('T')[0];
+  } else {
+    // Kein Intervall → Verantwortlicher gibt Datum ein
+    neueFrist = prompt(`Neue Frist für „${v?.titel}" eingeben (Format: JJJJ-MM-TT):`,
+      new Date(Date.now() + 365*86400000).toISOString().split('T')[0]);
+    if (!neueFrist) return;
+  }
+
+  if (!confirm(`Neue Schulungsrunde starten?\n\nFormular: ${v?.titel}\nNeue Frist: ${neueFrist}\n\nDas bisherige abgeschlossene Formular bleibt im Archiv erhalten.`)) return;
+
+  try {
+    // Neues Formular-ID (bisheriges Formular bleibt erhalten)
+    const neueZuwId = `z_${z.tenantId}_${z.vorlagenId}_${Date.now()}`;
+    // Neue Zuweisung anlegen
+    await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen`, {
+      method: 'POST',
+      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+      body: JSON.stringify({
+        id: neueZuwId,
+        vorlage_id: z.vorlagenId,
+        tenant_id: z.tenantId,
+        frist: neueFrist,
+        pflicht: z.pflicht,
+        intervall_monate: z.intervallMonate || null
+      })
+    });
+    zuweisungen.push({
+      id: neueZuwId,
+      vorlagenId: z.vorlagenId,
+      tenantId: z.tenantId,
+      frist: neueFrist,
+      pflicht: z.pflicht,
+      intervallMonate: z.intervallMonate || null
+    });
+    formulare[neueZuwId] = {};
+    await sbAudit('SCHULUNG_NEU_GESTARTET', `Neue Runde: ${v?.titel} (Frist: ${neueFrist})`);
+    showToast(`✅ Neue Schulungsrunde gestartet — Frist: ${neueFrist}`, '#16a34a');
+    renderSubDashboard();
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -2045,15 +2122,44 @@ function renderSubDashboard() {
   document.getElementById('sub-schulungen-list').innerHTML = meineZuws.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
     const kannPdfSpeichern = currentUser.role === 'verantwortlicher' && f.abgeschlossen;
-    return `<div class="schulung-item" onclick="oeffneFormular('${z.id}')">
-      <div>
+    const istVerantwortlicher = currentUser.role === 'verantwortlicher';
+    const intervall = z.intervallMonate || v?.intervallMonate || v?.intervall_monate || null;
+    const intervallOptionen = [1,2,3,6,12,24,36].map(m =>
+      `<option value="${m}"${intervall==m?' selected':''}>${m} Monat${m>1?'e':''}</option>`
+    ).join('');
+
+    // Nächste Frist berechnen falls abgeschlossen + Intervall gesetzt
+    let naechsteFristInfo = '';
+    if (f.abgeschlossen && intervall && f.abgeschlossenAm) {
+      const naechste = new Date(f.abgeschlossenAm);
+      naechste.setMonth(naechste.getMonth() + parseInt(intervall));
+      const tageRestlich = Math.ceil((naechste - new Date()) / 86400000);
+      const datumStr = naechste.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
+      const farbe = tageRestlich < 0 ? '#dc2626' : tageRestlich < 30 ? '#f59e0b' : '#16a34a';
+      naechsteFristInfo = `<div style="font-size:.76rem;color:${farbe};margin-top:3px">🔄 Nächste Schulung: ${datumStr}${tageRestlich < 0 ? ` (${Math.abs(tageRestlich)} Tage überfällig)` : tageRestlich === 0 ? ' (heute!)' : ` (in ${tageRestlich} Tagen)`}</div>`;
+    }
+
+    return `<div class="schulung-item">
+      <div style="flex:1;cursor:pointer" onclick="oeffneFormular('${z.id}')">
         <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
-        <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• Abgeschlossen: ${dateStr(f.abgeschlossenAm)}`:''}</div>
+        <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• ✅ ${dateStr(f.abgeschlossenAm)}`:''}</div>
+        ${naechsteFristInfo}
       </div>
       <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
         ${statusBadgeHtml(s)}
-        ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF speichern</button>` : ''}
-        ${currentUser.role==='verantwortlicher' ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
+        ${istVerantwortlicher ? `
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+            <label style="font-size:.7rem;color:#6b7280;white-space:nowrap">🔁</label>
+            <select onchange="zuwIntervallAendern('${z.id}', this.value)"
+              style="font-size:.72rem;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#374151;cursor:pointer">
+              <option value="">Kein Intervall</option>
+              ${intervallOptionen}
+            </select>
+          </div>` : ''}
+        ${f.abgeschlossen && istVerantwortlicher ? `
+          <button class="btn btn-sm" style="background:#1a3a5c;color:#fff;font-size:.72rem;margin-top:2px" onclick="event.stopPropagation();zuwNeuStarten('${z.id}')">🔄 Neu zuweisen</button>` : ''}
+        ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF</button>` : ''}
+        ${istVerantwortlicher ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
       </div>
     </div>`;
   }).join('');
