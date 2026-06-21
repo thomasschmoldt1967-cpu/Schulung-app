@@ -1054,9 +1054,10 @@ function vtBearbeiten(id) {
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === id);
   if (!v) return;
 
-  // Nur Felder-Vorlagen bearbeitbar (kein PDF-Typ)
-  if (v.typ === 'pdf') {
-    alert('PDF-Vorlagen können nicht direkt bearbeitet werden.\n\nBitte legen Sie eine neue Vorlage an oder löschen und ersetzen Sie die bestehende.');
+  // PDF-Vorlagen ohne Abschnitte können nicht bearbeitet werden
+  const abschnitte = v.abschnitte || [];
+  if (v.typ === 'pdf' && abschnitte.length === 0) {
+    alert('Diese PDF-Vorlage enthält keine bearbeitbaren Felder.\n\nTipp: Laden Sie die Vorlage neu hoch und nutzen Sie „🔍 Felder aus PDF erkennen & bearbeiten".');
     return;
   }
 
@@ -1627,7 +1628,7 @@ async function vtSpeichern() {
   try {
     if (vtEditId) {
       // ── Bearbeiten-Modus: PATCH (Update in Supabase) ──
-      const updates = { titel, beschreibung: beschr, intervall_monate: intervall, abschnitte };
+      const updates = { titel, beschreibung: beschr, intervall_monate: intervall, abschnitte, typ: 'felder' };
       await fetch(`${SUPABASE_URL}/rest/v1/vorlagen?id=eq.${vtEditId}`, {
         method: 'PATCH',
         headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
