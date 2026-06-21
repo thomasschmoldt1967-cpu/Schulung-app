@@ -4,8 +4,8 @@
   "description": "Schulungsmanagement für Subunternehmen — CSC GmbH Hannover",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e3a5f",
-  "theme_color": "#1e3a5f",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
   "orientation": "portrait",
   "icons": [
     {
