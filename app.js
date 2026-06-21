@@ -2233,29 +2233,7 @@ function renderSubDashboard() {
     document.getElementById('sub-schulungen-list').innerHTML='<div class="empty-state"><div class="icon">🎉</div><p>Keine Schulungen zugewiesen</p></div>';
     return;
   }
-  // Icon-Kacheln rendern
-  const kachelHtml = meineZuws.map(z => {
-    const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z);
-    const ampelFarben = {
-      gruen:{bg:'#f0fdf4',border:'#86efac',icon:'🟢'},
-      gelb: {bg:'#fffbeb',border:'#fde68a',icon:'🟡'},
-      rot:  {bg:'#fef2f2',border:'#fca5a5',icon:'🔴'},
-      grau: {bg:'#f9fafb',border:'#e5e7eb',icon:'⚪'}
-    };
-    const c = ampelFarben[s] || ampelFarben.grau;
-    const titel = v ? escHtml(v.titel) : z.vorlagenId;
-    const kurzTitel = titel.length > 22 ? titel.substring(0,20)+'…' : titel;
-    return `<div class="schulung-icon-kachel" onclick="schulungKachelToggle('${z.id}')"
-        style="background:${c.bg};border:2px solid ${c.border};border-radius:16px;padding:14px 8px;
-               text-align:center;cursor:pointer;position:relative;user-select:none">
-        <div style="font-size:2.2rem;margin-bottom:6px">📋</div>
-        <div style="font-size:.72rem;font-weight:700;color:#1e3a5f;line-height:1.3;min-height:2.4em">${kurzTitel}</div>
-        <div style="position:absolute;top:6px;right:8px;font-size:.9rem">${c.icon}</div>
-      </div>`;
-  }).join('');
-
-  // Detail-Panels rendern (zunächst versteckt)
-  const detailHtml = meineZuws.map(z => {
+  document.getElementById('sub-schulungen-list').innerHTML = meineZuws.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
     const kannPdfSpeichern = currentUser.role === 'verantwortlicher' && f.abgeschlossen;
     const istVerantwortlicher = currentUser.role === 'verantwortlicher';
@@ -2274,48 +2252,49 @@ function renderSubDashboard() {
       naechsteFristInfo = `<div style="font-size:.76rem;color:${farbe};margin-top:3px">🔄 Nächste Schulung: ${datumStr}${tageRestlich < 0 ? ` (${Math.abs(tageRestlich)} Tage überfällig)` : tageRestlich === 0 ? ' (heute!)' : ` (in ${tageRestlich} Tagen)`}</div>`;
     }
 
-    return `<div id="schulung-detail-${z.id}" style="display:none;margin-bottom:8px">
-      <div class="schulung-item">
-        <div style="flex:1;cursor:pointer" onclick="oeffneFormular('${z.id}')">
-          <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
-          <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• ✅ ${dateStr(f.abgeschlossenAm)}`:''}</div>
-          ${naechsteFristInfo}
-        </div>
-        <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-          ${statusBadgeHtml(s)}
-          ${istVerantwortlicher ? `
-            <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
-              <label style="font-size:.7rem;color:#6b7280;white-space:nowrap">🔁</label>
-              <select onchange="zuwIntervallAendern('${z.id}', this.value)"
-                style="font-size:.72rem;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#374151;cursor:pointer">
-                <option value="">Kein Intervall</option>
-                ${intervallOptionen}
-              </select>
-            </div>` : ''}
-          ${f.abgeschlossen && istVerantwortlicher ? `
-            <button class="btn btn-sm" style="background:#1a3a5c;color:#fff;font-size:.72rem;margin-top:2px" onclick="event.stopPropagation();zuwNeuStarten('${z.id}')">🔄 Neu zuweisen</button>` : ''}
-          ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF</button>` : ''}
-          ${istVerantwortlicher ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
-        </div>
+    return `<div class="schulung-item">
+      <div style="flex:1;cursor:pointer" onclick="oeffneFormular('${z.id}')">
+        <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
+        <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• ✅ ${dateStr(f.abgeschlossenAm)}`:''}</div>
+        ${naechsteFristInfo}
+      </div>
+      <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
+        ${statusBadgeHtml(s)}
+        ${istVerantwortlicher ? `
+          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
+            <label style="font-size:.7rem;color:#6b7280;white-space:nowrap">🔁</label>
+            <select onchange="zuwIntervallAendern('${z.id}', this.value)"
+              style="font-size:.72rem;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#374151;cursor:pointer">
+              <option value="">Kein Intervall</option>
+              ${intervallOptionen}
+            </select>
+          </div>` : ''}
+        ${f.abgeschlossen && istVerantwortlicher ? `
+          <button class="btn btn-sm" style="background:#1a3a5c;color:#fff;font-size:.72rem;margin-top:2px" onclick="event.stopPropagation();zuwNeuStarten('${z.id}')">🔄 Neu zuweisen</button>` : ''}
+        ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF</button>` : ''}
+        ${istVerantwortlicher ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
       </div>
     </div>`;
   }).join('');
 
-  document.getElementById('sub-schulungen-list').innerHTML =
-    `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:14px;padding:16px 0">${kachelHtml}</div>` +
-    detailHtml;
+  // Anzahl im Button-Untertitel aktualisieren
+  const subEl = document.getElementById('btn-unterweisungen-sub');
+  if (subEl) subEl.textContent = meineZuws.length + ' Thema' + (meineZuws.length !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
 }
 
-function schulungKachelToggle(zuwId) {
-  const panel = document.getElementById('schulung-detail-' + zuwId);
-  if (!panel) return;
-  const offen = panel.style.display !== 'none';
-  // Alle anderen schließen
-  document.querySelectorAll('[id^="schulung-detail-"]').forEach(el => el.style.display = 'none');
-  document.querySelectorAll('.schulung-icon-kachel-aktiv').forEach(el => el.classList.remove('schulung-icon-kachel-aktiv'));
-  if (!offen) {
-    panel.style.display = 'block';
-    panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+function unterweisungenToggle() {
+  const liste = document.getElementById('sub-schulungen-list');
+  const pfeil = document.getElementById('btn-unterweisungen-pfeil');
+  const sub   = document.getElementById('btn-unterweisungen-sub');
+  if (!liste) return;
+  const offen = liste.style.display !== 'none';
+  liste.style.display = offen ? 'none' : 'block';
+  if (pfeil) pfeil.style.transform = offen ? '' : 'rotate(180deg)';
+  if (sub) {
+    const n = document.querySelectorAll('#sub-schulungen-list .schulung-item').length;
+    sub.textContent = offen
+      ? n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen'
+      : n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Schließen';
   }
 }
 
