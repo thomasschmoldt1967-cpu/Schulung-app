@@ -3223,6 +3223,46 @@ function qrLoginSchliessen() {
   if (modal) modal.style.display = 'none';
 }
 
+function qrLoginTeilen() {
+  const url  = document.getElementById('qr-login-url').textContent;
+  const name = document.getElementById('qr-login-name').textContent;
+  if (navigator.share) {
+    navigator.share({
+      title: `QR-Login: ${name}`,
+      text:  `Hallo ${name},\n\nHier ist dein persönlicher Login-Link für die Schulungs-App (CSC GmbH).\nEinfach auf den Link tippen oder den QR-Code scannen:\n\n${url}\n\nKein Passwort nötig.`,
+      url
+    }).catch(() => {});
+  } else {
+    // Fallback: Link in Zwischenablage
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('✅ Link kopiert!'))
+      .catch(() => showToast('❌ Teilen nicht möglich – bitte Link manuell kopieren.'));
+  }
+}
+
+function qrLoginEmail() {
+  const url  = document.getElementById('qr-login-url').textContent;
+  const name = document.getElementById('qr-login-name').textContent;
+  const email = document.getElementById('qr-login-email').textContent;
+  const betreff = encodeURIComponent(`Dein QR-Login für die Schulungs-App – ${name}`);
+  const body = encodeURIComponent(
+`Hallo ${name},
+
+hier ist dein persönlicher Login-Link für die Schulungs-App der CSC GmbH.
+
+👉 Einfach auf den Link tippen:
+${url}
+
+Alternativ: QR-Code in der App scannen (kein Passwort nötig).
+
+Bei Fragen wende dich an deinen Vorgesetzten.
+
+Mit freundlichen Grüßen
+CSC GmbH`
+  );
+  window.location.href = `mailto:${encodeURIComponent(email)}?subject=${betreff}&body=${body}`;
+}
+
 async function pruefeQrLogin() {
   const params = new URLSearchParams(location.search);
   const token = params.get('qrlogin');

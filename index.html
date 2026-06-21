@@ -883,9 +883,11 @@
     <img id="qr-login-img" src="" alt="QR-Code" style="width:200px;height:200px;border:1px solid #e2e8f0;border-radius:12px;margin:0 auto 12px;display:block">
     <div style="font-size:.76rem;color:#6b7280;margin-bottom:14px">QR-Code scannen → direkt einloggen (kein Passwort nötig)</div>
     <div id="qr-login-url" style="font-size:.65rem;color:#9ca3af;word-break:break-all;background:#f8faff;padding:6px 10px;border-radius:6px;margin-bottom:14px;text-align:left"></div>
-    <div style="display:flex;gap:10px">
-      <button onclick="qrLoginSchliessen()" class="btn btn-outline" style="flex:1">Schließen</button>
-      <button id="qr-login-drucken-btn" class="btn btn-primary" style="flex:1">🖨️ Drucken</button>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button onclick="qrLoginSchliessen()" class="btn btn-outline" style="flex:1;min-width:100px">Schließen</button>
+      <button onclick="qrLoginTeilen()" class="btn btn-primary" style="flex:1;min-width:100px">📤 Teilen</button>
+      <button onclick="qrLoginEmail()" class="btn btn-outline" style="flex:1;min-width:100px">📧 E-Mail</button>
+      <button id="qr-login-drucken-btn" class="btn btn-outline" style="flex:1;min-width:100px">🖨️ Drucken</button>
     </div>
   </div>
 </div>
