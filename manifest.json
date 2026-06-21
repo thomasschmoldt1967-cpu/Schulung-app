@@ -1,7 +1,7 @@
 {
-  "name": "Schulungsmanagement CSC",
-  "short_name": "Schulung",
-  "description": "Schulungsmanagement für Subunternehmen — CSC GmbH Hannover",
+  "name": "SIBEDA Schulungsmanagement",
+  "short_name": "SIBEDA",
+  "description": "Schulungsmanagement — SIBEDA Sicherheit bei der Arbeit",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

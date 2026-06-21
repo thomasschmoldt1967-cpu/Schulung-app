@@ -2988,7 +2988,7 @@ function einlQrDrucken() {
     <img src="${img.src}" style="width:220px;height:220px"><br>
     <p style="font-size:1rem;margin-top:12px"><strong>${escHtml(v?.titel||'Schulungsunterweisung')}</strong></p>
     <p style="font-size:.85rem;color:#666">Mit Smartphone scannen und Schulung unterzeichnen</p>
-    <p style="font-size:.75rem;color:#999">CSC GmbH · www.csc-hannover.de</p>
+    <p style="font-size:.75rem;color:#999">SIBEDA · www.sibeda.de</p>
   </body></html>`);
   w.document.close();
   setTimeout(()=>w.print(), 500);
@@ -3709,7 +3709,7 @@ async function pdfBerichtGenerieren() {
     doc.setFont('helvetica', 'normal');
     const tenantLabel = tenantId ? (filteredTenants[0]?.name || '') : 'Alle Unternehmen';
     doc.text(`${tenantLabel} | Erstellt: ${new Date().toLocaleDateString('de-DE')}`, 15, 32);
-    doc.text('CSC GmbH — Schulungsmanagement', 15, 39);
+    doc.text('SIBEDA — Schulungsmanagement', 15, 39);
 
     // ── Zusammenfassung ────────────────────────────────────
     doc.setTextColor(0, 0, 0);
@@ -3820,7 +3820,7 @@ async function pdfBerichtGenerieren() {
       doc.setPage(i);
       doc.setFontSize(7);
       doc.setTextColor(150, 150, 150);
-      doc.text(`CSC GmbH Schulungsmanagement • Seite ${i} von ${pageCount} • ${new Date().toLocaleDateString('de-DE')}`, 105, 290, { align: 'center' });
+      doc.text(`SIBEDA Schulungsmanagement • Seite ${i} von ${pageCount} • ${new Date().toLocaleDateString('de-DE')}`, 105, 290, { align: 'center' });
     }
 
     const dateiname = `Schulungsbericht_${tenantId ? filteredTenants[0]?.name?.replace(/\s/g,'_') || 'Unternehmen' : 'Gesamt'}_${new Date().toISOString().slice(0,10)}.pdf`;
@@ -3974,7 +3974,7 @@ function qrLoginTeilen() {
   if (navigator.share) {
     navigator.share({
       title: `QR-Login: ${name}`,
-      text:  `Hallo ${name},\n\nHier ist dein persönlicher Login-Link für die Schulungs-App (CSC GmbH).\nEinfach auf den Link tippen oder den QR-Code scannen:\n\n${url}\n\nKein Passwort nötig.`,
+      text:  `Hallo ${name},\n\nHier ist dein persönlicher Login-Link für die Schulungs-App (SIBEDA).\nEinfach auf den Link tippen oder den QR-Code scannen:\n\n${url}\n\nKein Passwort nötig.`,
       url
     }).catch(() => {});
   } else {
@@ -3993,7 +3993,7 @@ function qrLoginEmail() {
   const body = encodeURIComponent(
 `Hallo ${name},
 
-hier ist dein persönlicher Login-Link für die Schulungs-App der CSC GmbH.
+hier ist dein persönlicher Login-Link für die Schulungs-App von SIBEDA.
 
 👉 Einfach auf den Link tippen:
 ${url}
@@ -4003,7 +4003,7 @@ Alternativ: QR-Code in der App scannen (kein Passwort nötig).
 Bei Fragen wende dich an deinen Vorgesetzten.
 
 Mit freundlichen Grüßen
-CSC GmbH`
+SIBEDA`
   );
   window.location.href = `mailto:${encodeURIComponent(email)}?subject=${betreff}&body=${body}`;
 }
