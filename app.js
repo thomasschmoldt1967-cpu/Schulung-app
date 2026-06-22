@@ -2958,21 +2958,26 @@ function nuRenderListe() {
 
 // Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
 
-function nuFormularToggle() {
-  const f = document.getElementById('nu-formular');
-  const icon = document.getElementById('nu-toggle-icon');
-  const open = f.style.display === 'none' || f.style.display === '';
-  f.style.display = open ? 'block' : 'none';
-  icon.style.transform = open ? 'rotate(180deg)' : '';
+function zuwListeToggle() {
+  const b = document.getElementById('zuw-liste-bereich');
+  const icon = document.getElementById('zuw-toggle-icon');
+  const open = b.style.display === 'none' || b.style.display === '';
+  b.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▼' : '▶';
+  if (open) renderAdminZuweisungen();
 }
 
-function azFormularToggle() {
-  const f = document.getElementById('az-formular');
-  const icon = document.getElementById('az-toggle-icon');
-  const open = f.style.display === 'none' || f.style.display === '';
-  f.style.display = open ? 'block' : 'none';
-  icon.style.transform = open ? 'rotate(180deg)' : '';
+function nuListeToggle() {
+  const b = document.getElementById('nu-liste-bereich');
+  const icon = document.getElementById('nu-liste-toggle-icon');
+  const open = b.style.display === 'none' || b.style.display === '';
+  b.style.display = open ? 'block' : 'none';
+  icon.textContent = open ? '▼' : '▶';
+  if (open) nuRenderListe();
 }
+
+function nuFormularToggle() {} // veraltet, kein Toggle mehr
+function azFormularToggle() {} // veraltet, kein Toggle mehr
 
 // ══════════════════════════════════════════════════════════════
 //  EINLADUNG: Link + QR-Code generieren (Verantwortlicher)

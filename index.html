@@ -237,11 +237,7 @@
     <!-- Tab: Zuweisungen -->
     <div id="tab-zuweisungen" class="tab-content" style="display:none">
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="azFormularToggle()">
-          <div class="card-title" style="margin:0">➕ Neue Zuweisung</div>
-          <span id="az-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▼</span>
-        </div>
-        <div id="az-formular" style="display:none;margin-top:14px">
+        <div class="card-title">➕ Neue Zuweisung</div>
         <div class="assign-form">
 
           <!-- Vorlagen-Picker (suchbar) -->
@@ -282,24 +278,26 @@
           <button class="btn btn-primary" onclick="createZuweisung()">Zuweisung erstellen</button>
           <div id="az-msg" class="success-msg"></div>
         </div>
-        </div><!-- /az-formular -->
       </div>
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="zuwListeToggle()">
           <div class="card-title" style="margin:0">📋 Aktive Zuweisungen</div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <select id="zuw-filter-tenant" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none">
+          <span id="zuw-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
+        </div>
+        <div id="zuw-liste-bereich" style="display:none;margin-top:12px">
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+            <select id="zuw-filter-tenant" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;flex:1">
               <option value="">Alle Unternehmen</option>
             </select>
-            <select id="zuw-filter-status" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none">
+            <select id="zuw-filter-status" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;flex:1">
               <option value="">Alle Status</option>
               <option value="gruen">🟢 Abgeschlossen</option>
               <option value="gelb">🟡 In Bearbeitung</option>
               <option value="rot">🔴 Offen / Dringend</option>
             </select>
           </div>
+          <div id="admin-zuw-list"></div>
         </div>
-        <div id="admin-zuw-list"></div>
       </div>
     </div>
 
@@ -314,13 +312,10 @@
     <!-- Tab: Unternehmen verwalten -->
     <div id="tab-unternehmen" class="tab-content" style="display:none">
 
-      <!-- Neues Unternehmen anlegen (aufklappbar) -->
+      <!-- Neues Unternehmen anlegen (immer offen) -->
       <div class="card" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="nuFormularToggle()">
-          <div class="card-title" style="margin:0">➕ Neues Unternehmen anlegen</div>
-          <span id="nu-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▼</span>
-        </div>
-        <div id="nu-formular" style="display:none;margin-top:14px">
+        <div class="card-title">➕ Neues Unternehmen anlegen</div>
+        <div>
           <div class="form-group">
             <label>Firmenname *</label>
             <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
@@ -347,13 +342,16 @@
         </div>
       </div>
 
-      <!-- Bestehende Unternehmen mit Filter -->
+      <!-- Bestehende Unternehmen mit Toggle + Filter -->
       <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="nuListeToggle()">
           <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
-          <input type="search" id="nu-filter" placeholder="🔍 Suchen…" oninput="nuRenderListe()" style="padding:7px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;width:160px">
+          <span id="nu-liste-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
         </div>
-        <div id="nu-liste"></div>
+        <div id="nu-liste-bereich" style="display:none;margin-top:12px">
+          <input type="search" id="nu-filter" placeholder="🔍 Unternehmen suchen…" oninput="nuRenderListe()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;box-sizing:border-box;margin-bottom:10px">
+          <div id="nu-liste"></div>
+        </div>
       </div>
     </div>
   </div>
