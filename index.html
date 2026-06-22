@@ -237,7 +237,11 @@
     <!-- Tab: Zuweisungen -->
     <div id="tab-zuweisungen" class="tab-content" style="display:none">
       <div class="card">
-        <div class="card-title">➕ Neue Zuweisung</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="azFormularToggle()">
+          <div class="card-title" style="margin:0">➕ Neue Zuweisung</div>
+          <span id="az-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▼</span>
+        </div>
+        <div id="az-formular" style="display:none;margin-top:14px">
         <div class="assign-form">
 
           <!-- Vorlagen-Picker (suchbar) -->
@@ -278,9 +282,23 @@
           <button class="btn btn-primary" onclick="createZuweisung()">Zuweisung erstellen</button>
           <div id="az-msg" class="success-msg"></div>
         </div>
+        </div><!-- /az-formular -->
       </div>
       <div class="card">
-        <div class="card-title">📋 Aktive Zuweisungen</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin:0">📋 Aktive Zuweisungen</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <select id="zuw-filter-tenant" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none">
+              <option value="">Alle Unternehmen</option>
+            </select>
+            <select id="zuw-filter-status" onchange="renderAdminZuweisungen()" style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none">
+              <option value="">Alle Status</option>
+              <option value="gruen">🟢 Abgeschlossen</option>
+              <option value="gelb">🟡 In Bearbeitung</option>
+              <option value="rot">🔴 Offen / Dringend</option>
+            </select>
+          </div>
+        </div>
         <div id="admin-zuw-list"></div>
       </div>
     </div>
@@ -296,37 +314,45 @@
     <!-- Tab: Unternehmen verwalten -->
     <div id="tab-unternehmen" class="tab-content" style="display:none">
 
-      <!-- Neues Unternehmen anlegen -->
+      <!-- Neues Unternehmen anlegen (aufklappbar) -->
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">➕ Neues Unternehmen anlegen</div>
-        <div class="form-group">
-          <label>Firmenname *</label>
-          <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
+        <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="nuFormularToggle()">
+          <div class="card-title" style="margin:0">➕ Neues Unternehmen anlegen</div>
+          <span id="nu-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▼</span>
         </div>
-        <div class="form-group">
-          <label>E-Mail (Verantwortlicher) *</label>
-          <input type="email" id="nu-email" placeholder="verantwortlicher@firma.de">
-        </div>
-        <div class="form-group">
-          <label>Ansprechpartner Name *</label>
-          <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
-        </div>
-        <div class="form-group">
-          <label>Passwort *</label>
-          <div style="display:flex;gap:8px;align-items:center">
-            <input type="text" id="nu-passwort" placeholder="Passwort eingeben" style="flex:1">
-            <button class="btn btn-outline btn-sm" onclick="nuGenerierePasswort()">🎲 Generieren</button>
+        <div id="nu-formular" style="display:none;margin-top:14px">
+          <div class="form-group">
+            <label>Firmenname *</label>
+            <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
           </div>
+          <div class="form-group">
+            <label>E-Mail (Verantwortlicher) *</label>
+            <input type="email" id="nu-email" placeholder="verantwortlicher@firma.de">
+          </div>
+          <div class="form-group">
+            <label>Ansprechpartner Name *</label>
+            <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
+          </div>
+          <div class="form-group">
+            <label>Passwort *</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="text" id="nu-passwort" placeholder="Passwort eingeben" style="flex:1">
+              <button class="btn btn-outline btn-sm" onclick="nuGenerierePasswort()">🎲 Generieren</button>
+            </div>
+          </div>
+          <div style="margin-top:14px;display:flex;gap:10px">
+            <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Unternehmen anlegen</button>
+          </div>
+          <div id="nu-msg" class="error-msg" style="margin-top:8px"></div>
         </div>
-        <div style="margin-top:14px;display:flex;gap:10px">
-          <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Unternehmen anlegen</button>
-        </div>
-        <div id="nu-msg" class="error-msg" style="margin-top:8px"></div>
       </div>
 
-      <!-- Bestehende Unternehmen -->
+      <!-- Bestehende Unternehmen mit Filter -->
       <div class="card">
-        <div class="card-title">📋 Bestehende Unternehmen</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px">
+          <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
+          <input type="search" id="nu-filter" placeholder="🔍 Suchen…" oninput="nuRenderListe()" style="padding:7px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;width:160px">
+        </div>
         <div id="nu-liste"></div>
       </div>
     </div>

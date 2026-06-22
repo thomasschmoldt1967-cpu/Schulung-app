@@ -1766,7 +1766,29 @@ function vtAddFeld(abId) {
 
 
 function renderAdminZuweisungen() {
-  const rows = zuweisungen.map(z => {
+  // Filter-Dropdown für Unternehmen befüllen (einmalig)
+  const tenantSel = document.getElementById('zuw-filter-tenant');
+  if (tenantSel && tenantSel.options.length <= 1) {
+    APP_TENANTS.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t.id; o.textContent = t.name;
+      tenantSel.appendChild(o);
+    });
+  }
+  const filterTenant = tenantSel ? tenantSel.value : '';
+  const filterStatus = document.getElementById('zuw-filter-status') ? document.getElementById('zuw-filter-status').value : '';
+
+  let gefiltert = zuweisungen;
+  if (filterTenant) gefiltert = gefiltert.filter(z => z.tenantId === filterTenant);
+  if (filterStatus) gefiltert = gefiltert.filter(z => {
+    const s = berechneStatus(z);
+    if (filterStatus === 'gruen') return s === 'gruen';
+    if (filterStatus === 'gelb')  return s === 'gelb';
+    if (filterStatus === 'rot')   return s === 'rot';
+    return true;
+  });
+
+  const rows = gefiltert.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     return `<div class="schulung-item">
       <div>
@@ -2912,11 +2934,17 @@ async function nuAnlegen() {
 function nuRenderListe() {
   const el = document.getElementById('nu-liste');
   if (!el) return;
+  const suche = (document.getElementById('nu-filter')?.value || '').toLowerCase().trim();
   if (!APP_TENANTS.length) {
     el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Unternehmen angelegt.</p>';
     return;
   }
-  el.innerHTML = APP_TENANTS.map(t => {
+  const gefiltert = suche ? APP_TENANTS.filter(t => t.name.toLowerCase().includes(suche)) : APP_TENANTS;
+  if (!gefiltert.length) {
+    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Keine Treffer.</p>';
+    return;
+  }
+  el.innerHTML = gefiltert.map(t => {
     const zuws = zuweisungen.filter(z => z.tenantId === t.id);
     return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6">
       <div>
@@ -2929,6 +2957,22 @@ function nuRenderListe() {
 }
 
 // Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
+
+function nuFormularToggle() {
+  const f = document.getElementById('nu-formular');
+  const icon = document.getElementById('nu-toggle-icon');
+  const open = f.style.display === 'none' || f.style.display === '';
+  f.style.display = open ? 'block' : 'none';
+  icon.style.transform = open ? 'rotate(180deg)' : '';
+}
+
+function azFormularToggle() {
+  const f = document.getElementById('az-formular');
+  const icon = document.getElementById('az-toggle-icon');
+  const open = f.style.display === 'none' || f.style.display === '';
+  f.style.display = open ? 'block' : 'none';
+  icon.style.transform = open ? 'rotate(180deg)' : '';
+}
 
 // ══════════════════════════════════════════════════════════════
 //  EINLADUNG: Link + QR-Code generieren (Verantwortlicher)
