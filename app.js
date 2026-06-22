@@ -2460,7 +2460,7 @@ function renderFeld(feld, val, readOnly) {
   if (feld.typ==='checkbox') return `<div class="form-group"><div class="checkbox-field ${val?'checked':''}"><input type="checkbox" id="feld_${feld.id}" ${val?'checked':''} ${readOnly?'disabled':''} onchange="this.closest('.checkbox-field').classList.toggle('checked',this.checked)"><label for="feld_${feld.id}">${escHtml(feld.label)} ${pfl}</label></div></div>`;
   if (feld.typ==='signature') {
     if (readOnly&&val) return `<div class="form-group"><label>${escHtml(feld.label)}</label><img src="${val}" style="max-width:300px;border:1px solid #dde2e9;border-radius:8px;display:block"></div>`;
-    return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><div class="sig-container"><canvas id="sig_${feld.id}" class="sig-canvas" height="120"></canvas></div><div class="sig-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="clearSig('${feld.id}')">✕ Löschen</button><span style="font-size:.75rem;color:#6b7280">Mit Finger oder Maus unterschreiben</span></div></div>`;
+    return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><div class="sig-container"><canvas id="sig_${feld.id}" class="sig-canvas"></canvas></div><div class="sig-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="clearSig('${feld.id}')">✕ Löschen</button><span style="font-size:.75rem;color:#6b7280">Mit Finger oder Maus unterschreiben</span></div></div>`;
   }
   if (feld.typ==='upload') {
     if (readOnly&&val) return `<div class="form-group"><label>${escHtml(feld.label)}</label><span style="color:#16a34a;font-size:.88rem">✓ ${escHtml(val)}</span></div>`;
@@ -2472,21 +2472,28 @@ function renderFeld(feld, val, readOnly) {
 // ── SIG PAD ──────────────────────────────────────────────────
 function initSigPad(feldId, existingDataUrl) {
   const canvas=document.getElementById(`sig_${feldId}`); if(!canvas) return;
-  const dpr=window.devicePixelRatio||1, w=canvas.offsetWidth||300;
-  canvas.width=w*dpr; canvas.height=120*dpr;
-  const ctx=canvas.getContext('2d'); ctx.scale(dpr,dpr);
-  ctx.strokeStyle='#0047CC'; ctx.lineWidth=2.2; ctx.lineCap='round'; ctx.lineJoin='round';
-  if (existingDataUrl) { const img=new Image(); img.onload=()=>ctx.drawImage(img,0,0,w,120); img.src=existingDataUrl; }
-  let drawing=false,lastX=0,lastY=0;
-  function getPos(e) { const rect=canvas.getBoundingClientRect(),src=e.touches?e.touches[0]:e; return{x:src.clientX-rect.left,y:src.clientY-rect.top}; }
-  function start(e) { drawing=true; const p=getPos(e); lastX=p.x; lastY=p.y; }
-  function move(e)  { if(!drawing)return; e.preventDefault(); const p=getPos(e); ctx.beginPath();ctx.moveTo(lastX,lastY);ctx.lineTo(p.x,p.y);ctx.stroke();lastX=p.x;lastY=p.y; }
-  function end()    { drawing=false; }
-  canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); canvas.addEventListener('mouseup',end); canvas.addEventListener('mouseleave',end);
-  canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',end,{passive:false});
-  sigPads[feldId]={canvas,ctx};
+  // Canvas nach einem Frame initialisieren, damit offsetWidth korrekt ist (CSS muss zuerst rendern)
+  requestAnimationFrame(() => {
+    const dpr = window.devicePixelRatio || 1;
+    const w   = canvas.offsetWidth  || 320;
+    const h   = canvas.offsetHeight || 150;
+    canvas.width  = w * dpr;
+    canvas.height = h * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    ctx.strokeStyle='#0047CC'; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
+    if (existingDataUrl) { const img=new Image(); img.onload=()=>ctx.drawImage(img,0,0,w,h); img.src=existingDataUrl; }
+    let drawing=false, lastX=0, lastY=0;
+    function getPos(e) { const rect=canvas.getBoundingClientRect(), src=e.touches?e.touches[0]:e; return {x:(src.clientX-rect.left), y:(src.clientY-rect.top)}; }
+    function start(e) { drawing=true; const p=getPos(e); lastX=p.x; lastY=p.y; e.preventDefault(); }
+    function move(e)  { if(!drawing) return; e.preventDefault(); const p=getPos(e); ctx.beginPath(); ctx.moveTo(lastX,lastY); ctx.lineTo(p.x,p.y); ctx.stroke(); lastX=p.x; lastY=p.y; }
+    function end()    { drawing=false; }
+    canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move); canvas.addEventListener('mouseup',end); canvas.addEventListener('mouseleave',end);
+    canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false}); canvas.addEventListener('touchend',end,{passive:false});
+    sigPads[feldId]={canvas,ctx,w,h,dpr};
+  });
 }
-function clearSig(feldId) { const p=sigPads[feldId]; if(!p) return; p.ctx.clearRect(0,0,p.canvas.offsetWidth||300,120); }
+function clearSig(feldId) { const p=sigPads[feldId]; if(!p) return; p.ctx.clearRect(0,0,p.w||p.canvas.offsetWidth||320, p.h||p.canvas.offsetHeight||150); }
 function isSigEmpty(feldId) {
   const p=sigPads[feldId]; if(!p) return true;
   const b=document.createElement('canvas'); b.width=p.canvas.width; b.height=p.canvas.height;

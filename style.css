@@ -135,9 +135,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .upload-zone input[type="file"] { display: none; }
 
 /* ── UNTERSCHRIFT ────────────────────────────────────────── */
-.sig-container { border: 2px solid var(--border); border-radius: 8px; background: white; overflow: hidden; }
-.sig-canvas { display: block; width: 100%; touch-action: none; cursor: crosshair; background: white; }
-.sig-actions { display: flex; gap: 8px; margin-top: 8px; }
+.sig-container { border: 2px solid var(--border); border-radius: 8px; background: white; overflow: hidden; position: relative; width: 100%; }
+.sig-canvas { display: block; width: 100%; height: 150px; touch-action: none; cursor: crosshair; background: white; }
+.sig-actions { display: flex; gap: 8px; margin-top: 8px; align-items: center; }
 
 /* ── AMPEL-BADGES ────────────────────────────────────────── */
 .badge {
