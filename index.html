@@ -430,9 +430,15 @@
 
     <!-- Mitarbeiterliste (nur für Verantwortliche) -->
     <div id="sub-mitarbeiter-section" style="display:none;margin-top:24px">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
         <h3 style="font-size:1rem;font-weight:700;color:#1e3a5f;margin:0">👤 Meine Mitarbeiter</h3>
-        <span id="sub-mitarbeiter-count" style="font-size:.8rem;color:#6b7280"></span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="sub-mitarbeiter-count" style="font-size:.8rem;color:#6b7280"></span>
+          <button type="button" onclick="bereichsEinweisungOeffnen()"
+            style="font-size:.78rem;padding:5px 12px;border-radius:7px;border:1px solid #1a3a5c;background:#1a3a5c;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">
+            📋 Bereichs-Einweisung
+          </button>
+        </div>
       </div>
       <!-- Filter-Dropdown wird per JS befüllt -->
       <div id="sub-mitarbeiter-header" style="margin-bottom:10px"></div>
@@ -964,6 +970,80 @@
       <button onclick="qrLoginTeilen()" class="btn btn-primary" style="flex:1;min-width:100px">📤 Teilen</button>
       <button onclick="qrLoginEmail()" class="btn btn-outline" style="flex:1;min-width:100px">📧 E-Mail</button>
       <button id="qr-login-drucken-btn" class="btn btn-outline" style="flex:1;min-width:100px">🖨️ Drucken</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     MODAL: BEREICHS-EINWEISUNG
+══════════════════════════════════════════════════════════ -->
+<div id="bereichs-einweisung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;padding:20px;max-width:520px;width:100%;position:relative;max-height:90vh;display:flex;flex-direction:column;gap:0">
+    <button onclick="bereichsEinweisungSchliessen()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
+    <div style="font-size:1.15rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Bereichs-Einweisung</div>
+    <div style="font-size:.82rem;color:#6b7280;margin-bottom:14px">Schulungsthema für Mitarbeiter eines Bereichs oder Objekt zuweisen</div>
+
+    <!-- Schritt 1: Bereich/Objekt wählen -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:4px">1. Bereich / Objekt filtern</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <select id="be-bereich-select" onchange="bereichsEinweisungFilterAnwenden()"
+          style="flex:1;min-width:160px;border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.85rem;background:#fff">
+          <option value="">— Alle Mitarbeiter —</option>
+        </select>
+        <select id="be-objekt-select" onchange="bereichsEinweisungFilterAnwenden()"
+          style="flex:1;min-width:160px;border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.85rem;background:#fff">
+          <option value="">— Alle Objekte —</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Mitarbeiter-Liste mit Checkboxen -->
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+        <label style="font-size:.82rem;font-weight:600;color:#374151">2. Mitarbeiter auswählen</label>
+        <div style="display:flex;gap:8px">
+          <button type="button" onclick="bereichsAlleWaehlen(true)"
+            style="font-size:.75rem;padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer">✅ Alle</button>
+          <button type="button" onclick="bereichsAlleWaehlen(false)"
+            style="font-size:.75rem;padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;cursor:pointer">☐ Keine</button>
+        </div>
+      </div>
+      <div id="be-mitarbeiter-list" style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;background:#f9fafb;padding:6px">
+        <div style="color:#6b7280;font-size:.85rem;padding:8px">Wird geladen…</div>
+      </div>
+      <div id="be-ausgewaehlt-info" style="font-size:.78rem;color:#4b5563;margin-top:4px"></div>
+    </div>
+
+    <!-- Schulungsthema -->
+    <div style="margin-bottom:12px">
+      <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:4px">3. Schulungsthema wählen</label>
+      <input type="text" id="be-vorlage-suche" placeholder="Thema suchen …" oninput="bereichsVorlagenSuche(this.value)"
+        style="width:100%;border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.85rem;box-sizing:border-box;margin-bottom:6px">
+      <div id="be-vorlage-liste" style="max-height:130px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"></div>
+      <input type="hidden" id="be-vorlage-id">
+      <div id="be-vorlage-label" style="font-size:.8rem;color:#1a3a5c;font-weight:600;margin-top:4px;display:none"></div>
+    </div>
+
+    <!-- Frist + Pflicht -->
+    <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:130px">
+        <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:4px">4. Frist</label>
+        <input type="date" id="be-frist" style="width:100%;border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.85rem;box-sizing:border-box">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:20px">
+        <input type="checkbox" id="be-pflicht" checked style="width:16px;height:16px;accent-color:#1a3a5c;cursor:pointer">
+        <label for="be-pflicht" style="font-size:.83rem;color:#374151;cursor:pointer">Pflichtschulung</label>
+      </div>
+    </div>
+
+    <div id="be-msg" style="font-size:.83rem;color:#dc2626;min-height:20px;margin-bottom:6px"></div>
+
+    <div style="display:flex;gap:10px">
+      <button type="button" onclick="bereichsEinweisungSchliessen()" class="btn btn-outline" style="flex:1">Abbrechen</button>
+      <button type="button" id="be-zuweisen-btn" onclick="bereichsZuweisungErstellen()" class="btn btn-primary" style="flex:1;background:#1a3a5c">
+        📋 Schulung zuweisen
+      </button>
     </div>
   </div>
 </div>

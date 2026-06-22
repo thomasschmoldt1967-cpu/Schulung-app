@@ -421,7 +421,8 @@ async function initApp() {
     zuweisungen = zuws.map(z => ({
       id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
       frist: z.frist, pflicht: z.pflicht,
-      intervallMonate: z.intervall_monate || null
+      intervallMonate: z.intervall_monate || null,
+      zugewiesenAn: z.zugewiesen_an || null
     }));
 
     // Formulare laden
@@ -520,8 +521,11 @@ function routeAfterLogin() {
     // 1. Nur eigener Tenant sichtbar
     APP_TENANTS = APP_TENANTS.filter(t => t.id === tid);
 
-    // 2. Nur eigene Zuweisungen
-    zuweisungen = zuweisungen.filter(z => z.tenantId === tid);
+    // 2. Nur eigene Zuweisungen (ohne persönliche Einweisungen anderer Mitarbeiter)
+    zuweisungen = zuweisungen.filter(z =>
+      z.tenantId === tid &&
+      (z.zugewiesenAn === null || z.zugewiesenAn === currentUser.userId)
+    );
 
     // 3. Nur Formulare der eigenen Zuweisungen
     const eigeneZuwIds = new Set(zuweisungen.map(z => z.id));
@@ -530,8 +534,11 @@ function routeAfterLogin() {
     });
 
     // 4. Nur Vorlagen die in eigenen Zuweisungen vorkommen
+    //    Ausnahme: Verantwortliche brauchen alle Vorlagen (für Bereichs-Einweisung)
     const eigeneVorlagenIds = new Set(zuweisungen.map(z => z.vorlagenId));
-    SCHULUNG_VORLAGEN = SCHULUNG_VORLAGEN.filter(v => eigeneVorlagenIds.has(v.id));
+    if (currentUser.role !== 'verantwortlicher') {
+      SCHULUNG_VORLAGEN = SCHULUNG_VORLAGEN.filter(v => eigeneVorlagenIds.has(v.id));
+    }
 
     // 5. Nur User des eigenen Tenants (für ID→Name Auflösung)
     APP_USERS = APP_USERS.filter(u => u.tenant_id === tid);
@@ -4580,3 +4587,199 @@ function historieSchliessen() {
   const modal = document.getElementById('historie-modal');
   if (modal) modal.style.display = 'none';
 }
+
+// ══════════════════════════════════════════════════════════════
+//  BEREICHS-EINWEISUNG (Masseneinweisung nach Bereich/Objekt)
+// ══════════════════════════════════════════════════════════════
+let _beMitarbeiterAlle = []; // alle aktiven MA des Tenants (gecacht)
+
+async function bereichsEinweisungOeffnen() {
+  const modal = document.getElementById('bereichs-einweisung-modal');
+  if (!modal) return;
+
+  // Reset
+  document.getElementById('be-vorlage-id').value = '';
+  document.getElementById('be-vorlage-suche').value = '';
+  document.getElementById('be-vorlage-label').style.display = 'none';
+  document.getElementById('be-frist').value = '';
+  document.getElementById('be-pflicht').checked = true;
+  document.getElementById('be-msg').textContent = '';
+
+  modal.style.display = 'flex';
+
+  // Mitarbeiter laden
+  const listEl = document.getElementById('be-mitarbeiter-list');
+  listEl.innerHTML = '<div style="color:#6b7280;font-size:.85rem;padding:8px">⏳ Wird geladen…</div>';
+
+  try {
+    const ma = await SB.get('users',
+      `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&role=eq.mitarbeiter&aktiv=eq.true&archiviert=eq.false&order=name.asc`
+    );
+    _beMitarbeiterAlle = ma || [];
+
+    // Bereiche + Objekte (Standorte) sammeln
+    const bereiche  = [...new Set(ma.map(m => m.bereich).filter(Boolean))].sort();
+    const objekte   = [...new Set(ma.map(m => m.standort).filter(Boolean))].sort();
+
+    const bSel = document.getElementById('be-bereich-select');
+    bSel.innerHTML = '<option value="">— Alle Mitarbeiter —</option>' +
+      bereiche.map(b => `<option value="${escHtml(b)}">🏷 ${escHtml(b)}</option>`).join('');
+
+    const oSel = document.getElementById('be-objekt-select');
+    oSel.innerHTML = '<option value="">— Alle Objekte —</option>' +
+      objekte.map(o => `<option value="${escHtml(o)}">📍 ${escHtml(o)}</option>`).join('');
+
+    bereichsEinweisungFilterAnwenden();
+    bereichsVorlagenSuche('');
+  } catch(e) {
+    listEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;padding:8px">Fehler: ${escHtml(e.message)}</div>`;
+  }
+}
+
+function bereichsEinweisungFilterAnwenden() {
+  const bereich = document.getElementById('be-bereich-select')?.value || '';
+  const objekt  = document.getElementById('be-objekt-select')?.value  || '';
+
+  let liste = _beMitarbeiterAlle;
+  if (bereich) liste = liste.filter(m => m.bereich  === bereich);
+  if (objekt)  liste = liste.filter(m => m.standort === objekt);
+
+  const listEl = document.getElementById('be-mitarbeiter-list');
+  if (!liste.length) {
+    listEl.innerHTML = '<div style="color:#6b7280;font-size:.85rem;padding:8px;text-align:center">Keine aktiven Mitarbeiter für diesen Filter</div>';
+    document.getElementById('be-ausgewaehlt-info').textContent = '';
+    return;
+  }
+
+  listEl.innerHTML = liste.map(m => `
+    <label style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;cursor:pointer;transition:background .1s"
+      onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+      <input type="checkbox" class="be-ma-cb" value="${m.id}" checked
+        style="width:16px;height:16px;accent-color:#1a3a5c;cursor:pointer;flex-shrink:0"
+        onchange="bereichsAuswahlInfo()">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.86rem;font-weight:600;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(m.name)}</div>
+        <div style="font-size:.74rem;color:#6b7280;display:flex;gap:8px;flex-wrap:wrap;margin-top:1px">
+          ${m.bereich  ? `<span>🏷 ${escHtml(m.bereich)}</span>`  : ''}
+          ${m.standort ? `<span>📍 ${escHtml(m.standort)}</span>` : ''}
+        </div>
+      </div>
+    </label>`).join('');
+
+  bereichsAuswahlInfo();
+}
+
+function bereichsAlleWaehlen(ja) {
+  document.querySelectorAll('.be-ma-cb').forEach(cb => cb.checked = ja);
+  bereichsAuswahlInfo();
+}
+
+function bereichsAuswahlInfo() {
+  const alle   = document.querySelectorAll('.be-ma-cb').length;
+  const gew    = document.querySelectorAll('.be-ma-cb:checked').length;
+  const infoEl = document.getElementById('be-ausgewaehlt-info');
+  infoEl.textContent = gew === 0
+    ? '⚠️ Keine Mitarbeiter ausgewählt'
+    : `${gew} von ${alle} Mitarbeitern ausgewählt`;
+}
+
+function bereichsVorlagenSuche(suche) {
+  const el = document.getElementById('be-vorlage-liste');
+  if (!el) return;
+  const s = (suche || '').toLowerCase().trim();
+  // Admin-Vorlagen = alle SCHULUNG_VORLAGEN (bereits tenant-gefiltert)
+  // Verantwortliche haben Zugriff auf eigene Tenant-Vorlagen
+  // Wir laden frisch aus dem globalen Array (nach Mandantentrennung)
+  // Falls leer (Verantwortlicher hat keine eigenen Zuweisungen), alle zeigen
+  let vorlagen = SCHULUNG_VORLAGEN;
+  if (!vorlagen.length) {
+    el.innerHTML = '<div style="padding:12px;text-align:center;color:#9ca3af;font-size:.84rem">Keine Schulungsvorlagen verfügbar</div>';
+    return;
+  }
+  const gef = s ? vorlagen.filter(v => v.titel.toLowerCase().includes(s) || (v.beschreibung||'').toLowerCase().includes(s)) : vorlagen;
+  if (!gef.length) {
+    el.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af;font-size:.84rem">Keine Vorlage für „${escHtml(s)}"</div>`;
+    return;
+  }
+  el.innerHTML = gef.map((v, i) => `
+    <div onclick="bereichsVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
+      style="padding:10px 12px;cursor:pointer;border-bottom:${i===gef.length-1?'none':'1px solid #f0f2f5'};transition:background .1s"
+      onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
+      <div style="font-weight:600;font-size:.86rem;color:#1a3a5c">📄 ${escHtml(v.titel)}</div>
+      ${v.beschreibung ? `<div style="font-size:.75rem;color:#6b7280;margin-top:2px">${escHtml(v.beschreibung)}</div>` : ''}
+    </div>`).join('');
+}
+
+function bereichsVorlageWaehlen(id, titel) {
+  document.getElementById('be-vorlage-id').value   = id;
+  const lbl = document.getElementById('be-vorlage-label');
+  lbl.textContent = `✅ ${titel}`;
+  lbl.style.display = 'block';
+  document.getElementById('be-vorlage-liste').innerHTML = '';
+  document.getElementById('be-vorlage-suche').value = '';
+}
+
+async function bereichsZuweisungErstellen() {
+  const msgEl    = document.getElementById('be-msg');
+  const vorlagenId = document.getElementById('be-vorlage-id').value;
+  const frist    = document.getElementById('be-frist').value;
+  const pflicht  = document.getElementById('be-pflicht').checked;
+
+  if (!vorlagenId) { msgEl.textContent = '⚠️ Bitte ein Schulungsthema wählen.'; return; }
+  if (!frist)      { msgEl.textContent = '⚠️ Bitte eine Frist angeben.'; return; }
+
+  const ausgewaehlt = [...document.querySelectorAll('.be-ma-cb:checked')].map(cb => cb.value);
+  if (!ausgewaehlt.length) { msgEl.textContent = '⚠️ Bitte mindestens einen Mitarbeiter auswählen.'; return; }
+
+  msgEl.style.color = '#1a3a5c';
+  msgEl.textContent = `⏳ ${ausgewaehlt.length} Zuweisung(en) werden angelegt…`;
+  const btn = document.getElementById('be-zuweisen-btn');
+  btn.disabled = true;
+
+  const ts = Date.now();
+  const neu = ausgewaehlt.map((userId, i) => ({
+    id:             `z_${currentUser.tenantId}_${vorlagenId}_${userId}_${ts + i}`,
+    vorlage_id:     vorlagenId,
+    tenant_id:      currentUser.tenantId,
+    frist,
+    pflicht,
+    zugewiesen_an:  userId
+  }));
+
+  try {
+    await SB.post('zuweisungen', neu);
+    // Lokal aktualisieren
+    neu.forEach(z => zuweisungen.push({
+      id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
+      frist: z.frist, pflicht: z.pflicht,
+      intervallMonate: null, zugewiesenAn: z.zugewiesen_an
+    }));
+    const namen = ausgewaehlt.map(uid => {
+      const m = _beMitarbeiterAlle.find(m => m.id === uid);
+      return m ? m.name : uid;
+    }).join(', ');
+    const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === vorlagenId);
+    await sbAudit('BEREICHS-EINWEISUNG',
+      `Vorlage "${vorlage?.titel || vorlagenId}" → ${ausgewaehlt.length} MA (Frist: ${frist}): ${namen.substring(0, 120)}`
+    );
+    msgEl.style.color = '#16a34a';
+    msgEl.textContent = `✅ ${ausgewaehlt.length} Schulungszuweisung(en) erfolgreich erstellt!`;
+    setTimeout(() => {
+      bereichsEinweisungSchliessen();
+      renderMitarbeiterListe();
+      showToast(`✅ ${ausgewaehlt.length} Einweisungen für "${vorlage?.titel || vorlagenId}" zugewiesen`, '#16a34a');
+    }, 1400);
+  } catch(e) {
+    msgEl.style.color = '#dc2626';
+    msgEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false;
+  }
+}
+
+function bereichsEinweisungSchliessen() {
+  const modal = document.getElementById('bereichs-einweisung-modal');
+  if (modal) modal.style.display = 'none';
+  document.getElementById('be-zuweisen-btn').disabled = false;
+  _beMitarbeiterAlle = [];
+}
+
