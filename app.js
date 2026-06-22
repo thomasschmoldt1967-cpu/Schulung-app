@@ -359,9 +359,15 @@ const SB = {
     return r.json();
   },
   async uploadPdf(pdfBlob, path) {
+    // PUT mit x-upsert:true — überschreibt ohne 409-Fehler
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
-      method:'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type':'application/pdf' },
+      method:'PUT',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type':'application/pdf',
+        'x-upsert': 'true'
+      },
       body: pdfBlob
     });
     if (!r.ok) { const t = await r.text(); throw new Error(t); }
@@ -2689,23 +2695,29 @@ function generatePdf(zuwId, downloadOnly) {
 async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
   try {
     const path = `${tenantId}/${filename}`;
+    // PUT mit x-upsert:true — überschreibt existierende Datei ohne 409-Fehler
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/pdf' },
+      method: 'PUT',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/pdf',
+        'x-upsert': 'true'
+      },
       body: pdfBlob
     });
     if (!r.ok) throw new Error(await r.text());
     const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
     await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: publicUrl });
     if (formulare[zuwId]) formulare[zuwId].pdfPath = publicUrl;
-    showToast('🗄️ Supabase: PDF gespeichert', '#0047cc');
+    showToast('🗄️ PDF gespeichert', '#0047cc');
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
-    showToast('⚠️ Supabase Upload fehlgeschlagen', '#dc2626');
+    showToast('⚠️ PDF-Upload fehlgeschlagen: ' + e.message.substring(0,80), '#dc2626');
   }
 }
 
-// ── GOOGLE DRIVE UPLOAD (Backup) ─────────────────────────────
+// ── LOKALER BACKUP-UPLOAD (läuft nur auf dem Server, nicht vom Smartphone) ───
 async function uploadPdfToDrive(pdfBase64, filename, tenantId, zuwId) {
   try {
     const resp = await fetch('http://localhost:8765/upload', {
@@ -2715,17 +2727,17 @@ async function uploadPdfToDrive(pdfBase64, filename, tenantId, zuwId) {
     });
     const result = await resp.json();
     if (result.status === 'ok') {
-      // Drive-Link in DB speichern
       await SB.patch('formulare', `id=eq.${zuwId}`, { drive_link: result.link });
       if (formulare[zuwId]) formulare[zuwId].driveLink = result.link;
-      showToast('☁️ Google Drive: PDF gespeichert', '#16a34a');
+      // Kein Toast — PDF ist bereits via Supabase gesichert
       return result.link;
     } else {
       console.warn('Drive Upload Fehler:', result.message);
       return null;
     }
   } catch(e) {
-    console.warn('Drive Upload nicht erreichbar:', e.message);
+    // Nicht erreichbar (z.B. vom Smartphone) — kein Fehler-Toast, PDF ist in Supabase
+    console.warn('Backup-Upload nicht erreichbar:', e.message);
     return null;
   }
 }
