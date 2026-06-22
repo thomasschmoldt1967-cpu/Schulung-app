@@ -2225,6 +2225,24 @@ function renderSubDashboard() {
     <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
     <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Dringend</div></div>`;
+  // Buttons für Mitarbeiter-Rolle ausblenden (nur Unterweisungsthemen anzeigen)
+  const isMitarbeiter = currentUser.role === 'mitarbeiter';
+  const maBtns = document.getElementById('sub-ma-buttons');
+  const kalBtns = document.getElementById('sub-kalender-buttons');
+  if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
+  if (kalBtns) {
+    if (isMitarbeiter) {
+      // Nur Anleitung-Link zeigen, Kalender-Button ausblenden
+      const kalBtn = kalBtns.querySelector('button');
+      if (kalBtn) kalBtn.style.display = 'none';
+      kalBtns.style.gap = '0';
+    } else {
+      const kalBtn = kalBtns.querySelector('button');
+      if (kalBtn) kalBtn.style.display = '';
+      kalBtns.style.gap = '10px';
+    }
+  }
+
   // Kalender rendern
   renderSubKalender();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
@@ -2277,14 +2295,22 @@ function renderSubDashboard() {
     </div>`;
   }).join('');
 
-  // Anzahl im Button-Untertitel aktualisieren, Liste sicherstellen geschlossen
+  // Anzahl im Button-Untertitel aktualisieren
+  // Für Mitarbeiter: Liste sofort aufgeklappt, kein Toggle nötig
   const subEl = document.getElementById('btn-unterweisungen-sub');
   const liste = document.getElementById('sub-schulungen-list');
-  if (liste) liste.style.display = 'none';
-  const n = meineZuws.length;
-  if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
   const pfeil = document.getElementById('btn-unterweisungen-pfeil');
-  if (pfeil) pfeil.style.transform = '';
+  const n = meineZuws.length;
+  if (isMitarbeiter) {
+    // Mitarbeiter sieht Themen sofort — kein Tippen nötig
+    if (liste) liste.style.display = 'block';
+    if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '');
+    if (pfeil) pfeil.style.transform = 'rotate(180deg)';
+  } else {
+    if (liste) liste.style.display = 'none';
+    if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
+    if (pfeil) pfeil.style.transform = '';
+  }
 }
 
 function unterweisungenToggle() {
