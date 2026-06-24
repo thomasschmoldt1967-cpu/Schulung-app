@@ -917,12 +917,15 @@ function subKalenderRenderInhalt(filter) {
         : `<span style="color:${farbe};font-weight:600">in ${z.tage} Tag${z.tage===1?'':'en'}</span>`;
       const datumFormatiert = new Date(z.frist).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
       const icon = z.s==='gruen'?'✅':z.s==='rot'?'⚠️':z.s==='gelb'?'⏳':'📋';
-      html += `<div style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px">
+      html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
-          <div style="margin-top:6px"><span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span></div>
+          <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
+            <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
+            <span style="font-size:.72rem;color:#9ca3af">👥 Mitarbeiter anzeigen ›</span>
+          </div>
         </div>
       </div>`;
     });
@@ -4798,70 +4801,120 @@ function kalenderEintragDetail(zuwId) {
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
   const tage = fristDate ? Math.ceil((fristDate - heute) / 86400000) : null;
-  const tageText = tage === null ? '' : tage < 0 ? `⚠️ ${Math.abs(tage)} Tage überfällig` : tage === 0 ? '⚠️ Heute fällig!' : `📅 Noch ${tage} Tage`;
+  const ueberfaellig = tage !== null && tage < 0;
+  const tageText = tage === null ? '' : ueberfaellig
+    ? `⚠️ ${Math.abs(tage)} Tage überfällig`
+    : tage === 0 ? '⚠️ Heute fällig!' : `📅 Noch ${tage} Tage`;
 
-  // Alle Mitarbeiter des Tenants laden und Formular-Status ermitteln
-  const mitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && !u.archiviert);
+  // Alle Mitarbeiter des Tenants
+  const mitarbeiter = APP_USERS.filter(u =>
+    u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && !u.archiviert && u.aktiv !== false
+  );
+
+  // Formular dieser Zuweisung
   const f = formulare[z.id] || {};
 
-  let maRows = '';
-  if (mitarbeiter.length === 0) {
-    maRows = `<div style="color:#6b7280;font-size:.85rem;padding:12px 0;text-align:center">Keine Mitarbeiter vorhanden</div>`;
-  } else {
-    maRows = mitarbeiter.map(m => {
-      let dot, statusText, bg, border;
-      if (f.abgeschlossen && f.abgeschlossenVon === m.id) {
-        dot = '🟢'; statusText = 'Abgeschlossen'; bg = '#f0fdf4'; border = '#86efac';
-      } else if (f.gestartet && f.abgeschlossenVon !== m.id) {
-        dot = '🟡'; statusText = 'In Bearbeitung'; bg = '#fffbeb'; border = '#fde68a';
-      } else if (fristDate && fristDate < heute) {
-        dot = '🔴'; statusText = 'Überfällig'; bg = '#fef2f2'; border = '#fca5a5';
-      } else {
-        dot = '🔴'; statusText = 'Offen'; bg = '#fef2f2'; border = '#fca5a5';
-      }
-      const aktuellesFormular = Object.entries(formulare).find(([zwId, fm]) => zwId === z.id && fm.abgeschlossenVon === m.id);
-      const abgDatum = aktuellesFormular?.[1]?.abgeschlossenAm ? `<div style="font-size:.7rem;color:#6b7280">✅ ${datumStr(aktuellesFormular[1].abgeschlossenAm)}</div>` : '';
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
-                border-radius:8px;background:${bg};border:1px solid ${border}">
-        <div style="font-size:1.2rem">${dot}</div>
-        <div style="flex:1">
-          <div style="font-weight:700;font-size:.9rem;color:#1e3a5f">${escHtml(m.name)}</div>
-          <div style="font-size:.75rem;color:#6b7280">${escHtml(m.email)}</div>
-          ${abgDatum}
+  // Aufteilen: abgeschlossen vs. ausstehend/überfällig
+  const abgeschlossen = mitarbeiter.filter(m => f.abgeschlossen && f.abgeschlossenVon === m.id);
+  const ausstehend = mitarbeiter.filter(m => !(f.abgeschlossen && f.abgeschlossenVon === m.id));
+
+  function maZeile(m, done) {
+    if (done) {
+      const abgDat = f.abgeschlossenAm ? datumStr(f.abgeschlossenAm) : '';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:5px;
+                border-radius:8px;background:#f0fdf4;border:1px solid #86efac">
+        <div style="font-size:1.2rem">🟢</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.9rem;color:#1e3a5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.name)}</div>
+          ${abgDat ? `<div style="font-size:.72rem;color:#16a34a">✅ Abgeschlossen am ${abgDat}</div>` : ''}
         </div>
-        <div style="font-size:.78rem;font-weight:600;color:#374151">${statusText}</div>
       </div>`;
-    }).join('');
+    } else {
+      const dot = ueberfaellig ? '🔴' : '🟡';
+      const bg  = ueberfaellig ? '#fef2f2' : '#fffbeb';
+      const brd = ueberfaellig ? '#fca5a5' : '#fde68a';
+      const lbl = ueberfaellig ? 'Überfällig' : 'Ausstehend';
+      const col = ueberfaellig ? '#dc2626' : '#92400e';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:5px;
+                border-radius:8px;background:${bg};border:1px solid ${brd}">
+        <div style="font-size:1.2rem">${dot}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:700;font-size:.9rem;color:#1e3a5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.name)}</div>
+          <div style="font-size:.72rem;color:${col}">${lbl}</div>
+        </div>
+      </div>`;
+    }
   }
 
-  const abgeschlossenCount = mitarbeiter.filter(m => {
-    const fm = Object.values(formulare).find(fm2 => fm2.abgeschlossenVon === m.id);
-    return fm?.abgeschlossen;
-  }).length;
+  let inhalt = '';
+  if (mitarbeiter.length === 0) {
+    inhalt = `<div style="text-align:center;color:#6b7280;font-size:.88rem;padding:20px">Keine aktiven Mitarbeiter vorhanden</div>`;
+  } else {
+    // Erst Ausstehende/Überfällige, dann Abgeschlossene
+    if (ausstehend.length > 0) {
+      inhalt += `<div style="font-size:.78rem;font-weight:700;color:${ueberfaellig?'#dc2626':'#92400e'};margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">
+        ${ueberfaellig ? '⚠️ Überfällig' : '⏳ Ausstehend'} (${ausstehend.length})
+      </div>`;
+      inhalt += ausstehend.map(m => maZeile(m, false)).join('');
+    }
+    if (abgeschlossen.length > 0) {
+      inhalt += `<div style="font-size:.78rem;font-weight:700;color:#16a34a;margin-top:${ausstehend.length>0?'14px':'0'};margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em">
+        ✅ Abgeschlossen (${abgeschlossen.length})
+      </div>`;
+      inhalt += abgeschlossen.map(m => maZeile(m, true)).join('');
+    }
+  }
 
   const html = `
     <div id="kal-detail-overlay" onclick="if(event.target===this)kalenderDetailSchliessen()"
-      style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center">
-      <div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:600px;max-height:85vh;
+      style="position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;display:flex;align-items:flex-end;justify-content:center">
+      <div style="background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:600px;max-height:88vh;
                   display:flex;flex-direction:column;overflow:hidden">
-        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:12px">
-          <div style="flex:1">
-            <div style="font-size:1rem;font-weight:800;color:#1e3a5f">${escHtml(titel)}</div>
-            <div style="font-size:.8rem;color:#6b7280;margin-top:2px">${escHtml(t?.name || z.tenantId)}</div>
-            <div style="font-size:.8rem;color:#374151;margin-top:4px">📅 Frist: <strong>${fristAnzeige}</strong> &nbsp; ${tageText}</div>
+
+        <!-- Header -->
+        <div style="padding:16px 20px 12px;border-bottom:1px solid #f3f4f6">
+          <div style="display:flex;align-items:flex-start;gap:10px">
+            <div style="flex:1">
+              <div style="font-size:1rem;font-weight:800;color:#1e3a5f;line-height:1.3">${escHtml(titel)}</div>
+              <div style="font-size:.8rem;color:#6b7280;margin-top:2px">${escHtml(t?.name || z.tenantId)}</div>
+            </div>
+            <button onclick="kalenderDetailSchliessen()" type="button"
+              style="font-size:1.5rem;background:none;border:none;cursor:pointer;color:#9ca3af;padding:0;line-height:1;flex-shrink:0">×</button>
           </div>
-          <button onclick="kalenderDetailSchliessen()" type="button"
-            style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#9ca3af;padding:0;line-height:1">×</button>
+          <!-- Frist-Info -->
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <span style="font-size:.8rem;background:#f1f5f9;border-radius:6px;padding:4px 10px;color:#374151">
+              📅 Frist: <strong>${fristAnzeige}</strong>
+            </span>
+            ${tageText ? `<span style="font-size:.8rem;border-radius:6px;padding:4px 10px;font-weight:600;
+              background:${ueberfaellig?'#fef2f2':'#fffbeb'};color:${ueberfaellig?'#dc2626':'#92400e'}">
+              ${tageText}
+            </span>` : ''}
+          </div>
+          <!-- Fortschritt -->
+          <div style="margin-top:10px">
+            <div style="display:flex;justify-content:space-between;font-size:.75rem;color:#6b7280;margin-bottom:4px">
+              <span>${abgeschlossen.length} von ${mitarbeiter.length} Mitarbeitern abgeschlossen</span>
+              <span style="font-weight:700;color:${abgeschlossen.length===mitarbeiter.length?'#16a34a':'#dc2626'}">
+                ${mitarbeiter.length>0?Math.round(abgeschlossen.length/mitarbeiter.length*100):0}%
+              </span>
+            </div>
+            <div style="background:#f3f4f6;border-radius:999px;height:8px;overflow:hidden">
+              <div style="width:${mitarbeiter.length>0?Math.round(abgeschlossen.length/mitarbeiter.length*100):0}%;height:100%;
+                background:${abgeschlossen.length===mitarbeiter.length?'#16a34a':'#f59e0b'};border-radius:999px;transition:width .3s"></div>
+            </div>
+          </div>
         </div>
+
+        <!-- Mitarbeiterliste -->
         <div style="padding:16px 20px;overflow-y:auto;flex:1">
-          <div style="font-size:.82rem;font-weight:700;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">
-            Mitarbeiter (${abgeschlossenCount}/${mitarbeiter.length} abgeschlossen)
-          </div>
-          ${maRows}
+          ${inhalt}
         </div>
+
+        <!-- Footer -->
         <div style="padding:12px 20px;border-top:1px solid #f3f4f6">
           <button onclick="kalenderDetailSchliessen()" type="button"
-            style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer">
+            style="width:100%;padding:13px;background:#1e3a5f;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:700;cursor:pointer">
             Schließen
           </button>
         </div>
