@@ -451,16 +451,15 @@ async function initApp() {
 // ── AMPEL ────────────────────────────────────────────────────
 function berechneStatus(zuw) {
   const form  = formulare[zuw.id] || {};
-  if (form.abgeschlossen) return 'gruen';
+  if (form.abgeschlossen) return 'gruen';           // ✅ Abgeschlossen → grün
   const frist = zuw.frist ? new Date(zuw.frist) : null;
   const jetzt = new Date();
-  if (!form.gestartet) return 'rot';
-  if (frist && frist < jetzt) return 'rot';
-  if (frist && (frist - jetzt) / 86400000 < 14) return 'gelb';
-  return 'gelb';
+  if (frist && frist < jetzt) return 'rot';         // 🔴 Frist überschritten → rot
+  if (frist && (frist - jetzt) / 86400000 <= 20) return 'gelb'; // 🟡 ≤20 Tage → gelb
+  return 'gruen';                                   // ✅ Noch > 20 Tage → kein Handlungsbedarf
 }
 function statusLabel(s) {
-  return s==='gruen' ? 'Abgeschlossen' : s==='gelb' ? 'In Bearbeitung' : 'Offen / Dringend';
+  return s==='gruen' ? 'Abgeschlossen / Aktuell' : s==='gelb' ? 'Bald fällig (≤20 Tage)' : 'Überfällig / Dringend';
 }
 function statusBadgeHtml(s) {
   return `<span class="badge badge-${s}"><span class="ampel-dot dot-${s}"></span>${statusLabel(s)}</span>`;
