@@ -2113,26 +2113,28 @@ async function renderMitarbeiterListe() {
 
       // Aktionsbuttons je nach Status
       const btnToggle = !istArchiviert ? `
-        <button onclick="mitarbeiterToggleAktiv('${m.id}',${istAktiv})"
+        <button onclick="event.stopPropagation();mitarbeiterToggleAktiv('${m.id}',${istAktiv})"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #c4b5fd;background:#f5f3ff;color:#6d28d9;cursor:pointer;white-space:nowrap">
           ${istAktiv ? '⏸ Passiv' : '▶ Aktiv'}
         </button>` : '';
       const btnArchiv = !istArchiviert ? `
-        <button onclick="mitarbeiterArchivieren('${m.id}','${escHtml(m.name).replace(/'/g,"\\\'")}')"
+        <button onclick="event.stopPropagation();mitarbeiterArchivieren('${m.id}','${escHtml(m.name).replace(/'/g,"\\\'")}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #d1d5db;background:#f9fafb;color:#6b7280;cursor:pointer;white-space:nowrap;margin-top:3px">
           📦 Archivieren
         </button>` : `<span style="font-size:.7rem;color:#9ca3af">Archiviert: ${m.archiviert_am ? dateStr(m.archiviert_am) : '–'}</span>`;
-      const btnQr = `<button onclick="qrLoginOeffnen('${m.id}')"
+      const btnQr = `<button onclick="event.stopPropagation();qrLoginOeffnen('${m.id}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="QR-Login-Code generieren">🔑 QR-Login</button>`;
-      const btnHistorie = `<button onclick="zeigeSchulungshistorie('${m.id}')"
+      const btnHistorie = `<button onclick="event.stopPropagation();zeigeSchulungshistorie('${m.id}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Schulungshistorie anzeigen">📋 Historie</button>`;
 
       return `
-        <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
-                    display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;
-                    ${istArchiviert?'opacity:0.7':''}">
+        <div onclick="mitarbeiterDetailOeffnen('${m.id}')" style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
+                    display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;cursor:pointer;
+                    ${istArchiviert?'opacity:0.7':''}transition:box-shadow .15s" 
+             onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.10)'" 
+             onmouseout="this.style.boxShadow=''">
           <div style="font-size:1.3rem;flex-shrink:0;padding-top:2px">${c.dot}</div>
           <div style="flex:1;min-width:0">
             <div style="font-weight:700;font-size:.92rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
@@ -4281,7 +4283,7 @@ function renderKalenderInhalt(filter) {
         const s = berechneStatus(z);
         const fristDate = new Date(z.frist);
         const tage = Math.ceil((fristDate - jetzt) / 86400000);
-        return { frist: z.frist, fristDate, titel: v?.titel || z.vorlagenId, tenant: t?.name || z.tenantId, status: s, tage, monat: d };
+        return { frist: z.frist, fristDate, titel: v?.titel || z.vorlagenId, tenant: t?.name || z.tenantId, status: s, tage, monat: d, zuwId: z.id };
       })
       .filter(e => filter === 'alle' || e.status === filter)
       .sort((a, b) => a.fristDate - b.fristDate);
@@ -4303,7 +4305,7 @@ function renderKalenderInhalt(filter) {
       const ampelFarbe = e.status === 'gruen' ? '#16a34a' : e.status === 'gelb' ? '#f59e0b' : '#dc2626';
       const ampelBg   = e.status === 'gruen' ? '#f0fdf4' : e.status === 'gelb' ? '#fffbeb' : '#fef2f2';
       const tageText  = e.tage < 0 ? `${Math.abs(e.tage)} Tage überfällig` : e.tage === 0 ? 'Heute!' : `${e.tage} Tage`;
-      return `<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6">
+      return `<div onclick="kalenderEintragDetail('${e.zuwId}')" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">
         <div style="min-width:36px;text-align:center;background:${ampelBg};border-radius:8px;padding:4px 2px">
           <div style="font-size:1rem;font-weight:800;color:${ampelFarbe}">${new Date(e.frist).getDate()}.</div>
         </div>
@@ -4315,6 +4317,7 @@ function renderKalenderInhalt(filter) {
           ${statusBadgeHtml(e.status)}
           <div style="font-size:.72rem;color:${ampelFarbe};font-weight:600;margin-top:2px">${tageText}</div>
         </div>
+        <div style="font-size:1rem;color:#9ca3af;margin-left:4px">›</div>
       </div>`;
     }).join('');
     html += '</div>';
@@ -4783,3 +4786,198 @@ function bereichsEinweisungSchliessen() {
   _beMitarbeiterAlle = [];
 }
 
+
+// ── KALENDER: Detailansicht einer Zuweisung (alle betroffenen Mitarbeiter) ──
+function kalenderEintragDetail(zuwId) {
+  const z = zuweisungen.find(zw => zw.id === zuwId);
+  if (!z) return;
+  const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+  const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
+  const titel = v?.titel || z.vorlagenId;
+  const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
+  const heute = new Date();
+  const fristDate = z.frist ? new Date(z.frist) : null;
+  const tage = fristDate ? Math.ceil((fristDate - heute) / 86400000) : null;
+  const tageText = tage === null ? '' : tage < 0 ? `⚠️ ${Math.abs(tage)} Tage überfällig` : tage === 0 ? '⚠️ Heute fällig!' : `📅 Noch ${tage} Tage`;
+
+  // Alle Mitarbeiter des Tenants laden und Formular-Status ermitteln
+  const mitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && !u.archiviert);
+  const f = formulare[z.id] || {};
+
+  let maRows = '';
+  if (mitarbeiter.length === 0) {
+    maRows = `<div style="color:#6b7280;font-size:.85rem;padding:12px 0;text-align:center">Keine Mitarbeiter vorhanden</div>`;
+  } else {
+    maRows = mitarbeiter.map(m => {
+      let dot, statusText, bg, border;
+      if (f.abgeschlossen && f.abgeschlossenVon === m.id) {
+        dot = '🟢'; statusText = 'Abgeschlossen'; bg = '#f0fdf4'; border = '#86efac';
+      } else if (f.gestartet && f.abgeschlossenVon !== m.id) {
+        dot = '🟡'; statusText = 'In Bearbeitung'; bg = '#fffbeb'; border = '#fde68a';
+      } else if (fristDate && fristDate < heute) {
+        dot = '🔴'; statusText = 'Überfällig'; bg = '#fef2f2'; border = '#fca5a5';
+      } else {
+        dot = '🔴'; statusText = 'Offen'; bg = '#fef2f2'; border = '#fca5a5';
+      }
+      const aktuellesFormular = Object.entries(formulare).find(([zwId, fm]) => zwId === z.id && fm.abgeschlossenVon === m.id);
+      const abgDatum = aktuellesFormular?.[1]?.abgeschlossenAm ? `<div style="font-size:.7rem;color:#6b7280">✅ ${datumStr(aktuellesFormular[1].abgeschlossenAm)}</div>` : '';
+      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
+                border-radius:8px;background:${bg};border:1px solid ${border}">
+        <div style="font-size:1.2rem">${dot}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.9rem;color:#1e3a5f">${escHtml(m.name)}</div>
+          <div style="font-size:.75rem;color:#6b7280">${escHtml(m.email)}</div>
+          ${abgDatum}
+        </div>
+        <div style="font-size:.78rem;font-weight:600;color:#374151">${statusText}</div>
+      </div>`;
+    }).join('');
+  }
+
+  const abgeschlossenCount = mitarbeiter.filter(m => {
+    const fm = Object.values(formulare).find(fm2 => fm2.abgeschlossenVon === m.id);
+    return fm?.abgeschlossen;
+  }).length;
+
+  const html = `
+    <div id="kal-detail-overlay" onclick="if(event.target===this)kalenderDetailSchliessen()"
+      style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center">
+      <div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:600px;max-height:85vh;
+                  display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:1rem;font-weight:800;color:#1e3a5f">${escHtml(titel)}</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:2px">${escHtml(t?.name || z.tenantId)}</div>
+            <div style="font-size:.8rem;color:#374151;margin-top:4px">📅 Frist: <strong>${fristAnzeige}</strong> &nbsp; ${tageText}</div>
+          </div>
+          <button onclick="kalenderDetailSchliessen()" type="button"
+            style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#9ca3af;padding:0;line-height:1">×</button>
+        </div>
+        <div style="padding:16px 20px;overflow-y:auto;flex:1">
+          <div style="font-size:.82rem;font-weight:700;color:#6b7280;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">
+            Mitarbeiter (${abgeschlossenCount}/${mitarbeiter.length} abgeschlossen)
+          </div>
+          ${maRows}
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid #f3f4f6">
+          <button onclick="kalenderDetailSchliessen()" type="button"
+            style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer">
+            Schließen
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function kalenderDetailSchliessen() {
+  const el = document.getElementById('kal-detail-overlay');
+  if (el) el.remove();
+}
+
+// ── MITARBEITER: Detailansicht mit Dokumenten/Zuweisungen ────
+function mitarbeiterDetailOeffnen(mId) {
+  const m = APP_USERS.find(u => u.id === mId);
+  if (!m) return;
+
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
+  const heute = new Date();
+
+  const zeilen = meineZuws.map(z => {
+    const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+    const titel = v?.titel || z.vorlagenId;
+    const f = formulare[z.id] || {};
+    const fristDate = z.frist ? new Date(z.frist) : null;
+    const tage = fristDate ? Math.ceil((fristDate - heute) / 86400000) : null;
+
+    let dot, statusText, bg, border, abgDatum = '';
+    if (f.abgeschlossen && f.abgeschlossenVon === m.id) {
+      dot = '🟢'; statusText = 'Abgeschlossen'; bg = '#f0fdf4'; border = '#86efac';
+      if (f.abgeschlossenAm) abgDatum = `<div style="font-size:.7rem;color:#16a34a">✅ ${datumStr(f.abgeschlossenAm)}</div>`;
+    } else if (f.gestartet) {
+      dot = '🟡'; statusText = 'In Bearbeitung'; bg = '#fffbeb'; border = '#fde68a';
+    } else if (fristDate && fristDate < heute) {
+      dot = '🔴'; statusText = 'Überfällig'; bg = '#fef2f2'; border = '#fca5a5';
+    } else {
+      dot = '⚪'; statusText = 'Offen'; bg = '#f9fafb'; border = '#e5e7eb';
+    }
+
+    const tageAnzeige = tage !== null
+      ? (tage < 0 ? `<span style="color:#dc2626;font-size:.7rem">⚠️ ${Math.abs(tage)} Tage überfällig</span>`
+        : tage === 0 ? `<span style="color:#dc2626;font-size:.7rem">⚠️ Heute!</span>`
+        : `<span style="font-size:.7rem;color:#6b7280">📅 bis ${datumStr(z.frist)}</span>`)
+      : '';
+
+    return `<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;margin-bottom:6px;
+              border-radius:8px;background:${bg};border:1px solid ${border}">
+      <div style="font-size:1.2rem;padding-top:1px">${dot}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:700;font-size:.88rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(titel)}</div>
+        <div style="margin-top:3px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          ${tageAnzeige}
+          ${abgDatum}
+        </div>
+      </div>
+      <div style="font-size:.75rem;font-weight:700;color:#374151;flex-shrink:0">${statusText}</div>
+    </div>`;
+  }).join('');
+
+  const gesamt = meineZuws.length;
+  const abgeschl = meineZuws.filter(z => {
+    const f = formulare[z.id] || {};
+    return f.abgeschlossen && f.abgeschlossenVon === m.id;
+  }).length;
+  const offen = gesamt - abgeschl;
+
+  const html = `
+    <div id="ma-detail-overlay" onclick="if(event.target===this)mitarbeiterDetailSchliessen()"
+      style="position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:flex-end;justify-content:center">
+      <div style="background:#fff;border-radius:16px 16px 0 0;width:100%;max-width:600px;max-height:85vh;
+                  display:flex;flex-direction:column;overflow:hidden">
+        <div style="padding:16px 20px;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:12px">
+          <div style="flex:1">
+            <div style="font-size:1.1rem;font-weight:800;color:#1e3a5f">👤 ${escHtml(m.name)}</div>
+            <div style="font-size:.8rem;color:#6b7280;margin-top:2px">${escHtml(m.email)}</div>
+            ${m.bereich ? `<div style="font-size:.78rem;color:#4b5563;margin-top:3px">🏷 ${escHtml(m.bereich)}</div>` : ''}
+            ${m.standort ? `<div style="font-size:.78rem;color:#4b5563">📍 ${escHtml(m.standort)}</div>` : ''}
+          </div>
+          <button onclick="mitarbeiterDetailSchliessen()" type="button"
+            style="font-size:1.4rem;background:none;border:none;cursor:pointer;color:#9ca3af;padding:0;line-height:1">×</button>
+        </div>
+        <div style="padding:12px 20px;background:#f9fafb;border-bottom:1px solid #f3f4f6;
+                    display:flex;gap:16px">
+          <div style="text-align:center">
+            <div style="font-size:1.3rem;font-weight:800;color:#1e3a5f">${gesamt}</div>
+            <div style="font-size:.72rem;color:#6b7280">Gesamt</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:1.3rem;font-weight:800;color:#16a34a">${abgeschl}</div>
+            <div style="font-size:.72rem;color:#6b7280">Abgeschlossen</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:1.3rem;font-weight:800;color:#dc2626">${offen}</div>
+            <div style="font-size:.72rem;color:#6b7280">Ausstehend</div>
+          </div>
+        </div>
+        <div style="padding:16px 20px;overflow-y:auto;flex:1">
+          ${gesamt === 0
+            ? `<div style="text-align:center;color:#6b7280;padding:24px;font-size:.9rem">📋 Keine Zuweisungen vorhanden</div>`
+            : zeilen}
+        </div>
+        <div style="padding:12px 20px;border-top:1px solid #f3f4f6">
+          <button onclick="mitarbeiterDetailSchliessen()" type="button"
+            style="width:100%;padding:12px;background:#1e3a5f;color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:700;cursor:pointer">
+            Schließen
+          </button>
+        </div>
+      </div>
+    </div>`;
+
+  document.body.insertAdjacentHTML('beforeend', html);
+}
+
+function mitarbeiterDetailSchliessen() {
+  const el = document.getElementById('ma-detail-overlay');
+  if (el) el.remove();
+}
