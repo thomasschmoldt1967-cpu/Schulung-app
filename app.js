@@ -4823,24 +4823,35 @@ function kalenderEintragDetail(zuwId) {
       const abgDat = f.abgeschlossenAm ? datumStr(f.abgeschlossenAm) : '';
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:5px;
                 border-radius:8px;background:#f0fdf4;border:1px solid #86efac">
-        <div style="font-size:1.2rem">🟢</div>
+        <div style="font-size:1.2rem">✅</div>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:.9rem;color:#1e3a5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.name)}</div>
           ${abgDat ? `<div style="font-size:.72rem;color:#16a34a">✅ Abgeschlossen am ${abgDat}</div>` : ''}
         </div>
+        <div style="font-size:.75rem;font-weight:600;color:#16a34a;white-space:nowrap">Erledigt</div>
       </div>`;
     } else {
       const dot = ueberfaellig ? '🔴' : '🟡';
       const bg  = ueberfaellig ? '#fef2f2' : '#fffbeb';
       const brd = ueberfaellig ? '#fca5a5' : '#fde68a';
-      const lbl = ueberfaellig ? 'Überfällig' : 'Ausstehend';
-      const col = ueberfaellig ? '#dc2626' : '#92400e';
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:5px;
                 border-radius:8px;background:${bg};border:1px solid ${brd}">
         <div style="font-size:1.2rem">${dot}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.9rem;color:#1e3a5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.name)}</div>
-          <div style="font-size:.72rem;color:${col}">${lbl}</div>
+          <div style="font-weight:700;font-size:.88rem;color:#1e3a5f;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.name)}</div>
+          <div style="font-size:.72rem;color:#6b7280;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(m.email || '')}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+          <button onclick="event.stopPropagation();maAbschliessen('${zuwId}','${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}');" type="button"
+            style="font-size:.72rem;padding:4px 8px;border-radius:6px;border:1px solid #86efac;
+                   background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;font-weight:600">
+            ✅ Abhaken
+          </button>
+          <button onclick="event.stopPropagation();maErinnerungSenden('${zuwId}','${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}','${escHtml(m.email || '')}');" type="button"
+            style="font-size:.72rem;padding:4px 8px;border-radius:6px;border:1px solid #bfdbfe;
+                   background:#eff6ff;color:#1d4ed8;cursor:pointer;white-space:nowrap;font-weight:600">
+            📧 Erinnern
+          </button>
         </div>
       </div>`;
     }
@@ -5033,4 +5044,89 @@ function mitarbeiterDetailOeffnen(mId) {
 function mitarbeiterDetailSchliessen() {
   const el = document.getElementById('ma-detail-overlay');
   if (el) el.remove();
+}
+
+// ── KALENDER-MODAL: Häkchen + Erinnerung ─────────────────────
+
+async function maAbschliessen(zuwId, userId, userName) {
+  if (!confirm(`Schulung für ${userName} als abgeschlossen markieren?`)) return;
+  const ts = now();
+  try {
+    // Formular in DB abschließen
+    const data = {
+      id: zuwId, zuweisung_id: zuwId, felder: {}, gestartet: true,
+      abgeschlossen: true, abgeschlossen_am: ts, abgeschlossen_von: userId,
+      gespeichert_am: ts
+    };
+    await SB.upsert('formulare', data);
+    formulare[zuwId] = { felder:{}, gestartet:true, abgeschlossen:true, abgeschlossenAm:ts, abgeschlossenVon:userId };
+    await sbAudit('ABSCHLUSS_MANUELL', `Schulung manuell als abgeschlossen markiert für User ${userId} (Zuweisung ${zuwId})`);
+    showToast(`✅ ${userName} als abgeschlossen markiert`, '#16a34a');
+    // Modal neu laden
+    kalenderDetailSchliessen();
+    const z = zuweisungen.find(zw => zw.id === zuwId);
+    if (z) kalenderEintragDetail(zuwId);
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
+  if (!userEmail) { showToast('⚠️ Keine E-Mail-Adresse für diesen Nutzer', '#f59e0b'); return; }
+  const z = zuweisungen.find(zw => zw.id === zuwId);
+  const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z?.vorlagenId);
+  const t = APP_TENANTS.find(tn => tn.id === z?.tenantId);
+  const fristAnzeige = z?.frist ? new Date(z.frist).toLocaleDateString('de-DE') : '–';
+  const tage = z?.frist ? Math.ceil((new Date(z.frist) - new Date()) / 86400000) : null;
+  const titel = v?.titel || zuwId;
+  const tenantName = t?.name || z?.tenantId || '';
+
+  const betreff = `📚 Erinnerung: ${titel} – ${tenantName}`;
+  const inhalt = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">
+      <h2 style="margin:0">📚 Schulungs-Erinnerung</h2>
+    </div>
+    <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+      <p>Guten Tag ${escHtml(userName)},</p>
+      <p>wir möchten Sie daran erinnern, dass folgende Schulung noch aussteht:</p>
+      <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0">
+        <strong>${escHtml(titel)}</strong><br>
+        <span style="color:#6b7280">Unternehmen: ${escHtml(tenantName)}</span><br>
+        <span style="color:#92400e">📅 Frist: ${fristAnzeige}${tage !== null ? ` (noch ${tage} Tage)` : ''}</span>
+      </div>
+      <p>Bitte führen Sie die Schulung zeitnah durch.</p>
+      <p><a href="https://schulung.csc-hannover.de" style="background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">🔗 Zur Schulungsapp</a></p>
+      <p style="font-size:.8rem;color:#6b7280">CSC GmbH Schulungsmanagement</p>
+    </div>
+  </div>`;
+
+  try {
+    const ok = await emailBenachrichtigungSenden({ an: userEmail, betreff, inhalt });
+    if (ok) {
+      await sbAudit('ERINNERUNG_GESENDET', `Erinnerung an ${userEmail} für Schulung ${titel}`);
+      showToast(`📧 Erinnerung an ${userName} gesendet`, '#1a3a5c');
+    } else {
+      showToast('⚠️ E-Mail-Versand nicht verfügbar', '#f59e0b');
+    }
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+// showToast falls nicht vorhanden
+if (typeof showToast === 'undefined') {
+  window.showToast = function(msg, color) {
+    let t = document.getElementById('_toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = '_toast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);padding:10px 20px;border-radius:999px;color:#fff;font-size:.9rem;font-weight:600;z-index:99999;transition:opacity .3s';
+      document.body.appendChild(t);
+    }
+    t.style.background = color || '#1a3a5c';
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  };
 }
