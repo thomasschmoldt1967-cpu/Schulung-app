@@ -456,10 +456,13 @@ function berechneStatus(zuw) {
   const jetzt = new Date();
   if (frist && frist < jetzt) return 'rot';         // 🔴 Frist überschritten → rot
   if (frist && (frist - jetzt) / 86400000 <= 20) return 'gelb'; // 🟡 ≤20 Tage → gelb
-  return 'gruen';                                   // ✅ Noch > 20 Tage → kein Handlungsbedarf
+  return 'grau';                                    // ⚪ Noch >20 Tage oder keine Frist → grau
 }
 function statusLabel(s) {
-  return s==='gruen' ? 'Abgeschlossen / Aktuell' : s==='gelb' ? 'Bald fällig (≤20 Tage)' : 'Überfällig / Dringend';
+  if (s === 'gruen') return 'Abgeschlossen';
+  if (s === 'gelb')  return 'Bald fällig';
+  if (s === 'rot')   return 'Überfällig';
+  return 'Noch nicht fällig';
 }
 function statusBadgeHtml(s) {
   return `<span class="badge badge-${s}"><span class="ampel-dot dot-${s}"></span>${statusLabel(s)}</span>`;
@@ -902,7 +905,7 @@ function subKalenderRenderInhalt(filter) {
     gruppen[key].items.push(z);
   });
   const ampelFarbe = {rot:'#dc2626', gelb:'#f59e0b', gruen:'#16a34a', grau:'#9ca3af'};
-  const ampelBadge = {rot:'🔴 Offen', gelb:'🟡 In Bearbeitung', gruen:'🟢 Abgeschlossen', grau:'⚪ Keine'};
+  const ampelBadge = {rot:'🔴 Überfällig', gelb:'🟡 Bald fällig', gruen:'🟢 Abgeschlossen', grau:'⚪ Noch nicht fällig'};
   let html = '';
   Object.values(gruppen).forEach(gruppe => {
     html += `<div style="margin-bottom:20px">
@@ -4304,8 +4307,8 @@ function renderKalenderInhalt(filter) {
     html += `<div class="card" style="margin-bottom:12px${istAktuell ? ';border:2px solid #1a3a5c' : ''}">
       <div class="card-title">${istAktuell ? '📍 ' : ''}📅 ${monatName}</div>`;
     html += events.map(e => {
-      const ampelFarbe = e.status === 'gruen' ? '#16a34a' : e.status === 'gelb' ? '#f59e0b' : '#dc2626';
-      const ampelBg   = e.status === 'gruen' ? '#f0fdf4' : e.status === 'gelb' ? '#fffbeb' : '#fef2f2';
+      const ampelFarbe = e.status === 'gruen' ? '#16a34a' : e.status === 'gelb' ? '#f59e0b' : e.status === 'rot' ? '#dc2626' : '#9ca3af';
+      const ampelBg   = e.status === 'gruen' ? '#f0fdf4' : e.status === 'gelb' ? '#fffbeb' : e.status === 'rot' ? '#fef2f2' : '#f9fafb';
       const tageText  = e.tage < 0 ? `${Math.abs(e.tage)} Tage überfällig` : e.tage === 0 ? 'Heute!' : `${e.tage} Tage`;
       return `<div onclick="kalenderEintragDetail('${e.zuwId}')" style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background .15s" onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">
         <div style="min-width:36px;text-align:center;background:${ampelBg};border-radius:8px;padding:4px 2px">
