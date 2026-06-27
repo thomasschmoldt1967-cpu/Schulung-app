@@ -60,6 +60,158 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_21', nr:21, saeule:'C', titel:'Hängetrauma — Erkennen und Verhindern',              rechtsgrundlage:'DGUV Information 212-139' },
 ];
 
+// ── LERNPFAD-TEXTE: Erläuterungen in 5 Sprachen ──────────────────────────
+// DE=Deutsch, TR=Türkisch, RO=Rumänisch, SR=Serbisch/Kroatisch, PL=Polnisch
+const LERNPFAD_TEXTE = {
+  kap_01: {
+    de: "Im Kundenobjekt verhältst du dich ruhig, ordentlich und respektvoll. Wenn ein Unfall passiert, meldest du ihn sofort deinem Vorgesetzten — egal wie klein. Nur so bist du rechtlich abgesichert und hilfst, weitere Unfälle zu verhindern.",
+    tr: "Müşteri binasında sakin, düzenli ve saygılı davranmalısın. Bir kaza olursa, ne kadar küçük olursa olsun hemen amirine bildirmelisin. Bu hem seni hukuken korur hem de yeni kazaların önüne geçer.",
+    ro: "La obiectivul clientului te comporți calm, ordonat și respectuos. Dacă se întâmplă un accident, îl raportezi imediat șefului tău, oricât de mic ar fi. Doar așa ești protejat legal și ajuți la prevenirea altor accidente.",
+    sr: "U objektu klijenta ponašaš se mirno, uredno i s poštovanjem. Ako se desi nezgoda, odmah je prijavljuješ nadređenom — bez obzira koliko je mala. Samo tako si pravno zaštićen i pomažeš da se spreče nove nezgode.",
+    pl: "W obiekcie klienta zachowujesz się spokojnie, schludnie i z szacunkiem. Jeśli zdarzy się wypadek, natychmiast zgłaszasz go przełożonemu — bez względu na to, jak mały jest. Tylko w ten sposób jesteś chroniony prawnie i pomagasz zapobiegać kolejnym wypadkom."
+  },
+  kap_02: {
+    de: "Nasse Böden, lose Kabel oder unebene Stellen können zu schweren Stürzen führen. Stelle immer Warnschilder auf, wenn du feucht wischt, und räume Hindernisse sofort weg. Rutschfeste Schuhe sind Pflicht — trage sie immer.",
+    tr: "Islak zeminler, gevşek kablolar veya düzensiz yüzeyler ciddi düşmelere yol açabilir. Islak zemin temizlerken her zaman uyarı levhası koy ve engelleri hemen kaldır. Kaymaz ayakkabı zorunludur — her zaman giy.",
+    ro: "Podelele ude, cablurile loose sau suprafețele neuniforme pot duce la căderi grave. Pune întotdeauna semne de avertizare când ștergi ud și îndepărtează obstacolele imediat. Pantofii antiderapanți sunt obligatorii — poartă-i mereu.",
+    sr: "Mokri podovi, labavi kablovi ili neravne površine mogu dovesti do teških padova. Uvijek postavi znakove upozorenja kada mokro brišeš i odmah ukloni prepreke. Cipele koje ne kližu su obavezne — uvijek ih nosi.",
+    pl: "Mokre podłogi, luźne kable lub nierówne powierzchnie mogą prowadzić do poważnych upadków. Zawsze stawiaj znaki ostrzegawcze podczas mycia na mokro i natychmiast usuwaj przeszkody. Obuwie antypoślizgowe jest obowiązkowe — zawsze je noś."
+  },
+  kap_03: {
+    de: "Lerne beim ersten Arbeitstag, wo die Feuerlöscher und Notausgänge im Gebäude sind. Halte Fluchtwege immer frei — stelle niemals Geräte oder Reinigungswagen davor. Im Brandfall: Alarm auslösen, Menschen warnen, Gebäude verlassen — niemals den Aufzug nutzen.",
+    tr: "İlk iş gününde binadaki yangın söndürücülerin ve acil çıkışların nerede olduğunu öğren. Kaçış yollarını her zaman açık tut — önlerine asla cihaz veya temizlik arabası koyma. Yangın durumunda: alarm ver, insanları uyar, binayı terk et — asla asansörü kullanma.",
+    ro: "În prima zi de lucru, află unde sunt stingătoarele de incendiu și ieșirile de urgență din clădire. Păstrează căile de evacuare mereu libere — nu pune niciodată echipamente sau cărucioare de curățenie în fața lor. În caz de incendiu: declanșează alarma, avertizează oamenii, părăsește clădirea — nu folosi niciodată liftul.",
+    sr: "Prvog radnog dana saznaj gdje su aparati za gašenje požara i izlazi za nuždu u zgradi. Uvijek drži puteve evakuacije slobodnim — nikad ne stavljaj uređaje ili kolica za čišćenje ispred njih. U slučaju požara: aktiviraj alarm, upozori ljude, napusti zgradu — nikad ne koristi lift.",
+    pl: "W pierwszym dniu pracy dowiedz się, gdzie w budynku znajdują się gaśnice i wyjścia awaryjne. Zawsze utrzymuj drogi ewakuacyjne wolne — nigdy nie stawiaj urządzeń ani wózków czyszczących przed nimi. W przypadku pożaru: uruchom alarm, ostrzeż ludzi, opuść budynek — nigdy nie używaj windy."
+  },
+  kap_04: {
+    de: "Erste Hilfe bedeutet: ruhig bleiben, den Notruf 112 anrufen und bis zum Eintreffen des Rettungsdienstes helfen. Lerne, wo der nächste Verbandskasten ist, und schau dir den Aushang mit den Erste-Hilfe-Nummern an. Auch kleine Wunden müssen versorgt und dokumentiert werden.",
+    tr: "İlk yardım demek: sakin kalmak, 112 acil hattını aramak ve ambulans gelene kadar yardım etmek demektir. En yakın ilkyardım kutusunun nerede olduğunu öğren ve ilkyardım numaralarının yazılı olduğu afişe bak. Küçük yaralar da tedavi edilmeli ve kayıt altına alınmalıdır.",
+    ro: "Primul ajutor înseamnă: rămâi calm, suni la numărul de urgență 112 și ajuți până sosește salvarea. Află unde este cea mai apropiată trusă de prim ajutor și uită-te la afișul cu numerele de urgență. Chiar și rănile mici trebuie tratate și documentate.",
+    sr: "Prva pomoć znači: ostani miran, pozovi hitnu pomoć 112 i pomaži dok ne stigne hitna. Saznaj gdje je najbliži sanitetski kofer i pogledaj obavještenje s brojevima prve pomoći. Čak i male rane moraju biti zbrinute i dokumentovane.",
+    pl: "Pierwsza pomoc oznacza: zachowaj spokój, zadzwoń pod numer alarmowy 112 i pomagaj do czasu przyjazdu pogotowia. Dowiedz się, gdzie jest najbliższa apteczka i zapoznaj się z ogłoszeniem z numerami pierwszej pomocy. Nawet małe rany muszą być opatrzone i udokumentowane."
+  },
+  kap_05: {
+    de: "Wer täglich viel mit Wasser und Reinigungsmitteln arbeitet, schädigt seine Haut — das nennt man Feuchtarbeit. Trage Schutzhandschuhe und benutze nach der Arbeit immer Hautpflegecreme. Den Hautschutzplan findest du im Aufenthaltsraum — halte dich daran.",
+    tr: "Her gün çok fazla su ve temizlik ürünüyle çalışanlar ciltlerine zarar verir — buna ıslak çalışma denir. Koruyucu eldiven giy ve işten sonra her zaman cilt bakım kremi kullan. Cilt koruma planını dinlenme odasında bulabilirsin — ona uy.",
+    ro: "Cine lucrează zilnic mult cu apă și detergenți își dăunează pielii — aceasta se numește lucru umed. Poartă mănuși de protecție și folosește întotdeauna cremă de îngrijire a pielii după muncă. Planul de protecție a pielii se află în camera de odihnă — respectă-l.",
+    sr: "Ko svakodnevno radi s puno vode i sredstava za čišćenje, oštećuje svoju kožu — to se naziva mokri rad. Nosi zaštitne rukavice i nakon rada uvijek koristi kremu za njegu kože. Plan zaštite kože naći ćeš u prostoriji za odmor — pridržavaj ga se.",
+    pl: "Kto codziennie pracuje z dużą ilością wody i środków czyszczących, niszczy swoją skórę — nazywa się to pracą w środowisku mokrym. Noś rękawice ochronne i po pracy zawsze używaj kremu do pielęgnacji skóry. Plan ochrony skóry znajdziesz w pokoju socjalnym — przestrzegaj go."
+  },
+  kap_06: {
+    de: "Richtig Hände waschen heißt: mindestens 30 Sekunden mit Seife, auch zwischen den Fingern und unter den Nägeln. Trockne die Hände immer vollständig ab, danach Pflegecreme auftragen. Saubere Hände schützen dich und andere vor Krankheiten.",
+    tr: "Doğru el yıkama: en az 30 saniye sabunla, parmaklar arasını ve tırnakların altını da yıka. Elleri her zaman tamamen kurula, ardından bakım kremi sür. Temiz eller seni ve başkalarını hastalıklardan korur.",
+    ro: "Spălatul corect al mâinilor înseamnă: cel puțin 30 de secunde cu săpun, inclusiv între degete și sub unghii. Usucă întotdeauna mâinile complet, apoi aplică cremă de îngrijire. Mâinile curate te protejează pe tine și pe alții de boli.",
+    sr: "Pravilno pranje ruku znači: najmanje 30 sekundi sapunom, i između prstiju i ispod noktiju. Uvijek potpuno osuši ruke, a zatim nanesite kremu za njegu. Čiste ruke štite tebe i druge od bolesti.",
+    pl: "Prawidłowe mycie rąk oznacza: co najmniej 30 sekund mydłem, również między palcami i pod paznokciami. Zawsze dokładnie osusz ręce, a następnie nałóż krem pielęgnacyjny. Czyste ręce chronią ciebie i innych przed chorobami."
+  },
+  kap_07: {
+    de: "Du musst bestimmte Dinge schriftlich festhalten: welche Räume gereinigt wurden, welche Mittel du verwendet hast und ob ein Unfall passiert ist. Diese Aufzeichnungen schützen dich bei Streitigkeiten und sind gesetzlich vorgeschrieben. Fülle die Listen sorgfältig und ehrlich aus.",
+    tr: "Belirli şeyleri yazılı olarak kayıt altına alman gerekir: hangi odaların temizlendiğini, hangi ürünleri kullandığını ve kaza olup olmadığını. Bu kayıtlar anlaşmazlıklarda seni korur ve yasal olarak zorunludur. Listeleri dikkatli ve dürüstçe doldur.",
+    ro: "Trebuie să notezi anumite lucruri în scris: care camere au fost curățate, ce produse ai folosit și dacă s-a întâmplat un accident. Aceste înregistrări te protejează în caz de dispute și sunt obligatorii prin lege. Completează listele cu grijă și onestitate.",
+    sr: "Određene stvari moraš pisano evidentirati: koje prostorije su očišćene, koja sredstva si koristio i da li se dogodila nezgoda. Ovi zapisi te štite u sporovima i zakonski su obavezni. Popunjavaj liste pažljivo i pošteno.",
+    pl: "Musisz pisemnie rejestrować określone rzeczy: które pomieszczenia zostały posprzątane, jakich środków użyłeś i czy wydarzył się wypadek. Te zapisy chronią cię w sporach i są wymagane przez prawo. Wypełniaj listy starannie i uczciwie."
+  },
+  kap_08: {
+    de: "Mehr Reinigungsmittel bedeutet nicht mehr Sauberkeit — zu viel schadet den Oberflächen und deiner Gesundheit. Halte dich immer genau an die Dosierungsangaben auf der Flasche oder im Aushang. Miss die Menge ab — schütte niemals einfach drauf los.",
+    tr: "Daha fazla temizlik ürünü daha fazla temizlik demek değildir — fazla kullanmak yüzeylere ve sağlığına zarar verir. Her zaman şişedeki veya ilan panosundaki dozaj talimatlarına tam olarak uy. Miktarı ölç — asla gelişigüzel dökme.",
+    ro: "Mai mult detergent nu înseamnă mai multă curățenie — prea mult dăunează suprafețelor și sănătății tale. Respectă întotdeauna exact indicațiile de dozare de pe sticlă sau de pe afișaj. Măsoară cantitatea — nu turna niciodată la întâmplare.",
+    sr: "Više sredstva za čišćenje ne znači veću čistoću — previše šteti površinama i tvom zdravlju. Uvijek se pridržavaj točno uputa za doziranje na boci ili na oglasnoj ploči. Odmjeri količinu — nikad ne sipaj nasumično.",
+    pl: "Więcej środka czyszczącego nie oznacza większej czystości — za dużo szkodzi powierzchniom i twojemu zdrowiu. Zawsze ściśle przestrzegaj wskazówek dotyczących dawkowania na butelce lub na tablicy informacyjnej. Odmierzaj ilość — nigdy nie lejaj na oślep."
+  },
+  kap_09: {
+    de: "Jede Betriebsanweisung erklärt, wie du ein Reinigungsmittel sicher benutzt — lies sie immer, bevor du anfängst. Darin steht: was das Mittel kann, wie du es anwendest und was du im Notfall tun musst. Frag deinen Vorgesetzten, wenn du etwas nicht verstehst.",
+    tr: "Her kullanım talimatı, bir temizlik ürününü nasıl güvenli kullanacağını açıklar — başlamadan önce her zaman oku. İçinde şunlar yazar: ürünün ne işe yaradığı, nasıl kullanılacağı ve acil durumda ne yapman gerektiği. Bir şeyi anlamazsan amirine sor.",
+    ro: "Fiecare instrucțiune de utilizare explică cum să folosești în siguranță un produs de curățare — citește-o întotdeauna înainte să începi. Conține: ce poate face produsul, cum îl aplici și ce trebuie să faci în caz de urgență. Întreabă-ți superiorul dacă nu înțelegi ceva.",
+    sr: "Svako uputstvo za rad objašnjava kako sigurno koristiti sredstvo za čišćenje — uvijek ga čitaj prije nego što počneš. U njemu piše: šta sredstvo može, kako ga koristiti i šta moraš uraditi u hitnom slučaju. Pitaj nadređenog ako nešto ne razumiješ.",
+    pl: "Każda instrukcja obsługi wyjaśnia, jak bezpiecznie używać środka czyszczącego — zawsze ją czytaj przed rozpoczęciem pracy. Zawiera: co może zrobić środek, jak go stosować i co musisz zrobić w nagłym przypadku. Zapytaj przełożonego, jeśli czegoś nie rozumiesz."
+  },
+  kap_10: {
+    de: "Auf Reinigungsmittelflaschen gibt es Symbole, die Gefahr anzeigen — zum Beispiel eine Flamme für brennbar oder ein Ausrufezeichen für reizend. Diese Symbole heißen GHS-Kennzeichnung und sind überall auf der Welt gleich. Erkenne die Symbole und handle danach.",
+    tr: "Temizlik ürünü şişelerinde tehlike gösteren semboller vardır — örneğin yanıcı için alev veya tahriş edici için ünlem işareti. Bu sembollere GHS işaretlemesi denir ve dünya genelinde aynıdır. Sembolleri tanı ve ona göre hareket et.",
+    ro: "Pe sticlele de detergenți există simboluri care indică pericolul — de exemplu o flacără pentru inflamabil sau un semn de exclamare pentru iritant. Aceste simboluri se numesc etichetare GHS și sunt aceleași în toată lumea. Recunoaște simbolurile și acționează în consecință.",
+    sr: "Na bocama sredstava za čišćenje nalaze se simboli koji ukazuju na opasnost — npr. plamen za zapaljivo ili uskličnik za iritante. Ovi simboli se zovu GHS označavanje i isti su širom svijeta. Prepoznaj simbole i postupaj prema njima.",
+    pl: "Na butelkach środków czyszczących znajdują się symbole wskazujące na niebezpieczeństwo — na przykład płomień dla substancji łatwopalnych lub wykrzyknik dla substancji drażniących. Te symbole nazywają się oznakowaniem GHS i są takie same na całym świecie. Rozpoznaj symbole i postępuj zgodnie z nimi."
+  },
+  kap_11: {
+    de: "Manche Reinigungsmittel darf man NIEMALS mischen — zum Beispiel Chlorreiniger und Sanitärreiniger zusammen erzeugen giftige Gase. Lies immer das Etikett und frage nach, bevor du zwei Mittel zusammen benutzt. Im Zweifelsfall: lieber weniger mischen als riskieren.",
+    tr: "Bazı temizlik ürünlerini ASLA karıştırmamalısın — örneğin klorlu temizleyici ile banyo temizleyicisi birlikte zehirli gaz üretir. Her zaman etiketi oku ve iki ürünü birlikte kullanmadan önce sor. Şüphe durumunda: riske girmek yerine az karıştır.",
+    ro: "Unele produse de curățare NU trebuie NICIODATĂ amestecate — de exemplu, curățătorul cu clor și curățătorul sanitar împreună produc gaze toxice. Citește întotdeauna eticheta și întreabă înainte să folosești două produse împreună. În caz de dubiu: mai bine amesteci mai puțin decât să riști.",
+    sr: "Neka sredstva za čišćenje se NIKAD ne smiju miješati — na primjer, klorni čistač i sanitarni čistač zajedno stvaraju otrovne plinove. Uvijek čitaj etiketu i pitaj prije nego što koristiš dva sredstva zajedno. U slučaju sumnje: bolje manje miješati nego riskirati.",
+    pl: "Niektórych środków czyszczących NIGDY nie wolno mieszać — na przykład środek chlorowy i środek do sanitariatów razem wytwarzają trujące gazy. Zawsze czytaj etykietę i pytaj, zanim użyjesz dwóch środków razem. W razie wątpliwości: lepiej mieszać mniej niż ryzykować."
+  },
+  kap_12: {
+    de: "Nicht jedes Reinigungsmittel passt zu jeder Oberfläche — falsches Mittel kann Böden, Stein oder Holz dauerhaft beschädigen. Lerne, welche Mittel für welche Flächen erlaubt sind, und frage im Zweifel nach. Teste neue Mittel immer zuerst an einer kleinen, versteckten Stelle.",
+    tr: "Her temizlik ürünü her yüzeye uygun değildir — yanlış ürün zeminleri, taşı veya ahşabı kalıcı olarak hasar verebilir. Hangi ürünlerin hangi yüzeyler için uygun olduğunu öğren ve şüphe durumunda sor. Yeni ürünleri her zaman önce küçük, gizli bir bölgede test et.",
+    ro: "Nu orice produs de curățare este potrivit pentru orice suprafață — produsul greșit poate deteriora permanent podelele, piatra sau lemnul. Află ce produse sunt permise pentru ce suprafețe și întreabă dacă ai dubii. Testează întotdeauna produsele noi mai întâi pe o zonă mică și ascunsă.",
+    sr: "Nije svako sredstvo za čišćenje prikladno za svaku površinu — pogrešno sredstvo može trajno oštetiti podove, kamen ili drvo. Nauči koja sredstva su dozvoljena za koje površine i pitaj ako si u nedoumici. Uvijek testiraj nova sredstva prvo na malom, skrivenom mjestu.",
+    pl: "Nie każdy środek czyszczący nadaje się do każdej powierzchni — niewłaściwy środek może trwale uszkodzić podłogi, kamień lub drewno. Dowiedz się, jakie środki są dozwolone do jakich powierzchni i pytaj w razie wątpliwości. Zawsze testuj nowe środki najpierw na małym, ukrytym miejscu."
+  },
+  kap_13: {
+    de: "Scheuersaugmaschinen reinigen Böden schnell und gründlich — aber nur, wenn man sie richtig bedient. Lerne die Schalter und Hebel kennen, bevor du die Maschine startest, und fahre nie zu schnell. Bei Problemen oder komischen Geräuschen: Maschine stoppen und Vorgesetzten informieren.",
+    tr: "Ovalama-emme makineleri zeminleri hızlı ve kapsamlı temizler — ama ancak doğru kullanıldıklarında. Makineyi çalıştırmadan önce düğmeleri ve kolları öğren ve asla çok hızlı sürme. Sorun veya garip ses olursa: makineyi durdur ve amirini bilgilendir.",
+    ro: "Mașinile de frecat-aspirat curăță podelele rapid și temeinic — dar numai dacă sunt utilizate corect. Cunoaște butoanele și mânerele înainte să pornești mașina și nu merge niciodată prea repede. La probleme sau zgomote ciudate: oprește mașina și informează superiorul.",
+    sr: "Mašine za ribanje i usisavanje čiste podove brzo i temeljito — ali samo ako se pravilno koriste. Upoznaj prekidače i poluge prije nego što pokreneš mašinu i nikad ne vozi prebrzo. Kod problema ili čudnih zvukova: zaustavi mašinu i obavijesti nadređenog.",
+    pl: "Maszyny szorująco-zbierające czyszczą podłogi szybko i dokładnie — ale tylko wtedy, gdy są prawidłowo obsługiwane. Poznaj przyciski i dźwignie przed uruchomieniem maszyny i nigdy nie jedź zbyt szybko. W przypadku problemów lub dziwnych dźwięków: zatrzymaj maszynę i poinformuj przełożonego."
+  },
+  kap_14: {
+    de: "Nach jeder Schicht musst du die Maschine reinigen: Schmutzwasser entleeren, Bürsten abspülen und alles trocken lagern. Schau täglich nach, ob Kabel, Stecker oder Räder beschädigt sind — defekte Maschinen nie benutzen. Gepflegte Maschinen halten länger und arbeiten sicherer.",
+    tr: "Her vardiyadan sonra makineyi temizlemelisin: kirli suyu boşalt, fırçaları çalkala ve her şeyi kuru olarak depola. Kablo, fiş veya tekerleklerin hasar görüp görmediğini her gün kontrol et — arızalı makineleri asla kullanma. Bakımlı makineler daha uzun sürer ve daha güvenli çalışır.",
+    ro: "După fiecare tură trebuie să cureți mașina: golești apa murdară, clătești perii și depozitezi totul uscat. Verifică zilnic dacă cablurile, prizele sau roțile sunt deteriorate — nu folosi niciodată mașini defecte. Mașinile întreținute durează mai mult și funcționează mai sigur.",
+    sr: "Nakon svake smjene moraš očistiti mašinu: isprazniti prljavu vodu, isprati četke i pohraniti sve suho. Svakodnevno provjeravaj jesu li kablovi, utikači ili kotači oštećeni — nikad ne koristi pokvarene mašine. Održavane mašine traju duže i rade sigurnije.",
+    pl: "Po każdej zmianie musisz wyczyścić maszynę: opróżnić brudną wodę, przepłukać szczotki i przechować wszystko suche. Codziennie sprawdzaj, czy kable, wtyczki lub koła nie są uszkodzone — nigdy nie używaj uszkodzonych maszin. Zadbane maszyny działają dłużej i bezpieczniej."
+  },
+  kap_15: {
+    de: "Leiter immer auf festem, ebenem Boden aufstellen und sichern — jemand hält die Leiter unten fest, wenn du oben arbeitest. Steige nie auf die obersten zwei Sprossen und trage keine schweren Lasten beim Aufstieg. Kaputte Leitern sofort aus dem Verkehr ziehen und melden.",
+    tr: "Merdiveni her zaman sağlam, düz zemine koy ve sabitle — sen üstte çalışırken birisi merdiveni aşağıdan tutsun. Asla en üst iki basamağa çıkma ve tırmanırken ağır yükler taşıma. Kırık merdivenleri hemen kullanımdan kaldır ve bildir.",
+    ro: "Pune întotdeauna scara pe o suprafață solidă și plată și asigur-o — cineva ține scara jos când tu lucrezi sus. Nu urca niciodată pe ultimele două trepte și nu cărați sarcini grele la urcare. Scoate imediat din uz scările rupte și raportează-le.",
+    sr: "Ljestve uvijek postavljaj na čvrstu, ravnu površinu i osiguraj ih — neko drži ljestve odozdo dok ti radiš gore. Nikad ne stoji na gornje dvije prečke i ne nosi teških tereta pri uspinjanju. Pokvarene ljestve odmah povuci iz upotrebe i prijavi.",
+    pl: "Zawsze ustawiaj drabinę na twardej, równej powierzchni i zabezpiecz ją — ktoś trzyma drabinę na dole, gdy ty pracujesz na górze. Nigdy nie wchodź na dwa najwyższe szczeble i nie noś ciężkich ładunków podczas wchodzenia. Natychmiast wycofuj z użytku uszkodzone drabiny i zgłaszaj je."
+  },
+  kap_16: {
+    de: "Ein Fahrgerüst muss immer nach Anleitung aufgebaut werden — nie einzelne Teile weglassen oder durch andere ersetzen. Alle vier Räder müssen nach dem Aufbau festgestellt werden, damit das Gerüst nicht wegrollt. Bevor du hinaufsteigst, prüfe kurz, ob alles stabil steht.",
+    tr: "Seyyar iskele her zaman talimata göre kurulmalıdır — asla parça eksik bırakma veya başkasıyla değiştirme. Montajdan sonra iskelenin hareket etmemesi için dört tekerlek de sabitlenmelidir. Yukarı çıkmadan önce her şeyin sağlam durduğunu kısaca kontrol et.",
+    ro: "Un eșafodaj mobil trebuie asamblat întotdeauna conform instrucțiunilor — nu omite niciodată piese sau înlocui cu altele. Toate cele patru roți trebuie blocate după asamblare pentru ca eșafodajul să nu se miște. Înainte să urci, verifică rapid dacă totul stă stabil.",
+    sr: "Pokretna skela mora se uvijek montirati prema uputstvu — nikad ne izostavljaj dijelove ili ih zamjenjuj drugima. Nakon montaže sva četiri kotača moraju biti blokirana da se skela ne pomjera. Prije nego što se popneš, brzo provjeri je li sve stabilno postavljeno.",
+    pl: "Ruchome rusztowanie musi być zawsze montowane zgodnie z instrukcją — nigdy nie pomijaj części ani nie zastępuj ich innymi. Po montażu wszystkie cztery koła muszą być zablokowane, aby rusztowanie nie odjechało. Przed wejściem na górę szybko sprawdź, czy wszystko stoi stabilnie."
+  },
+  kap_17: {
+    de: "PSAgA ist deine persönliche Schutzausrüstung gegen Absturz — Gurt, Seil und Karabiner müssen immer zusammenpassen. Trage das Geschirr eng am Körper anliegend und hänge dich nie in eine Verankerung, die nicht freigegeben ist. Diese Ausrüstung rettet Leben — benutze sie richtig.",
+    tr: "KKD düşmeye karşı kişisel koruma ekipmanındır — kemer, ip ve karabinalar her zaman birbiriyle uyumlu olmalıdır. Kemeği vücuda yakın takın ve onaylı olmayan bir ankraj noktasına asla takılma. Bu ekipman hayat kurtarır — doğru kullan.",
+    ro: "EIP este echipamentul tău personal de protecție împotriva căderilor — centura, coarda și carabinierele trebuie să fie întotdeauna compatibile. Poartă hamul strâns pe corp și nu te atașa niciodată la un punct de ancorare neaprobat. Acest echipament salvează vieți — folosește-l corect.",
+    sr: "LZO je tvoja lična zaštitna oprema od pada — pojas, uže i karabineri moraju uvijek biti međusobno kompatibilni. Nosi opasač čvrsto uz tijelo i nikad se ne kači za sidrišnu točku koja nije odobrena. Ova oprema spašava živote — koristi je pravilno.",
+    pl: "ŚOI to twój osobisty sprzęt ochronny przed upadkiem — uprząż, lina i karabinki muszą zawsze do siebie pasować. Noś uprząż ciasno przylegającą do ciała i nigdy nie podczepiaj się do nieautoryzowanego punktu kotwiczenia. Ten sprzęt ratuje życie — używaj go prawidłowo."
+  },
+  kap_18: {
+    de: "Vor jeder Benutzung prüfst du Gurte und Seile mit den Augen: Risse, Scheuerstellen, gebrochene Nähte oder verformte Metallteile sind Ausrangierkriterien. Was auch nur einen Zweifel weckt, darf nicht benutzt werden — tausche es sofort aus. Defekte Ausrüstung kostet Leben.",
+    tr: "Her kullanımdan önce kemer ve ipleri gözle kontrol et: çatlaklar, aşınan yerler, kopuk dikişler veya biçimi bozulmuş metal parçalar ayıklama kriteridir. En küçük bir şüphe uyandıran şey kullanılmamalıdır — hemen değiştir. Hasarlı ekipman hayata mal olur.",
+    ro: "Înainte de fiecare utilizare, examinezi vizual centurile și corzile: crăpăturile, zonele de uzură, cusăturile rupte sau piesele metalice deformate sunt criterii de casare. Ceea ce trezește chiar și o singură îndoială nu poate fi utilizat — înlocuiește imediat. Echipamentul defect costă vieți.",
+    sr: "Prije svake upotrebe vizualno pregledaj pojaseve i užad: pukotine, istrošena mjesta, prekinuti šavovi ili deformirani metalni dijelovi su kriteriji za odbacivanje. Ono što izaziva i najmanju sumnju ne smije se koristiti — odmah zamijeni. Pokvarena oprema košta života.",
+    pl: "Przed każdym użyciem wizualnie sprawdzasz uprzęże i liny: pęknięcia, przetarcia, zerwane szwy lub zdeformowane części metalowe są kryteriami do wycofania z użytku. To, co budzi choćby jeden cień wątpliwości, nie może być używane — natychmiast wymień. Uszkodzony sprzęt kosztuje życie."
+  },
+  kap_19: {
+    de: "Ein Anschlagpunkt ist die Stelle, an der du dein Sicherungsseil befestigst — er muss mindestens 12 kN aushalten können. Verwende nur Anschlagpunkte, die vom Arbeitgeber oder Gebäudebetreiber freigegeben wurden. Prüfe vor jedem Einhängen, ob der Punkt fest und unbeschädigt ist.",
+    tr: "Ankraj noktası, güvenlik ipini bağladığın yerdir — en az 12 kN dayanabilmelidir. Yalnızca işveren veya bina işletmecisi tarafından onaylanmış ankraj noktalarını kullan. Her takma işleminden önce noktanın sağlam ve hasarsız olduğunu kontrol et.",
+    ro: "Un punct de ancorare este locul unde îți fixezi coarda de siguranță — trebuie să reziste cel puțin 12 kN. Folosește numai puncte de ancorare aprobate de angajator sau de administratorul clădirii. Înainte de fiecare atașare, verifică dacă punctul este solid și nedeteriorat.",
+    sr: "Sidrišna točka je mjesto gdje pričvršćuješ svoju sigurnosnu užad — mora izdržati najmanje 12 kN. Koristi samo sidrišne točke koje su odobrio poslodavac ili upravitelj zgrade. Prije svakog kačenja provjeri je li točka čvrsta i neoštećena.",
+    pl: "Punkt kotwiczenia to miejsce, do którego mocujesz linkę zabezpieczającą — musi wytrzymać co najmniej 12 kN. Używaj tylko punktów kotwiczenia zatwierdzonych przez pracodawcę lub zarządcę budynku. Przed każdym podpięciem sprawdź, czy punkt jest mocny i nieuszkodzony."
+  },
+  kap_20: {
+    de: "Vor Beginn jeder Höhenarbeit muss ein Rettungsplan vorhanden sein: Wer ruft die Feuerwehr? Wie kommt man schnell zur verunglückten Person? Übt den Plan im Team und stellt sicher, dass alle wissen, was zu tun ist. Ein guter Plan rettet Leben, bevor Hilfe eintrifft.",
+    tr: "Her yüksekte çalışmadan önce bir kurtarma planı hazır olmalıdır: Kim itfaiyeyi arar? Yaralı kişiye nasıl hızlıca ulaşılır? Planı ekip olarak pratik yapın ve herkesin ne yapacağını bildiğinden emin olun. İyi bir plan, yardım gelmeden önce hayat kurtarır.",
+    ro: "Înainte de începerea oricărei lucrări la înălțime, trebuie să existe un plan de salvare: Cine sună pompierii? Cum se ajunge rapid la persoana accidentată? Exersați planul în echipă și asigurați-vă că toți știu ce să facă. Un plan bun salvează vieți înainte de sosirea ajutorului.",
+    sr: "Prije početka svakog rada na visini mora postojati plan spašavanja: Ko zove vatrogasce? Kako se brzo dolazi do povrijeđene osobe? Vježbajte plan u timu i pobrinite se da svi znaju što trebaju raditi. Dobar plan spašava živote prije dolaska pomoći.",
+    pl: "Przed rozpoczęciem każdej pracy na wysokości musi istnieć plan ratunkowy: Kto dzwoni do straży pożarnej? Jak szybko dotrzeć do poszkodowanej osoby? Ćwiczcie plan w zespole i upewnijcie się, że wszyscy wiedzą, co robić. Dobry plan ratuje życie przed przybyciem pomocy."
+  },
+  kap_21: {
+    de: "Hängetrauma entsteht, wenn jemand bewusstlos im Gurt hängt — das Blut sackt in die Beine und das Herz wird nicht mehr ausreichend versorgt. Schon nach wenigen Minuten kann das tödlich enden — deshalb muss Rettung sofort einsetzen. Erkenne die Warnsymptome: Schwindel, blasse Haut, Bewusstlosigkeit — sofort Notruf 112.",
+    tr: "Askı travması, birinin harness içinde bilinçsiz asıl kalması durumunda oluşur — kan bacaklara çöker ve kalbe yeterli kan ulaşmaz. Sadece birkaç dakika içinde ölümcül sonuçlanabilir — bu nedenle kurtarma hemen başlamalıdır. Uyarı belirtilerini tanı: baş dönmesi, soluk cilt, bilinç kaybı — hemen 112 acil hattını ara.",
+    ro: "Traumatismul de suspensie apare când cineva atârnă inconștient în ham — sângele se acumulează în picioare și inima nu mai primește suficient sânge. Poate fi fatal în doar câteva minute — de aceea salvarea trebuie să înceapă imediat. Recunoaște simptomele de avertizare: amețeli, piele palidă, pierderea conștienței — sună imediat la 112.",
+    sr: "Sindrom vješanja nastaje kada netko visi nesvjestan u pojasu — krv se spušta u noge i srce više ne prima dovoljno krvi. Može biti smrtonosno već za nekoliko minuta — stoga spašavanje mora početi odmah. Prepoznaj znakove upozorenja: vrtoglavica, blijeda koža, gubitak svijesti — odmah pozovi 112.",
+    pl: "Uraz zawieszenia powstaje, gdy ktoś wisi nieprzytomny w uprzęży — krew spływa do nóg i serce nie jest wystarczająco zaopatrywane. Już po kilku minutach może to być śmiertelne — dlatego akcja ratunkowa musi rozpocząć się natychmiast. Rozpoznaj objawy ostrzegawcze: zawroty głowy, blada skóra, utrata przytomności — natychmiast dzwoń pod numer 112."
+  }
+};
+
 // ── UTILS ────────────────────────────────────────────────────
 function now()     { return new Date().toISOString(); }
 // Löst User-ID auf lesbare Name auf (für PDFs, Archiv etc.)
@@ -5160,7 +5312,21 @@ const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.id || 'anon'}`;
 const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309' };
 const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🧗 Säule C — Höhentechnologie & PSAgA' };
 
-// ── Fortschritt laden ─────────────────────────────────────────
+// ── LERNPFAD-SPRACHE ─────────────────────────────────────────
+const LP_SPRACHEN = [
+  { code:'de', flag:'🇩🇪', label:'DE' },
+  { code:'tr', flag:'🇹🇷', label:'TR' },
+  { code:'ro', flag:'🇷🇴', label:'RO' },
+  { code:'sr', flag:'🇷🇸', label:'SR' },
+  { code:'pl', flag:'🇵🇱', label:'PL' },
+];
+let lernpfadSprache = localStorage.getItem('lernpfad_sprache') || 'de';
+
+function lernpfadSprachWaehlen(code) {
+  lernpfadSprache = code;
+  localStorage.setItem('lernpfad_sprache', code);
+  renderLernpfad();
+}
 async function lernpfadLaden() {
   // 1. Aus localStorage (sofort, offline-fähig)
   try {
@@ -5302,6 +5468,16 @@ function renderLernpfad() {
         </div>
         <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle 21 Kapitel erledigt!' : ''}</div>
       </div>
+      <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+        <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
+        ${LP_SPRACHEN.map(s => `
+          <button onclick="lernpfadSprachWaehlen('${s.code}')"
+            style="font-size:.75rem;padding:3px 9px;border-radius:6px;border:1.5px solid ${lernpfadSprache===s.code?'#0f5132':'#d1d5db'};
+                   background:${lernpfadSprache===s.code?'#0f5132':'#fff'};color:${lernpfadSprache===s.code?'#fff':'#374151'};
+                   cursor:pointer;font-weight:${lernpfadSprache===s.code?'700':'400'}">
+            ${s.flag} ${s.label}
+          </button>`).join('')}
+      </div>
       ${alle21 ? `<div style="padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;font-size:.82rem;color:#166534;font-weight:600">
         🎓 Lernpfad abgeschlossen! ${isVerantwortlicher ? 'Zertifikat kann ausgestellt werden.' : 'Bitte Verantwortlichen für Zertifikat informieren.'}
       </div>` : ''}
@@ -5354,14 +5530,17 @@ function renderLernpfad() {
       }
 
       html += `
-        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f0f2f5;background:${hintergrund}">
-          <span style="font-size:1.2rem;color:${statusFarbe};flex-shrink:0">${statusIcon}</span>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-bottom:1px solid #f0f2f5;background:${hintergrund}">
+          <span style="font-size:1.2rem;color:${statusFarbe};flex-shrink:0;margin-top:2px">${statusIcon}</span>
           <div style="flex:1;min-width:0">
             <div style="font-weight:600;font-size:.82rem;color:#1a3a5c">${kap.nr}. ${escHtml(kap.titel)}</div>
             <div style="font-size:.68rem;color:#9ca3af;margin-top:1px">${escHtml(kap.rechtsgrundlage)}</div>
+            <div style="font-size:.78rem;color:#374151;margin-top:5px;line-height:1.45;background:#f8fafc;border-left:3px solid ${farbe};padding:5px 8px;border-radius:0 6px 6px 0">
+              ${escHtml((LERNPFAD_TEXTE[kap.id] || {})[lernpfadSprache] || (LERNPFAD_TEXTE[kap.id] || {}).de || '')}
+            </div>
             ${metaInfo}
           </div>
-          ${aktionsBtn}
+          <div style="flex-shrink:0;margin-top:2px">${aktionsBtn}</div>
         </div>`;
     });
 
