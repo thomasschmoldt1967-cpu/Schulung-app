@@ -2287,6 +2287,8 @@ function renderSubDashboard() {
 
   // Kalender rendern
   renderSubKalender();
+  // Lernpfad initialisieren (lädt Fortschritt aus DB/localStorage)
+  lernpfadInitialisieren();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
   if (!meineZuws.length) {
@@ -5113,6 +5115,353 @@ async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
   } catch(e) {
     showToast('❌ Fehler: ' + e.message, '#dc2626');
   }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  LERNPFAD — 21 Kapitel Checklisten-System (Stufe 1)
+//  Mitarbeiter haken ab → Verantwortlicher bestätigt → Supabase-Audit
+//  Stufe 2+3 (Tests, Mehrsprachigkeit) separat geplant
+// ══════════════════════════════════════════════════════════════
+
+// Lokaler Cache für Lernpfad-Fortschritt (DB + localStorage)
+let lernpfadFortschritt = {}; // { kap_01: { abgehakt: true, bestaetigtAm: '...', bestaetigtVon: '...' } }
+
+const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.id || 'anon'}`;
+const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309' };
+const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🧗 Säule C — Höhentechnologie & PSAgA' };
+
+// ── Fortschritt laden ─────────────────────────────────────────
+async function lernpfadLaden() {
+  // 1. Aus localStorage (sofort, offline-fähig)
+  try {
+    const stored = localStorage.getItem(LP_STORAGE_KEY());
+    if (stored) lernpfadFortschritt = JSON.parse(stored);
+  } catch(e) {}
+
+  // 2. Aus Supabase (wenn online — überschreibt localStorage bei Konflikten)
+  try {
+    const rows = await SB.select('lernpfad_fortschritt',
+      `user_id=eq.${currentUser.id}&tenant_id=eq.${currentUser.tenantId || ''}`);
+    if (rows && rows.length) {
+      rows.forEach(r => {
+        lernpfadFortschritt[r.kapitel_id] = {
+          abgehakt:     r.abgehakt,
+          abgehaktAm:   r.abgehakt_am,
+          bestaetigtAm: r.bestaetigt_am,
+          bestaetigtVon:r.bestaetigt_von
+        };
+      });
+      // Lokal synchronisieren
+      localStorage.setItem(LP_STORAGE_KEY(), JSON.stringify(lernpfadFortschritt));
+    }
+  } catch(e) {
+    // Offline — localStorage-Daten reichen für die Anzeige
+  }
+}
+
+// ── Kapitel abhaken / Haken entfernen ────────────────────────
+async function lernpfadKapitelToggle(kapitelId) {
+  const kap = LERNPFAD_KAPITEL.find(k => k.id === kapitelId);
+  if (!kap) return;
+  const istAbgehakt = !!(lernpfadFortschritt[kapitelId]?.abgehakt);
+  const neu = !istAbgehakt;
+  const ts  = now();
+
+  // Lokal sofort aktualisieren (optimistisch)
+  if (neu) {
+    lernpfadFortschritt[kapitelId] = { abgehakt: true, abgehaktAm: ts };
+  } else {
+    lernpfadFortschritt[kapitelId] = { abgehakt: false };
+  }
+  localStorage.setItem(LP_STORAGE_KEY(), JSON.stringify(lernpfadFortschritt));
+  renderLernpfad();
+
+  // In Supabase speichern
+  try {
+    await SB.upsert('lernpfad_fortschritt', {
+      id:          `${currentUser.id}_${kapitelId}`,
+      user_id:     currentUser.id,
+      tenant_id:   currentUser.tenantId || '',
+      kapitel_id:  kapitelId,
+      abgehakt:    neu,
+      abgehakt_am: neu ? ts : null,
+      bestaetigt_am:  null,
+      bestaetigt_von: null
+    });
+    await sbAudit(
+      neu ? 'LERNPFAD_ABGEHAKT' : 'LERNPFAD_HAKEN_ENTFERNT',
+      `Kapitel ${kap.nr}: "${kap.titel}"`
+    );
+    if (neu) showToast(`✅ Kapitel ${kap.nr} abgehakt`, '#16a34a');
+  } catch(e) {
+    showToast('⚠️ Gespeichert (lokal) — Sync ausstehend', '#f59e0b');
+  }
+}
+
+// ── Kapitel durch Verantwortlichen bestätigen ─────────────────
+async function lernpfadBestaetigen(kapitelId, userId) {
+  const kap = LERNPFAD_KAPITEL.find(k => k.id === kapitelId);
+  if (!kap) return;
+  if (!confirm(`Kapitel ${kap.nr}: "${kap.titel}" für diesen Mitarbeiter bestätigen?`)) return;
+  const ts = now();
+
+  try {
+    await SB.upsert('lernpfad_fortschritt', {
+      id:             `${userId}_${kapitelId}`,
+      user_id:        userId,
+      tenant_id:      currentUser.tenantId || '',
+      kapitel_id:     kapitelId,
+      abgehakt:       true,
+      abgehakt_am:    ts,
+      bestaetigt_am:  ts,
+      bestaetigt_von: currentUser.id
+    });
+    await sbAudit('LERNPFAD_BESTAETIGT',
+      `Kapitel ${kap.nr}: "${kap.titel}" bestätigt für User ${userId}`);
+    showToast(`✅ Kapitel ${kap.nr} bestätigt`, '#16a34a');
+    // Lokalen Cache updaten (wenn eigener User)
+    if (userId === currentUser.id) {
+      lernpfadFortschritt[kapitelId] = { abgehakt: true, abgehaktAm: ts, bestaetigtAm: ts, bestaetigtVon: currentUser.id };
+      localStorage.setItem(LP_STORAGE_KEY(), JSON.stringify(lernpfadFortschritt));
+      renderLernpfad();
+    }
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
+// ── Toggle Lernpfad-Karte aufklappen/einklappen ───────────────
+function lernpfadToggle() {
+  const cont  = document.getElementById('lernpfad-container');
+  const pfeil = document.getElementById('btn-lernpfad-pfeil');
+  const sub   = document.getElementById('btn-lernpfad-sub');
+  if (!cont) return;
+  const offen = cont.style.display === 'block';
+  if (offen) {
+    cont.style.display = 'none';
+    if (pfeil) pfeil.style.transform = '';
+    if (sub) sub.textContent = 'Tippen zum Anzeigen';
+  } else {
+    renderLernpfad();
+    cont.style.display = 'block';
+    if (pfeil) pfeil.style.transform = 'rotate(180deg)';
+  }
+}
+
+// ── Lernpfad rendern ──────────────────────────────────────────
+function renderLernpfad() {
+  const cont = document.getElementById('lernpfad-container');
+  if (!cont) return;
+  const isVerantwortlicher = currentUser.role === 'verantwortlicher';
+
+  // Fortschrittsbalken oben
+  const gesamt   = LERNPFAD_KAPITEL.length;
+  const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+  const pct      = Math.round(bestanden / gesamt * 100);
+  const alle21   = bestanden === gesamt;
+
+  let html = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px">
+      <div style="padding:14px 16px;background:#0f5132;color:#fff">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <span style="font-weight:700;font-size:.95rem">📚 21-Kapitel Lernpfad</span>
+          <span style="font-size:.85rem;font-weight:700">${bestanden}/${gesamt} ✓</span>
+        </div>
+        <div style="background:rgba(255,255,255,.25);border-radius:999px;height:8px">
+          <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
+        </div>
+        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle 21 Kapitel erledigt!' : ''}</div>
+      </div>
+      ${alle21 ? `<div style="padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;font-size:.82rem;color:#166534;font-weight:600">
+        🎓 Lernpfad abgeschlossen! ${isVerantwortlicher ? 'Zertifikat kann ausgestellt werden.' : 'Bitte Verantwortlichen für Zertifikat informieren.'}
+      </div>` : ''}
+    </div>`;
+
+  // Pro Säule gruppiert
+  ['A','B','C'].forEach(saeule => {
+    const kapitel = LERNPFAD_KAPITEL.filter(k => k.saeule === saeule);
+    const absolviert = kapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+    const farbe = SAEULE_FARBEN[saeule];
+    html += `
+      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+        <div style="padding:10px 14px;background:${farbe};color:#fff;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:.85rem">${SAEULE_LABEL[saeule]}</span>
+          <span style="font-size:.78rem;opacity:.9">${absolviert}/${kapitel.length}</span>
+        </div>`;
+
+    kapitel.forEach(kap => {
+      const fp = lernpfadFortschritt[kap.id] || {};
+      const abgehakt    = !!fp.abgehakt;
+      const bestaetigt  = !!fp.bestaetigtAm;
+      const isMitarbeiter = currentUser.role === 'mitarbeiter';
+
+      const statusIcon = bestaetigt ? '✅' : abgehakt ? '☑️' : '☐';
+      const statusFarbe = bestaetigt ? '#16a34a' : abgehakt ? '#2563eb' : '#9ca3af';
+      const hintergrund = bestaetigt ? '#f0fdf4' : abgehakt ? '#eff6ff' : '#fff';
+
+      let aktionsBtn = '';
+      if (isMitarbeiter) {
+        // Mitarbeiter: Kapitel selbst abhaken
+        aktionsBtn = `<button onclick="lernpfadKapitelToggle('${kap.id}')"
+          style="font-size:.7rem;padding:4px 10px;border-radius:6px;border:1px solid ${abgehakt?'#dc2626':'#16a34a'};
+                 background:${abgehakt?'#fef2f2':'#f0fdf4'};color:${abgehakt?'#dc2626':'#16a34a'};cursor:pointer;white-space:nowrap;font-weight:600">
+          ${abgehakt ? '↩ Rückgängig' : '✓ Abhaken'}
+        </button>`;
+      } else if (isVerantwortlicher && abgehakt && !bestaetigt) {
+        // Verantwortlicher: Bestätigen
+        aktionsBtn = `<button onclick="lernpfadBestaetigen('${kap.id}','${currentUser.id}')"
+          style="font-size:.7rem;padding:4px 10px;border-radius:6px;border:1px solid #7c3aed;
+                 background:#faf5ff;color:#7c3aed;cursor:pointer;white-space:nowrap;font-weight:600">
+          ✔ Bestätigen
+        </button>`;
+      }
+
+      let metaInfo = '';
+      if (bestaetigt) {
+        metaInfo = `<div style="font-size:.68rem;color:#16a34a;margin-top:2px">✅ Bestätigt am ${datumStr(fp.bestaetigtAm)}</div>`;
+      } else if (abgehakt) {
+        metaInfo = `<div style="font-size:.68rem;color:#2563eb;margin-top:2px">☑️ Abgehakt am ${datumStr(fp.abgehaktAm)} — Bestätigung ausstehend</div>`;
+      }
+
+      html += `
+        <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #f0f2f5;background:${hintergrund}">
+          <span style="font-size:1.2rem;color:${statusFarbe};flex-shrink:0">${statusIcon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.82rem;color:#1a3a5c">${kap.nr}. ${escHtml(kap.titel)}</div>
+            <div style="font-size:.68rem;color:#9ca3af;margin-top:1px">${escHtml(kap.rechtsgrundlage)}</div>
+            ${metaInfo}
+          </div>
+          ${aktionsBtn}
+        </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  // Zertifikat-Button (nur wenn alle abgehakt + Verantwortlicher)
+  if (alle21 && isVerantwortlicher) {
+    html += `
+      <div style="text-align:center;padding:4px 0 10px">
+        <button onclick="lernpfadZertifikatGenerieren()"
+          style="background:#0f5132;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(15,81,50,.3)">
+          🏆 Gesamtzertifikat ausstellen
+        </button>
+      </div>`;
+  }
+
+  cont.innerHTML = html;
+
+  // Button-Untertitel aktualisieren
+  const sub = document.getElementById('btn-lernpfad-sub');
+  if (sub) sub.textContent = `${bestanden}/21 Kapitel abgeschlossen`;
+}
+
+// ── Gesamtzertifikat generieren ───────────────────────────────
+async function lernpfadZertifikatGenerieren() {
+  if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined' && typeof jsPDF === 'undefined') {
+    showToast('⚠️ PDF-Bibliothek nicht geladen', '#f59e0b');
+    return;
+  }
+  const { jsPDF } = window.jspdf || { jsPDF: window.jsPDF };
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const tenant = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+  const datum  = new Date().toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' });
+  const gueltigBis = new Date();
+  gueltigBis.setFullYear(gueltigBis.getFullYear() + 1);
+  const gueltigBisStr = gueltigBis.toLocaleDateString('de-DE', { day:'2-digit', month:'long', year:'numeric' });
+
+  // Kopfzeile
+  doc.setFillColor(15, 81, 50);
+  doc.rect(0, 0, 210, 38, 'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(18);
+  doc.setFont('helvetica','bold');
+  doc.text('SCHULUNGSZERTIFIKAT', 105, 15, { align:'center' });
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.text('Gebäudereinigung & Höhentechnologie — 21-Kapitel Lernpfad', 105, 23, { align:'center' });
+  doc.text('CSC GmbH Schulungsmanagement', 105, 30, { align:'center' });
+
+  // Mitarbeiterdaten
+  doc.setTextColor(30,58,95);
+  doc.setFontSize(11);
+  doc.setFont('helvetica','bold');
+  doc.text('Mitarbeiter:', 20, 50);
+  doc.setFont('helvetica','normal');
+  doc.text(currentUser.name, 65, 50);
+  doc.setFont('helvetica','bold');
+  doc.text('Unternehmen:', 20, 58);
+  doc.setFont('helvetica','normal');
+  doc.text(tenant ? tenant.name : currentUser.tenantId, 65, 58);
+  doc.setFont('helvetica','bold');
+  doc.text('Ausstellungsdatum:', 20, 66);
+  doc.setFont('helvetica','normal');
+  doc.text(datum, 65, 66);
+  doc.setFont('helvetica','bold');
+  doc.text('Gültig bis:', 20, 74);
+  doc.setFont('helvetica','normal');
+  doc.text(gueltigBisStr, 65, 74);
+
+  // Trennlinie
+  doc.setDrawColor(15, 81, 50);
+  doc.setLineWidth(0.5);
+  doc.line(20, 80, 190, 80);
+
+  // Kapitel-Tabelle
+  doc.setFontSize(9);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255);
+  doc.setFillColor(15, 81, 50);
+  doc.rect(20, 83, 170, 7, 'F');
+  doc.text('Nr', 23, 88);
+  doc.text('Kapitel', 33, 88);
+  doc.text('Rechtsgrundlage', 128, 88);
+  doc.text('Status', 178, 88);
+
+  let y = 95;
+  LERNPFAD_KAPITEL.forEach((kap, i) => {
+    const fp = lernpfadFortschritt[kap.id] || {};
+    if (i % 2 === 0) {
+      doc.setFillColor(240, 253, 244);
+      doc.rect(20, y-4, 170, 8, 'F');
+    }
+    doc.setTextColor(30,58,95);
+    doc.setFont('helvetica','normal');
+    doc.text(String(kap.nr), 23, y);
+    doc.text(kap.titel.substring(0,48), 33, y);
+    doc.text(kap.rechtsgrundlage.substring(0,28), 128, y);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(22, 163, 74);
+    doc.text('✓ Bestätigt', 178, y);
+    doc.setTextColor(30,58,95);
+    doc.setFont('helvetica','normal');
+    y += 8;
+  });
+
+  // Rechtshinweis
+  y += 6;
+  doc.setFontSize(7.5);
+  doc.setTextColor(107, 114, 128);
+  doc.setFont('helvetica','italic');
+  doc.text('Dieses Zertifikat bestätigt die Teilnahme an der digitalen Unterweisung gem. § 12 ArbSchG und § 14 GefStoffV.', 20, y);
+  doc.text('Die Schulung wurde durch CSC GmbH Schulungsmanagement (schulung.csc-hannover.de) dokumentiert.', 20, y+5);
+  doc.text(`Gültigkeitsdauer: 12 Monate. Nächste Unterweisung erforderlich bis: ${gueltigBisStr}`, 20, y+10);
+
+  const datei = `Lernpfad-Zertifikat_${currentUser.name.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+  doc.save(datei);
+  await sbAudit('LERNPFAD_ZERTIFIKAT', `Gesamtzertifikat erstellt für ${currentUser.name}`);
+  showToast('🏆 Zertifikat wurde heruntergeladen!', '#0f5132');
+}
+
+// ── Lernpfad in renderSubDashboard integrieren ────────────────
+// Wird von renderSubDashboard aufgerufen (siehe Patch dort)
+async function lernpfadInitialisieren() {
+  await lernpfadLaden();
+  // Untertitel aktualisieren ohne aufzuklappen
+  const gesamt = LERNPFAD_KAPITEL.length;
+  const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+  const sub = document.getElementById('btn-lernpfad-sub');
+  if (sub) sub.textContent = `${bestanden}/${gesamt} Kapitel — Tippen zum Anzeigen`;
 }
 
 // showToast falls nicht vorhanden

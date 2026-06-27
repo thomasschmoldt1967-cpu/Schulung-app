@@ -183,6 +183,37 @@ const SCHULUNG_VORLAGEN = [
   }
 ];
 
+// ── LERNPFAD: 21 KAPITEL (Gebäudereinigung & Höhentechnologie) ────────────
+// Didaktisches Konzept nach BG BAU — 3 Säulen
+// Stufe 1: Checklisten-System mit Verantwortlichen-Bestätigung
+// Stufe 2+3: Interaktive Tests + Mehrsprachigkeit (geplant, siehe Skill schulungsmodul-lms-stufen-2-3)
+const LERNPFAD_KAPITEL = [
+  // ── Säule A: Gesetzliche Basis-Unterweisungen (§ 12 ArbSchG) ──────────
+  { id:'kap_01', nr:1,  saeule:'A', titel:'Verhalten im Kundenobjekt & Unfallmeldung',           rechtsgrundlage:'§ 12 ArbSchG, DGUV V1' },
+  { id:'kap_02', nr:2,  saeule:'A', titel:'Stolper-, Rutsch- und Sturzgefahren',                 rechtsgrundlage:'§ 12 ArbSchG, DGUV R 108-003' },
+  { id:'kap_03', nr:3,  saeule:'A', titel:'Brandschutz und Fluchtwege',                          rechtsgrundlage:'§ 12 ArbSchG, ASR A2.2' },
+  { id:'kap_04', nr:4,  saeule:'A', titel:'Erste Hilfe',                                         rechtsgrundlage:'§ 12 ArbSchG, DGUV R 100-001' },
+  { id:'kap_05', nr:5,  saeule:'A', titel:'Hautschutz- und Hygienepläne (Feuchtarbeit)',         rechtsgrundlage:'§ 12 ArbSchG, TRGS 401' },
+  { id:'kap_06', nr:6,  saeule:'A', titel:'Richtiges Händewaschen und Pflegen',                  rechtsgrundlage:'§ 12 ArbSchG, TRGS 401' },
+  { id:'kap_07', nr:7,  saeule:'A', titel:'Dokumentationspflichten und Unfallmeldung',           rechtsgrundlage:'§ 24 SGB VII, DGUV V1 §24' },
+  // ── Säule B: Reinigungstechnologie & Chemie (§ 14 GefStoffV) ──────────
+  { id:'kap_08', nr:8,  saeule:'B', titel:'Richtige Dosierung von Reinigungsmitteln',            rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_09', nr:9,  saeule:'B', titel:'Betriebsanweisungen lesen und verstehen',             rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_10', nr:10, saeule:'B', titel:'Gefahrensymbole und GHS-Kennzeichnung',               rechtsgrundlage:'§ 14 GefStoffV, CLP-Verordnung' },
+  { id:'kap_11', nr:11, saeule:'B', titel:'Mischverbot (Chlor + Sanitärreiniger u.a.)',          rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_12', nr:12, saeule:'B', titel:'Oberflächenkunde (Böden, Stein, Holz, Textil)',       rechtsgrundlage:'Fachkunde Gebäudereiniger' },
+  { id:'kap_13', nr:13, saeule:'B', titel:'Maschinenkunde — Scheuersaugmaschinen',               rechtsgrundlage:'§ 12 ArbSchG, BetrSichV' },
+  { id:'kap_14', nr:14, saeule:'B', titel:'Tägliche Wartung und Pflege von Maschinen',           rechtsgrundlage:'BetrSichV §4, DGUV R 100-500' },
+  // ── Säule C: Höhentechnologie & PSAgA ─────────────────────────────────
+  { id:'kap_15', nr:15, saeule:'C', titel:'Leitern und Tritte — sicherer Umgang',                rechtsgrundlage:'DGUV Information 208-016' },
+  { id:'kap_16', nr:16, saeule:'C', titel:'Fahrgerüste — Aufbau und Sicherheit',                 rechtsgrundlage:'DGUV Information 201-011' },
+  { id:'kap_17', nr:17, saeule:'C', titel:'Einführung PSAgA — Schutzausrüstung gegen Absturz',  rechtsgrundlage:'PSA-BV, DGUV R 112-198' },
+  { id:'kap_18', nr:18, saeule:'C', titel:'Sichtprüfung: Ausrangierkriterien Gurte & Seile',    rechtsgrundlage:'DGUV R 112-198, EN 361' },
+  { id:'kap_19', nr:19, saeule:'C', titel:'Anschlagpunkte im und am Gebäude',                    rechtsgrundlage:'DGUV R 112-198, EN 795' },
+  { id:'kap_20', nr:20, saeule:'C', titel:'Notfall- und Rettungsplanung',                        rechtsgrundlage:'DGUV R 112-198, § 10 ArbSchG' },
+  { id:'kap_21', nr:21, saeule:'C', titel:'Hängetrauma — Erkennen und Verhindern',              rechtsgrundlage:'DGUV Information 212-139' },
+];
+
 // ── ZUWEISUNGEN ──────────────────────────────────────────────
 // Welche Schulungsvorlage ist welchem Mandanten zugewiesen, mit Frist
 // Status wird automatisch berechnet — hier nur Basis-Metadaten
