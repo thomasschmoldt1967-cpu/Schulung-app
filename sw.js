@@ -2,7 +2,7 @@
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
 //  v3.1 – Push-Benachrichtigungen + Offline-Modus
 // ============================================================
-const CACHE_NAME = 'schulung-v34';
+const CACHE_NAME = 'schulung-v35';
 const OFFLINE_URL = '/';
 
 const APP_SHELL = [
