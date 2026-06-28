@@ -4838,9 +4838,19 @@ async function zeigeSchulungshistorie(userId) {
   modal.style.display = 'flex';
 
   try {
-    // Alle abgeschlossenen Formulare für diesen User laden
-    const alleFormulare = await SB.get('formulare',
+    // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants laden
+    // (Cross-Tenant-Schutz: filter über zuweisung_id die zum eigenen Tenant gehören)
+    const eigeneZuwIds = zuweisungen
+      .filter(z => z.tenantId === currentUser.tenantId)
+      .map(z => z.id);
+
+    const alleFormulareRaw = await SB.get('formulare',
       `abgeschlossen_von=eq.${encodeURIComponent(userId)}&order=abgeschlossen_am.desc&limit=100`
+    );
+
+    // Nur Formulare aus Zuweisungen dieses Tenants anzeigen
+    const alleFormulare = alleFormulareRaw.filter(f =>
+      eigeneZuwIds.includes(f.id) || eigeneZuwIds.includes(f.zuweisung_id)
     );
 
     // Lernpfad-Unterschrift für diesen Mitarbeiter laden
