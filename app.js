@@ -71,63 +71,145 @@ const LERNPFAD_HTML = {
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/GHS-pictogram-explos.svg/100px-GHS-pictogram-explos.svg.png" alt="GHS01" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Explodierende Bombe -->
+        <ellipse cx="50" cy="70" rx="14" ry="12" fill="black"/>
+        <rect x="46" y="54" width="8" height="12" fill="black"/>
+        <path d="M50,42 Q58,30 66,28 Q60,38 62,44 Q54,36 50,42Z" fill="black"/>
+        <line x1="62" y1="28" x2="68" y2="22" stroke="black" stroke-width="3"/>
+        <circle cx="70" cy="20" r="4" fill="#e00"/>
+        <line x1="40" y1="68" x2="28" y2="75" stroke="black" stroke-width="3"/>
+        <line x1="43" y1="78" x2="34" y2="88" stroke="black" stroke-width="3"/>
+        <line x1="57" y1="79" x2="64" y2="89" stroke="black" stroke-width="3"/>
+        <line x1="60" y1="68" x2="72" y2="73" stroke="black" stroke-width="3"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS01</div>
       <div style="font-size:.68rem;color:#374151">Explodierende Bombe</div>
       <div style="font-size:.65rem;color:#6b7280">Explosionsgefahr</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/GHS-pictogram-flamme.svg/100px-GHS-pictogram-flamme.svg.png" alt="GHS02" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Flamme -->
+        <path d="M50,30 C50,30 42,42 42,54 C42,62 46,68 50,68 C54,68 58,62 58,54 C58,42 50,30 50,30Z" fill="black"/>
+        <path d="M44,44 C44,44 38,50 38,58 C38,68 44,76 50,76 C56,76 62,68 62,58 C62,48 56,40 50,38 C52,44 50,50 48,50 C46,50 44,48 44,44Z" fill="black"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS02</div>
       <div style="font-size:.68rem;color:#374151">Flamme</div>
       <div style="font-size:.65rem;color:#6b7280">Entzündbar/brennbar</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/GHS-pictogram-rondflam.svg/100px-GHS-pictogram-rondflam.svg.png" alt="GHS03" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Flamme über Kreis -->
+        <circle cx="50" cy="72" r="12" fill="none" stroke="black" stroke-width="5"/>
+        <path d="M50,36 C50,36 44,45 44,53 C44,59 47,63 50,63 C53,63 56,59 56,53 C56,45 50,36 50,36Z" fill="black"/>
+        <path d="M45,46 C45,46 40,51 40,57 C40,64 44,69 50,69 C56,69 60,64 60,57 C60,50 55,44 50,43 C52,48 50,52 48,52 C46,52 45,50 45,46Z" fill="black"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS03</div>
       <div style="font-size:.68rem;color:#374151">Flamme über Kreis</div>
       <div style="font-size:.65rem;color:#6b7280">Brandfördernd/oxidierend</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/GHS-pictogram-bottle.svg/100px-GHS-pictogram-bottle.svg.png" alt="GHS04" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Gasflasche -->
+        <rect x="38" y="48" width="20" height="28" rx="4" fill="black"/>
+        <rect x="41" y="40" width="14" height="12" rx="3" fill="black"/>
+        <rect x="44" y="33" width="8" height="10" rx="2" fill="black"/>
+        <path d="M52,33 Q62,30 64,38 Q62,42 56,41" fill="none" stroke="black" stroke-width="3"/>
+        <line x1="38" y1="76" x2="62" y2="76" stroke="black" stroke-width="4"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS04</div>
       <div style="font-size:.68rem;color:#374151">Gasflasche</div>
       <div style="font-size:.65rem;color:#6b7280">Gas unter Druck</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/GHS-pictogram-acid.svg/100px-GHS-pictogram-acid.svg.png" alt="GHS05" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Ätzwirkung: Hand + Metall mit Tropfen -->
+        <path d="M30,44 L34,44 L36,56 L38,44 L42,44 L44,58 L46,44 L48,44 L44,72 L36,72 Z" fill="black"/>
+        <path d="M55,44 L59,44 L61,56 L63,44 L67,44 L63,72 L55,72 Z" fill="black"/>
+        <path d="M38,34 Q50,22 62,34" fill="none" stroke="black" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="50" cy="30" r="3" fill="black"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS05</div>
       <div style="font-size:.68rem;color:#374151">Ätzwirkung</div>
       <div style="font-size:.65rem;color:#6b7280">Ätzt Haut &amp; Augen</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/GHS-pictogram-skull.svg/100px-GHS-pictogram-skull.svg.png" alt="GHS06" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Totenkopf -->
+        <circle cx="50" cy="52" r="20" fill="black"/>
+        <circle cx="43" cy="50" r="6" fill="white"/>
+        <circle cx="57" cy="50" r="6" fill="white"/>
+        <path d="M44,62 L44,76 L56,76 L56,62" fill="none" stroke="black" stroke-width="0"/>
+        <rect x="43" y="63" width="5" height="14" rx="1" fill="white"/>
+        <rect x="51" y="63" width="5" height="14" rx="1" fill="white"/>
+        <rect x="44" y="68" width="12" height="4" rx="1" fill="black"/>
+        <path d="M36,60 Q50,70 64,60" fill="none" stroke="white" stroke-width="2"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS06</div>
       <div style="font-size:.68rem;color:#374151">Totenkopf</div>
       <div style="font-size:.65rem;color:#6b7280">Akut giftig</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/GHS-pictogram-exclam.svg/100px-GHS-pictogram-exclam.svg.png" alt="GHS07" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Ausrufezeichen -->
+        <rect x="45" y="35" width="10" height="30" rx="4" fill="black"/>
+        <circle cx="50" cy="75" r="6" fill="black"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS07</div>
       <div style="font-size:.68rem;color:#374151">Ausrufezeichen</div>
       <div style="font-size:.65rem;color:#6b7280">Reizend/schädlich</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/GHS-pictogram-silhouet.svg/100px-GHS-pictogram-silhouet.svg.png" alt="GHS08" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Gesundheitsgefahr: Silhouette Mensch mit Stern an Brust -->
+        <circle cx="50" cy="36" r="8" fill="black"/>
+        <path d="M36,50 Q38,44 50,46 Q62,44 64,50 L62,72 L54,72 L54,60 L46,60 L46,72 L38,72 Z" fill="black"/>
+        <path d="M36,50 L28,60 M64,50 L72,60" stroke="black" stroke-width="5" stroke-linecap="round"/>
+        <polygon points="50,50 52,56 58,56 53,60 55,66 50,62 45,66 47,60 42,56 48,56" fill="white"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS08</div>
       <div style="font-size:.68rem;color:#374151">Gesundheitsgefahr</div>
       <div style="font-size:.65rem;color:#6b7280">Chronisch gefährlich</div>
     </div>
 
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/GHS-pictogram-pollut.svg/100px-GHS-pictogram-pollut.svg.png" alt="GHS09" style="width:52px;height:52px;object-fit:contain">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="56" height="56">
+        <rect width="100" height="100" fill="white"/>
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="7" stroke-linejoin="round"/>
+        <!-- Umwelt: Baum + toter Baum + Fisch -->
+        <path d="M50,76 L50,54" stroke="black" stroke-width="4"/>
+        <path d="M50,54 Q40,44 42,34 Q50,40 50,54 Q50,40 58,34 Q60,44 50,54Z" fill="black"/>
+        <path d="M32,76 L32,62" stroke="black" stroke-width="3"/>
+        <line x1="32" y1="66" x2="24" y2="60" stroke="black" stroke-width="2.5"/>
+        <line x1="32" y1="62" x2="40" y2="57" stroke="black" stroke-width="2.5"/>
+        <line x1="32" y1="70" x2="23" y2="68" stroke="black" stroke-width="2.5"/>
+        <path d="M58,84 Q66,78 74,82 Q70,74 62,76 Q68,70 74,72 Q68,64 60,68 L58,84Z" fill="black"/>
+        <circle cx="73" cy="82" r="2" fill="black"/>
+        <line x1="20" y1="76" x2="80" y2="76" stroke="black" stroke-width="2.5"/>
+      </svg>
       <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS09</div>
       <div style="font-size:.68rem;color:#374151">Umwelt</div>
       <div style="font-size:.65rem;color:#6b7280">Gewässergefährdend</div>
