@@ -892,6 +892,8 @@ function doLogout() {
   SCHULUNG_VORLAGEN = [];
   zuweisungen       = [];
   formulare         = {};
+  lernpfadFortschritt = {};
+  lernpfadUnterschrift = null;
   showScreen('screen-login');
 }
 function routeAfterLogin() {
@@ -5462,6 +5464,67 @@ const LP_SPRACHEN = [
 ];
 let lernpfadSprache = localStorage.getItem('lernpfad_sprache') || 'de';
 
+// ── LERNPFAD-UNTERSCHRIFT: Texte in 7 Sprachen ───────────────
+const LP_UNT_TEXTE = {
+  hinweis_offen: {
+    de: '✍️ Die Unterzeichnung wird freigeschaltet, wenn alle 22 Kapitel abgehakt wurden.',
+    tr: '✍️ İmzalama seçeneği, tüm 22 bölüm işaretlendiğinde etkinleştirilecektir.',
+    ro: '✍️ Semnarea va fi activată după ce toate cele 22 de capitole au fost bifate.',
+    sr: '✍️ Потписивање ће бити омогућено када се означе сва 22 поглавља.',
+    pl: '✍️ Możliwość podpisania zostanie odblokowana po odhaczeniu wszystkich 22 rozdziałów.',
+    en: '✍️ Signing will be unlocked once all 22 chapters have been checked off.',
+    ar: '✍️ سيتم تفعيل التوقيع بعد الانتهاء من جميع الفصول الـ 22.'
+  },
+  hinweis_komplett: {
+    de: '🎉 Alle 22 Kapitel abgeschlossen! Bitte jetzt unterzeichnen.',
+    tr: '🎉 Tüm 22 bölüm tamamlandı! Lütfen şimdi imzalayın.',
+    ro: '🎉 Toate cele 22 de capitole au fost finalizate! Vă rugăm să semnați acum.',
+    sr: '🎉 Свих 22 поглавља завршено! Молимо потпишите сада.',
+    pl: '🎉 Wszystkie 22 rozdziały ukończone! Proszę teraz podpisać.',
+    en: '🎉 All 22 chapters completed! Please sign now.',
+    ar: '🎉 تم إنهاء جميع الفصول الـ 22! يرجى التوقيع الآن.'
+  },
+  btn_unterzeichnen: {
+    de: '✍️ Jetzt unterzeichnen',
+    tr: '✍️ Şimdi imzala',
+    ro: '✍️ Semnează acum',
+    sr: '✍️ Потпиши сада',
+    pl: '✍️ Podpisz teraz',
+    en: '✍️ Sign now',
+    ar: '✍️ وقّع الآن'
+  },
+  bereits_unterzeichnet: {
+    de: '✅ Unterzeichnet',
+    tr: '✅ İmzalandı',
+    ro: '✅ Semnat',
+    sr: '✅ Потписано',
+    pl: '✅ Podpisano',
+    en: '✅ Signed',
+    ar: '✅ تم التوقيع'
+  },
+  am: {
+    de: 'am',
+    tr: 'tarihinde',
+    ro: 'la',
+    sr: 'дана',
+    pl: 'dnia',
+    en: 'on',
+    ar: 'بتاريخ'
+  },
+  von: {
+    de: 'von',
+    tr: '',
+    ro: 'de',
+    sr: '',
+    pl: 'przez',
+    en: 'by',
+    ar: 'من'
+  }
+};
+
+// Cache für geladene Unterschrift des aktuellen Mitarbeiters
+let lernpfadUnterschrift = null; // { vollname, unterzeichnet_am } oder null
+
 function lernpfadSprachWaehlen(code) {
   lernpfadSprache = code;
   localStorage.setItem('lernpfad_sprache', code);
@@ -5492,6 +5555,62 @@ async function lernpfadLaden() {
     }
   } catch(e) {
     // Offline — localStorage-Daten reichen für die Anzeige
+  }
+
+  // 3. Unterschrift laden (aus Supabase)
+  await lernpfadUnterschriftLaden();
+}
+
+// ── Unterschrift laden ──────────────────────────────────────
+async function lernpfadUnterschriftLaden() {
+  try {
+    const rows = await SB.select('lernpfad_unterschriften',
+      `user_id=eq.${currentUser.id}&tenant_id=eq.${currentUser.tenantId || ''}`);
+    if (rows && rows.length) {
+      lernpfadUnterschrift = {
+        vollname:        rows[0].vollname,
+        unterzeichnetAm: rows[0].unterzeichnet_am
+      };
+    } else {
+      lernpfadUnterschrift = null;
+    }
+  } catch(e) {
+    lernpfadUnterschrift = null;
+  }
+}
+
+// ── Jetzt unterzeichnen ─────────────────────────────────────
+async function lernpfadUnterzeichnen() {
+  const gesamt   = LERNPFAD_KAPITEL.length;
+  const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+  if (bestanden < gesamt) {
+    showToast('⚠️ Bitte zuerst alle Kapitel abhaken!', '#f59e0b');
+    return;
+  }
+
+  const vollname = currentUser.name;
+  const ts       = now();
+
+  // Confirm-Dialog
+  if (!confirm(`Als „${vollname}" unterzeichnen?\n\nDatum/Uhrzeit: ${new Date().toLocaleString('de-DE')}`)) return;
+
+  try {
+    await SB.upsert('lernpfad_unterschriften', {
+      id:               currentUser.id,
+      user_id:          currentUser.id,
+      tenant_id:        currentUser.tenantId || '',
+      vollname:         vollname,
+      unterzeichnet_am: ts,
+      alle_kapitel_am:  ts,
+      aktualisiert_am:  ts
+    });
+
+    lernpfadUnterschrift = { vollname, unterzeichnetAm: ts };
+    await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${vollname}`);
+    showToast('✅ Lernpfad erfolgreich unterzeichnet!', '#0f5132');
+    renderLernpfad();
+  } catch(e) {
+    showToast('❌ Fehler beim Speichern: ' + e.message, '#dc2626');
   }
 }
 
@@ -5594,7 +5713,7 @@ function renderLernpfad() {
   const gesamt   = LERNPFAD_KAPITEL.length;
   const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
   const pct      = Math.round(bestanden / gesamt * 100);
-  const alle21   = bestanden === gesamt;
+  const alle22   = bestanden === gesamt;
 
   let html = `
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px">
@@ -5606,7 +5725,7 @@ function renderLernpfad() {
         <div style="background:rgba(255,255,255,.25);border-radius:999px;height:8px">
           <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
         </div>
-        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
+        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle22 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
       </div>
       <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
@@ -5618,8 +5737,8 @@ function renderLernpfad() {
             ${s.flag} ${s.label}
           </button>`).join('')}
       </div>
-      ${alle21 ? `<div style="padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;font-size:.82rem;color:#166534;font-weight:600">
-        🎓 Lernpfad abgeschlossen! ${isVerantwortlicher ? 'Zertifikat kann ausgestellt werden.' : 'Bitte Verantwortlichen für Zertifikat informieren.'}
+      ${alle22 ? `<div style="padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;font-size:.82rem;color:#166534;font-weight:600">
+        🎓 Lernpfad abgeschlossen! ${isVerantwortlicher ? 'Zertifikat kann ausgestellt werden.' : (lernpfadUnterschrift ? '✅ Unterzeichnet.' : 'Bitte jetzt unterzeichnen ↓')}
       </div>` : ''}
     </div>`;
 
@@ -5688,7 +5807,7 @@ function renderLernpfad() {
   });
 
   // Zertifikat-Button (nur wenn alle abgehakt + Verantwortlicher)
-  if (alle21 && isVerantwortlicher) {
+  if (alle22 && isVerantwortlicher) {
     html += `
       <div style="text-align:center;padding:4px 0 10px">
         <button onclick="lernpfadZertifikatGenerieren()"
@@ -5696,6 +5815,60 @@ function renderLernpfad() {
           🏆 Gesamtzertifikat ausstellen
         </button>
       </div>`;
+  }
+
+  // ── Unterschrifts-Block (für Mitarbeiter: immer am Ende sichtbar) ──
+  if (!isVerantwortlicher) {
+    const spr = lernpfadSprache;
+    const lpUntText = t => (LP_UNT_TEXTE[t]?.[spr] || LP_UNT_TEXTE[t]?.de || '');
+
+    if (lernpfadUnterschrift) {
+      // Bereits unterzeichnet → Bestätigungsbox anzeigen
+      const datumAnzeige = new Date(lernpfadUnterschrift.unterzeichnetAm)
+        .toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      html += `
+        <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:16px 18px;margin-top:4px;margin-bottom:10px">
+          <div style="font-weight:700;font-size:.88rem;color:#0f5132;margin-bottom:8px">
+            ${lpUntText('bereits_unterzeichnet')}
+          </div>
+          <div style="font-size:.82rem;color:#166534;line-height:1.6">
+            <span style="font-weight:600">👤 ${escHtml(lernpfadUnterschrift.vollname)}</span><br>
+            🕐 ${lpUntText('am')} ${datumAnzeige}
+          </div>
+        </div>`;
+    } else if (alle22) {
+      // Alle Kapitel abgehakt → Unterschrift freischalten
+      const datumJetzt = new Date().toLocaleString('de-DE',
+        { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      html += `
+        <div style="background:#fffbeb;border:2px solid #f59e0b;border-radius:12px;padding:16px 18px;margin-top:4px;margin-bottom:10px">
+          <div style="font-weight:700;font-size:.88rem;color:#92400e;margin-bottom:10px">
+            ${lpUntText('hinweis_komplett')}
+          </div>
+          <div style="font-size:.82rem;color:#374151;margin-bottom:10px;line-height:1.5">
+            <span style="font-weight:600">👤 ${escHtml(currentUser.name)}</span><br>
+            🕐 ${lpUntText('am')} ${datumJetzt}
+          </div>
+          <button onclick="lernpfadUnterzeichnen()"
+            style="background:#0f5132;color:#fff;border:none;padding:12px 24px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;width:100%;box-shadow:0 2px 8px rgba(15,81,50,.3)">
+            ${lpUntText('btn_unterzeichnen')}
+          </button>
+        </div>`;
+    } else {
+      // Noch nicht alle Kapitel abgehakt → gesperrter Hinweis
+      html += `
+        <div style="background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:12px;padding:14px 16px;margin-top:4px;margin-bottom:10px">
+          <div style="font-size:.82rem;color:#6b7280;line-height:1.5;text-align:center">
+            ${lpUntText('hinweis_offen')}
+          </div>
+          <div style="text-align:center;margin-top:10px">
+            <button disabled
+              style="background:#d1d5db;color:#9ca3af;border:none;padding:12px 24px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:not-allowed;width:100%">
+              🔒 ${lpUntText('btn_unterzeichnen')}
+            </button>
+          </div>
+        </div>`;
+    }
   }
 
   cont.innerHTML = html;
