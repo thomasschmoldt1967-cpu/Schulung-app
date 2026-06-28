@@ -5692,6 +5692,221 @@ async function lernpfadUnterschriftFuerMA(userId, tenantId) {
   } catch(e) { return null; }
 }
 
+// ══════════════════════════════════════════════════════════════
+// ── Unterschrift-Modal (Canvas) — MA + Verantwortlicher ──────
+// ══════════════════════════════════════════════════════════════
+
+let _lpUntModus     = null; // 'ma' | 'verantwortlicher'
+let _lpUntMaUserId  = null; // nur bei Modus 'verantwortlicher'
+let _lpUntCanvas    = null;
+let _lpUntCtx       = null;
+let _lpUntZeichnet  = false;
+let _lpUntHatStriche = false;
+
+function lpUntModalOeffnen(modus, maUserId) {
+  _lpUntModus     = modus;
+  _lpUntMaUserId  = maUserId || null;
+
+  const modal = document.getElementById('lp-unt-modal');
+  const titel = document.getElementById('lp-unt-titel');
+  const hinweis = document.getElementById('lp-unt-hinweis');
+  const btn = document.getElementById('lp-unt-bestaetigen-btn');
+  const status = document.getElementById('lp-unt-status');
+
+  if (modus === 'ma') {
+    const spr = lernpfadSprache;
+    const lpUntText = t => (LP_UNT_TEXTE[t]?.[spr] || LP_UNT_TEXTE[t]?.de || '');
+    titel.textContent   = '✍️ ' + lpUntText('btn_unterzeichnen');
+    hinweis.textContent = currentUser.name + ' — ' + new Date().toLocaleString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  } else {
+    const ma = APP_USERS.find(u => u.id === maUserId);
+    titel.textContent   = '✍️ Lernpfad gegenzeichnen';
+    hinweis.textContent = 'Verantwortlicher: ' + currentUser.name + '\nFür Mitarbeiter: ' + (ma ? ma.name : maUserId);
+  }
+
+  // Canvas zurücksetzen
+  _lpUntHatStriche = false;
+  status.textContent = 'Noch keine Unterschrift';
+  status.style.color = '#9ca3af';
+  btn.disabled = true;
+  btn.style.background = '#d1d5db';
+  btn.style.color = '#9ca3af';
+  btn.style.cursor = 'not-allowed';
+
+  modal.style.display = 'flex';
+
+  // Canvas nach dem Anzeigen initialisieren (damit Größe stimmt)
+  requestAnimationFrame(() => {
+    _lpUntCanvas = document.getElementById('lp-unt-canvas');
+    _lpUntCtx    = _lpUntCanvas.getContext('2d');
+    lpUntCanvasLeeren();
+    lpUntCanvasBindEvents();
+  });
+}
+
+function lpUntModalSchliessen() {
+  document.getElementById('lp-unt-modal').style.display = 'none';
+  lpUntCanvasUnbindEvents();
+  _lpUntModus = null;
+  _lpUntMaUserId = null;
+  _lpUntCanvas = null;
+  _lpUntCtx = null;
+}
+
+function lpUntCanvasLeeren() {
+  if (!_lpUntCtx || !_lpUntCanvas) return;
+  _lpUntCtx.clearRect(0, 0, _lpUntCanvas.width, _lpUntCanvas.height);
+  // Hintergrund
+  _lpUntCtx.fillStyle = '#f9fafb';
+  _lpUntCtx.fillRect(0, 0, _lpUntCanvas.width, _lpUntCanvas.height);
+  // Linie
+  _lpUntCtx.strokeStyle = '#d1d5db';
+  _lpUntCtx.lineWidth = 1;
+  _lpUntCtx.setLineDash([6, 4]);
+  _lpUntCtx.beginPath();
+  _lpUntCtx.moveTo(20, _lpUntCanvas.height - 30);
+  _lpUntCtx.lineTo(_lpUntCanvas.width - 20, _lpUntCanvas.height - 30);
+  _lpUntCtx.stroke();
+  _lpUntCtx.setLineDash([]);
+  _lpUntHatStriche = false;
+  const status = document.getElementById('lp-unt-status');
+  if (status) { status.textContent = 'Noch keine Unterschrift'; status.style.color = '#9ca3af'; }
+  const btn = document.getElementById('lp-unt-bestaetigen-btn');
+  if (btn) { btn.disabled = true; btn.style.background = '#d1d5db'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed'; }
+}
+
+function _lpUntGetPos(e) {
+  const rect = _lpUntCanvas.getBoundingClientRect();
+  const scaleX = _lpUntCanvas.width  / rect.width;
+  const scaleY = _lpUntCanvas.height / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - rect.left) * scaleX,
+    y: (src.clientY - rect.top)  * scaleY
+  };
+}
+
+function _lpUntStart(e) {
+  e.preventDefault();
+  _lpUntZeichnet = true;
+  const pos = _lpUntGetPos(e);
+  _lpUntCtx.beginPath();
+  _lpUntCtx.moveTo(pos.x, pos.y);
+  _lpUntCtx.strokeStyle = '#1a1a2e';
+  _lpUntCtx.lineWidth = 2.5;
+  _lpUntCtx.lineCap = 'round';
+  _lpUntCtx.lineJoin = 'round';
+  _lpUntCtx.setLineDash([]);
+}
+
+function _lpUntMove(e) {
+  if (!_lpUntZeichnet) return;
+  e.preventDefault();
+  const pos = _lpUntGetPos(e);
+  _lpUntCtx.lineTo(pos.x, pos.y);
+  _lpUntCtx.stroke();
+  if (!_lpUntHatStriche) {
+    _lpUntHatStriche = true;
+    const status = document.getElementById('lp-unt-status');
+    if (status) { status.textContent = '✅ Unterschrift vorhanden'; status.style.color = '#0f5132'; }
+    const btn = document.getElementById('lp-unt-bestaetigen-btn');
+    if (btn) { btn.disabled = false; btn.style.background = '#0f5132'; btn.style.color = '#fff'; btn.style.cursor = 'pointer'; }
+  }
+}
+
+function _lpUntEnd(e) {
+  e.preventDefault();
+  _lpUntZeichnet = false;
+}
+
+function lpUntCanvasBindEvents() {
+  if (!_lpUntCanvas) return;
+  _lpUntCanvas.addEventListener('mousedown',  _lpUntStart,  {passive:false});
+  _lpUntCanvas.addEventListener('mousemove',  _lpUntMove,   {passive:false});
+  _lpUntCanvas.addEventListener('mouseup',    _lpUntEnd,    {passive:false});
+  _lpUntCanvas.addEventListener('touchstart', _lpUntStart,  {passive:false});
+  _lpUntCanvas.addEventListener('touchmove',  _lpUntMove,   {passive:false});
+  _lpUntCanvas.addEventListener('touchend',   _lpUntEnd,    {passive:false});
+}
+
+function lpUntCanvasUnbindEvents() {
+  if (!_lpUntCanvas) return;
+  _lpUntCanvas.removeEventListener('mousedown',  _lpUntStart);
+  _lpUntCanvas.removeEventListener('mousemove',  _lpUntMove);
+  _lpUntCanvas.removeEventListener('mouseup',    _lpUntEnd);
+  _lpUntCanvas.removeEventListener('touchstart', _lpUntStart);
+  _lpUntCanvas.removeEventListener('touchmove',  _lpUntMove);
+  _lpUntCanvas.removeEventListener('touchend',   _lpUntEnd);
+}
+
+async function lpUntBestaetigen() {
+  if (!_lpUntHatStriche) {
+    showToast('⚠️ Bitte zuerst unterzeichnen!', '#f59e0b');
+    return;
+  }
+  const btn = document.getElementById('lp-unt-bestaetigen-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Wird gespeichert…';
+
+  const unterschriftBild = _lpUntCanvas.toDataURL('image/png');
+
+  try {
+    if (_lpUntModus === 'ma') {
+      await _lpUntSpeichernMA(unterschriftBild);
+    } else {
+      await _lpUntSpeichernVerantwortlicher(_lpUntMaUserId, unterschriftBild);
+    }
+    lpUntModalSchliessen();
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✅ Unterzeichnen bestätigen';
+    btn.style.background = '#0f5132';
+    btn.style.color = '#fff';
+    btn.style.cursor = 'pointer';
+    showToast('❌ Fehler beim Speichern: ' + e.message, '#dc2626');
+  }
+}
+
+async function _lpUntSpeichernMA(unterschriftBild) {
+  const ts = now();
+  await SB.upsert('lernpfad_unterschriften', {
+    id:               currentUser.userId,
+    user_id:          currentUser.userId,
+    tenant_id:        currentUser.tenantId || '',
+    vollname:         currentUser.name,
+    unterzeichnet_am: ts,
+    alle_kapitel_am:  ts,
+    aktualisiert_am:  ts
+  });
+  lernpfadUnterschrift = { vollname: currentUser.name, unterzeichnetAm: ts };
+  await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${currentUser.name}`);
+  showToast('✅ Lernpfad erfolgreich unterzeichnet!', '#0f5132');
+  renderLernpfad();
+}
+
+async function _lpUntSpeichernVerantwortlicher(maUserId, unterschriftBild) {
+  const existing = await lernpfadUnterschriftFuerMA(maUserId, currentUser.tenantId);
+  if (!existing || !existing.unterzeichnet_am) {
+    throw new Error('Mitarbeiter hat noch nicht unterzeichnet!');
+  }
+  const ts = now();
+  await SB.upsert('lernpfad_unterschriften', {
+    id:                   maUserId,
+    user_id:              maUserId,
+    tenant_id:            currentUser.tenantId || '',
+    vollname:             existing.vollname,
+    unterzeichnet_am:     existing.unterzeichnet_am,
+    verantwortlicher_id:  currentUser.userId,
+    verantwortlicher_name: currentUser.name,
+    verantwortlicher_am:  ts,
+    aktualisiert_am:      ts
+  });
+  await sbAudit('LERNPFAD_V_UNTERZEICHNET',
+    `Lernpfad von ${existing.vollname} durch Verantwortlichen ${currentUser.name} unterzeichnet`);
+  showToast(`✅ Lernpfad von ${existing.vollname} unterzeichnet!`, '#0f5132');
+  renderMitarbeiterListe();
+}
+
 // ── Verantwortlicher unterzeichnet für einen Mitarbeiter ────
 async function lernpfadVerantwortlicherUnterzeichnen(userId) {
   const ma = APP_USERS.find(u => u.id === userId);
@@ -5704,67 +5919,18 @@ async function lernpfadVerantwortlicherUnterzeichnen(userId) {
     return;
   }
 
-  const verantwortlicherName = currentUser.name;
-  const ts = now();
-  const datumAnzeige = new Date().toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
-
-  if (!confirm(`Lernpfad von „${ma.name}" als Verantwortlicher unterzeichnen?\n\nIhre Unterschrift:\n${verantwortlicherName}\n${datumAnzeige}`)) return;
-
-  try {
-    await SB.upsert('lernpfad_unterschriften', {
-      id:                   userId,        // selber Primary Key wie MA-Unterschrift
-      user_id:              userId,
-      tenant_id:            currentUser.tenantId || '',
-      vollname:             existing.vollname,
-      unterzeichnet_am:     existing.unterzeichnet_am,
-      verantwortlicher_id:  currentUser.userId,
-      verantwortlicher_name: verantwortlicherName,
-      verantwortlicher_am:  ts,
-      aktualisiert_am:      ts
-    });
-
-    await sbAudit('LERNPFAD_V_UNTERZEICHNET',
-      `Lernpfad von ${ma.name} durch Verantwortlichen ${verantwortlicherName} unterzeichnet`);
-    showToast(`✅ Lernpfad von ${ma.name} unterzeichnet!`, '#0f5132');
-    renderMitarbeiterListe(); // Ansicht aktualisieren
-  } catch(e) {
-    showToast('❌ Fehler: ' + e.message, '#dc2626');
-  }
+  lpUntModalOeffnen('verantwortlicher', userId);
 }
 
-// ── Jetzt unterzeichnen ─────────────────────────────────────
+// ── Jetzt unterzeichnen (Mitarbeiter) ───────────────────────
 async function lernpfadUnterzeichnen() {
-  const gesamt   = LERNPFAD_KAPITEL.length;
+  const gesamt    = LERNPFAD_KAPITEL.length;
   const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
   if (bestanden < gesamt) {
     showToast('⚠️ Bitte zuerst alle Kapitel abhaken!', '#f59e0b');
     return;
   }
-
-  const vollname = currentUser.name;
-  const ts       = now();
-
-  // Confirm-Dialog
-  if (!confirm(`Als „${vollname}" unterzeichnen?\n\nDatum/Uhrzeit: ${new Date().toLocaleString('de-DE')}`)) return;
-
-  try {
-    await SB.upsert('lernpfad_unterschriften', {
-      id:               currentUser.userId,
-      user_id:          currentUser.userId,
-      tenant_id:        currentUser.tenantId || '',
-      vollname:         vollname,
-      unterzeichnet_am: ts,
-      alle_kapitel_am:  ts,
-      aktualisiert_am:  ts
-    });
-
-    lernpfadUnterschrift = { vollname, unterzeichnetAm: ts };
-    await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${vollname}`);
-    showToast('✅ Lernpfad erfolgreich unterzeichnet!', '#0f5132');
-    renderLernpfad();
-  } catch(e) {
-    showToast('❌ Fehler beim Speichern: ' + e.message, '#dc2626');
-  }
+  lpUntModalOeffnen('ma', null);
 }
 
 // ── Kapitel abhaken / Haken entfernen ────────────────────────

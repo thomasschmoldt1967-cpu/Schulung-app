@@ -1062,5 +1062,37 @@
   </div>
 </div>
 
+<!-- ── Lernpfad-Unterschrift Modal ── -->
+<div id="lp-unt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
+    <h3 id="lp-unt-titel" style="margin:0 0 6px;font-size:1rem;color:#0f5132">✍️ Lernpfad unterzeichnen</h3>
+    <p id="lp-unt-hinweis" style="margin:0 0 12px;font-size:.82rem;color:#374151">Bitte mit dem Finger unterzeichnen:</p>
+
+    <!-- Canvas für Unterschrift -->
+    <canvas id="lp-unt-canvas"
+      style="width:100%;height:160px;border:2px solid #d1d5db;border-radius:10px;background:#f9fafb;touch-action:none;display:block"
+      width="440" height="160"></canvas>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;margin-bottom:14px">
+      <span id="lp-unt-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span>
+      <button onclick="lpUntCanvasLeeren()"
+        style="background:#f3f4f6;color:#374151;border:none;padding:6px 14px;border-radius:8px;font-size:.82rem;cursor:pointer">
+        🗑 Löschen
+      </button>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="lpUntModalSchliessen()"
+        style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+        Abbrechen
+      </button>
+      <button id="lp-unt-bestaetigen-btn" onclick="lpUntBestaetigen()" disabled
+        style="flex:2;background:#d1d5db;color:#9ca3af;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:not-allowed">
+        ✅ Unterzeichnen bestätigen
+      </button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
