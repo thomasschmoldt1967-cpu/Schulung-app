@@ -729,6 +729,10 @@ const SB = {
     if (!r.ok) throw new Error(await r.text());
     return r.json();
   },
+  async select(table, q='') {
+    // Alias für get() — select wird in neueren Funktionen verwendet
+    return this.get(table, q);
+  },
   async post(table, data) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
       method:'POST', headers: this.h, body: JSON.stringify(data)
