@@ -4938,7 +4938,14 @@ async function zeigeSchulungshistorie(userId) {
     );
 
     // Lernpfad-Unterschrift für diesen Mitarbeiter laden
-    const lpUntRow = await lernpfadUnterschriftFuerMA(userId, currentUser.tenantId);
+    // Neuesten UNTERZEICHNETEN Durchgang laden (Platzhalter ohne unterzeichnet_am ignorieren)
+    const lpUntRow = await (async () => {
+      try {
+        const rows = await SB.select('lernpfad_unterschriften',
+          `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId || '')}&unterzeichnet_am=not.is.null&order=durchgang.desc&limit=1`);
+        return rows && rows.length ? rows[0] : null;
+      } catch(e) { return null; }
+    })();
 
     if (!alleFormulare.length && !lpUntRow) {
       document.getElementById('historie-inhalt').innerHTML =
@@ -5297,6 +5304,28 @@ function bereichsEinweisungSchliessen() {
   if (modal) modal.style.display = 'none';
   document.getElementById('be-zuweisen-btn').disabled = false;
   _beMitarbeiterAlle = [];
+}
+
+// Schnellauswahl Frist-Monate im Bereichs-Einweisungs-Modal
+function beFristMonat(monate) {
+  const d = new Date();
+  d.setMonth(d.getMonth() + monate);
+  const iso = d.toISOString().split('T')[0];
+  const input = document.getElementById('be-frist');
+  if (!input) return;
+  input.value = iso;
+  // min-Attribut setzen damit Kalender auf diesen Monat springt
+  input.min = new Date().toISOString().split('T')[0];
+  // Aktiven Button highlighten
+  const btns = input.parentElement?.querySelectorAll('button');
+  if (btns) btns.forEach(b => {
+    const isActive = b.textContent.trim() === `${monate} M`;
+    b.style.background = isActive ? '#1e3a5f' : '#f9fafb';
+    b.style.color = isActive ? '#fff' : '#1e3a5f';
+    b.style.borderColor = isActive ? '#1e3a5f' : '#d1d5db';
+  });
+  // Kalender öffnen (springt automatisch zum gesetzten Monat)
+  try { input.showPicker(); } catch(e) { input.focus(); }
 }
 
 
@@ -5797,9 +5826,9 @@ async function lernpfadUnterschriftLaden() {
 // ── Unterschrift des Mitarbeiters aus Supabase laden (für Verantwortlichen) ─
 async function lernpfadUnterschriftFuerMA(userId, tenantId) {
   try {
-    // Neuesten Durchgang laden
+    // Neuesten UNTERZEICHNETEN Durchgang laden (Platzhalter ohne unterzeichnet_am ignorieren)
     const rows = await SB.select('lernpfad_unterschriften',
-      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}&order=durchgang.desc&limit=1`);
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}&unterzeichnet_am=not.is.null&order=durchgang.desc&limit=1`);
     if (rows && rows.length) return rows[0];
     return null;
   } catch(e) { return null; }
