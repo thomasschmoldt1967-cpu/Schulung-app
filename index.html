@@ -1094,5 +1094,56 @@
   </div>
 </div>
 
+<!-- ── Lernpfad Neu starten Modal ── -->
+<div id="lp-neustart-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 8px;font-size:1rem;color:#7c3aed">🔄 Neuen Lernpfad-Durchgang starten</h3>
+    <p style="margin:0 0 14px;font-size:.85rem;color:#374151">
+      Für Mitarbeiter: <strong id="lpns-ma-name"></strong><br>
+      <span style="color:#6b7280;font-size:.78rem">Alle 22 Kapitel und die Unterschrift werden zurückgesetzt. Der alte Durchgang bleibt in der Historie erhalten.</span>
+    </p>
+    <input type="hidden" id="lpns-ma-id">
+    <div style="display:flex;gap:10px">
+      <button onclick="lernpfadNeuStartenSchliessen()"
+        style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+        Abbrechen
+      </button>
+      <button id="lpns-bestaetigen-btn" onclick="lernpfadNeuStartenBestaetigt()"
+        style="flex:2;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">
+        🔄 Neu starten
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Lernpfad Kapitel-Editor Modal ── -->
+<div id="lp-kapitel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 12px;font-size:1rem;color:#7c3aed">✏️ Firmenspezifische Kapitel verwalten</h3>
+    <p style="margin:0 0 12px;font-size:.78rem;color:#6b7280">Diese Kapitel erscheinen zusätzlich zu den 22 Standard-Kapiteln im Lernpfad Ihrer Mitarbeiter.</p>
+
+    <!-- Vorhandene Kapitel -->
+    <div id="lpke-liste" style="margin-bottom:14px"></div>
+
+    <!-- Neues Kapitel hinzufügen -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px">
+      <div style="font-size:.82rem;font-weight:700;color:#374151;margin-bottom:8px">➕ Neues Kapitel</div>
+      <input id="lpke-neuer-titel" type="text" placeholder="Titel (z.B. Brandschutzunterweisung Lager)"
+        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.85rem;margin-bottom:8px;box-sizing:border-box">
+      <textarea id="lpke-neue-beschreibung" placeholder="Beschreibung / Inhalt (optional)"
+        rows="2" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.82rem;resize:vertical;margin-bottom:10px;box-sizing:border-box"></textarea>
+      <button id="lpke-hinzufuegen-btn" onclick="lernpfadTenantKapitelHinzufuegen()"
+        style="width:100%;background:#7c3aed;color:#fff;border:none;padding:10px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+        ➕ Kapitel hinzufügen
+      </button>
+    </div>
+
+    <button onclick="lernpfadKapitelEditorSchliessen()"
+      style="width:100%;margin-top:12px;background:#f3f4f6;color:#374151;border:none;padding:11px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+      Schließen
+    </button>
+  </div>
+</div>
+
 </body>
 </html>

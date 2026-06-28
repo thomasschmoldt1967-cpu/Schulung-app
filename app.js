@@ -2552,11 +2552,15 @@ async function renderMitarbeiterListe() {
               { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
             lpUntBlock = `
               <div style="margin-top:7px;padding:8px 10px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:7px">
-                <div style="font-size:.72rem;font-weight:700;color:#0f5132;margin-bottom:4px">✅ Lernpfad vollständig unterzeichnet</div>
+                <div style="font-size:.72rem;font-weight:700;color:#0f5132;margin-bottom:4px">✅ Lernpfad vollständig unterzeichnet ${lpUnt.durchgang > 1 ? `(Durchgang ${lpUnt.durchgang})` : ''}</div>
                 <div style="font-size:.7rem;color:#166534;line-height:1.6">
                   👤 MA: <b>${escHtml(lpUnt.vollname)}</b> · ${maDatum}<br>
                   🧑‍💼 Verantw.: <b>${escHtml(lpUnt.verantwortlicher_name)}</b> · ${vDatum}
                 </div>
+                <button onclick="event.stopPropagation();lernpfadNeuStartenOeffnen('${m.id}')"
+                  style="margin-top:7px;font-size:.72rem;padding:4px 12px;border-radius:6px;border:1px solid #7c3aed;background:#f5f3ff;color:#7c3aed;cursor:pointer;font-weight:600;width:100%">
+                  🔄 Neuen Durchgang starten
+                </button>
               </div>`;
           } else {
             // Nur MA hat unterzeichnet — Verantwortlicher noch nicht
@@ -5547,8 +5551,10 @@ async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
 
 // Lokaler Cache für Lernpfad-Fortschritt (DB + localStorage)
 let lernpfadFortschritt = {}; // { kap_01: { abgehakt: true, bestaetigtAm: '...', bestaetigtVon: '...' } }
+let lernpfadAktuellerDurchgang = 1; // aktuell aktiver Durchgang (der laufende oder neue)
+let lernpfadTenantKapitel = []; // { id, titel, beschreibung, reihenfolge } — von Tenant hinzugefügte Kapitel
 
-const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.id || 'anon'}`;
+const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.userId || 'anon'}_d${lernpfadAktuellerDurchgang}`;
 const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309' };
 const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO' };
 
@@ -5631,7 +5637,22 @@ function lernpfadSprachWaehlen(code) {
   renderLernpfad();
 }
 async function lernpfadLaden() {
+  // 0. Aktuellen Durchgang ermitteln (höchster existierender Durchgang für diesen User)
+  try {
+    const untRows = await SB.select('lernpfad_unterschriften',
+      `user_id=eq.${currentUser.userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId || '')}&order=durchgang.desc&limit=1`);
+    if (untRows && untRows.length) {
+      const letzterDurchgang = untRows[0].durchgang || 1;
+      // Laufender Durchgang = letzter, wenn noch nicht vollständig unterzeichnet
+      // oder ein neuer wenn bereits vollständig (wird von lernpfadNeuStarten gesetzt)
+      lernpfadAktuellerDurchgang = letzterDurchgang;
+    } else {
+      lernpfadAktuellerDurchgang = 1;
+    }
+  } catch(e) { lernpfadAktuellerDurchgang = 1; }
+
   // 1. Aus localStorage (sofort, offline-fähig)
+  lernpfadFortschritt = {};
   try {
     const stored = localStorage.getItem(LP_STORAGE_KEY());
     if (stored) lernpfadFortschritt = JSON.parse(stored);
@@ -5640,7 +5661,7 @@ async function lernpfadLaden() {
   // 2. Aus Supabase (wenn online — überschreibt localStorage bei Konflikten)
   try {
     const rows = await SB.select('lernpfad_fortschritt',
-      `user_id=eq.${currentUser.id}&tenant_id=eq.${currentUser.tenantId || ''}`);
+      `user_id=eq.${currentUser.userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId || '')}&durchgang=eq.${lernpfadAktuellerDurchgang}`);
     if (rows && rows.length) {
       rows.forEach(r => {
         lernpfadFortschritt[r.kapitel_id] = {
@@ -5650,29 +5671,40 @@ async function lernpfadLaden() {
           bestaetigtVon:r.bestaetigt_von
         };
       });
-      // Lokal synchronisieren
       localStorage.setItem(LP_STORAGE_KEY(), JSON.stringify(lernpfadFortschritt));
     }
-  } catch(e) {
-    // Offline — localStorage-Daten reichen für die Anzeige
-  }
+  } catch(e) {}
 
-  // 3. Unterschrift laden (aus Supabase)
+  // 3. Tenant-eigene Kapitel laden
+  await lernpfadTenantKapitelLaden();
+
+  // 4. Unterschrift laden (aus Supabase)
   await lernpfadUnterschriftLaden();
+}
+
+async function lernpfadTenantKapitelLaden() {
+  lernpfadTenantKapitel = [];
+  if (!currentUser.tenantId) return;
+  try {
+    const rows = await SB.select('lernpfad_tenant_kapitel',
+      `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&order=reihenfolge.asc`);
+    if (rows && rows.length) lernpfadTenantKapitel = rows;
+  } catch(e) {}
 }
 
 // ── Unterschrift laden ──────────────────────────────────────
 async function lernpfadUnterschriftLaden() {
   try {
     const rows = await SB.select('lernpfad_unterschriften',
-      `user_id=eq.${currentUser.id}&tenant_id=eq.${currentUser.tenantId || ''}`);
+      `user_id=eq.${currentUser.userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId || '')}&durchgang=eq.${lernpfadAktuellerDurchgang}`);
     if (rows && rows.length) {
       lernpfadUnterschrift = {
         vollname:              rows[0].vollname,
         unterzeichnetAm:       rows[0].unterzeichnet_am,
         verantwortlicherId:    rows[0].verantwortlicher_id,
         verantwortlicherName:  rows[0].verantwortlicher_name,
-        verantwortlicherAm:    rows[0].verantwortlicher_am
+        verantwortlicherAm:    rows[0].verantwortlicher_am,
+        durchgang:             rows[0].durchgang
       };
     } else {
       lernpfadUnterschrift = null;
@@ -5685,11 +5717,21 @@ async function lernpfadUnterschriftLaden() {
 // ── Unterschrift des Mitarbeiters aus Supabase laden (für Verantwortlichen) ─
 async function lernpfadUnterschriftFuerMA(userId, tenantId) {
   try {
+    // Neuesten Durchgang laden
     const rows = await SB.select('lernpfad_unterschriften',
-      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}`);
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}&order=durchgang.desc&limit=1`);
     if (rows && rows.length) return rows[0];
     return null;
   } catch(e) { return null; }
+}
+
+// ── Alle Durchgänge eines Mitarbeiters laden (für Historie) ─
+async function lernpfadAlleDurchgaengeFuerMA(userId, tenantId) {
+  try {
+    const rows = await SB.select('lernpfad_unterschriften',
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}&order=durchgang.asc`);
+    return rows || [];
+  } catch(e) { return []; }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -5870,16 +5912,16 @@ async function lpUntBestaetigen() {
 async function _lpUntSpeichernMA(unterschriftBild) {
   const ts = now();
   await SB.upsert('lernpfad_unterschriften', {
-    id:               currentUser.userId,
     user_id:          currentUser.userId,
     tenant_id:        currentUser.tenantId || '',
+    durchgang:        lernpfadAktuellerDurchgang,
     vollname:         currentUser.name,
     unterzeichnet_am: ts,
     alle_kapitel_am:  ts,
     aktualisiert_am:  ts
   });
-  lernpfadUnterschrift = { vollname: currentUser.name, unterzeichnetAm: ts };
-  await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${currentUser.name}`);
+  lernpfadUnterschrift = { vollname: currentUser.name, unterzeichnetAm: ts, durchgang: lernpfadAktuellerDurchgang };
+  await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${currentUser.name} (Durchgang ${lernpfadAktuellerDurchgang})`);
   showToast('✅ Lernpfad erfolgreich unterzeichnet!', '#0f5132');
   renderLernpfad();
 }
@@ -5891,9 +5933,9 @@ async function _lpUntSpeichernVerantwortlicher(maUserId, unterschriftBild) {
   }
   const ts = now();
   await SB.upsert('lernpfad_unterschriften', {
-    id:                   maUserId,
     user_id:              maUserId,
     tenant_id:            currentUser.tenantId || '',
+    durchgang:            existing.durchgang || 1,
     vollname:             existing.vollname,
     unterzeichnet_am:     existing.unterzeichnet_am,
     verantwortlicher_id:  currentUser.userId,
@@ -5902,7 +5944,7 @@ async function _lpUntSpeichernVerantwortlicher(maUserId, unterschriftBild) {
     aktualisiert_am:      ts
   });
   await sbAudit('LERNPFAD_V_UNTERZEICHNET',
-    `Lernpfad von ${existing.vollname} durch Verantwortlichen ${currentUser.name} unterzeichnet`);
+    `Lernpfad von ${existing.vollname} durch Verantwortlichen ${currentUser.name} unterzeichnet (Durchgang ${existing.durchgang || 1})`);
   showToast(`✅ Lernpfad von ${existing.vollname} unterzeichnet!`, '#0f5132');
   renderMitarbeiterListe();
 }
@@ -5935,7 +5977,8 @@ async function lernpfadUnterzeichnen() {
 
 // ── Kapitel abhaken / Haken entfernen ────────────────────────
 async function lernpfadKapitelToggle(kapitelId) {
-  const kap = LERNPFAD_KAPITEL.find(k => k.id === kapitelId);
+  // Prüfen ob es ein Standard- oder Tenant-Kapitel ist
+  const kap = [...LERNPFAD_KAPITEL, ...lernpfadTenantKapitel.map(tk => ({id: tk.id, nr: 'Z', titel: tk.titel}))].find(k => k.id === kapitelId);
   if (!kap) return;
   const istAbgehakt = !!(lernpfadFortschritt[kapitelId]?.abgehakt);
   const neu = !istAbgehakt;
@@ -5953,10 +5996,10 @@ async function lernpfadKapitelToggle(kapitelId) {
   // In Supabase speichern
   try {
     await SB.upsert('lernpfad_fortschritt', {
-      id:          `${currentUser.id}_${kapitelId}`,
-      user_id:     currentUser.id,
+      user_id:     currentUser.userId,
       tenant_id:   currentUser.tenantId || '',
       kapitel_id:  kapitelId,
+      durchgang:   lernpfadAktuellerDurchgang,
       abgehakt:    neu,
       abgehakt_am: neu ? ts : null,
       bestaetigt_am:  null,
@@ -5964,7 +6007,7 @@ async function lernpfadKapitelToggle(kapitelId) {
     });
     await sbAudit(
       neu ? 'LERNPFAD_ABGEHAKT' : 'LERNPFAD_HAKEN_ENTFERNT',
-      `Kapitel ${kap.nr}: "${kap.titel}"`
+      `Kapitel ${kap.nr}: "${kap.titel}" (Durchgang ${lernpfadAktuellerDurchgang})`
     );
     if (neu) showToast(`✅ Kapitel ${kap.nr} abgehakt`, '#16a34a');
   } catch(e) {
@@ -6023,22 +6066,137 @@ function lernpfadToggle() {
 }
 
 // ── Lernpfad rendern ──────────────────────────────────────────
+
+// ── Lernpfad Neu starten (Verantwortlicher für MA) ────────────
+function lernpfadNeuStartenOeffnen(userId) {
+  const ma = APP_USERS.find(u => u.id === userId);
+  if (!ma) { showToast('⚠️ Mitarbeiter nicht gefunden', '#f59e0b'); return; }
+  document.getElementById('lpns-ma-name').textContent = ma.name;
+  document.getElementById('lpns-ma-id').value = userId;
+  document.getElementById('lp-neustart-modal').style.display = 'flex';
+}
+function lernpfadNeuStartenSchliessen() {
+  document.getElementById('lp-neustart-modal').style.display = 'none';
+}
+async function lernpfadNeuStartenBestaetigt() {
+  const userId = document.getElementById('lpns-ma-id').value;
+  const ma = APP_USERS.find(u => u.id === userId);
+  if (!ma) return;
+  const btn = document.getElementById('lpns-bestaetigen-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gestartet…';
+  try {
+    // Nächste Durchgang-Nummer ermitteln
+    const rows = await SB.select('lernpfad_unterschriften',
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId || '')}&order=durchgang.desc&limit=1`);
+    const naechsterDurchgang = rows && rows.length ? (rows[0].durchgang + 1) : 1;
+
+    // Neuen Eintrag in lernpfad_unterschriften anlegen (ohne Unterschrift — Platzhalter)
+    await SB.upsert('lernpfad_unterschriften', {
+      user_id:     userId,
+      tenant_id:   currentUser.tenantId || '',
+      durchgang:   naechsterDurchgang,
+      vollname:    ma.name,
+      unterzeichnet_am: null,
+      aktualisiert_am: now()
+    });
+
+    await sbAudit('LERNPFAD_NEU_GESTARTET',
+      `Neuer Lernpfad-Durchgang ${naechsterDurchgang} für ${ma.name} gestartet von ${currentUser.name}`);
+    showToast(`✅ Neuer Lernpfad-Durchgang ${naechsterDurchgang} für ${ma.name} gestartet!`, '#0f5132');
+    lernpfadNeuStartenSchliessen();
+    renderMitarbeiterListe();
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+    btn.disabled = false; btn.textContent = '🔄 Neu starten';
+  }
+}
+
+// ── Tenant-Kapitel Verwaltung (Verantwortlicher) ──────────────
+function lernpfadKapitelEditorOeffnen() {
+  lernpfadKapitelEditorRenern();
+  document.getElementById('lp-kapitel-modal').style.display = 'flex';
+}
+function lernpfadKapitelEditorSchliessen() {
+  document.getElementById('lp-kapitel-modal').style.display = 'none';
+}
+function lernpfadKapitelEditorRenern() {
+  const liste = document.getElementById('lpke-liste');
+  if (!liste) return;
+  if (!lernpfadTenantKapitel.length) {
+    liste.innerHTML = '<div style="color:#9ca3af;font-size:.82rem;padding:8px 0">Noch keine eigenen Kapitel hinzugefügt.</div>';
+    return;
+  }
+  liste.innerHTML = lernpfadTenantKapitel.map(k => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f3f4f6">
+      <div style="flex:1">
+        <div style="font-size:.88rem;font-weight:600;color:#1f2937">${escHtml(k.titel)}</div>
+        ${k.beschreibung ? `<div style="font-size:.75rem;color:#6b7280">${escHtml(k.beschreibung)}</div>` : ''}
+      </div>
+      <button onclick="lernpfadTenantKapitelLoeschen('${k.id}')"
+        style="background:#fee2e2;color:#dc2626;border:none;padding:5px 10px;border-radius:6px;font-size:.78rem;cursor:pointer">
+        🗑 Löschen
+      </button>
+    </div>`).join('');
+}
+async function lernpfadTenantKapitelHinzufuegen() {
+  const titelEl = document.getElementById('lpke-neuer-titel');
+  const beschrEl = document.getElementById('lpke-neue-beschreibung');
+  const titel = titelEl.value.trim();
+  const beschreibung = beschrEl.value.trim();
+  if (!titel) { showToast('⚠️ Bitte einen Titel eingeben', '#f59e0b'); return; }
+  const btn = document.getElementById('lpke-hinzufuegen-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+  try {
+    const id = 'tk_' + currentUser.tenantId.replace(/[^a-z0-9]/gi,'') + '_' + Date.now();
+    const reihenfolge = lernpfadTenantKapitel.length > 0
+      ? Math.max(...lernpfadTenantKapitel.map(k => k.reihenfolge)) + 1
+      : 101;
+    const newKap = { id, tenant_id: currentUser.tenantId, titel, beschreibung: beschreibung || null, reihenfolge, erstellt_von: currentUser.userId };
+    await SB.post('lernpfad_tenant_kapitel', newKap);
+    lernpfadTenantKapitel.push(newKap);
+    titelEl.value = ''; beschrEl.value = '';
+    lernpfadKapitelEditorRenern();
+    renderLernpfad(); // Lernpfad neu aufbauen mit neuem Kapitel
+    showToast(`✅ Kapitel "${titel}" hinzugefügt`, '#0f5132');
+    await sbAudit('LERNPFAD_KAPITEL_NEU', `Neues Tenant-Kapitel: "${titel}"`);
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+  btn.disabled = false; btn.textContent = '➕ Kapitel hinzufügen';
+}
+async function lernpfadTenantKapitelLoeschen(kapitelId) {
+  const kap = lernpfadTenantKapitel.find(k => k.id === kapitelId);
+  if (!kap) return;
+  if (!confirm(`Kapitel "${kap.titel}" wirklich löschen?`)) return;
+  try {
+    await SB.delete('lernpfad_tenant_kapitel', `id=eq.${kapitelId}`);
+    lernpfadTenantKapitel = lernpfadTenantKapitel.filter(k => k.id !== kapitelId);
+    lernpfadKapitelEditorRenern();
+    renderLernpfad();
+    showToast(`✅ Kapitel "${kap.titel}" gelöscht`, '#0f5132');
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
+  }
+}
+
 function renderLernpfad() {
   const cont = document.getElementById('lernpfad-container');
   if (!cont) return;
   const isVerantwortlicher = currentUser.role === 'verantwortlicher';
 
-  // Fortschrittsbalken oben
-  const gesamt   = LERNPFAD_KAPITEL.length;
-  const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+// Fortschrittsbalken oben — inkl. Tenant-Kapitel
+  const alleKapitel = [...LERNPFAD_KAPITEL, ...lernpfadTenantKapitel.map((tk, i) => ({id: tk.id, nr: `Z${i+1}`, titel: tk.titel, saeule: 'Z'}))];
+  const gesamt   = alleKapitel.length;
+  const bestanden = alleKapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
   const pct      = Math.round(bestanden / gesamt * 100);
   const alle22   = bestanden === gesamt;
+  const isVerantwortlicherView = currentUser.role === 'verantwortlicher';
 
   let html = `
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px">
       <div style="padding:14px 16px;background:#0f5132;color:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-weight:700;font-size:.95rem">📚 Lernpfad</span>
+          <span style="font-weight:700;font-size:.95rem">📚 Lernpfad${lernpfadAktuellerDurchgang > 1 ? ` <span style="font-size:.7rem;background:rgba(255,255,255,.2);border-radius:10px;padding:2px 7px">Durchgang ${lernpfadAktuellerDurchgang}</span>` : ''}</span>
           <span style="font-size:.85rem;font-weight:700">${bestanden}/${gesamt} ✓</span>
         </div>
         <div style="background:rgba(255,255,255,.25);border-radius:999px;height:8px">
@@ -6055,6 +6213,12 @@ function renderLernpfad() {
                    cursor:pointer;font-weight:${lernpfadSprache===s.code?'700':'400'}">
             ${s.flag} ${s.label}
           </button>`).join('')}
+        ${isVerantwortlicherView ? `
+          <button onclick="lernpfadKapitelEditorOeffnen()"
+            style="margin-left:auto;font-size:.75rem;padding:3px 10px;border-radius:6px;border:1.5px solid #7c3aed;
+                   background:#f5f3ff;color:#7c3aed;cursor:pointer;font-weight:600">
+            ✏️ Kapitel verwalten
+          </button>` : ''}
       </div>
       ${alle22 ? `<div style="padding:10px 16px;background:#f0fdf4;border-bottom:1px solid #bbf7d0;font-size:.82rem;color:#166534;font-weight:600">
         🎓 Lernpfad abgeschlossen! ${isVerantwortlicher ? 'Zertifikat kann ausgestellt werden.' : (lernpfadUnterschrift ? '✅ Unterzeichnet.' : 'Bitte jetzt unterzeichnen ↓')}
@@ -6124,6 +6288,39 @@ function renderLernpfad() {
 
     html += `</div>`;
   });
+
+  // Tenant-eigene Kapitel (Säule Z — firmenspezifisch)
+  if (lernpfadTenantKapitel.length > 0) {
+    const tkAbsolviert = lernpfadTenantKapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
+    html += `
+      <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+        <div style="padding:10px 14px;background:#7c3aed;color:#fff;display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;font-size:.85rem">🏢 Firmenspezifische Kapitel</span>
+          <span style="font-size:.78rem;opacity:.9">${tkAbsolviert}/${lernpfadTenantKapitel.length}</span>
+        </div>`;
+    lernpfadTenantKapitel.forEach((tk, i) => {
+      const fp = lernpfadFortschritt[tk.id] || {};
+      const abgehakt = !!fp.abgehakt;
+      const isMitarbeiter = currentUser.role === 'mitarbeiter';
+      let aktionsBtn = '';
+      if (isMitarbeiter) {
+        aktionsBtn = `<button onclick="lernpfadKapitelToggle('${tk.id}')"
+          style="font-size:.7rem;padding:4px 10px;border-radius:6px;border:1px solid ${abgehakt?'#dc2626':'#7c3aed'};
+                 background:${abgehakt?'#fef2f2':'#f5f3ff'};color:${abgehakt?'#dc2626':'#7c3aed'};cursor:pointer;white-space:nowrap;font-weight:600">
+          ${abgehakt ? '↩ Rückgängig' : '✓ Abhaken'}
+        </button>`;
+      }
+      html += `
+        <div style="padding:10px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:flex-start;gap:10px;background:${abgehakt?'#faf5ff':'#fff'}">
+          <div style="flex:1">
+            <div style="font-size:.82rem;font-weight:600;color:#1f2937">Z${i+1}. ${escHtml(tk.titel)}</div>
+            ${tk.beschreibung ? `<div style="font-size:.75rem;color:#6b7280;margin-top:2px">${escHtml(tk.beschreibung)}</div>` : ''}
+          </div>
+          <div style="flex-shrink:0;margin-top:2px">${aktionsBtn}</div>
+        </div>`;
+    });
+    html += `</div>`;
+  }
 
   // Zertifikat-Button (nur wenn alle abgehakt + Verantwortlicher)
   if (alle22 && isVerantwortlicher) {
