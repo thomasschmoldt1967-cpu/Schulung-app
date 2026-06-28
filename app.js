@@ -5128,7 +5128,14 @@ async function zeigeSchulungshistorie(userId) {
     }
 
     document.getElementById('historie-inhalt').innerHTML = `
-      <div style="margin-bottom:10px;font-size:.85rem;color:#6b7280">${alleFormulare.length} Schulung${alleFormulare.length !== 1 ? 'en' : ''} abgeschlossen</div>
+      <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:.85rem;color:#6b7280">${alleFormulare.length} Schulung${alleFormulare.length !== 1 ? 'en' : ''} abgeschlossen</span>
+        ${(currentUser.role === 'verantwortlicher' || currentUser.role === 'firma' || currentUser.role === 'admin') ? `
+        <button onclick="generiereSchulungsnachweisPDF('${userId}')" id="pdf-nachweis-btn"
+          style="background:#1e3a5f;color:#fff;border:none;padding:8px 14px;border-radius:8px;font-size:.78rem;font-weight:700;cursor:pointer">
+          📄 PDF-Nachweis
+        </button>` : ''}
+      </div>
       ${lpUntHistorieBlock}${html}`;
   } catch(e) {
     document.getElementById('historie-inhalt').innerHTML =
@@ -6921,4 +6928,136 @@ async function firmaSchulungZuweisen(vorlagenId) {
     showToast('✅ Schulung zugewiesen!', '#0f5132');
     firmaRenderSchulungen();
   } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// v50: SCHULUNGSNACHWEIS-PDF PRO MITARBEITER
+// ══════════════════════════════════════════════════════════════
+
+async function generiereSchulungsnachweisPDF(userId) {
+  const user = APP_USERS.find(u => u.id === userId);
+  if (!user) { showToast('⚠️ Mitarbeiter nicht gefunden', '#f59e0b'); return; }
+  const tenant = APP_TENANTS.find(t => t.id === (user.tenant_id || currentUser.tenantId));
+  const btn = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ PDF wird erstellt…'; }
+
+  try {
+    // 1. Formulare laden
+    const eigeneZuwIds = zuweisungen
+      .filter(z => z.tenantId === currentUser.tenantId)
+      .map(z => z.id);
+    const alleFormulareRaw = await SB.get('formulare',
+      `abgeschlossen_von=eq.${encodeURIComponent(userId)}&order=abgeschlossen_am.desc&limit=100`);
+    const alleFormulare = alleFormulareRaw.filter(f =>
+      eigeneZuwIds.includes(f.id) || eigeneZuwIds.includes(f.zuweisung_id)
+    );
+
+    // 2. Lernpfad laden
+    const lpRows = await SB.get('lernpfad_unterschriften',
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId||'')}&unterzeichnet_am=not.is.null&order=durchgang.desc&limit=1`);
+    const lpUnt = lpRows && lpRows.length ? lpRows[0] : null;
+
+    // 3. PDF erstellen
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, margin = 16;
+    let y = 20;
+
+    // Header
+    doc.setFillColor(30, 58, 95);
+    doc.rect(0, 0, W, 28, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text('Schulungsnachweis', margin, 11);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('SIBEDA Schulungsmanagement · CSC GmbH', margin, 18);
+    doc.text('Erstellt: ' + new Date().toLocaleDateString('de-DE'), W - margin, 18, { align: 'right' });
+    y = 38;
+
+    // Mitarbeiter-Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('👤 Mitarbeiter', margin, y); y += 7;
+    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
+    doc.text(`Name: ${user.name}`, margin, y); y += 5;
+    doc.text(`E-Mail: ${user.email}`, margin, y); y += 5;
+    if (tenant) { doc.text(`Unternehmen: ${tenant.name}`, margin, y); y += 5; }
+    if (user.bereich) { doc.text(`Bereich: ${user.bereich}`, margin, y); y += 5; }
+    y += 5;
+
+    // Trennlinie
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, W - margin, y); y += 7;
+
+    // Abgeschlossene Schulungen
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text(`📋 Abgeschlossene Schulungen (${alleFormulare.length})`, margin, y); y += 8;
+
+    if (alleFormulare.length === 0) {
+      doc.setFontSize(9); doc.setFont('helvetica', 'italic');
+      doc.text('Noch keine abgeschlossenen Schulungen.', margin + 4, y); y += 8;
+    } else {
+      for (const f of alleFormulare) {
+        if (y > 265) { doc.addPage(); y = 20; }
+        const zuw = zuweisungen.find(z => z.id === f.id || z.id === f.zuweisung_id);
+        const v = zuw ? SCHULUNG_VORLAGEN.find(vl => vl.id === zuw.vorlagenId) : null;
+        const titel = v ? v.titel : (f.id || 'Schulung');
+        const datum = f.abgeschlossen_am
+          ? new Date(f.abgeschlossen_am).toLocaleDateString('de-DE') : '–';
+
+        doc.setFillColor(240, 253, 244);
+        doc.rect(margin, y - 4, W - 2*margin, 12, 'F');
+        doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+        doc.setTextColor(15, 81, 50);
+        doc.text(`✓ ${titel}`, margin + 2, y + 2);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Abgeschlossen: ${datum}`, W - margin - 2, y + 2, { align: 'right' });
+        doc.setTextColor(0, 0, 0);
+        y += 14;
+      }
+    }
+
+    y += 4;
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, y, W - margin, y); y += 7;
+
+    // Lernpfad-Block
+    doc.setFontSize(12); doc.setFont('helvetica', 'bold');
+    doc.text('📚 22-Kapitel Lernpfad', margin, y); y += 8;
+    if (lpUnt && lpUnt.unterzeichnet_am) {
+      const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
+      doc.setFillColor(240, 253, 244);
+      doc.rect(margin, y - 4, W - 2*margin, lpUnt.verantwortlicher_am ? 22 : 14, 'F');
+      doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.setTextColor(15, 81, 50);
+      doc.text('✓ Lernpfad abgeschlossen und unterzeichnet', margin + 2, y + 2);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(60, 60, 60);
+      doc.text(`Mitarbeiter: ${lpUnt.vollname} · ${maDatum}`, margin + 2, y + 8);
+      if (lpUnt.verantwortlicher_am) {
+        const vDatum = new Date(lpUnt.verantwortlicher_am).toLocaleDateString('de-DE');
+        doc.text(`Verantwortlicher: ${lpUnt.verantwortlicher_name} · ${vDatum}`, margin + 2, y + 14);
+      }
+      doc.setTextColor(0, 0, 0);
+      y += lpUnt.verantwortlicher_am ? 28 : 20;
+    } else {
+      doc.setFontSize(9); doc.setFont('helvetica', 'italic');
+      doc.text('Lernpfad noch nicht abgeschlossen.', margin + 4, y); y += 8;
+    }
+
+    // Footer
+    doc.setFontSize(7); doc.setTextColor(150, 150, 150);
+    doc.text(`SIBEDA Schulungsmanagement · CSC GmbH · ${new Date().toLocaleDateString('de-DE')}`,
+      W/2, 290, { align: 'center' });
+
+    // Download
+    const safeName = user.name.replace(/[^a-zA-Z0-9äöüÄÖÜß\s-]/g, '').replace(/\s+/g, '_');
+    const datumStr = new Date().toISOString().split('T')[0];
+    doc.save(`Schulungsnachweis_${safeName}_${datumStr}.pdf`);
+    showToast('✅ PDF-Nachweis heruntergeladen!', '#0f5132');
+  } catch(e) {
+    showToast('❌ Fehler beim PDF-Erstellen: ' + e.message, '#dc2626');
+    console.error('PDF-Fehler:', e);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '📄 PDF-Nachweis'; }
+  }
 }
