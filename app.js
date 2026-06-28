@@ -42,278 +42,225 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_05', nr:5,  saeule:'A', titel:'Hautschutz- und Hygienepläne (Feuchtarbeit)',         rechtsgrundlage:'§ 12 ArbSchG, TRGS 401' },
   { id:'kap_06', nr:6,  saeule:'A', titel:'Richtiges Händewaschen und Pflegen',                  rechtsgrundlage:'§ 12 ArbSchG, TRGS 401' },
   { id:'kap_07', nr:7,  saeule:'A', titel:'Dokumentationspflichten und Unfallmeldung',           rechtsgrundlage:'§ 24 SGB VII, DGUV V1 §24' },
+  { id:'kap_08', nr:8,  saeule:'A', titel:'Elektrische Geräte & Arbeitsmittel',                  rechtsgrundlage:'§ 12 ArbSchG, BetrSichV, DGUV V3' },
   // ── Säule B: Reinigungstechnologie & Chemie (§ 14 GefStoffV) ──
-  { id:'kap_08', nr:8,  saeule:'B', titel:'Richtige Dosierung von Reinigungsmitteln',            rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
-  { id:'kap_09', nr:9,  saeule:'B', titel:'Betriebsanweisungen lesen und verstehen',             rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
-  { id:'kap_10', nr:10, saeule:'B', titel:'Gefahrensymbole und GHS-Kennzeichnung',               rechtsgrundlage:'§ 14 GefStoffV, CLP-Verordnung' },
-  { id:'kap_11', nr:11, saeule:'B', titel:'Mischverbot (Chlor + Sanitärreiniger u.a.)',          rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
-  { id:'kap_12', nr:12, saeule:'B', titel:'Oberflächenkunde (Böden, Stein, Holz, Textil)',       rechtsgrundlage:'Fachkunde Gebäudereiniger' },
-  { id:'kap_13', nr:13, saeule:'B', titel:'Maschinenkunde — Scheuersaugmaschinen',               rechtsgrundlage:'§ 12 ArbSchG, BetrSichV' },
-  { id:'kap_14', nr:14, saeule:'B', titel:'Tägliche Wartung und Pflege von Maschinen',           rechtsgrundlage:'BetrSichV §4, DGUV R 100-500' },
-  // ── Säule C: Höhentechnologie & PSAgA ─────────────────────────
-  { id:'kap_15', nr:15, saeule:'C', titel:'Leitern und Tritte — sicherer Umgang',                rechtsgrundlage:'DGUV Information 208-016' },
-  { id:'kap_16', nr:16, saeule:'C', titel:'Fahrgerüste — Aufbau und Sicherheit',                 rechtsgrundlage:'DGUV Information 201-011' },
-  { id:'kap_17', nr:17, saeule:'C', titel:'Einführung PSAgA — Schutzausrüstung gegen Absturz',  rechtsgrundlage:'PSA-BV, DGUV R 112-198' },
-  { id:'kap_18', nr:18, saeule:'C', titel:'Sichtprüfung: Ausrangierkriterien Gurte & Seile',    rechtsgrundlage:'DGUV R 112-198, EN 361' },
-  { id:'kap_19', nr:19, saeule:'C', titel:'Anschlagpunkte im und am Gebäude',                    rechtsgrundlage:'DGUV R 112-198, EN 795' },
-  { id:'kap_20', nr:20, saeule:'C', titel:'Notfall- und Rettungsplanung',                        rechtsgrundlage:'DGUV R 112-198, § 10 ArbSchG' },
-  { id:'kap_21', nr:21, saeule:'C', titel:'Hängetrauma — Erkennen und Verhindern',              rechtsgrundlage:'DGUV Information 212-139' },
+  { id:'kap_09', nr:9,  saeule:'B', titel:'Richtige Dosierung von Reinigungsmitteln',            rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_10', nr:10, saeule:'B', titel:'Betriebsanweisungen lesen und verstehen',             rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_11', nr:11, saeule:'B', titel:'Gefahrensymbole und GHS-Kennzeichnung mit Piktogrammen', rechtsgrundlage:'§ 14 GefStoffV, CLP-Verordnung, GHS' },
+  { id:'kap_12', nr:12, saeule:'B', titel:'Mischverbot (Chlor + Sanitärreiniger u.a.)',          rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_13', nr:13, saeule:'B', titel:'Oberflächenkunde (Böden, Stein, Holz, Textil)',       rechtsgrundlage:'Fachkunde Gebäudereiniger' },
+  { id:'kap_14', nr:14, saeule:'B', titel:'Maschinenkunde — Scheuersaugmaschinen',               rechtsgrundlage:'§ 12 ArbSchG, BetrSichV' },
+  { id:'kap_15', nr:15, saeule:'B', titel:'Tägliche Wartung und Pflege von Maschinen',           rechtsgrundlage:'BetrSichV §4, DGUV R 100-500' },
+  // ── Säule C: Datenschutz & DSGVO ──────────────────────────────
+  { id:'kap_16', nr:16, saeule:'C', titel:'DSGVO-Grundlagen — Was ist Datenschutz?',             rechtsgrundlage:'Art. 5 DSGVO, BDSG 2018' },
+  { id:'kap_17', nr:17, saeule:'C', titel:'Meine Pflichten als Mitarbeiter (Datenschutz)',       rechtsgrundlage:'Art. 5, 32 DSGVO, § 26 BDSG' },
+  { id:'kap_18', nr:18, saeule:'C', titel:'Vertraulichkeit & Verschwiegenheitspflicht',          rechtsgrundlage:'GeschGehG, Art. 28 DSGVO' },
+  { id:'kap_19', nr:19, saeule:'C', titel:'Umgang mit Kundendaten & Privatsphäre',               rechtsgrundlage:'Art. 5 DSGVO, BDSG' },
+  { id:'kap_20', nr:20, saeule:'C', titel:'Besondere Verhaltensregeln im Kundenobjekt',          rechtsgrundlage:'Art. 5 DSGVO, GeschGehG' },
+  { id:'kap_21', nr:21, saeule:'C', titel:'Meldepflichten bei Datenpannen',                      rechtsgrundlage:'Art. 33 DSGVO, § 65 BDSG' },
+  { id:'kap_22', nr:22, saeule:'C', titel:'Alkohol, Drogen & Verhaltensregeln am Arbeitsplatz', rechtsgrundlage:'§ 15 ArbSchG, § 106 GewO' },
 ];
 
-// ── LERNPFAD-HTML: Kapitel mit HTML-Inhalten (GHS-Piktogramme etc.) ───────
-// Wenn ein Eintrag hier vorhanden ist, wird er direkt als HTML gerendert
-// (kein escHtml, kein Sprachfallback – nur Deutsch/universal)
-const LERNPFAD_HTML = {
-  kap_10: `
-<div style="font-size:.78rem;color:#374151;line-height:1.5">
-  <div style="margin-bottom:6px">Auf Reinigungsmittelflaschen gibt es <strong>9 GHS-Piktogramme</strong> — erkenne sie und handle richtig:</div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="46" font-family="serif">💥</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS01</div>
-      <div style="font-size:.68rem;color:#374151">Explodierende Bombe</div>
-      <div style="font-size:.65rem;color:#6b7280">Explosionsgefahr</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="46" font-family="serif">🔥</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS02</div>
-      <div style="font-size:.68rem;color:#374151">Flamme</div>
-      <div style="font-size:.65rem;color:#6b7280">Entzündbar/brennbar</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🔥</text>
-        <circle cx="50" cy="34" r="10" fill="none" stroke="black" stroke-width="4"/>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS03</div>
-      <div style="font-size:.68rem;color:#374151">Flamme über Kreis</div>
-      <div style="font-size:.65rem;color:#6b7280">Brandfördernd/oxidierend</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🛢</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS04</div>
-      <div style="font-size:.68rem;color:#374151">Gasflasche</div>
-      <div style="font-size:.65rem;color:#6b7280">Gas unter Druck</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">⚗️</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS05</div>
-      <div style="font-size:.68rem;color:#374151">Ätzwirkung</div>
-      <div style="font-size:.65rem;color:#6b7280">Ätzt Haut &amp; Augen</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">☠️</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS06</div>
-      <div style="font-size:.68rem;color:#374151">Totenkopf</div>
-      <div style="font-size:.65rem;color:#6b7280">Akut giftig</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="52" font-weight="bold" fill="black" font-family="sans-serif">!</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS07</div>
-      <div style="font-size:.68rem;color:#374151">Ausrufezeichen</div>
-      <div style="font-size:.65rem;color:#6b7280">Reizend/schädlich</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🫁</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS08</div>
-      <div style="font-size:.68rem;color:#374151">Gesundheitsgefahr</div>
-      <div style="font-size:.65rem;color:#6b7280">Chronisch gefährlich</div>
-    </div>
-
-    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
-        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
-        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🐟</text>
-      </svg>
-      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS09</div>
-      <div style="font-size:.68rem;color:#374151">Umwelt</div>
-      <div style="font-size:.65rem;color:#6b7280">Gewässergefährdend</div>
-    </div>
-
-  </div>
-  <div style="font-size:.72rem;color:#6b7280;margin-top:4px">💡 Erkenne das Symbol → Handle richtig → Leben schützen</div>
-</div>`,
-};
-
-// ── LERNPFAD-TEXTE: Erläuterungen in 5 Sprachen ──────────────────────────
-// DE=Deutsch, TR=Türkisch, RO=Rumänisch, SR=Serbisch/Kroatisch, PL=Polnisch
+// ── LERNPFAD-TEXTE: Erläuterungen in 7 Sprachen ──────────────────────────
+// DE=Deutsch, TR=Türkisch, RO=Rumänisch, SR=Serbisch/Kroatisch, PL=Polnisch, EN=Englisch, AR=Arabisch
 const LERNPFAD_TEXTE = {
   kap_01: {
     de: "Im Kundenobjekt verhältst du dich ruhig, ordentlich und respektvoll. Wenn ein Unfall passiert, meldest du ihn sofort deinem Vorgesetzten — egal wie klein. Nur so bist du rechtlich abgesichert und hilfst, weitere Unfälle zu verhindern.",
     tr: "Müşteri binasında sakin, düzenli ve saygılı davranmalısın. Bir kaza olursa, ne kadar küçük olursa olsun hemen amirine bildirmelisin. Bu hem seni hukuken korur hem de yeni kazaların önüne geçer.",
     ro: "La obiectivul clientului te comporți calm, ordonat și respectuos. Dacă se întâmplă un accident, îl raportezi imediat șefului tău, oricât de mic ar fi. Doar așa ești protejat legal și ajuți la prevenirea altor accidente.",
     sr: "U objektu klijenta ponašaš se mirno, uredno i s poštovanjem. Ako se desi nezgoda, odmah je prijavljuješ nadređenom — bez obzira koliko je mala. Samo tako si pravno zaštićen i pomažeš da se spreče nove nezgode.",
-    pl: "W obiekcie klienta zachowujesz się spokojnie, schludnie i z szacunkiem. Jeśli zdarzy się wypadek, natychmiast zgłaszasz go przełożonemu — bez względu na to, jak mały jest. Tylko w ten sposób jesteś chroniony prawnie i pomagasz zapobiegać kolejnym wypadkom."
+    pl: "W obiekcie klienta zachowujesz się spokojnie, schludnie i z szacunkiem. Jeśli zdarzy się wypadek, natychmiast zgłaszasz go przełożonemu — bez względu na to, jak mały jest. Tylko w ten sposób jesteś chroniony prawnie i pomagasz zapobiegać kolejnym wypadkom.",
+    en: "In the customer's premises you behave calmly, tidily and respectfully. If an accident happens, report it to your supervisor immediately — no matter how small. Only this way are you legally protected and help prevent further accidents.",
+    ar: "في موقع العميل تتصرف بهدوء ونظام واحترام. إذا وقع حادث، أبلغ عنه فوراً لمشرفك — بغض النظر عن صغره. فقط هكذا تكون محمياً قانونياً وتساعد في منع المزيد من الحوادث."
   },
   kap_02: {
     de: "Nasse Böden, lose Kabel oder unebene Stellen können zu schweren Stürzen führen. Stelle immer Warnschilder auf, wenn du feucht wischt, und räume Hindernisse sofort weg. Rutschfeste Schuhe sind Pflicht — trage sie immer.",
     tr: "Islak zeminler, gevşek kablolar veya düzensiz yüzeyler ciddi düşmelere yol açabilir. Islak zemin temizlerken her zaman uyarı levhası koy ve engelleri hemen kaldır. Kaymaz ayakkabı zorunludur — her zaman giy.",
     ro: "Podelele ude, cablurile loose sau suprafețele neuniforme pot duce la căderi grave. Pune întotdeauna semne de avertizare când ștergi ud și îndepărtează obstacolele imediat. Pantofii antiderapanți sunt obligatorii — poartă-i mereu.",
     sr: "Mokri podovi, labavi kablovi ili neravne površine mogu dovesti do teških padova. Uvijek postavi znakove upozorenja kada mokro brišeš i odmah ukloni prepreke. Cipele koje ne kližu su obavezne — uvijek ih nosi.",
-    pl: "Mokre podłogi, luźne kable lub nierówne powierzchnie mogą prowadzić do poważnych upadków. Zawsze stawiaj znaki ostrzegawcze podczas mycia na mokro i natychmiast usuwaj przeszkody. Obuwie antypoślizgowe jest obowiązkowe — zawsze je noś."
+    pl: "Mokre podłogi, luźne kable lub nierówne powierzchnie mogą prowadzić do poważnych upadków. Zawsze stawiaj znaki ostrzegawcze podczas mycia na mokro i natychmiast usuwaj przeszkody. Obuwie antypoślizgowe jest obowiązkowe — zawsze je noś.",
+    en: "Wet floors, loose cables or uneven surfaces can lead to serious falls. Always put up warning signs when mopping wet and remove obstacles immediately. Non-slip shoes are mandatory — always wear them.",
+    ar: "الأرضيات المبللة والكابلات الفضفاضة أو الأسطح غير المستوية يمكن أن تؤدي إلى سقطات خطيرة. ضع دائماً لافتات تحذيرية عند التنظيف الرطب وأزل العوائق فوراً. الأحذية المانعة للانزلاق إلزامية — ارتدها دائماً."
   },
   kap_03: {
     de: "Lerne beim ersten Arbeitstag, wo die Feuerlöscher und Notausgänge im Gebäude sind. Halte Fluchtwege immer frei — stelle niemals Geräte oder Reinigungswagen davor. Im Brandfall: Alarm auslösen, Menschen warnen, Gebäude verlassen — niemals den Aufzug nutzen.",
     tr: "İlk iş gününde binadaki yangın söndürücülerin ve acil çıkışların nerede olduğunu öğren. Kaçış yollarını her zaman açık tut — önlerine asla cihaz veya temizlik arabası koyma. Yangın durumunda: alarm ver, insanları uyar, binayı terk et — asla asansörü kullanma.",
     ro: "În prima zi de lucru, află unde sunt stingătoarele de incendiu și ieșirile de urgență din clădire. Păstrează căile de evacuare mereu libere — nu pune niciodată echipamente sau cărucioare de curățenie în fața lor. În caz de incendiu: declanșează alarma, avertizează oamenii, părăsește clădirea — nu folosi niciodată liftul.",
     sr: "Prvog radnog dana saznaj gdje su aparati za gašenje požara i izlazi za nuždu u zgradi. Uvijek drži puteve evakuacije slobodnim — nikad ne stavljaj uređaje ili kolica za čišćenje ispred njih. U slučaju požara: aktiviraj alarm, upozori ljude, napusti zgradu — nikad ne koristi lift.",
-    pl: "W pierwszym dniu pracy dowiedz się, gdzie w budynku znajdują się gaśnice i wyjścia awaryjne. Zawsze utrzymuj drogi ewakuacyjne wolne — nigdy nie stawiaj urządzeń ani wózków czyszczących przed nimi. W przypadku pożaru: uruchom alarm, ostrzeż ludzi, opuść budynek — nigdy nie używaj windy."
+    pl: "W pierwszym dniu pracy dowiedz się, gdzie w budynku znajdują się gaśnice i wyjścia awaryjne. Zawsze utrzymuj drogi ewakuacyjne wolne — nigdy nie stawiaj urządzeń ani wózków czyszczących przed nimi. W przypadku pożaru: uruchom alarm, ostrzeż ludzi, opuść budynek — nigdy nie używaj windy.",
+    en: "On your first working day, learn where the fire extinguishers and emergency exits are in the building. Always keep escape routes clear — never place equipment or cleaning trolleys in front of them. In case of fire: trigger the alarm, warn people, leave the building — never use the lift.",
+    ar: "في أول يوم عمل، تعرّف على أماكن طفايات الحريق ومخارج الطوارئ في المبنى. ابقِ مسارات الإخلاء خالية دائماً — لا تضع أبداً معدات أو عربات تنظيف أمامها. في حالة الحريق: أطلق الإنذار وحذّر الناس واغادر المبنى — لا تستخدم المصعد أبداً."
   },
   kap_04: {
     de: "Erste Hilfe bedeutet: ruhig bleiben, den Notruf 112 anrufen und bis zum Eintreffen des Rettungsdienstes helfen. Lerne, wo der nächste Verbandskasten ist, und schau dir den Aushang mit den Erste-Hilfe-Nummern an. Auch kleine Wunden müssen versorgt und dokumentiert werden.",
     tr: "İlk yardım demek: sakin kalmak, 112 acil hattını aramak ve ambulans gelene kadar yardım etmek demektir. En yakın ilkyardım kutusunun nerede olduğunu öğren ve ilkyardım numaralarının yazılı olduğu afişe bak. Küçük yaralar da tedavi edilmeli ve kayıt altına alınmalıdır.",
     ro: "Primul ajutor înseamnă: rămâi calm, suni la numărul de urgență 112 și ajuți până sosește salvarea. Află unde este cea mai apropiată trusă de prim ajutor și uită-te la afișul cu numerele de urgență. Chiar și rănile mici trebuie tratate și documentate.",
     sr: "Prva pomoć znači: ostani miran, pozovi hitnu pomoć 112 i pomaži dok ne stigne hitna. Saznaj gdje je najbliži sanitetski kofer i pogledaj obavještenje s brojevima prve pomoći. Čak i male rane moraju biti zbrinute i dokumentovane.",
-    pl: "Pierwsza pomoc oznacza: zachowaj spokój, zadzwoń pod numer alarmowy 112 i pomagaj do czasu przyjazdu pogotowia. Dowiedz się, gdzie jest najbliższa apteczka i zapoznaj się z ogłoszeniem z numerami pierwszej pomocy. Nawet małe rany muszą być opatrzone i udokumentowane."
+    pl: "Pierwsza pomoc oznacza: zachowaj spokój, zadzwoń pod numer alarmowy 112 i pomagaj do czasu przyjazdu pogotowia. Dowiedz się, gdzie jest najbliższa apteczka i zapoznaj się z ogłoszeniem z numerami pierwszej pomocy. Nawet małe rany muszą być opatrzone i udokumentowane.",
+    en: "First aid means: stay calm, call emergency number 112 and help until the rescue service arrives. Learn where the nearest first aid kit is and look at the notice with the first aid numbers. Even small wounds must be treated and documented.",
+    ar: "الإسعافات الأولية تعني: ابقَ هادئاً واتصل برقم الطوارئ 112 وقدّم المساعدة حتى وصول الإسعاف. تعرّف على موقع أقرب حقيبة إسعافات أولية واطّلع على لوحة أرقام الإسعاف. حتى الجروح الصغيرة يجب معالجتها وتوثيقها."
   },
   kap_05: {
     de: "Wer täglich viel mit Wasser und Reinigungsmitteln arbeitet, schädigt seine Haut — das nennt man Feuchtarbeit. Trage Schutzhandschuhe und benutze nach der Arbeit immer Hautpflegecreme. Den Hautschutzplan findest du im Aufenthaltsraum — halte dich daran.",
     tr: "Her gün çok fazla su ve temizlik ürünüyle çalışanlar ciltlerine zarar verir — buna ıslak çalışma denir. Koruyucu eldiven giy ve işten sonra her zaman cilt bakım kremi kullan. Cilt koruma planını dinlenme odasında bulabilirsin — ona uy.",
     ro: "Cine lucrează zilnic mult cu apă și detergenți își dăunează pielii — aceasta se numește lucru umed. Poartă mănuși de protecție și folosește întotdeauna cremă de îngrijire a pielii după muncă. Planul de protecție a pielii se află în camera de odihnă — respectă-l.",
     sr: "Ko svakodnevno radi s puno vode i sredstava za čišćenje, oštećuje svoju kožu — to se naziva mokri rad. Nosi zaštitne rukavice i nakon rada uvijek koristi kremu za njegu kože. Plan zaštite kože naći ćeš u prostoriji za odmor — pridržavaj ga se.",
-    pl: "Kto codziennie pracuje z dużą ilością wody i środków czyszczących, niszczy swoją skórę — nazywa się to pracą w środowisku mokrym. Noś rękawice ochronne i po pracy zawsze używaj kremu do pielęgnacji skóry. Plan ochrony skóry znajdziesz w pokoju socjalnym — przestrzegaj go."
+    pl: "Kto codziennie pracuje z dużą ilością wody i środków czyszczących, niszczy swoją skórę — nazywa się to pracą w środowisku mokrym. Noś rękawice ochronne i po pracy zawsze używaj kremu do pielęgnacji skóry. Plan ochrony skóry znajdziesz w pokoju socjalnym — przestrzegaj go.",
+    en: "Anyone who works daily with a lot of water and cleaning agents damages their skin — this is called wet work. Wear protective gloves and always use skin care cream after work. You will find the skin protection plan in the break room — follow it.",
+    ar: "من يعمل يومياً مع كميات كبيرة من الماء والمنظفات يُتلف جلده — يُسمى هذا العمل الرطب. ارتدِ قفازات الحماية واستخدم دائماً كريم العناية بالجلد بعد العمل. ستجد خطة حماية الجلد في غرفة الراحة — التزم بها."
   },
   kap_06: {
     de: "Richtig Hände waschen heißt: mindestens 30 Sekunden mit Seife, auch zwischen den Fingern und unter den Nägeln. Trockne die Hände immer vollständig ab, danach Pflegecreme auftragen. Saubere Hände schützen dich und andere vor Krankheiten.",
     tr: "Doğru el yıkama: en az 30 saniye sabunla, parmaklar arasını ve tırnakların altını da yıka. Elleri her zaman tamamen kurula, ardından bakım kremi sür. Temiz eller seni ve başkalarını hastalıklardan korur.",
     ro: "Spălatul corect al mâinilor înseamnă: cel puțin 30 de secunde cu săpun, inclusiv între degete și sub unghii. Usucă întotdeauna mâinile complet, apoi aplică cremă de îngrijire. Mâinile curate te protejează pe tine și pe alții de boli.",
     sr: "Pravilno pranje ruku znači: najmanje 30 sekundi sapunom, i između prstiju i ispod noktiju. Uvijek potpuno osuši ruke, a zatim nanesite kremu za njegu. Čiste ruke štite tebe i druge od bolesti.",
-    pl: "Prawidłowe mycie rąk oznacza: co najmniej 30 sekund mydłem, również między palcami i pod paznokciami. Zawsze dokładnie osusz ręce, a następnie nałóż krem pielęgnacyjny. Czyste ręce chronią ciebie i innych przed chorobami."
+    pl: "Prawidłowe mycie rąk oznacza: co najmniej 30 sekund mydłem, również między palcami i pod paznokciami. Zawsze dokładnie osusz ręce, a następnie nałóż krem pielęgnacyjny. Czyste ręce chronią ciebie i innych przed chorobami.",
+    en: "Washing hands correctly means: at least 30 seconds with soap, including between the fingers and under the nails. Always dry your hands completely, then apply care cream. Clean hands protect you and others from illness.",
+    ar: "غسل اليدين بشكل صحيح يعني: على الأقل 30 ثانية بالصابون، شاملاً ما بين الأصابع وتحت الأظافر. جفّف يديك دائماً بالكامل ثم ضع كريم العناية. اليدان النظيفتان تحميانك وتحميان الآخرين من الأمراض."
   },
   kap_07: {
     de: "Du musst bestimmte Dinge schriftlich festhalten: welche Räume gereinigt wurden, welche Mittel du verwendet hast und ob ein Unfall passiert ist. Diese Aufzeichnungen schützen dich bei Streitigkeiten und sind gesetzlich vorgeschrieben. Fülle die Listen sorgfältig und ehrlich aus.",
     tr: "Belirli şeyleri yazılı olarak kayıt altına alman gerekir: hangi odaların temizlendiğini, hangi ürünleri kullandığını ve kaza olup olmadığını. Bu kayıtlar anlaşmazlıklarda seni korur ve yasal olarak zorunludur. Listeleri dikkatli ve dürüstçe doldur.",
     ro: "Trebuie să notezi anumite lucruri în scris: care camere au fost curățate, ce produse ai folosit și dacă s-a întâmplat un accident. Aceste înregistrări te protejează în caz de dispute și sunt obligatorii prin lege. Completează listele cu grijă și onestitate.",
     sr: "Određene stvari moraš pisano evidentirati: koje prostorije su očišćene, koja sredstva si koristio i da li se dogodila nezgoda. Ovi zapisi te štite u sporovima i zakonski su obavezni. Popunjavaj liste pažljivo i pošteno.",
-    pl: "Musisz pisemnie rejestrować określone rzeczy: które pomieszczenia zostały posprzątane, jakich środków użyłeś i czy wydarzył się wypadek. Te zapisy chronią cię w sporach i są wymagane przez prawo. Wypełniaj listy starannie i uczciwie."
+    pl: "Musisz pisemnie rejestrować określone rzeczy: które pomieszczenia zostały posprzątane, jakich środków użyłeś i czy wydarzył się wypadek. Te zapisy chronią cię w sporach i są wymagane przez prawo. Wypełniaj listy starannie i uczciwie.",
+    en: "You must record certain things in writing: which rooms were cleaned, which products you used and whether an accident occurred. These records protect you in disputes and are required by law. Fill in the lists carefully and honestly.",
+    ar: "يجب عليك توثيق أشياء معينة كتابياً: أي الغرف تم تنظيفها وأي المواد استخدمتها وما إذا وقع حادث. هذه السجلات تحميك في النزاعات وهي مطلوبة قانونياً. أملأ القوائم بعناية وأمانة."
   },
   kap_08: {
+    de: "Elektrische Geräte wie Staubsauger oder Scheuersaugmaschinen müssen vor jeder Benutzung kurz auf Schäden geprüft werden — Kabel, Stecker, Gehäuse. Ziehe vor der Reinigung immer den Stecker aus der Steckdose. Defekte Geräte niemals benutzen und sofort melden — Reparaturen darfst du nicht selbst durchführen.",
+    tr: "Elektrikli süpürge veya ovalama makineleri gibi elektrikli cihazlar her kullanımdan önce hasar açısından kısa kontrol edilmelidir — kablolar, fişler, gövde. Temizlemeden önce her zaman fişi prizden çekin. Arızalı cihazları asla kullanmayın ve hemen bildirin — onarımları kendiniz yapmamalısınız.",
+    ro: "Echipamentele electrice precum aspiratoarele sau mașinile de frecat trebuie verificate pentru deteriorări înainte de fiecare utilizare — cabluri, fișe, carcasă. Înainte de curățare, scoateți întotdeauna fișa din priză. Nu utilizați niciodată echipamente defecte și raportați-le imediat — nu aveți voie să faceți singur reparații.",
+    sr: "Električna oprema poput usisivača ili mašina za ribanje mora se kratko provjeravati na oštećenja prije svake upotrebe — kablovi, utikači, kućište. Uvijek izvuci utikač iz utičnice prije čišćenja. Nikad ne koristi pokvarenu opremu i odmah je prijavi — ne smiješ sam obavljati popravke.",
+    pl: "Urządzenia elektryczne, takie jak odkurzacze lub maszyny szorujące, należy sprawdzać pod kątem uszkodzeń przed każdym użyciem — kable, wtyczki, obudowa. Przed czyszczeniem zawsze wyjmuj wtyczkę z gniazdka. Nigdy nie używaj wadliwego sprzętu i natychmiast zgłaszaj to — nie wolno ci samemu dokonywać napraw.",
+    en: "Electrical equipment such as vacuum cleaners or scrubber-dryers must be briefly checked for damage before each use — cables, plugs, housing. Always unplug from the socket before cleaning. Never use defective equipment and report it immediately — you must not carry out repairs yourself.",
+    ar: "يجب فحص المعدات الكهربائية مثل المكانس الكهربائية أو آلات التنظيف بحثاً عن أضرار قبل كل استخدام — الكابلات والقوابس والهياكل. افصل دائماً القابس من المقبس قبل التنظيف. لا تستخدم أبداً المعدات المعطوبة وأبلغ عنها فوراً — لا يُسمح لك بإجراء الإصلاحات بنفسك."
+  },
+  kap_09: {
     de: "Mehr Reinigungsmittel bedeutet nicht mehr Sauberkeit — zu viel schadet den Oberflächen und deiner Gesundheit. Halte dich immer genau an die Dosierungsangaben auf der Flasche oder im Aushang. Miss die Menge ab — schütte niemals einfach drauf los.",
     tr: "Daha fazla temizlik ürünü daha fazla temizlik demek değildir — fazla kullanmak yüzeylere ve sağlığına zarar verir. Her zaman şişedeki veya ilan panosundaki dozaj talimatlarına tam olarak uy. Miktarı ölç — asla gelişigüzel dökme.",
     ro: "Mai mult detergent nu înseamnă mai multă curățenie — prea mult dăunează suprafețelor și sănătății tale. Respectă întotdeauna exact indicațiile de dozare de pe sticlă sau de pe afișaj. Măsoară cantitatea — nu turna niciodată la întâmplare.",
     sr: "Više sredstva za čišćenje ne znači veću čistoću — previše šteti površinama i tvom zdravlju. Uvijek se pridržavaj točno uputa za doziranje na boci ili na oglasnoj ploči. Odmjeri količinu — nikad ne sipaj nasumično.",
-    pl: "Więcej środka czyszczącego nie oznacza większej czystości — za dużo szkodzi powierzchniom i twojemu zdrowiu. Zawsze ściśle przestrzegaj wskazówek dotyczących dawkowania na butelce lub na tablicy informacyjnej. Odmierzaj ilość — nigdy nie lejaj na oślep."
+    pl: "Więcej środka czyszczącego nie oznacza większej czystości — za dużo szkodzi powierzchniom i twojemu zdrowiu. Zawsze ściśle przestrzegaj wskazówek dotyczących dawkowania na butelce lub na tablicy informacyjnej. Odmierzaj ilość — nigdy nie lejaj na oślep.",
+    en: "More cleaning agent does not mean more cleanliness — too much damages surfaces and your health. Always follow the dosage instructions on the bottle or notice board exactly. Measure the quantity — never just pour it on.",
+    ar: "المزيد من المنظف لا يعني نظافة أكبر — الكميات الزائدة تضر بالأسطح وبصحتك. اتبع دائماً تعليمات الجرعة على الزجاجة أو اللوحة الإعلانية بدقة. قِس الكمية — لا تصب المنظف عشوائياً أبداً."
   },
-  kap_09: {
+  kap_10: {
     de: "Jede Betriebsanweisung erklärt, wie du ein Reinigungsmittel sicher benutzt — lies sie immer, bevor du anfängst. Darin steht: was das Mittel kann, wie du es anwendest und was du im Notfall tun musst. Frag deinen Vorgesetzten, wenn du etwas nicht verstehst.",
     tr: "Her kullanım talimatı, bir temizlik ürününü nasıl güvenli kullanacağını açıklar — başlamadan önce her zaman oku. İçinde şunlar yazar: ürünün ne işe yaradığı, nasıl kullanılacağı ve acil durumda ne yapman gerektiği. Bir şeyi anlamazsan amirine sor.",
     ro: "Fiecare instrucțiune de utilizare explică cum să folosești în siguranță un produs de curățare — citește-o întotdeauna înainte să începi. Conține: ce poate face produsul, cum îl aplici și ce trebuie să faci în caz de urgență. Întreabă-ți superiorul dacă nu înțelegi ceva.",
     sr: "Svako uputstvo za rad objašnjava kako sigurno koristiti sredstvo za čišćenje — uvijek ga čitaj prije nego što počneš. U njemu piše: šta sredstvo može, kako ga koristiti i šta moraš uraditi u hitnom slučaju. Pitaj nadređenog ako nešto ne razumiješ.",
-    pl: "Każda instrukcja obsługi wyjaśnia, jak bezpiecznie używać środka czyszczącego — zawsze ją czytaj przed rozpoczęciem pracy. Zawiera: co może zrobić środek, jak go stosować i co musisz zrobić w nagłym przypadku. Zapytaj przełożonego, jeśli czegoś nie rozumiesz."
-  },
-  kap_10: {
-    de: "Auf Reinigungsmittelflaschen gibt es Symbole, die Gefahr anzeigen — zum Beispiel eine Flamme für brennbar oder ein Ausrufezeichen für reizend. Diese Symbole heißen GHS-Kennzeichnung und sind überall auf der Welt gleich. Erkenne die Symbole und handle danach.",
-    tr: "Temizlik ürünü şişelerinde tehlike gösteren semboller vardır — örneğin yanıcı için alev veya tahriş edici için ünlem işareti. Bu sembollere GHS işaretlemesi denir ve dünya genelinde aynıdır. Sembolleri tanı ve ona göre hareket et.",
-    ro: "Pe sticlele de detergenți există simboluri care indică pericolul — de exemplu o flacără pentru inflamabil sau un semn de exclamare pentru iritant. Aceste simboluri se numesc etichetare GHS și sunt aceleași în toată lumea. Recunoaște simbolurile și acționează în consecință.",
-    sr: "Na bocama sredstava za čišćenje nalaze se simboli koji ukazuju na opasnost — npr. plamen za zapaljivo ili uskličnik za iritante. Ovi simboli se zovu GHS označavanje i isti su širom svijeta. Prepoznaj simbole i postupaj prema njima.",
-    pl: "Na butelkach środków czyszczących znajdują się symbole wskazujące na niebezpieczeństwo — na przykład płomień dla substancji łatwopalnych lub wykrzyknik dla substancji drażniących. Te symbole nazywają się oznakowaniem GHS i są takie same na całym świecie. Rozpoznaj symbole i postępuj zgodnie z nimi."
+    pl: "Każda instrukcja obsługi wyjaśnia, jak bezpiecznie używać środka czyszczącego — zawsze ją czytaj przed rozpoczęciem pracy. Zawiera: co może zrobić środek, jak go stosować i co musisz zrobić w nagłym przypadku. Zapytaj przełożonego, jeśli czegoś nie rozumiesz.",
+    en: "Every operating instruction explains how to use a cleaning agent safely — always read it before you start. It contains: what the product can do, how to apply it and what to do in an emergency. Ask your supervisor if you do not understand something.",
+    ar: "كل تعليمات التشغيل تشرح كيفية استخدام مادة التنظيف بأمان — اقرأها دائماً قبل البدء. تحتوي على: ما يمكن أن تفعله المادة وكيفية تطبيقها وما يجب فعله في حالات الطوارئ. اسأل مشرفك إذا لم تفهم شيئاً."
   },
   kap_11: {
+    de: "Auf Reinigungsmittelflaschen gibt es 9 GHS-Piktogramme, die dir auf einen Blick zeigen welche Gefahr droht:\n\n🔴 GHS01 – Explodierende Bombe: Explosionsgefahr — Produkt kann explodieren (Druck, Reibung, Hitze)\n🔴 GHS02 – Flamme: Entzündbar — leicht brennbar, Hitze und offenes Feuer fernhalten\n🔴 GHS03 – Flamme über Kreis: Brandfördernd/Oxidierend — kann andere Stoffe entflammen\n🔴 GHS04 – Gasflasche: Gas unter Druck — Behälter kann platzen (z.B. Sprühflaschen)\n🔴 GHS05 – Ätzwirkung: Ätzend — greift Haut, Augen und Metalle an (z.B. Abflussreiniger)\n🔴 GHS06 – Totenkopf: Akut giftig — bereits kleine Mengen können tödlich sein\n🟡 GHS07 – Ausrufezeichen: Reizend/Schädlich — reizt Haut oder Augen, schädlich bei Einatmen\n🟡 GHS08 – Gesundheitsgefahr: Chronisch gefährlich — krebserregend, erbgutverändernd, fortpflanzungsgefährdend\n🔵 GHS09 – Umwelt: Gewässergefährdend — nicht in den Abfluss, umweltgerecht entsorgen\n\nTipp: Erkenne das Symbol → Handle richtig → Leben schützen.",
+    tr: "Temizlik ürünü şişelerinde 9 GHS piktogramı bulunur ve size tek bakışta tehlikeyi gösterir:\n\n🔴 GHS01 – Patlayan Bomba: Patlama tehlikesi — basınç, sürtünme, ısıyla patlayabilir\n🔴 GHS02 – Alev: Yanıcı — kolayca tutuşur, ısı ve açık ateşten uzak tut\n🔴 GHS03 – Daire Üzerinde Alev: Yanmayı destekleyici — diğer maddeleri tutuşturabilir\n🔴 GHS04 – Gaz Tüpü: Basınç altında gaz — kap patlayabilir (sprey şişeler gibi)\n🔴 GHS05 – Aşındırıcı Etki: Aşındırıcı — deri, gözler ve metallere zarar verir\n🔴 GHS06 – Kurukafa: Akut zehirli — küçük miktarlar bile ölümcül olabilir\n🟡 GHS07 – Ünlem İşareti: Tahriş edici — deriyi veya gözleri tahriş eder, solunumda zararlı\n🟡 GHS08 – Sağlık Tehlikesi: Kronik tehlikeli — kanserojen, mutajenik, üreme toksik\n🔵 GHS09 – Çevre: Su kirliliği — gidere dökme, çevre dostu bertaraf et\n\nİpucu: Sembolü tanı → Doğru davran → Hayat kurtar.",
+    ro: "Pe sticlele de detergenți există 9 pictograme GHS care îți arată dintr-o privire pericolul:\n\n🔴 GHS01 – Bombă explodând: Pericol de explozie — poate exploda la presiune, frecare, căldură\n🔴 GHS02 – Flacără: Inflamabil — se aprinde ușor, ține departe de căldură și foc deschis\n🔴 GHS03 – Flacără deasupra cercului: Comburant — poate aprinde alte substanțe\n🔴 GHS04 – Butelie de gaz: Gaz sub presiune — recipientul poate exploda (spray-uri)\n🔴 GHS05 – Coroziune: Coroziv — atacă pielea, ochii și metalele (ex. desfundator)\n🔴 GHS06 – Craniu: Toxic acut — chiar și cantități mici pot fi fatale\n🟡 GHS07 – Semn de exclamare: Iritant/Nociv — iritează pielea sau ochii, nociv prin inhalare\n🟡 GHS08 – Pericol pentru sănătate: Pericol cronic — cancerigen, mutagen, toxic pentru reproducere\n🔵 GHS09 – Mediu: Periculos pentru mediul acvatic — nu arunca la canal, elimină ecologic\n\nSfat: Recunoaște simbolul → Acționează corect → Protejează viața.",
+    sr: "Na bocama sredstava za čišćenje postoji 9 GHS piktograma koji ti jednim pogledom pokazuju opasnost:\n\n🔴 GHS01 – Eksplodirajuća bomba: Opasnost od eksplozije — može eksplodirati od pritiska, trenja, topline\n🔴 GHS02 – Plamen: Zapaljivo — lako se pali, drži dalje od topline i otvorenog plamena\n🔴 GHS03 – Plamen iznad kruga: Oksidativno — može zapaliti druge tvari\n🔴 GHS04 – Boca plina: Plin pod pritiskom — posuda može eksplodirati (npr. sprej boce)\n🔴 GHS05 – Korozivnost: Korozivno — nagriza kožu, oči i metale (npr. čistač odvoda)\n🔴 GHS06 – Lubanja: Akutno otrovano — čak i male količine mogu biti smrtonosne\n🟡 GHS07 – Uskličnik: Nadražujuće — nadražuje kožu ili oči, štetno pri udisanju\n🟡 GHS08 – Zdravstvena opasnost: Kronično opasno — kancerogeno, mutageno, reproduktivno toksično\n🔵 GHS09 – Okoliš: Opasno za vodeni okoliš — ne u odvod, zbrinuti ekološki\n\nSavjet: Prepoznaj simbol → Djeluj ispravno → Zaštiti život.",
+    pl: "Na butelkach środków czyszczących znajduje się 9 piktogramów GHS, które jednym spojrzeniem pokazują grożące niebezpieczeństwo:\n\n🔴 GHS01 – Wybuchająca bomba: Niebezpieczeństwo wybuchu — może wybuchnąć pod wpływem ciśnienia, tarcia, ciepła\n🔴 GHS02 – Płomień: Łatwopalne — łatwo się zapala, trzymaj z dala od ciepła i otwartego ognia\n🔴 GHS03 – Płomień nad kołem: Utleniające — może zapalać inne substancje\n🔴 GHS04 – Butla gazowa: Gaz pod ciśnieniem — pojemnik może pęknąć (np. spray)\n🔴 GHS05 – Działanie żrące: Żrące — niszczy skórę, oczy i metale (np. odtykacz)\n🔴 GHS06 – Trup: Toksyczność ostra — nawet małe ilości mogą być śmiertelne\n🟡 GHS07 – Wykrzyknik: Drażniące — drażni skórę lub oczy, szkodliwe przy wdychaniu\n🟡 GHS08 – Zagrożenie dla zdrowia: Przewlekle niebezpieczne — rakotwórcze, mutagenne, toksyczne dla rozrodczości\n🔵 GHS09 – Środowisko: Szkodliwe dla środowiska wodnego — nie wlewać do kanalizacji, utylizować ekologicznie\n\nWskazówka: Rozpoznaj symbol → Działaj właściwie → Chroń życie.",
+    en: "Cleaning agent bottles carry 9 GHS pictograms that show you at a glance which hazard is present:\n\n🔴 GHS01 – Exploding bomb: Explosion hazard — can explode from pressure, friction or heat\n🔴 GHS02 – Flame: Flammable — ignites easily, keep away from heat and open flames\n🔴 GHS03 – Flame over circle: Oxidising — can ignite other substances\n🔴 GHS04 – Gas cylinder: Gas under pressure — container can burst (e.g. spray bottles)\n🔴 GHS05 – Corrosion: Corrosive — attacks skin, eyes and metals (e.g. drain cleaner)\n🔴 GHS06 – Skull: Acutely toxic — even small amounts can be fatal\n🟡 GHS07 – Exclamation mark: Irritant/Harmful — irritates skin or eyes, harmful if inhaled\n🟡 GHS08 – Health hazard: Chronically dangerous — carcinogenic, mutagenic, reproductive toxin\n🔵 GHS09 – Environment: Hazardous to the aquatic environment — do not pour down drain, dispose of correctly\n\nTip: Recognise the symbol → Act correctly → Protect lives.",
+    ar: "تحمل زجاجات مواد التنظيف 9 رموز GHS تُظهر لك بنظرة واحدة نوع الخطر:\n\n🔴 GHS01 – قنبلة منفجرة: خطر انفجار — قد ينفجر من الضغط أو الاحتكاك أو الحرارة\n🔴 GHS02 – لهب: قابل للاشتعال — يشتعل بسهولة، ابقِه بعيداً عن الحرارة والنيران المكشوفة\n🔴 GHS03 – لهب فوق دائرة: مؤكسِد — قد يُشعل مواد أخرى\n🔴 GHS04 – أسطوانة غاز: غاز تحت ضغط — الوعاء قد ينفجر (مثل علب الرش)\n🔴 GHS05 – تآكل: مادة آكلة — تضر بالجلد والعيون والمعادن (مثل منظف المجاري)\n🔴 GHS06 – جمجمة: سام حاد — حتى الكميات الصغيرة قد تكون قاتلة\n🟡 GHS07 – علامة تعجب: مهيّج/ضار — يهيّج الجلد أو العينين، ضار عند الاستنشاق\n🟡 GHS08 – خطر صحي: خطير مزمن — مسرطن أو مطفّر أو ضار بالتكاثر\n🔵 GHS09 – بيئة: خطير على البيئة المائية — لا تصبّه في المصرف، تخلص منه بطريقة صحيحة\n\nنصيحة: تعرّف على الرمز ← تصرّف بشكل صحيح ← احمِ الحياة."
+  },
+  kap_12: {
     de: "Manche Reinigungsmittel darf man NIEMALS mischen — zum Beispiel Chlorreiniger und Sanitärreiniger zusammen erzeugen giftige Gase. Lies immer das Etikett und frage nach, bevor du zwei Mittel zusammen benutzt. Im Zweifelsfall: lieber weniger mischen als riskieren.",
     tr: "Bazı temizlik ürünlerini ASLA karıştırmamalısın — örneğin klorlu temizleyici ile banyo temizleyicisi birlikte zehirli gaz üretir. Her zaman etiketi oku ve iki ürünü birlikte kullanmadan önce sor. Şüphe durumunda: riske girmek yerine az karıştır.",
     ro: "Unele produse de curățare NU trebuie NICIODATĂ amestecate — de exemplu, curățătorul cu clor și curățătorul sanitar împreună produc gaze toxice. Citește întotdeauna eticheta și întreabă înainte să folosești două produse împreună. În caz de dubiu: mai bine amesteci mai puțin decât să riști.",
     sr: "Neka sredstva za čišćenje se NIKAD ne smiju miješati — na primjer, klorni čistač i sanitarni čistač zajedno stvaraju otrovne plinove. Uvijek čitaj etiketu i pitaj prije nego što koristiš dva sredstva zajedno. U slučaju sumnje: bolje manje miješati nego riskirati.",
-    pl: "Niektórych środków czyszczących NIGDY nie wolno mieszać — na przykład środek chlorowy i środek do sanitariatów razem wytwarzają trujące gazy. Zawsze czytaj etykietę i pytaj, zanim użyjesz dwóch środków razem. W razie wątpliwości: lepiej mieszać mniej niż ryzykować."
+    pl: "Niektórych środków czyszczących NIGDY nie wolno mieszać — na przykład środek chlorowy i środek do sanitariatów razem wytwarzają trujące gazy. Zawsze czytaj etykietę i pytaj, zanim użyjesz dwóch środków razem. W razie wątpliwości: lepiej mieszać mniej niż ryzykować.",
+    en: "Some cleaning agents must NEVER be mixed — for example, chlorine cleaner and sanitary cleaner together produce toxic gases. Always read the label and ask before using two products together. If in doubt: mix less rather than take the risk.",
+    ar: "بعض مواد التنظيف يجب ألا تُخلط أبداً — فمثلاً خلط منظف الكلور مع منظف الصرف يُنتج غازات سامة. اقرأ دائماً الملصق واستشر قبل استخدام مادتين معاً. عند الشك: أقل خلطاً خير من المخاطرة."
   },
-  kap_12: {
+  kap_13: {
     de: "Nicht jedes Reinigungsmittel passt zu jeder Oberfläche — falsches Mittel kann Böden, Stein oder Holz dauerhaft beschädigen. Lerne, welche Mittel für welche Flächen erlaubt sind, und frage im Zweifel nach. Teste neue Mittel immer zuerst an einer kleinen, versteckten Stelle.",
     tr: "Her temizlik ürünü her yüzeye uygun değildir — yanlış ürün zeminleri, taşı veya ahşabı kalıcı olarak hasar verebilir. Hangi ürünlerin hangi yüzeyler için uygun olduğunu öğren ve şüphe durumunda sor. Yeni ürünleri her zaman önce küçük, gizli bir bölgede test et.",
     ro: "Nu orice produs de curățare este potrivit pentru orice suprafață — produsul greșit poate deteriora permanent podelele, piatra sau lemnul. Află ce produse sunt permise pentru ce suprafețe și întreabă dacă ai dubii. Testează întotdeauna produsele noi mai întâi pe o zonă mică și ascunsă.",
     sr: "Nije svako sredstvo za čišćenje prikladno za svaku površinu — pogrešno sredstvo može trajno oštetiti podove, kamen ili drvo. Nauči koja sredstva su dozvoljena za koje površine i pitaj ako si u nedoumici. Uvijek testiraj nova sredstva prvo na malom, skrivenom mjestu.",
-    pl: "Nie każdy środek czyszczący nadaje się do każdej powierzchni — niewłaściwy środek może trwale uszkodzić podłogi, kamień lub drewno. Dowiedz się, jakie środki są dozwolone do jakich powierzchni i pytaj w razie wątpliwości. Zawsze testuj nowe środki najpierw na małym, ukrytym miejscu."
+    pl: "Nie każdy środek czyszczący nadaje się do każdej powierzchni — niewłaściwy środek może trwale uszkodzić podłogi, kamień lub drewno. Dowiedz się, jakie środki są dozwolone do jakich powierzchni i pytaj w razie wątpliwości. Zawsze testuj nowe środki najpierw na małym, ukrytym miejscu.",
+    en: "Not every cleaning agent is suitable for every surface — the wrong product can permanently damage floors, stone or wood. Learn which products are permitted for which surfaces and ask if in doubt. Always test new products first on a small, hidden area.",
+    ar: "ليست كل مادة تنظيف مناسبة لكل سطح — المادة الخاطئة قد تُتلف الأرضيات أو الحجارة أو الخشب بشكل دائم. تعلّم أي المواد مسموح باستخدامها على أي سطح واسأل عند الشك. اختبر المواد الجديدة دائماً أولاً على منطقة صغيرة مخفية."
   },
-  kap_13: {
+  kap_14: {
     de: "Scheuersaugmaschinen reinigen Böden schnell und gründlich — aber nur, wenn man sie richtig bedient. Lerne die Schalter und Hebel kennen, bevor du die Maschine startest, und fahre nie zu schnell. Bei Problemen oder komischen Geräuschen: Maschine stoppen und Vorgesetzten informieren.",
     tr: "Ovalama-emme makineleri zeminleri hızlı ve kapsamlı temizler — ama ancak doğru kullanıldıklarında. Makineyi çalıştırmadan önce düğmeleri ve kolları öğren ve asla çok hızlı sürme. Sorun veya garip ses olursa: makineyi durdur ve amirini bilgilendir.",
     ro: "Mașinile de frecat-aspirat curăță podelele rapid și temeinic — dar numai dacă sunt utilizate corect. Cunoaște butoanele și mânerele înainte să pornești mașina și nu merge niciodată prea repede. La probleme sau zgomote ciudate: oprește mașina și informează superiorul.",
     sr: "Mašine za ribanje i usisavanje čiste podove brzo i temeljito — ali samo ako se pravilno koriste. Upoznaj prekidače i poluge prije nego što pokreneš mašinu i nikad ne vozi prebrzo. Kod problema ili čudnih zvukova: zaustavi mašinu i obavijesti nadređenog.",
-    pl: "Maszyny szorująco-zbierające czyszczą podłogi szybko i dokładnie — ale tylko wtedy, gdy są prawidłowo obsługiwane. Poznaj przyciski i dźwignie przed uruchomieniem maszyny i nigdy nie jedź zbyt szybko. W przypadku problemów lub dziwnych dźwięków: zatrzymaj maszynę i poinformuj przełożonego."
+    pl: "Maszyny szorująco-zbierające czyszczą podłogi szybko i dokładnie — ale tylko wtedy, gdy są prawidłowo obsługiwane. Poznaj przyciski i dźwignie przed uruchomieniem maszyny i nigdy nie jedź zbyt szybko. W przypadku problemów lub dziwnych dźwięków: zatrzymaj maszynę i poinformuj przełożonego.",
+    en: "Scrubber-dryers clean floors quickly and thoroughly — but only when operated correctly. Learn the switches and levers before starting the machine and never drive too fast. If there are problems or strange noises: stop the machine and inform your supervisor.",
+    ar: "آلات التنظيف بالدعك والتجفيف تنظف الأرضيات بسرعة وكفاءة — لكن فقط عند تشغيلها بشكل صحيح. تعرّف على المفاتيح والرافعات قبل تشغيل الآلة ولا تقد بسرعة كبيرة أبداً. عند وجود مشكلات أو أصوات غريبة: أوقف الآلة وأبلغ مشرفك."
   },
-  kap_14: {
+  kap_15: {
     de: "Nach jeder Schicht musst du die Maschine reinigen: Schmutzwasser entleeren, Bürsten abspülen und alles trocken lagern. Schau täglich nach, ob Kabel, Stecker oder Räder beschädigt sind — defekte Maschinen nie benutzen. Gepflegte Maschinen halten länger und arbeiten sicherer.",
     tr: "Her vardiyadan sonra makineyi temizlemelisin: kirli suyu boşalt, fırçaları çalkala ve her şeyi kuru olarak depola. Kablo, fiş veya tekerleklerin hasar görüp görmediğini her gün kontrol et — arızalı makineleri asla kullanma. Bakımlı makineler daha uzun sürer ve daha güvenli çalışır.",
     ro: "După fiecare tură trebuie să cureți mașina: golești apa murdară, clătești perii și depozitezi totul uscat. Verifică zilnic dacă cablurile, prizele sau roțile sunt deteriorate — nu folosi niciodată mașini defecte. Mașinile întreținute durează mai mult și funcționează mai sigur.",
     sr: "Nakon svake smjene moraš očistiti mašinu: isprazniti prljavu vodu, isprati četke i pohraniti sve suho. Svakodnevno provjeravaj jesu li kablovi, utikači ili kotači oštećeni — nikad ne koristi pokvarene mašine. Održavane mašine traju duže i rade sigurnije.",
-    pl: "Po każdej zmianie musisz wyczyścić maszynę: opróżnić brudną wodę, przepłukać szczotki i przechować wszystko suche. Codziennie sprawdzaj, czy kable, wtyczki lub koła nie są uszkodzone — nigdy nie używaj uszkodzonych maszin. Zadbane maszyny działają dłużej i bezpieczniej."
-  },
-  kap_15: {
-    de: "Leiter immer auf festem, ebenem Boden aufstellen und sichern — jemand hält die Leiter unten fest, wenn du oben arbeitest. Steige nie auf die obersten zwei Sprossen und trage keine schweren Lasten beim Aufstieg. Kaputte Leitern sofort aus dem Verkehr ziehen und melden.",
-    tr: "Merdiveni her zaman sağlam, düz zemine koy ve sabitle — sen üstte çalışırken birisi merdiveni aşağıdan tutsun. Asla en üst iki basamağa çıkma ve tırmanırken ağır yükler taşıma. Kırık merdivenleri hemen kullanımdan kaldır ve bildir.",
-    ro: "Pune întotdeauna scara pe o suprafață solidă și plată și asigur-o — cineva ține scara jos când tu lucrezi sus. Nu urca niciodată pe ultimele două trepte și nu cărați sarcini grele la urcare. Scoate imediat din uz scările rupte și raportează-le.",
-    sr: "Ljestve uvijek postavljaj na čvrstu, ravnu površinu i osiguraj ih — neko drži ljestve odozdo dok ti radiš gore. Nikad ne stoji na gornje dvije prečke i ne nosi teških tereta pri uspinjanju. Pokvarene ljestve odmah povuci iz upotrebe i prijavi.",
-    pl: "Zawsze ustawiaj drabinę na twardej, równej powierzchni i zabezpiecz ją — ktoś trzyma drabinę na dole, gdy ty pracujesz na górze. Nigdy nie wchodź na dwa najwyższe szczeble i nie noś ciężkich ładunków podczas wchodzenia. Natychmiast wycofuj z użytku uszkodzone drabiny i zgłaszaj je."
+    pl: "Po każdej zmianie musisz wyczyścić maszynę: opróżnić brudną wodę, przepłukać szczotki i przechować wszystko suche. Codziennie sprawdzaj, czy kable, wtyczki lub koła nie są uszkodzone — nigdy nie używaj uszkodzonych maszin. Zadbane maszyny działają dłużej i bezpieczniej.",
+    en: "After each shift you must clean the machine: empty the dirty water, rinse the brushes and store everything dry. Check daily whether cables, plugs or wheels are damaged — never use defective machines. Well-maintained machines last longer and operate more safely.",
+    ar: "بعد كل وردية يجب عليك تنظيف الآلة: تفريغ الماء القذر وشطف الفرش وتخزين كل شيء جافاً. افحص يومياً ما إذا كانت الكابلات أو القوابس أو العجلات تالفة — لا تستخدم الآلات المعطوبة أبداً. الآلات المُصانة تدوم أطول وتعمل بأمان أكبر."
   },
   kap_16: {
-    de: "Ein Fahrgerüst muss immer nach Anleitung aufgebaut werden — nie einzelne Teile weglassen oder durch andere ersetzen. Alle vier Räder müssen nach dem Aufbau festgestellt werden, damit das Gerüst nicht wegrollt. Bevor du hinaufsteigst, prüfe kurz, ob alles stabil steht.",
-    tr: "Seyyar iskele her zaman talimata göre kurulmalıdır — asla parça eksik bırakma veya başkasıyla değiştirme. Montajdan sonra iskelenin hareket etmemesi için dört tekerlek de sabitlenmelidir. Yukarı çıkmadan önce her şeyin sağlam durduğunu kısaca kontrol et.",
-    ro: "Un eșafodaj mobil trebuie asamblat întotdeauna conform instrucțiunilor — nu omite niciodată piese sau înlocui cu altele. Toate cele patru roți trebuie blocate după asamblare pentru ca eșafodajul să nu se miște. Înainte să urci, verifică rapid dacă totul stă stabil.",
-    sr: "Pokretna skela mora se uvijek montirati prema uputstvu — nikad ne izostavljaj dijelove ili ih zamjenjuj drugima. Nakon montaže sva četiri kotača moraju biti blokirana da se skela ne pomjera. Prije nego što se popneš, brzo provjeri je li sve stabilno postavljeno.",
-    pl: "Ruchome rusztowanie musi być zawsze montowane zgodnie z instrukcją — nigdy nie pomijaj części ani nie zastępuj ich innymi. Po montażu wszystkie cztery koła muszą być zablokowane, aby rusztowanie nie odjechało. Przed wejściem na górę szybko sprawdź, czy wszystko stoi stabilnie."
+    de: "Die DSGVO (Datenschutz-Grundverordnung) schützt die persönlichen Daten aller Menschen in der EU. Als Mitarbeiter im Reinigungsdienst kommst du täglich mit fremden Daten in Berührung — Namensschilder, Post, Dokumente, Computer. Du bist verpflichtet, all das vertraulich zu behandeln.",
+    tr: "GDPR, AB'deki tüm insanların kişisel verilerini korur. Temizlik hizmetinde çalışan biri olarak her gün başkalarının verileriyle karşılaşırsın — isim etiketleri, posta, belgeler, bilgisayarlar. Bunların tamamını gizli tutmakla yükümlüsün.",
+    ro: "GDPR protejează datele personale ale tuturor persoanelor din UE. Ca angajat în serviciile de curățenie, intri zilnic în contact cu date ale altora — etichete cu nume, corespondență, documente, calculatoare. Ești obligat să tratezi totul confidențial.",
+    sr: "GDPR štiti osobne podatke svih ljudi u EU. Kao zaposlenik u uslugama čišćenja, svakodnevno dolaziš u kontakt s tuđim podacima — natpisne pločice, pošta, dokumenti, računala. Dužan si sve to tretirati povjerljivo.",
+    pl: "RODO chroni dane osobowe wszystkich ludzi w UE. Jako pracownik w służbach sprzątających codziennie masz kontakt z danymi innych osób — tabliczki z imionami, poczta, dokumenty, komputery. Jesteś zobowiązany do zachowania pełnej poufności.",
+    en: "The GDPR protects the personal data of all people in the EU. As a cleaning service employee, you come into contact with other people's data every day — name badges, mail, documents, computers. You are obliged to treat all of this confidentially.",
+    ar: "تحمي اللائحة العامة لحماية البيانات (GDPR) البيانات الشخصية لجميع الأشخاص في الاتحاد الأوروبي. بوصفك موظفاً في خدمات التنظيف تتعامل يومياً مع بيانات الآخرين — بطاقات الأسماء والبريد والوثائق وأجهزة الكمبيوتر. أنت ملزم بمعاملة كل ذلك بسرية تامة."
   },
   kap_17: {
-    de: "PSAgA ist deine persönliche Schutzausrüstung gegen Absturz — Gurt, Seil und Karabiner müssen immer zusammenpassen. Trage das Geschirr eng am Körper anliegend und hänge dich nie in eine Verankerung, die nicht freigegeben ist. Diese Ausrüstung rettet Leben — benutze sie richtig.",
-    tr: "KKD düşmeye karşı kişisel koruma ekipmanındır — kemer, ip ve karabinalar her zaman birbiriyle uyumlu olmalıdır. Kemeği vücuda yakın takın ve onaylı olmayan bir ankraj noktasına asla takılma. Bu ekipman hayat kurtarır — doğru kullan.",
-    ro: "EIP este echipamentul tău personal de protecție împotriva căderilor — centura, coarda și carabinierele trebuie să fie întotdeauna compatibile. Poartă hamul strâns pe corp și nu te atașa niciodată la un punct de ancorare neaprobat. Acest echipament salvează vieți — folosește-l corect.",
-    sr: "LZO je tvoja lična zaštitna oprema od pada — pojas, uže i karabineri moraju uvijek biti međusobno kompatibilni. Nosi opasač čvrsto uz tijelo i nikad se ne kači za sidrišnu točku koja nije odobrena. Ova oprema spašava živote — koristi je pravilno.",
-    pl: "ŚOI to twój osobisty sprzęt ochronny przed upadkiem — uprząż, lina i karabinki muszą zawsze do siebie pasować. Noś uprząż ciasno przylegającą do ciała i nigdy nie podczepiaj się do nieautoryzowanego punktu kotwiczenia. Ten sprzęt ratuje życie — używaj go prawidłowo."
+    de: "Du darfst persönliche Daten nur für den vorgesehenen Zweck verwenden — nicht für private Dinge oder Neugierde. Schütze Passwörter und Zugangsdaten, die du durch deine Arbeit kennst. Wenn du einen Datenschutzverstoß bemerkst — zum Beispiel offen liegende Akten — melde ihn sofort deinem Vorgesetzten.",
+    tr: "Kişisel verileri yalnızca belirtilen amaç için kullanabilirsin — kişisel ya da merak amaçlı değil. İşin aracılığıyla öğrendiğin şifreleri ve erişim bilgilerini koru. Bir veri ihlali fark edersen — örneğin açıkta duran dosyalar — hemen amirini bilgilendir.",
+    ro: "Poți folosi datele personale doar în scopul prevăzut — nu pentru uz personal sau din curiozitate. Protejează parolele și datele de acces pe care le cunoști din activitatea ta. Dacă observi o încălcare a protecției datelor — de exemplu dosare lăsate deschise — raportează-o imediat superiorului tău.",
+    sr: "Smijete koristiti osobne podatke samo u predviđenu svrhu — ne za privatne stvari ili znatiželju. Zaštiti lozinke i pristupne podatke koje znaš kroz svoj posao. Ako primijetiš kršenje zaštite podataka — npr. otvorene spise — odmah to prijavi nadređenom.",
+    pl: "Możesz używać danych osobowych tylko w wyznaczonym celu — nie do spraw prywatnych ani z ciekawości. Chroń hasła i dane dostępowe, które poznajesz przez swoją pracę. Jeśli zauważysz naruszenie ochrony danych — na przykład otwarte teczki — natychmiast zgłoś to swojemu przełożonemu.",
+    en: "You may only use personal data for the intended purpose — not for private matters or out of curiosity. Protect passwords and access data that you come to know through your work. If you notice a data protection violation — for example open files — report it immediately to your supervisor.",
+    ar: "لا يجوز لك استخدام البيانات الشخصية إلا للغرض المحدد — ليس لأغراض شخصية أو من باب الفضول. احمِ كلمات المرور وبيانات الوصول التي تعرفها من خلال عملك. إذا لاحظت انتهاكاً لحماية البيانات — مثل ملفات مفتوحة — أبلغ مشرفك فوراً."
   },
   kap_18: {
-    de: "Vor jeder Benutzung prüfst du Gurte und Seile mit den Augen: Risse, Scheuerstellen, gebrochene Nähte oder verformte Metallteile sind Ausrangierkriterien. Was auch nur einen Zweifel weckt, darf nicht benutzt werden — tausche es sofort aus. Defekte Ausrüstung kostet Leben.",
-    tr: "Her kullanımdan önce kemer ve ipleri gözle kontrol et: çatlaklar, aşınan yerler, kopuk dikişler veya biçimi bozulmuş metal parçalar ayıklama kriteridir. En küçük bir şüphe uyandıran şey kullanılmamalıdır — hemen değiştir. Hasarlı ekipman hayata mal olur.",
-    ro: "Înainte de fiecare utilizare, examinezi vizual centurile și corzile: crăpăturile, zonele de uzură, cusăturile rupte sau piesele metalice deformate sunt criterii de casare. Ceea ce trezește chiar și o singură îndoială nu poate fi utilizat — înlocuiește imediat. Echipamentul defect costă vieți.",
-    sr: "Prije svake upotrebe vizualno pregledaj pojaseve i užad: pukotine, istrošena mjesta, prekinuti šavovi ili deformirani metalni dijelovi su kriteriji za odbacivanje. Ono što izaziva i najmanju sumnju ne smije se koristiti — odmah zamijeni. Pokvarena oprema košta života.",
-    pl: "Przed każdym użyciem wizualnie sprawdzasz uprzęże i liny: pęknięcia, przetarcia, zerwane szwy lub zdeformowane części metalowe są kryteriami do wycofania z użytku. To, co budzi choćby jeden cień wątpliwości, nie może być używane — natychmiast wymień. Uszkodzony sprzęt kosztuje życie."
+    de: "Verschwiegenheit bedeutet: Was du bei der Arbeit siehst, hörst oder weißt, bleibt bei dir. Das gilt für Kundennamen, Adressen, wirtschaftliche Verhältnisse und Firmengeheimnisse. Diese Pflicht gilt auch noch nach Ende des Arbeitsverhältnisses — für immer.",
+    tr: "Gizlilik demek: İşte gördüğün, duyduğun veya bildiğin şeyler sende kalır. Bu durum müşteri isimleri, adresler, ekonomik koşullar ve ticari sırlar için geçerlidir. Bu yükümlülük iş ilişkisi sona erdikten sonra da geçerlidir — sonsuza kadar.",
+    ro: "Confidențialitatea înseamnă: ceea ce vezi, auzi sau știi la locul de muncă rămâne la tine. Aceasta se aplică numelor clienților, adreselor, situațiilor economice și secretelor de afaceri. Această obligație se aplică și după încetarea raportului de muncă — pentru totdeauna.",
+    sr: "Povjerljivost znači: ono što vidiš, čuješ ili znaš na poslu ostaje kod tebe. To se odnosi na imena klijenata, adrese, ekonomske uvjete i poslovne tajne. Ova obveza vrijedi i nakon prestanka radnog odnosa — zauvijek.",
+    pl: "Poufność oznacza: to, co widzisz, słyszysz lub wiesz w pracy, pozostaje przy tobie. Dotyczy to nazwisk klientów, adresów, sytuacji ekonomicznej i tajemnic przedsiębiorstwa. Ten obowiązek obowiązuje również po zakończeniu stosunku pracy — na zawsze.",
+    en: "Confidentiality means: what you see, hear or know at work stays with you. This applies to customer names, addresses, economic circumstances and trade secrets. This obligation also applies after the end of the employment relationship — forever.",
+    ar: "السرية تعني: ما تراه أو تسمعه أو تعرفه في العمل يبقى عندك. ينطبق هذا على أسماء العملاء والعناوين والأوضاع الاقتصادية والأسرار التجارية. هذا الالتزام ساري أيضاً بعد انتهاء علاقة العمل — إلى الأبد."
   },
   kap_19: {
-    de: "Ein Anschlagpunkt ist die Stelle, an der du dein Sicherungsseil befestigst — er muss mindestens 12 kN aushalten können. Verwende nur Anschlagpunkte, die vom Arbeitgeber oder Gebäudebetreiber freigegeben wurden. Prüfe vor jedem Einhängen, ob der Punkt fest und unbeschädigt ist.",
-    tr: "Ankraj noktası, güvenlik ipini bağladığın yerdir — en az 12 kN dayanabilmelidir. Yalnızca işveren veya bina işletmecisi tarafından onaylanmış ankraj noktalarını kullan. Her takma işleminden önce noktanın sağlam ve hasarsız olduğunu kontrol et.",
-    ro: "Un punct de ancorare este locul unde îți fixezi coarda de siguranță — trebuie să reziste cel puțin 12 kN. Folosește numai puncte de ancorare aprobate de angajator sau de administratorul clădirii. Înainte de fiecare atașare, verifică dacă punctul este solid și nedeteriorat.",
-    sr: "Sidrišna točka je mjesto gdje pričvršćuješ svoju sigurnosnu užad — mora izdržati najmanje 12 kN. Koristi samo sidrišne točke koje su odobrio poslodavac ili upravitelj zgrade. Prije svakog kačenja provjeri je li točka čvrsta i neoštećena.",
-    pl: "Punkt kotwiczenia to miejsce, do którego mocujesz linkę zabezpieczającą — musi wytrzymać co najmniej 12 kN. Używaj tylko punktów kotwiczenia zatwierdzonych przez pracodawcę lub zarządcę budynku. Przed każdym podpięciem sprawdź, czy punkt jest mocny i nieuszkodzony."
+    de: "Im Kundenobjekt triffst du auf persönliche Gegenstände, Fotos, Dokumente und Computer der Menschen, die dort arbeiten oder wohnen. Berühre solche Sachen nicht unnötig, schau nicht in Unterlagen und lies keine Bildschirme. Deine Aufgabe ist Reinigung — nicht Neugier.",
+    tr: "Müşteri binasında orada çalışan veya yaşayan kişilerin kişisel eşyalarına, fotoğraflarına, belgelerine ve bilgisayarlarına rastlarsın. Bu tür şeylere gereksiz yere dokunma, belgelere bakma ve ekranları okuma. Görevin temizlik — merak değil.",
+    ro: "La obiectivul clientului întâlnești obiecte personale, fotografii, documente și calculatoare ale persoanelor care lucrează sau locuiesc acolo. Nu atinge astfel de lucruri inutil, nu te uita în dosare și nu citi ecranele. Sarcina ta este curățenia — nu curiozitatea.",
+    sr: "U objektu klijenta nailazit ćeš na osobne predmete, fotografije, dokumente i računala osoba koje tamo rade ili žive. Ne diraj takve stvari nepotrebno, ne gledaj u spise i ne čitaj zaslone. Tvoj zadatak je čišćenje — ne znatiželja.",
+    pl: "W obiekcie klienta natrafisz na osobiste przedmioty, zdjęcia, dokumenty i komputery osób, które tam pracują lub mieszkają. Nie dotykaj takich rzeczy niepotrzebnie, nie zaglądaj do teczek i nie czytaj ekranów. Twoje zadanie to sprzątanie — nie ciekawość.",
+    en: "In the customer's premises you encounter personal belongings, photos, documents and computers of the people who work or live there. Do not touch such things unnecessarily, do not look at documents and do not read screens. Your task is cleaning — not curiosity.",
+    ar: "في مواقع العميل ستجد أغراضاً شخصية وصوراً ووثائق وأجهزة حاسوب تخص الأشخاص الذين يعملون أو يقيمون هناك. لا تلمس مثل هذه الأشياء دون ضرورة، ولا تطّلع على الوثائق ولا تقرأ الشاشات. مهمتك هي التنظيف — لا الفضول."
   },
   kap_20: {
-    de: "Vor Beginn jeder Höhenarbeit muss ein Rettungsplan vorhanden sein: Wer ruft die Feuerwehr? Wie kommt man schnell zur verunglückten Person? Übt den Plan im Team und stellt sicher, dass alle wissen, was zu tun ist. Ein guter Plan rettet Leben, bevor Hilfe eintrifft.",
-    tr: "Her yüksekte çalışmadan önce bir kurtarma planı hazır olmalıdır: Kim itfaiyeyi arar? Yaralı kişiye nasıl hızlıca ulaşılır? Planı ekip olarak pratik yapın ve herkesin ne yapacağını bildiğinden emin olun. İyi bir plan, yardım gelmeden önce hayat kurtarır.",
-    ro: "Înainte de începerea oricărei lucrări la înălțime, trebuie să existe un plan de salvare: Cine sună pompierii? Cum se ajunge rapid la persoana accidentată? Exersați planul în echipă și asigurați-vă că toți știu ce să facă. Un plan bun salvează vieți înainte de sosirea ajutorului.",
-    sr: "Prije početka svakog rada na visini mora postojati plan spašavanja: Ko zove vatrogasce? Kako se brzo dolazi do povrijeđene osobe? Vježbajte plan u timu i pobrinite se da svi znaju što trebaju raditi. Dobar plan spašava živote prije dolaska pomoći.",
-    pl: "Przed rozpoczęciem każdej pracy na wysokości musi istnieć plan ratunkowy: Kto dzwoni do straży pożarnej? Jak szybko dotrzeć do poszkodowanej osoby? Ćwiczcie plan w zespole i upewnijcie się, że wszyscy wiedzą, co robić. Dobry plan ratuje życie przed przybyciem pomocy."
+    de: "Wenn dir auffällt, dass Daten in Gefahr sind — zum Beispiel ein offener PC, liegengebliebene Ausweise oder Akten auf dem Boden — muss das sofort dem Vorgesetzten gemeldet werden. Mach keine Fotos von solchen Situationen mit dem Smartphone — auch nicht als Beweis. Eine Datenpanne kann zu hohen Bußgeldern führen.",
+    tr: "Verilerin tehlikede olduğunu fark edersen — örneğin açık bir bilgisayar, yerde kalan kimlikler veya dosyalar — bunu hemen amirine bildirmen gerekir. Akıllı telefonunla böyle durumların fotoğrafını çekme — kanıt olarak bile olsa. Veri ihlali yüksek para cezalarına yol açabilir.",
+    ro: "Dacă observi că datele sunt în pericol — de exemplu un PC deschis, acte de identitate sau dosare rămase pe podea — trebuie raportat imediat superiorului. Nu face fotografii ale unor astfel de situații cu smartphone-ul, nici măcar ca dovadă. O scurgere de date poate duce la amenzi mari.",
+    sr: "Ako primijetiš da su podaci u opasnosti — npr. otvoren PC, ostavljene lične karte ili spisi na podu — to se mora odmah prijaviti nadređenom. Ne snimi takve situacije pametnim telefonom, čak ni kao dokaz. Povreda podataka može dovesti do visokih novčanih kazni.",
+    pl: "Jeśli zauważysz, że dane są zagrożone — na przykład otwarty komputer, pozostawione dowody osobiste lub akta na podłodze — należy to natychmiast zgłosić przełożonemu. Nie fotografuj takich sytuacji smartfonem, nawet jako dowód. Wyciek danych może prowadzić do wysokich kar finansowych.",
+    en: "If you notice that data is at risk — for example an open PC, identity documents or files left on the floor — this must be reported to your supervisor immediately. Do not photograph such situations with your smartphone, not even as evidence. A data breach can lead to heavy fines.",
+    ar: "إذا لاحظت أن البيانات في خطر — مثل حاسوب مفتوح أو بطاقات هوية أو ملفات متروكة على الأرض — يجب الإبلاغ عن ذلك فوراً للمشرف. لا تُصور مثل هذه المواقف بهاتفك الذكي، حتى ولو كان كدليل. يمكن أن يؤدي اختراق البيانات إلى غرامات مالية باهظة."
   },
   kap_21: {
-    de: "Hängetrauma entsteht, wenn jemand bewusstlos im Gurt hängt — das Blut sackt in die Beine und das Herz wird nicht mehr ausreichend versorgt. Schon nach wenigen Minuten kann das tödlich enden — deshalb muss Rettung sofort einsetzen. Erkenne die Warnsymptome: Schwindel, blasse Haut, Bewusstlosigkeit — sofort Notruf 112.",
-    tr: "Askı travması, birinin harness içinde bilinçsiz asıl kalması durumunda oluşur — kan bacaklara çöker ve kalbe yeterli kan ulaşmaz. Sadece birkaç dakika içinde ölümcül sonuçlanabilir — bu nedenle kurtarma hemen başlamalıdır. Uyarı belirtilerini tanı: baş dönmesi, soluk cilt, bilinç kaybı — hemen 112 acil hattını ara.",
-    ro: "Traumatismul de suspensie apare când cineva atârnă inconștient în ham — sângele se acumulează în picioare și inima nu mai primește suficient sânge. Poate fi fatal în doar câteva minute — de aceea salvarea trebuie să înceapă imediat. Recunoaște simptomele de avertizare: amețeli, piele palidă, pierderea conștienței — sună imediat la 112.",
-    sr: "Sindrom vješanja nastaje kada netko visi nesvjestan u pojasu — krv se spušta u noge i srce više ne prima dovoljno krvi. Može biti smrtonosno već za nekoliko minuta — stoga spašavanje mora početi odmah. Prepoznaj znakove upozorenja: vrtoglavica, blijeda koža, gubitak svijesti — odmah pozovi 112.",
-    pl: "Uraz zawieszenia powstaje, gdy ktoś wisi nieprzytomny w uprzęży — krew spływa do nóg i serce nie jest wystarczająco zaopatrywane. Już po kilku minutach może to być śmiertelne — dlatego akcja ratunkowa musi rozpocząć się natychmiast. Rozpoznaj objawy ostrzegawcze: zawroty głowy, blada skóra, utrata przytomności — natychmiast dzwoń pod numer 112."
+    de: "Im Kundenobjekt gilt: keine Fotos im Objekt, keine fremden Dokumente lesen, keine Daten weitergeben. Du darfst keine persönlichen Informationen der Bewohner oder Mitarbeiter nutzen oder weitergeben — weder mündlich noch schriftlich. Wer dagegen verstößt, riskiert Abmahnung, Kündigung oder rechtliche Konsequenzen.",
+    tr: "Müşteri binasında: binada fotoğraf çekme, başkalarının belgelerini okuma, veri paylaşma. Sakinlerin veya çalışanların kişisel bilgilerini kullanamaz veya paylaşamazsın — ne sözlü ne yazılı. Buna uymayan kişi uyarı, işten çıkarma veya hukuki sonuçlarla karşılaşır.",
+    ro: "La obiectivul clientului: nicio fotografie în obiectiv, nicio citire a documentelor altora, nicio transmitere de date. Nu ai voie să folosești sau să transmiți informații personale ale locatarilor sau angajaților — nici verbal, nici în scris. Cine încalcă aceasta riscă avertisment, concediere sau consecințe juridice.",
+    sr: "U objektu klijenta vrijedi: nema fotografiranja u objektu, ne čitaj tuđe dokumente, ne dijeli podatke. Ne smiješ koristiti ni prosljeđivati osobne informacije stanara ili zaposlenika — ni usmeno ni pismeno. Ko to prekrši, riskira opomenu, otkaz ili pravne posljedice.",
+    pl: "W obiekcie klienta obowiązuje: nie robić zdjęć w obiekcie, nie czytać cudzych dokumentów, nie przekazywać danych. Nie wolno ci używać ani przekazywać danych osobowych mieszkańców lub pracowników — ani ustnie ani pisemnie. Kto naruszy te zasady, ryzykuje ostrzeżenie, zwolnienie lub konsekwencje prawne.",
+    en: "In the customer's premises: no photos in the building, do not read other people's documents, do not share data. You must not use or pass on personal information of residents or employees — neither verbally nor in writing. Anyone who violates this risks a warning, dismissal or legal consequences.",
+    ar: "في موقع العميل: لا تلتقط صوراً في المبنى، لا تقرأ وثائق الآخرين، لا تشارك البيانات. لا يجوز لك استخدام المعلومات الشخصية للمقيمين أو الموظفين أو نقلها — لا شفهياً ولا كتابياً. من يخالف ذلك يخاطر بالإنذار أو الفصل أو العواقب القانونية."
+  },
+  kap_22: {
+    de: "Du darfst die Arbeit nicht unter Einfluss von Alkohol, Drogen oder Cannabis antreten — das gefährdet dich selbst und andere. Wenn du Medikamente nimmst, die deine Reaktionsfähigkeit beeinflussen, musst du das dem Vorgesetzten melden. Verstöße können zur fristlosen Kündigung führen.",
+    tr: "Alkol, uyuşturucu veya esrar etkisi altında işe başlayamazsın — bu hem seni hem başkalarını tehlikeye atar. Tepki yeteneğini etkileyen ilaçlar alıyorsan, bunu amirlerine bildirmen gerekir. İhlaller derhal feshe yol açabilir.",
+    ro: "Nu poți începe munca sub influența alcoolului, drogurilor sau canabisului — aceasta te pune pe tine și pe alții în pericol. Dacă iei medicamente care îți afectează capacitatea de reacție, trebuie să îi informezi superiorul. Încălcările pot duce la concediere imediată.",
+    sr: "Ne smiješ početi rad pod utjecajem alkohola, droga ili kanabisa — to ugrožava tebe i druge. Ako uzimate lijekove koji utječu na tvoju sposobnost reakcije, moraš to prijaviti nadređenom. Kršenja mogu dovesti do trenutnog otkaza.",
+    pl: "Nie możesz przystąpić do pracy pod wpływem alkoholu, narkotyków lub konopi — zagraża to tobie i innym. Jeśli przyjmujesz leki wpływające na twoją zdolność reagowania, musisz poinformować o tym przełożonego. Naruszenia mogą prowadzić do natychmiastowego zwolnienia.",
+    en: "You must not start work under the influence of alcohol, drugs or cannabis — this puts yourself and others at risk. If you take medication that affects your reaction capacity, you must inform your supervisor. Violations can lead to instant dismissal.",
+    ar: "لا يجوز لك البدء في العمل تحت تأثير الكحول أو المخدرات أو الحشيش — فهذا يُعرّضك أنت والآخرين للخطر. إذا كنت تتناول أدوية تؤثر على قدرة التفاعل لديك يجب إبلاغ مشرفك. يمكن أن تؤدي المخالفات إلى الفصل الفوري من العمل."
   }
 };
 
@@ -5405,7 +5352,7 @@ async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  LERNPFAD — 21 Kapitel Checklisten-System (Stufe 1)
+//  LERNPFAD — Checklisten-System (Stufe 1)
 //  Mitarbeiter haken ab → Verantwortlicher bestätigt → Supabase-Audit
 //  Stufe 2+3 (Tests, Mehrsprachigkeit) separat geplant
 // ══════════════════════════════════════════════════════════════
@@ -5415,7 +5362,7 @@ let lernpfadFortschritt = {}; // { kap_01: { abgehakt: true, bestaetigtAm: '...'
 
 const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.id || 'anon'}`;
 const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309' };
-const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🧗 Säule C — Höhentechnologie & PSAgA' };
+const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO' };
 
 // ── LERNPFAD-SPRACHE ─────────────────────────────────────────
 const LP_SPRACHEN = [
@@ -5424,6 +5371,8 @@ const LP_SPRACHEN = [
   { code:'ro', flag:'🇷🇴', label:'RO' },
   { code:'sr', flag:'🇷🇸', label:'SR' },
   { code:'pl', flag:'🇵🇱', label:'PL' },
+  { code:'en', flag:'🇬🇧', label:'EN' },
+  { code:'ar', flag:'🇸🇦', label:'AR' },
 ];
 let lernpfadSprache = localStorage.getItem('lernpfad_sprache') || 'de';
 
@@ -5565,13 +5514,13 @@ function renderLernpfad() {
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px">
       <div style="padding:14px 16px;background:#0f5132;color:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-weight:700;font-size:.95rem">📚 21-Kapitel Lernpfad</span>
+          <span style="font-weight:700;font-size:.95rem">📚 Lernpfad</span>
           <span style="font-size:.85rem;font-weight:700">${bestanden}/${gesamt} ✓</span>
         </div>
         <div style="background:rgba(255,255,255,.25);border-radius:999px;height:8px">
           <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
         </div>
-        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle 21 Kapitel erledigt!' : ''}</div>
+        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
       </div>
       <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
@@ -5667,7 +5616,7 @@ function renderLernpfad() {
 
   // Button-Untertitel aktualisieren
   const sub = document.getElementById('btn-lernpfad-sub');
-  if (sub) sub.textContent = `${bestanden}/21 Kapitel abgeschlossen`;
+  if (sub) sub.textContent = `${bestanden}/${LERNPFAD_KAPITEL.length} Kapitel abgeschlossen`;
 }
 
 // ── Gesamtzertifikat generieren ───────────────────────────────
@@ -5693,7 +5642,7 @@ async function lernpfadZertifikatGenerieren() {
   doc.text('SCHULUNGSZERTIFIKAT', 105, 15, { align:'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica','normal');
-  doc.text('Gebäudereinigung & Höhentechnologie — 21-Kapitel Lernpfad', 105, 23, { align:'center' });
+  doc.text('Gebäudereinigung — Lernpfad', 105, 23, { align:'center' });
   doc.text('CSC GmbH Schulungsmanagement', 105, 30, { align:'center' });
 
   // Mitarbeiterdaten
