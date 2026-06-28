@@ -2587,39 +2587,44 @@ async function renderMitarbeiterListe() {
       }
 
       return `
-        <div onclick="mitarbeiterDetailOeffnen('${m.id}')" style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
-                    display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;cursor:pointer;
-                    ${istArchiviert?'opacity:0.7':''}transition:box-shadow .15s" 
-             onmouseover="this.style.boxShadow='0 2px 8px rgba(0,0,0,.10)'" 
-             onmouseout="this.style.boxShadow=''">
-          <div style="font-size:1.3rem;flex-shrink:0;padding-top:2px">${c.dot}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-weight:700;font-size:.92rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-              ${escHtml(m.name)}
+        <div style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;margin-bottom:8px;
+                    ${istArchiviert?'opacity:0.7':''}">
+          <!-- ── Kompakte Kopfzeile (immer sichtbar) — Klick klappt Details aus ── -->
+          <div onclick="maNDetailToggle('${m.id}')"
+               style="padding:10px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none">
+            <div style="font-size:1.2rem;flex-shrink:0">${c.dot}</div>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:700;font-size:.92rem;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                ${escHtml(m.name)}
+              </div>
+              ${(m.standort||m.bereich) ? `<div style="font-size:.72rem;color:#6b7280;margin-top:1px">
+                ${m.standort ? `📍 ${escHtml(m.standort)}` : ''}${m.standort&&m.bereich?' · ':''}${m.bereich ? `🏷 ${escHtml(m.bereich)}` : ''}
+              </div>` : `<div style="font-size:.72rem;color:#9ca3af">${escHtml(m.email)}</div>`}
             </div>
-            <div style="font-size:.78rem;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-              ${escHtml(m.email)}
+            <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
+              <div style="font-size:.78rem;font-weight:700;color:${c.text}">${c.label}</div>
+              ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.68rem;color:#6b7280">
+                🟢${abgeschl} 🟡${gestartet} 🔴${offen}
+              </div>` : ''}
+              <div style="font-size:.7rem;color:#9ca3af" id="ma-pfeil-${m.id}">▼</div>
             </div>
-            ${(m.standort||m.bereich) ? `<div style="font-size:.75rem;color:#4b5563;margin-top:3px;display:flex;gap:8px;flex-wrap:wrap">
-              ${m.standort ? `<span>📍 ${escHtml(m.standort)}</span>` : ''}
-              ${m.bereich  ? `<span>🏷 ${escHtml(m.bereich)}</span>` : ''}
-            </div>` : ''}
-            <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+          </div>
+
+          <!-- ── Ausklapp-Details (standardmäßig verborgen) ── -->
+          <div id="ma-detail-${m.id}" style="display:none;border-top:1px solid ${c.border}">
+            <!-- Aktionsbuttons -->
+            <div style="padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,.5)">
               ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}
             </div>
-          </div>
-          <div style="text-align:right;flex-shrink:0">
-            <div style="font-size:.78rem;font-weight:700;color:${c.text}">${c.label}</div>
-            ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.72rem;color:#6b7280;margin-top:2px">
-              🟢 ${abgeschl} · 🟡 ${gestartet} · 🔴 ${offen}
+            <!-- Schulungszeilen -->
+            ${gesamtZuws > 0 && !istArchiviert ? `
+            <div style="padding:8px 14px;border-top:1px solid rgba(0,0,0,.05)">
+              ${unterweisungsZeilen}
             </div>` : ''}
+            <!-- Lernpfad-Block -->
+            ${lpUntBlock ? `<div style="padding:0 14px 10px">${lpUntBlock}</div>` : ''}
           </div>
         </div>
-        ${gesamtZuws > 0 && !istArchiviert ? `
-        <div style="margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.6);border-radius:7px;border:1px solid rgba(0,0,0,.06)">
-          ${unterweisungsZeilen}
-        </div>` : ''}
-        ${lpUntBlock}
       `;
     });
 
@@ -2632,6 +2637,16 @@ async function renderMitarbeiterListe() {
   } catch(e) {
     listEl.innerHTML = `<div style="color:#dc2626;font-size:.85rem;padding:8px">Fehler beim Laden: ${escHtml(e.message)}</div>`;
   }
+}
+
+// ── Mitarbeiterkarte aufklappen/zuklappen ────────────────────
+function maNDetailToggle(userId) {
+  const detail = document.getElementById(`ma-detail-${userId}`);
+  const pfeil  = document.getElementById(`ma-pfeil-${userId}`);
+  if (!detail) return;
+  const offen = detail.style.display === 'none' || detail.style.display === '';
+  detail.style.display = offen ? 'block' : 'none';
+  if (pfeil) pfeil.textContent = offen ? '▲' : '▼';
 }
 
 // ── Intervall einer Zuweisung ändern (Verantwortlicher) ──────
