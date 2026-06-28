@@ -5717,7 +5717,7 @@ async function lernpfadVerantwortlicherUnterzeichnen(userId) {
       tenant_id:            currentUser.tenantId || '',
       vollname:             existing.vollname,
       unterzeichnet_am:     existing.unterzeichnet_am,
-      verantwortlicher_id:  currentUser.id,
+      verantwortlicher_id:  currentUser.userId,
       verantwortlicher_name: verantwortlicherName,
       verantwortlicher_am:  ts,
       aktualisiert_am:      ts
@@ -5749,8 +5749,8 @@ async function lernpfadUnterzeichnen() {
 
   try {
     await SB.upsert('lernpfad_unterschriften', {
-      id:               currentUser.id,
-      user_id:          currentUser.id,
+      id:               currentUser.userId,
+      user_id:          currentUser.userId,
       tenant_id:        currentUser.tenantId || '',
       vollname:         vollname,
       unterzeichnet_am: ts,
