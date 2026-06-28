@@ -30,7 +30,7 @@ let inactivityTimer   = null; // Session-Timeout Timer
 let pushSubscription  = null; // Push-Benachrichtigungen
 let adminSuchFilter   = '';   // Admin-Suche Filter
 
-// ── LERNPFAD: 21 KAPITEL (Gebäudereinigung & Höhentechnologie) ───────────
+// ── LERNPFAD: 22 KAPITEL (Gebäudereinigung & Höhentechnologie) ───────────
 // Direkt in app.js — data.js wird nicht mehr geladen (Daten kommen aus Supabase)
 // Stufe 1: Checklisten-System | Stufe 2+3: Tests + Mehrsprachigkeit (geplant)
 const LERNPFAD_KAPITEL = [
@@ -2667,13 +2667,10 @@ function renderSubDashboard() {
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   if (kalBtns) {
     if (isMitarbeiter) {
-      // Nur Anleitung-Link zeigen, Kalender-Button ausblenden
-      const kalBtn = kalBtns.querySelector('button');
-      if (kalBtn) kalBtn.style.display = 'none';
-      kalBtns.style.gap = '0';
+      // Für Mitarbeiter: weder Kalender noch Anleitung anzeigen
+      kalBtns.style.display = 'none';
     } else {
-      const kalBtn = kalBtns.querySelector('button');
-      if (kalBtn) kalBtn.style.display = '';
+      kalBtns.style.display = '';
       kalBtns.style.gap = '10px';
     }
   }
