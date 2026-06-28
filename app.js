@@ -3395,6 +3395,14 @@ async function nuAnlegen() {
     msgEl.style.color = '#16a34a';
     msgEl.textContent = `✅ "${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
 
+    // E-Mail mit Zugangsdaten versenden
+    const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name });
+    if (emailOk) {
+      msgEl.textContent += ` — ✉️ Zugangsdaten per E-Mail gesendet`;
+    } else {
+      msgEl.textContent += ` — ⚠️ E-Mail konnte nicht gesendet werden (Passwort oben notieren!)`;
+    }
+
     // Felder leeren
     ['nu-name','nu-email','nu-kontakt','nu-passwort'].forEach(id => document.getElementById(id).value = '');
 
@@ -3926,6 +3934,10 @@ async function mitarbeiterEinzelnSpeichern() {
 
     sbAudit('MITARBEITER_EINZEL', { name, email, tenantId: currentUser.tenantId });
 
+    // E-Mail mit Zugangsdaten versenden
+    const tenantObjMA = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+    const mailOkMA = await sendLoginEmail({ an: email, name, rolle: 'mitarbeiter', passwort: pw, unternehmen: tenantObjMA?.name || '' });
+
     // Mitarbeiterliste aktualisieren
     renderMitarbeiterListe();
 
@@ -3936,7 +3948,9 @@ async function mitarbeiterEinzelnSpeichern() {
       `<div style="margin-bottom:6px"><strong>E-Mail:</strong> ${email}</div>` +
       (standort ? `<div style="margin-bottom:6px"><strong>Standort:</strong> ${escHtml(standort)}</div>` : '') +
       (bereich  ? `<div style="margin-bottom:6px"><strong>Bereich:</strong> ${escHtml(bereich)}</div>` : '') +
-      `<div><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>`;
+      `<div style="margin-bottom:6px"><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>` +
+      (mailOkMA ? `<div style="color:#16a34a;margin-top:8px">✉️ Zugangsdaten wurden per E-Mail gesendet.</div>`
+                : `<div style="color:#f59e0b;margin-top:8px">⚠️ E-Mail konnte nicht gesendet werden – Passwort bitte notieren!</div>`);
     document.getElementById('einzel-ergebnis').style.display = 'block';
 
   } catch(e) {
@@ -4878,7 +4892,52 @@ function renderAdminTenantTableMitSuche() {
 // ══════════════════════════════════════════════════════════════
 
 // Supabase Edge Function URL (muss in Supabase deployed werden)
-const EDGE_FN_URL = 'https://vziankbxuiqwekdbjewg.supabase.co/functions/v1/send-email';
+// ══════════════════════════════════════════════════════════════
+//  E-MAIL VERSAND via lokalem SMTP-Proxy (Port 8765)
+// ══════════════════════════════════════════════════════════════
+const EMAIL_PROXY_URL = 'http://localhost:8765/send-email';
+
+async function sendLoginEmail({ an, name, rolle, passwort, unternehmen }) {
+  const rollenLabel = rolle === 'firma' ? 'Unternehmensverwaltung'
+                    : rolle === 'verantwortlicher' ? 'Verantwortlicher'
+                    : 'Mitarbeiter';
+  const html = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+    <div style="background:#1a3a5c;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">
+      <h2 style="margin:0">🎓 Ihre Zugangsdaten – CSC Schulungsmanagement</h2>
+    </div>
+    <div style="background:#fff;padding:24px;border:1px solid #e5e7eb;border-radius:0 0 8px 8px">
+      <p>Guten Tag <strong>${escHtml(name)}</strong>,</p>
+      <p>Ihr Zugang zur CSC Schulungsmanagement-App wurde eingerichtet. Bitte melden Sie sich mit folgenden Daten an:</p>
+      <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin:16px 0">
+        <div style="margin-bottom:8px"><strong>Rolle:</strong> ${rollenLabel}</div>
+        ${unternehmen ? `<div style="margin-bottom:8px"><strong>Unternehmen:</strong> ${escHtml(unternehmen)}</div>` : ''}
+        <div style="margin-bottom:8px"><strong>E-Mail:</strong> <code style="background:#e0f2fe;padding:2px 6px;border-radius:4px">${escHtml(an)}</code></div>
+        <div><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:1rem">${escHtml(passwort)}</code></div>
+      </div>
+      <p>⚠️ <strong>Bitte ändern Sie Ihr Passwort nach dem ersten Login.</strong></p>
+      <p><a href="https://schulung.csc-hannover.de" style="background:#1a3a5c;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none;display:inline-block">🔗 Zur Schulungsapp</a></p>
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:20px 0">
+      <p style="font-size:.8rem;color:#6b7280">CSC GmbH Schulungsmanagement • <a href="https://schulung.csc-hannover.de">schulung.csc-hannover.de</a></p>
+    </div>
+  </div>`;
+  try {
+    const res = await fetch(EMAIL_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        to: an,
+        subject: `🎓 Ihre Zugangsdaten – CSC Schulungsmanagement`,
+        html
+      })
+    });
+    return res.ok;
+  } catch(e) {
+    console.warn('E-Mail Versand fehlgeschlagen:', e.message);
+    return false;
+  }
+}
+
+
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ6aWFua2J4dWlxd2VrZGJqZXdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE3MDg1MTgsImV4cCI6MjA5NzI4NDUxOH0.placeholder';
 
 async function emailBenachrichtigungSenden({ an, betreff, inhalt }) {
@@ -6843,7 +6902,11 @@ async function firmaVerantwortlichenSpeichern() {
     }
     await sbAudit('FIRMA_VERANTWORTLICHER_NEU', `${name} (${email}) angelegt von ${currentUser.name}`);
     firmaVerantwortlichenAnlegenSchliessen();
-    showToast(`✅ ${name} angelegt — Passwort: ${pw}`, '#0f5132');
+    // E-Mail mit Zugangsdaten versenden
+    const tenantObj = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+    const emailOk = await sendLoginEmail({ an: email, name, rolle: 'verantwortlicher', passwort: pw, unternehmen: tenantObj?.name || '' });
+    const mailHinweis = emailOk ? ' — ✉️ Zugangsdaten gesendet' : ' — ⚠️ E-Mail fehlgeschlagen!';
+    showToast(`✅ ${name} angelegt — Passwort: ${pw}${mailHinweis}`, '#0f5132');
     firmaRenderVerantwortliche();
   } catch(e) {
     fehEl.textContent = 'Fehler: ' + e.message;
@@ -7060,4 +7123,147 @@ async function generiereSchulungsnachweisPDF(userId) {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '📄 PDF-Nachweis'; }
   }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+//  HILFE-SYSTEM — Kontextsensitive Anleitungen pro Ebene
+// ══════════════════════════════════════════════════════════════
+
+function hilfeOeffnen(ebene) {
+  const inhalte = {
+    admin: hilfeInhaltAdmin(),
+    firma: hilfeInhaltFirma(),
+    verantwortlicher: hilfeInhaltVerantwortlicher()
+  };
+  const inhalt = inhalte[ebene];
+  if (!inhalt) return;
+  let modal = document.getElementById('hilfe-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'hilfe-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:24px;max-width:520px;width:100%;margin:auto;position:relative">
+      <button onclick="hilfeSchliessen()" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7280">✕</button>
+      ${inhalt}
+    </div>`;
+  modal.style.display = 'flex';
+}
+
+function hilfeSchliessen() {
+  const m = document.getElementById('hilfe-modal');
+  if (m) m.style.display = 'none';
+}
+
+function hilfeInhaltAdmin() {
+  return `
+    <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: CSC-Admin</h2>
+    <div style="font-size:.88rem;color:#374151;line-height:1.6">
+      <p><strong>Als CSC-Admin haben Sie Zugang zu allen Bereichen der App.</strong></p>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Unternehmen anlegen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Tab <strong>🏢 Unternehmen</strong> → Formular ausfüllen</li>
+        <li>Firmenname, E-Mail, Ansprechpartner, Passwort eingeben</li>
+        <li>🎲 Zufallspasswort generieren empfohlen</li>
+        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Schulungsvorlagen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Tab <strong>📋 Vorlagen</strong> → neue Vorlage erstellen oder PDF hochladen</li>
+        <li>Vorlagen können Unternehmen zugewiesen werden</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Schulungen zuweisen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Tab <strong>📅 Zuweisungen</strong> → Vorlage + Unternehmen + Frist auswählen</li>
+        <li>Pflichtschulungen mit ✅ markieren</li>
+        <li>Intervall für Wiederholungen festlegen (z.B. alle 12 Monate)</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Übersicht & Archiv</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li>Tab <strong>📊 Übersicht</strong>: Ampelstatus aller Unternehmen</li>
+        <li>Tab <strong>📦 Archiv</strong>: Abgeschlossene Schulungen & archivierte Mitarbeiter</li>
+        <li>E-Mail-Erinnerungen laufen täglich automatisch (08:00 Uhr)</li>
+      </ul>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
+        <strong>💡 Hinweis:</strong> Das Unternehmen legt seine Verantwortlichen selbst an — Sie müssen das nicht tun.
+      </div>
+    </div>`;
+}
+
+function hilfeInhaltFirma() {
+  return `
+    <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: Unternehmensverwaltung</h2>
+    <div style="font-size:.88rem;color:#374151;line-height:1.6">
+      <p><strong>Als Unternehmens-Account verwalten Sie Ihre Verantwortlichen und Schulungen.</strong></p>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Verantwortlichen anlegen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Tab <strong>👔 Verantwortliche</strong> → <strong>➕ Verantwortlichen anlegen</strong></li>
+        <li>Name, E-Mail, Position, Telefon eingeben</li>
+        <li>Passwort generieren oder manuell eingeben</li>
+        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Verantwortliche verwalten</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>✏️ Daten bearbeiten: Stift-Symbol neben dem Namen</li>
+        <li>⏸ Konto sperren/freigeben: Aktiv/Inaktiv-Schalter</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Schulungsübersicht</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Tab <strong>📊 Übersicht</strong>: Ampelstatus aller Mitarbeiter Ihres Unternehmens</li>
+        <li>🟢 Grün = abgeschlossen · 🟡 Gelb = läuft · 🔴 Rot = überfällig</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Schulungen zuweisen</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li>Tab <strong>📋 Schulungen</strong>: zugewiesene Vorlagen anzeigen</li>
+        <li>Schulungen können direkt Mitarbeitern zugewiesen werden</li>
+      </ul>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
+        <strong>💡 Hinweis:</strong> Die Verantwortlichen legen die Mitarbeiter selbst an und führen die Schulungen durch.
+      </div>
+    </div>`;
+}
+
+function hilfeInhaltVerantwortlicher() {
+  return `
+    <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: Verantwortlicher</h2>
+    <div style="font-size:.88rem;color:#374151;line-height:1.6">
+      <p><strong>Als Verantwortlicher verwalten Sie Ihre Mitarbeiter und führen Schulungen durch.</strong></p>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Mitarbeiter anlegen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Button <strong>➕ Mitarbeiter anlegen</strong> → Formular ausfüllen</li>
+        <li>Name, E-Mail, Standort, Bereich eingeben</li>
+        <li>Passwort wird automatisch generiert</li>
+        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+        <li>Alternativ: <strong>👥 Mitarbeiter importieren</strong> (Excel-Datei)</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Schulungen zuweisen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>In der Mitarbeiterliste: Karte aufklappen → <strong>Schulung zuweisen</strong></li>
+        <li>Vorlage auswählen, Frist festlegen (Schnellauswahl: 3/6/9/12 Monate)</li>
+        <li>Für Bereichseinweisungen: persönliche Zuweisung möglich</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Lernpfad (22 Kapitel)</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Mitarbeiter absolviert 22 Kapitel selbstständig</li>
+        <li>Nach Abschluss: Mitarbeiter unterschreibt → Sie gegenzeichnen</li>
+        <li>Neuer Durchgang: über <strong>🔄 Neu starten</strong> in der Mitarbeiterkarte</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Schulungshistorie & PDF</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li>Mitarbeiterkarte aufklappen → <strong>📋 Historie</strong></li>
+        <li>Alle abgeschlossenen Schulungen + Unterschriften sehen</li>
+        <li><strong>📄 PDF-Nachweis</strong> generieren und herunterladen</li>
+      </ul>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">5. Mitarbeiter verwalten</h3>
+      <ul style="margin:0;padding-left:18px">
+        <li>Filter: Aktive / Passive / Archivierte / nach Bereich</li>
+        <li>⏸ Passiv setzen (keine neuen Schulungen) oder 📦 Archivieren</li>
+      </ul>
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
+        <strong>💡 Tipp:</strong> E-Mail-Erinnerungen werden 30 Tage vor Fristablauf automatisch versendet.
+      </div>
+    </div>`;
 }
