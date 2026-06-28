@@ -61,6 +61,83 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_22', nr:22, saeule:'C', titel:'Alkohol, Drogen & Verhaltensregeln am Arbeitsplatz', rechtsgrundlage:'§ 15 ArbSchG, § 106 GewO' },
 ];
 
+// ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
+// Einträge hier werden direkt als HTML gerendert (kein escHtml).
+// Sprachfallback greift NICHT — der Inhalt ist universal/bildbasiert.
+const LERNPFAD_HTML = {
+  kap_10: `
+<div style="font-size:.78rem;color:#374151;line-height:1.5">
+  <div style="margin-bottom:6px">Auf Reinigungsmittelflaschen gibt es <strong>9 GHS-Piktogramme</strong> — erkenne sie und handle richtig:</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/GHS-pictogram-explos.svg/100px-GHS-pictogram-explos.svg.png" alt="GHS01" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS01</div>
+      <div style="font-size:.68rem;color:#374151">Explodierende Bombe</div>
+      <div style="font-size:.65rem;color:#6b7280">Explosionsgefahr</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/GHS-pictogram-flamme.svg/100px-GHS-pictogram-flamme.svg.png" alt="GHS02" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS02</div>
+      <div style="font-size:.68rem;color:#374151">Flamme</div>
+      <div style="font-size:.65rem;color:#6b7280">Entzündbar/brennbar</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/GHS-pictogram-rondflam.svg/100px-GHS-pictogram-rondflam.svg.png" alt="GHS03" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS03</div>
+      <div style="font-size:.68rem;color:#374151">Flamme über Kreis</div>
+      <div style="font-size:.65rem;color:#6b7280">Brandfördernd/oxidierend</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c6/GHS-pictogram-bottle.svg/100px-GHS-pictogram-bottle.svg.png" alt="GHS04" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS04</div>
+      <div style="font-size:.68rem;color:#374151">Gasflasche</div>
+      <div style="font-size:.65rem;color:#6b7280">Gas unter Druck</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/GHS-pictogram-acid.svg/100px-GHS-pictogram-acid.svg.png" alt="GHS05" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS05</div>
+      <div style="font-size:.68rem;color:#374151">Ätzwirkung</div>
+      <div style="font-size:.65rem;color:#6b7280">Ätzt Haut &amp; Augen</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/GHS-pictogram-skull.svg/100px-GHS-pictogram-skull.svg.png" alt="GHS06" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS06</div>
+      <div style="font-size:.68rem;color:#374151">Totenkopf</div>
+      <div style="font-size:.65rem;color:#6b7280">Akut giftig</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/GHS-pictogram-exclam.svg/100px-GHS-pictogram-exclam.svg.png" alt="GHS07" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS07</div>
+      <div style="font-size:.68rem;color:#374151">Ausrufezeichen</div>
+      <div style="font-size:.65rem;color:#6b7280">Reizend/schädlich</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b3/GHS-pictogram-silhouet.svg/100px-GHS-pictogram-silhouet.svg.png" alt="GHS08" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS08</div>
+      <div style="font-size:.68rem;color:#374151">Gesundheitsgefahr</div>
+      <div style="font-size:.65rem;color:#6b7280">Chronisch gefährlich</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/GHS-pictogram-pollut.svg/100px-GHS-pictogram-pollut.svg.png" alt="GHS09" style="width:52px;height:52px;object-fit:contain">
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS09</div>
+      <div style="font-size:.68rem;color:#374151">Umwelt</div>
+      <div style="font-size:.65rem;color:#6b7280">Gewässergefährdend</div>
+    </div>
+
+  </div>
+  <div style="font-size:.72rem;color:#6b7280;margin-top:4px">💡 Erkenne das Symbol → Handle richtig → Leben schützen</div>
+</div>`,
+};
+
 // ── LERNPFAD-TEXTE: Erläuterungen in 7 Sprachen ──────────────────────────
 // DE=Deutsch, TR=Türkisch, RO=Rumänisch, SR=Serbisch/Kroatisch, PL=Polnisch, EN=Englisch, AR=Arabisch
 const LERNPFAD_TEXTE = {
