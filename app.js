@@ -5352,7 +5352,7 @@ async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  LERNPFAD — 21 Kapitel Checklisten-System (Stufe 1)
+//  LERNPFAD — Checklisten-System (Stufe 1)
 //  Mitarbeiter haken ab → Verantwortlicher bestätigt → Supabase-Audit
 //  Stufe 2+3 (Tests, Mehrsprachigkeit) separat geplant
 // ══════════════════════════════════════════════════════════════
@@ -5514,13 +5514,13 @@ function renderLernpfad() {
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden;margin-bottom:10px">
       <div style="padding:14px 16px;background:#0f5132;color:#fff">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-          <span style="font-weight:700;font-size:.95rem">📚 21-Kapitel Lernpfad</span>
+          <span style="font-weight:700;font-size:.95rem">📚 Lernpfad</span>
           <span style="font-size:.85rem;font-weight:700">${bestanden}/${gesamt} ✓</span>
         </div>
         <div style="background:rgba(255,255,255,.25);border-radius:999px;height:8px">
           <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
         </div>
-        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle 21 Kapitel erledigt!' : ''}</div>
+        <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle21 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
       </div>
       <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
@@ -5616,7 +5616,7 @@ function renderLernpfad() {
 
   // Button-Untertitel aktualisieren
   const sub = document.getElementById('btn-lernpfad-sub');
-  if (sub) sub.textContent = `${bestanden}/21 Kapitel abgeschlossen`;
+  if (sub) sub.textContent = `${bestanden}/${LERNPFAD_KAPITEL.length} Kapitel abgeschlossen`;
 }
 
 // ── Gesamtzertifikat generieren ───────────────────────────────
@@ -5642,7 +5642,7 @@ async function lernpfadZertifikatGenerieren() {
   doc.text('SCHULUNGSZERTIFIKAT', 105, 15, { align:'center' });
   doc.setFontSize(10);
   doc.setFont('helvetica','normal');
-  doc.text('Gebäudereinigung & Höhentechnologie — 21-Kapitel Lernpfad', 105, 23, { align:'center' });
+  doc.text('Gebäudereinigung — Lernpfad', 105, 23, { align:'center' });
   doc.text('CSC GmbH Schulungsmanagement', 105, 30, { align:'center' });
 
   // Mitarbeiterdaten
