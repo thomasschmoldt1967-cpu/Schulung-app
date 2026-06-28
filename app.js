@@ -3376,21 +3376,21 @@ async function nuAnlegen() {
     // 2. Passwort hashen (bcrypt)
     const hash = await hashPasswort(passwort);
 
-    // 3. User (Verantwortlicher) anlegen
+    // 3. User (Unternehmens-Account mit firma-Rolle) anlegen
     const userId = 'user_' + Date.now();
     const uRes = await SB.post('users', {
       id: userId,
       name: kontakt,
       email,
       password_hash: hash,
-      role: 'verantwortlicher',
+      role: 'firma',
       tenant_id: tenantId
     });
     if (uRes.error) throw new Error('User: ' + (uRes.error.message || JSON.stringify(uRes.error)));
 
     // 4. App-State aktualisieren
     APP_TENANTS.push({ id: tenantId, name });
-    try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Verantwortlicher: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
+    try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
 
     msgEl.style.color = '#16a34a';
     msgEl.textContent = `✅ "${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
