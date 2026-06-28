@@ -3390,7 +3390,7 @@ async function nuAnlegen() {
 
     // 4. App-State aktualisieren
     APP_TENANTS.push({ id: tenantId, name });
-    await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Verantwortlicher: ${email}`);
+    try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Verantwortlicher: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
 
     msgEl.style.color = '#16a34a';
     msgEl.textContent = `✅ "${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
