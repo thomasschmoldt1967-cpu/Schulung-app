@@ -2428,6 +2428,16 @@ async function renderMitarbeiterListe() {
     // Alle Zuweisungen des Tenants
     const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser.tenantId);
 
+    // Lernpfad-Unterschriften aller Mitarbeiter dieses Tenants laden (Batch)
+    let lpUnterschriften = {};
+    try {
+      const lpRows = await SB.select('lernpfad_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}`);
+      if (lpRows && lpRows.length) {
+        lpRows.forEach(r => { lpUnterschriften[r.user_id] = r; });
+      }
+    } catch(e) { /* ignorieren, kein Datenverlust */ }
+
     // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
@@ -2529,6 +2539,43 @@ async function renderMitarbeiterListe() {
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Schulungshistorie anzeigen">📋 Historie</button>`;
 
+      // ── Lernpfad-Unterschrift-Status für diesen Mitarbeiter ──
+      const lpUnt = lpUnterschriften[m.id];
+      let lpUntBlock = '';
+      if (!istArchiviert) {
+        if (lpUnt && lpUnt.unterzeichnet_am) {
+          const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleString('de-DE',
+            { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+          if (lpUnt.verantwortlicher_am) {
+            // Beide haben unterzeichnet
+            const vDatum = new Date(lpUnt.verantwortlicher_am).toLocaleString('de-DE',
+              { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+            lpUntBlock = `
+              <div style="margin-top:7px;padding:8px 10px;background:#f0fdf4;border:1.5px solid #86efac;border-radius:7px">
+                <div style="font-size:.72rem;font-weight:700;color:#0f5132;margin-bottom:4px">✅ Lernpfad vollständig unterzeichnet</div>
+                <div style="font-size:.7rem;color:#166534;line-height:1.6">
+                  👤 MA: <b>${escHtml(lpUnt.vollname)}</b> · ${maDatum}<br>
+                  🧑‍💼 Verantw.: <b>${escHtml(lpUnt.verantwortlicher_name)}</b> · ${vDatum}
+                </div>
+              </div>`;
+          } else {
+            // Nur MA hat unterzeichnet — Verantwortlicher noch nicht
+            lpUntBlock = `
+              <div style="margin-top:7px;padding:8px 10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px">
+                <div style="font-size:.72rem;font-weight:700;color:#92400e;margin-bottom:4px">⚠️ Lernpfad: MA unterzeichnet — Ihre Gegenzeichnung fehlt</div>
+                <div style="font-size:.7rem;color:#374151;margin-bottom:6px">
+                  👤 <b>${escHtml(lpUnt.vollname)}</b> · ${maDatum}
+                </div>
+                <button onclick="event.stopPropagation();lernpfadVerantwortlicherUnterzeichnen('${m.id}')"
+                  style="font-size:.75rem;padding:5px 12px;border-radius:6px;border:none;background:#0f5132;color:#fff;cursor:pointer;font-weight:700;width:100%">
+                  ✍️ Jetzt gegenzeichnen
+                </button>
+              </div>`;
+          }
+        }
+        // Hat MA noch gar nicht unterzeichnet → kein Block (nicht belasten)
+      }
+
       return `
         <div onclick="mitarbeiterDetailOeffnen('${m.id}')" style="background:${c.bg};border:1px solid ${c.border};border-radius:10px;padding:12px 14px;
                     display:flex;align-items:flex-start;gap:12px;margin-bottom:8px;cursor:pointer;
@@ -2562,6 +2609,7 @@ async function renderMitarbeiterListe() {
         <div style="margin-top:6px;padding:8px 10px;background:rgba(255,255,255,.6);border-radius:7px;border:1px solid rgba(0,0,0,.06)">
           ${unterweisungsZeilen}
         </div>` : ''}
+        ${lpUntBlock}
       `;
     });
 
@@ -4795,7 +4843,10 @@ async function zeigeSchulungshistorie(userId) {
       `abgeschlossen_von=eq.${encodeURIComponent(userId)}&order=abgeschlossen_am.desc&limit=100`
     );
 
-    if (!alleFormulare.length) {
+    // Lernpfad-Unterschrift für diesen Mitarbeiter laden
+    const lpUntRow = await lernpfadUnterschriftFuerMA(userId, currentUser.tenantId);
+
+    if (!alleFormulare.length && !lpUntRow) {
       document.getElementById('historie-inhalt').innerHTML =
         '<div style="text-align:center;padding:24px;color:#6b7280">📋 Noch keine abgeschlossenen Schulungen</div>';
       return;
@@ -4906,9 +4957,48 @@ async function zeigeSchulungshistorie(userId) {
       </div>`;
     }).join('');
 
+    // Lernpfad-Unterschrift-Block für die Historie
+    let lpUntHistorieBlock = '';
+    if (lpUntRow && lpUntRow.unterzeichnet_am) {
+      const maDatum = new Date(lpUntRow.unterzeichnet_am).toLocaleString('de-DE',
+        { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+      const vDatum = lpUntRow.verantwortlicher_am
+        ? new Date(lpUntRow.verantwortlicher_am).toLocaleString('de-DE',
+            { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' })
+        : null;
+      lpUntHistorieBlock = `
+        <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
+          <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 22-Kapitel Lernpfad — Unterschriften</div>
+            <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
+              ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
+            </div>
+          </div>
+          <div style="padding:14px 16px">
+            <div style="margin-bottom:8px">
+              <div style="font-size:.68rem;color:#9ca3af;margin-bottom:2px">👤 Mitarbeiter</div>
+              <div style="font-size:.85rem;font-weight:700;color:#1f2937">${escHtml(lpUntRow.vollname)}</div>
+              <div style="font-size:.78rem;color:#6b7280">Unterzeichnet am ${maDatum}</div>
+            </div>
+            ${vDatum ? `
+            <div style="padding-top:8px;border-top:1px solid #e5e7eb">
+              <div style="font-size:.68rem;color:#9ca3af;margin-bottom:2px">🧑‍💼 Verantwortlicher</div>
+              <div style="font-size:.85rem;font-weight:700;color:#1f2937">${escHtml(lpUntRow.verantwortlicher_name)}</div>
+              <div style="font-size:.78rem;color:#6b7280">Gegengezeichnet am ${vDatum}</div>
+            </div>` : `
+            <div style="padding-top:8px;border-top:1px solid #e5e7eb">
+              <button onclick="lernpfadVerantwortlicherUnterzeichnen('${userId}');historieSchliessen();"
+                style="background:#0f5132;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:.85rem;font-weight:700;cursor:pointer;width:100%">
+                ✍️ Jetzt gegenzeichnen
+              </button>
+            </div>`}
+          </div>
+        </div>`;
+    }
+
     document.getElementById('historie-inhalt').innerHTML = `
       <div style="margin-bottom:10px;font-size:.85rem;color:#6b7280">${alleFormulare.length} Schulung${alleFormulare.length !== 1 ? 'en' : ''} abgeschlossen</div>
-      ${html}`;
+      ${lpUntHistorieBlock}${html}`;
   } catch(e) {
     document.getElementById('historie-inhalt').innerHTML =
       `<div style="color:#dc2626;padding:12px">Fehler: ${escHtml(e.message)}</div>`;
@@ -5568,14 +5658,67 @@ async function lernpfadUnterschriftLaden() {
       `user_id=eq.${currentUser.id}&tenant_id=eq.${currentUser.tenantId || ''}`);
     if (rows && rows.length) {
       lernpfadUnterschrift = {
-        vollname:        rows[0].vollname,
-        unterzeichnetAm: rows[0].unterzeichnet_am
+        vollname:              rows[0].vollname,
+        unterzeichnetAm:       rows[0].unterzeichnet_am,
+        verantwortlicherId:    rows[0].verantwortlicher_id,
+        verantwortlicherName:  rows[0].verantwortlicher_name,
+        verantwortlicherAm:    rows[0].verantwortlicher_am
       };
     } else {
       lernpfadUnterschrift = null;
     }
   } catch(e) {
     lernpfadUnterschrift = null;
+  }
+}
+
+// ── Unterschrift des Mitarbeiters aus Supabase laden (für Verantwortlichen) ─
+async function lernpfadUnterschriftFuerMA(userId, tenantId) {
+  try {
+    const rows = await SB.select('lernpfad_unterschriften',
+      `user_id=eq.${userId}&tenant_id=eq.${encodeURIComponent(tenantId || '')}`);
+    if (rows && rows.length) return rows[0];
+    return null;
+  } catch(e) { return null; }
+}
+
+// ── Verantwortlicher unterzeichnet für einen Mitarbeiter ────
+async function lernpfadVerantwortlicherUnterzeichnen(userId) {
+  const ma = APP_USERS.find(u => u.id === userId);
+  if (!ma) { showToast('⚠️ Mitarbeiter nicht gefunden', '#f59e0b'); return; }
+
+  // Prüfen: Hat MA selbst schon unterzeichnet?
+  const existing = await lernpfadUnterschriftFuerMA(userId, currentUser.tenantId);
+  if (!existing || !existing.unterzeichnet_am) {
+    showToast('⚠️ Mitarbeiter hat noch nicht unterzeichnet — bitte erst MA-Unterschrift abwarten!', '#f59e0b');
+    return;
+  }
+
+  const verantwortlicherName = currentUser.name;
+  const ts = now();
+  const datumAnzeige = new Date().toLocaleString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+
+  if (!confirm(`Lernpfad von „${ma.name}" als Verantwortlicher unterzeichnen?\n\nIhre Unterschrift:\n${verantwortlicherName}\n${datumAnzeige}`)) return;
+
+  try {
+    await SB.upsert('lernpfad_unterschriften', {
+      id:                   userId,        // selber Primary Key wie MA-Unterschrift
+      user_id:              userId,
+      tenant_id:            currentUser.tenantId || '',
+      vollname:             existing.vollname,
+      unterzeichnet_am:     existing.unterzeichnet_am,
+      verantwortlicher_id:  currentUser.id,
+      verantwortlicher_name: verantwortlicherName,
+      verantwortlicher_am:  ts,
+      aktualisiert_am:      ts
+    });
+
+    await sbAudit('LERNPFAD_V_UNTERZEICHNET',
+      `Lernpfad von ${ma.name} durch Verantwortlichen ${verantwortlicherName} unterzeichnet`);
+    showToast(`✅ Lernpfad von ${ma.name} unterzeichnet!`, '#0f5132');
+    renderMitarbeiterListe(); // Ansicht aktualisieren
+  } catch(e) {
+    showToast('❌ Fehler: ' + e.message, '#dc2626');
   }
 }
 
