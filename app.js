@@ -942,6 +942,8 @@ function routeAfterLogin() {
 
     renderSubDashboard();
     showScreen('screen-sub');
+    // Wiederkehrende Schulungen auch für Verantwortliche prüfen
+    setTimeout(pruefeWiederkehrendeSchulungen, 1500);
   }
 }
 
@@ -2441,19 +2443,23 @@ async function renderMitarbeiterListe() {
     // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
+      // Zuweisungen die für diesen MA relevant sind (global oder persönlich zugewiesen)
+      const maZuws = meineZuws.filter(z =>
+        !z.zugewiesenAn || z.zugewiesenAn === m.id
+      );
       const mFormulare = Object.entries(formulare)
         .filter(([zuwId, f]) => {
-          const zuw = meineZuws.find(z => z.id === zuwId);
+          const zuw = maZuws.find(z => z.id === zuwId);
           return zuw && zuw.tenantId === currentUser.tenantId && f.abgeschlossenVon === m.id;
         });
 
-      const gesamtZuws  = meineZuws.length;
+      const gesamtZuws  = maZuws.length;
       const abgeschl    = mFormulare.filter(([,f]) => f.abgeschlossen).length;
       const gestartet   = mFormulare.filter(([,f]) => f.gestartet && !f.abgeschlossen).length;
       const offen       = Math.max(0, gesamtZuws - abgeschl - gestartet);
 
-      // Pro Zuweisung: Status für diesen Mitarbeiter ermitteln
-      const unterweisungsZeilen = meineZuws.map(z => {
+      // Pro Zuweisung: Status für diesen Mitarbeiter ermitteln (nur relevante Zuweisungen)
+      const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
         const titel = v ? v.titel : z.vorlagenId;
         const f = formulare[z.id] || {};
@@ -2662,18 +2668,21 @@ async function zuwNeuStarten(zuwId) {
     d.setMonth(d.getMonth() + parseInt(intervall));
     neueFrist = d.toISOString().split('T')[0];
   } else {
-    // Kein Intervall → Verantwortlicher gibt Datum ein
-    neueFrist = prompt(`Neue Frist für „${v?.titel}" eingeben (Format: JJJJ-MM-TT):`,
-      new Date(Date.now() + 365*86400000).toISOString().split('T')[0]);
-    if (!neueFrist) return;
+    // Kein Intervall → Datum-Picker Modal (kein prompt — funktioniert nicht auf Android)
+    const defaultDatum = new Date(Date.now() + 365*86400000).toISOString().split('T')[0];
+    const eingabe = await zuwNeuStartenDatumModal(v?.titel || 'Schulung', defaultDatum);
+    if (!eingabe) return;
+    neueFrist = eingabe;
   }
 
-  if (!confirm(`Neue Schulungsrunde starten?\n\nFormular: ${v?.titel}\nNeue Frist: ${neueFrist}\n\nDas bisherige abgeschlossene Formular bleibt im Archiv erhalten.`)) return;
+  // Bestätigung per eigenem Modal (kein confirm — Android-Problem)
+  const ok = await zuwNeuStartenBestaetigungModal(v?.titel || 'Schulung', neueFrist);
+  if (!ok) return;
 
   try {
-    // Neues Formular-ID (bisheriges Formular bleibt erhalten)
     const neueZuwId = `z_${z.tenantId}_${z.vorlagenId}_${Date.now()}`;
-    // Neue Zuweisung anlegen
+    // zugewiesen_an aus Original-Zuweisung übernehmen (individuelle Bindung erhalten!)
+    const zugewiesenAn = z.zugewiesenAn || null;
     await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen`, {
       method: 'POST',
       headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
@@ -2683,7 +2692,8 @@ async function zuwNeuStarten(zuwId) {
         tenant_id: z.tenantId,
         frist: neueFrist,
         pflicht: z.pflicht,
-        intervall_monate: z.intervallMonate || null
+        intervall_monate: z.intervallMonate || null,
+        zugewiesen_an: zugewiesenAn   // ← individuelle Bindung erhalten!
       })
     });
     zuweisungen.push({
@@ -2692,15 +2702,64 @@ async function zuwNeuStarten(zuwId) {
       tenantId: z.tenantId,
       frist: neueFrist,
       pflicht: z.pflicht,
-      intervallMonate: z.intervallMonate || null
+      intervallMonate: z.intervallMonate || null,
+      zugewiesenAn: zugewiesenAn
     });
     formulare[neueZuwId] = {};
-    await sbAudit('SCHULUNG_NEU_GESTARTET', `Neue Runde: ${v?.titel} (Frist: ${neueFrist})`);
+    await sbAudit('SCHULUNG_NEU_GESTARTET', `Neue Runde: ${v?.titel} (Frist: ${neueFrist})${zugewiesenAn ? ` für MA ${zugewiesenAn}` : ''}`);
     showToast(`✅ Neue Schulungsrunde gestartet — Frist: ${neueFrist}`, '#16a34a');
     renderSubDashboard();
   } catch(e) {
     showToast('❌ Fehler: ' + e.message, '#dc2626');
   }
+}
+
+// Hilfsfunktionen für Datum-Eingabe und Bestätigung ohne prompt/confirm
+function zuwNeuStartenDatumModal(titel, defaultDatum) {
+  return new Promise(resolve => {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+        <div style="font-size:.95rem;font-weight:700;color:#1e3a5f;margin-bottom:6px">📅 Neue Frist festlegen</div>
+        <div style="font-size:.82rem;color:#6b7280;margin-bottom:12px">${escHtml(titel)}</div>
+        <input type="date" id="_zns_datum" value="${defaultDatum}"
+          style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.95rem;margin-bottom:14px;box-sizing:border-box">
+        <div style="display:flex;gap:10px">
+          <button id="_zns_ab" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:600;cursor:pointer">Abbrechen</button>
+          <button id="_zns_ok" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">✅ Bestätigen</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('#_zns_ab').onclick = () => { document.body.removeChild(modal); resolve(null); };
+    modal.querySelector('#_zns_ok').onclick = () => {
+      const val = modal.querySelector('#_zns_datum').value;
+      document.body.removeChild(modal);
+      resolve(val || null);
+    };
+  });
+}
+
+function zuwNeuStartenBestaetigungModal(titel, frist) {
+  return new Promise(resolve => {
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+    const datumAnzeige = new Date(frist + 'T00:00').toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
+    modal.innerHTML = `
+      <div style="background:#fff;border-radius:14px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+        <div style="font-size:.95rem;font-weight:700;color:#1e3a5f;margin-bottom:8px">🔄 Neue Schulungsrunde starten?</div>
+        <div style="font-size:.85rem;color:#374151;margin-bottom:6px">📋 ${escHtml(titel)}</div>
+        <div style="font-size:.85rem;color:#374151;margin-bottom:14px">📅 Neue Frist: <strong>${datumAnzeige}</strong></div>
+        <div style="font-size:.78rem;color:#6b7280;margin-bottom:14px">Das bisherige abgeschlossene Formular bleibt im Archiv erhalten.</div>
+        <div style="display:flex;gap:10px">
+          <button id="_znsb_ab" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:600;cursor:pointer">Abbrechen</button>
+          <button id="_znsb_ok" style="flex:2;background:#16a34a;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">✅ Jetzt starten</button>
+        </div>
+      </div>`;
+    document.body.appendChild(modal);
+    modal.querySelector('#_znsb_ab').onclick = () => { document.body.removeChild(modal); resolve(false); };
+modal.querySelector('#_znsb_ok').onclick = () => { document.body.removeChild(modal); resolve(true); };
+  });
 }
 
 function renderSubDashboard() {
@@ -4356,8 +4415,11 @@ async function pdfBerichtGenerieren() {
 // ══════════════════════════════════════════════════════════════
 
 async function pruefeWiederkehrendeSchulungen() {
-  // Wird beim Admin-Login aufgerufen — prüft ob Schulungen erneut zugewiesen werden müssen
-  if (currentUser?.role !== 'admin') return;
+  // Wird beim Login aufgerufen — für Admin UND Verantwortliche
+  const istAdmin = currentUser?.role === 'admin';
+  const istVerantwortlicher = currentUser?.role === 'verantwortlicher';
+  if (!istAdmin && !istVerantwortlicher) return;
+
   const jetzt = new Date();
   const neuZuweisungen = [];
 
@@ -4366,24 +4428,25 @@ async function pruefeWiederkehrendeSchulungen() {
     if (!form?.abgeschlossen || !form.abgeschlossenAm) continue;
 
     const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw.vorlagenId);
-    if (!vorlage?.intervallMonate || vorlage.intervallMonate <= 0) continue;
+    const intervall = zuw.intervallMonate || vorlage?.intervallMonate;
+    if (!intervall || intervall <= 0) continue;
 
     // Nächste Fälligkeit berechnen
     const abgeschlossenAm = new Date(form.abgeschlossenAm);
     const naechsteFaelligkeit = new Date(abgeschlossenAm);
-    naechsteFaelligkeit.setMonth(naechsteFaelligkeit.getMonth() + vorlage.intervallMonate);
+    naechsteFaelligkeit.setMonth(naechsteFaelligkeit.getMonth() + parseInt(intervall));
 
-    // Frist 30 Tage vor Fälligkeit — beginne Benachrichtigung
+    // Erinnerung ab 30 Tage vor Fälligkeit
     const erinnerungAb = new Date(naechsteFaelligkeit);
     erinnerungAb.setDate(erinnerungAb.getDate() - 30);
 
     if (jetzt >= erinnerungAb) {
-      // Prüfen ob es bereits eine neue Zuweisung für diese Vorlage+Tenant gibt, die neuere Frist hat
-      const neuereFrist = zuw.frist ? new Date(zuw.frist) : null;
+      // Prüfen ob bereits eine neuere Zuweisung für diese Vorlage+Tenant+MA existiert
       const hatNeueZuweisung = zuweisungen.some(z =>
         z.id !== zuw.id &&
         z.vorlagenId === zuw.vorlagenId &&
         z.tenantId === zuw.tenantId &&
+        (zuw.zugewiesenAn ? z.zugewiesenAn === zuw.zugewiesenAn : !z.zugewiesenAn) &&
         z.frist &&
         new Date(z.frist) >= abgeschlossenAm
       );
@@ -4399,46 +4462,63 @@ async function pruefeWiederkehrendeSchulungen() {
 }
 
 function zeigeWiederkehrendeHinweise(liste) {
+  // Admin-Dashboard
   const el = document.getElementById('wiederkehrende-hinweise');
-  if (!el) return;
+  // Sub-Dashboard (Verantwortlicher)
+  const elSub = document.getElementById('wiederkehrende-hinweise-sub');
 
   const html = liste.map(({ vorlage, zuw, naechsteFaelligkeit }) => {
     const tenant = APP_TENANTS.find(t => t.id === zuw.tenantId);
     const fristStr = naechsteFaelligkeit.toISOString().slice(0, 10);
+    const maHinweis = zuw.zugewiesenAn
+      ? (() => { const ma = APP_USERS.find(u => u.id === zuw.zugewiesenAn); return ma ? ` · ${escHtml(ma.name)}` : ''; })()
+      : '';
     return `<div style="padding:10px 14px;border-bottom:1px solid #fde68a;display:flex;align-items:center;gap:12px">
       <div style="font-size:1.2rem">🔄</div>
       <div style="flex:1">
-        <div style="font-size:.88rem;font-weight:600">${escHtml(vorlage.titel)}</div>
-        <div style="font-size:.76rem;color:#92400e">${escHtml(tenant?.name||'')} • Nächste Fälligkeit: ${new Date(fristStr).toLocaleDateString('de-DE')}</div>
+        <div style="font-size:.88rem;font-weight:600">${escHtml(vorlage?.titel || zuw.vorlagenId)}</div>
+        <div style="font-size:.76rem;color:#92400e">${escHtml(tenant?.name||'')}${maHinweis} • Nächste Fälligkeit: ${new Date(fristStr).toLocaleDateString('de-DE')}</div>
       </div>
-      <button onclick="wiederkehrendeZuweisen('${zuw.vorlagenId}','${zuw.tenantId}','${fristStr}')" class="btn btn-sm" style="background:#f59e0b;color:#fff;font-size:.72rem;white-space:nowrap">➕ Neu zuweisen</button>
+      <button onclick="wiederkehrendeZuweisen('${zuw.vorlagenId}','${zuw.tenantId}','${fristStr}','${zuw.zugewiesenAn||''}')" class="btn btn-sm" style="background:#f59e0b;color:#fff;font-size:.72rem;white-space:nowrap">➕ Neu zuweisen</button>
     </div>`;
   }).join('');
 
-  el.innerHTML = `<div class="card" style="margin-bottom:14px;border:2px solid #fde68a;background:#fffbeb">
+  const block = `<div class="card" style="margin-bottom:14px;border:2px solid #fde68a;background:#fffbeb">
     <div class="card-title" style="color:#92400e">🔄 Wiederkehrende Schulungen fällig (${liste.length})</div>
     ${html}
   </div>`;
-  el.style.display = '';
+
+  if (el) { el.innerHTML = block; el.style.display = ''; }
+  if (elSub) { elSub.innerHTML = block; elSub.style.display = ''; }
 }
 
-async function wiederkehrendeZuweisen(vorlagenId, tenantId, frist) {
+async function wiederkehrendeZuweisen(vorlagenId, tenantId, frist, zugewiesenAn) {
   const id = 'zuw_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+  const zugewiesenAnVal = zugewiesenAn || null;
+  // Intervall aus Original-Zuweisung ermitteln
+  const origZuw = zuweisungen.find(z => z.vorlagenId === vorlagenId && z.tenantId === tenantId &&
+    (zugewiesenAnVal ? z.zugewiesenAn === zugewiesenAnVal : !z.zugewiesenAn));
+  const intervall = origZuw?.intervallMonate || null;
   try {
     const res = await SB.post('zuweisungen', {
-      id, vorlage_id: vorlagenId, tenant_id: tenantId, frist, pflicht: true
+      id,
+      vorlage_id: vorlagenId,
+      tenant_id: tenantId,
+      frist,
+      pflicht: true,
+      intervall_monate: intervall,          // Intervall erhalten!
+      zugewiesen_an: zugewiesenAnVal        // individuelle Bindung erhalten!
     });
     if (res?.error) throw new Error(res.error.message);
-    zuweisungen.push({ id, vorlagenId, tenantId, frist, pflicht: true });
+    zuweisungen.push({ id, vorlagenId, tenantId, frist, pflicht: true, intervallMonate: intervall, zugewiesenAn: zugewiesenAnVal });
     formulare[id] = {};
-    await sbAudit('WIEDERKEHREND_NEU', `Wiederkehrende Zuweisung: ${vorlagenId} → ${tenantId}, Frist: ${frist}`);
+    await sbAudit('WIEDERKEHREND_NEU', `Wiederkehrende Zuweisung: ${vorlagenId} → ${tenantId}${zugewiesenAnVal ? ` (MA: ${zugewiesenAnVal})` : ''}, Frist: ${frist}`);
     showToast('✅ Neue Zuweisung erstellt!', '#16a34a');
-    // Hinweis entfernen
+    // Hinweis-Zeile entfernen
     const btn = event?.target;
     if (btn) btn.closest('div[style*="padding"]')?.remove();
-    renderAdminStats();
-    renderAdminTenantTable();
-    renderAdminZuweisungen();
+    if (currentUser.role === 'admin') { renderAdminStats(); renderAdminTenantTable(); renderAdminZuweisungen(); }
+    else renderSubDashboard();
   } catch(e) {
     showToast('❌ Fehler: ' + e.message, '#dc2626');
   }
