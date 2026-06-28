@@ -1154,5 +1154,110 @@
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: FIRMA-DASHBOARD
+══════════════════════════════════════════════════════════ -->
+<div id="screen-firma" class="screen" style="display:none">
+  <header class="app-header">
+    <h1>🏢 Firma-Verwaltung</h1>
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
+      <div class="user-info">
+        <div id="firma-username"></div>
+        <div id="firma-tenantname" style="font-size:.68rem;opacity:.7"></div>
+      </div>
+      <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+    </div>
+  </header>
+  <div class="content">
+    <!-- Tab-Leiste -->
+    <div style="display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin-bottom:14px;overflow-x:auto">
+      <button class="firma-tab-btn" data-tab="verantwortliche" onclick="firmaTabWechseln('verantwortliche')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid #1e3a5f;font-weight:700;color:#1e3a5f">
+        👔 Verantwortliche
+      </button>
+      <button class="firma-tab-btn" data-tab="uebersicht" onclick="firmaTabWechseln('uebersicht')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
+        📊 Übersicht
+      </button>
+      <button class="firma-tab-btn" data-tab="schulungen" onclick="firmaTabWechseln('schulungen')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
+        📋 Schulungen
+      </button>
+    </div>
+
+    <!-- Tab: Verantwortliche -->
+    <div class="firma-tab-content" data-tab="verantwortliche">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button onclick="firmaVerantwortlichenAnlegenOeffnen()"
+          style="background:#1e3a5f;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">
+          ➕ Verantwortlichen anlegen
+        </button>
+      </div>
+      <div id="firma-verantwortliche-liste"></div>
+    </div>
+
+    <!-- Tab: Übersicht -->
+    <div class="firma-tab-content" data-tab="uebersicht" style="display:none">
+      <div id="firma-uebersicht-inhalt"></div>
+    </div>
+
+    <!-- Tab: Schulungen -->
+    <div class="firma-tab-content" data-tab="schulungen" style="display:none">
+      <div id="firma-schulungen-inhalt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Verantwortlichen anlegen (firma) -->
+<div id="fva-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Verantwortlichen anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="fva-name" type="text" placeholder="Name *"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-email" type="email" placeholder="E-Mail *"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-position" type="text" placeholder="Position / Bereich (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-telefon" type="tel" placeholder="Telefon (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-mobil" type="tel" placeholder="Mobil (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="fva-passwort" type="text" placeholder="Passwort (leer = auto)"
+          style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="firmaVerantwortlichenGenerierePasswort()"
+          style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="fva-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="firmaVerantwortlichenAnlegenSchliessen()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="fva-speichern-btn" onclick="firmaVerantwortlichenSpeichern()" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">✅ Anlegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Verantwortlichen bearbeiten (firma) -->
+<div id="fvb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">✏️ Verantwortlichen bearbeiten</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="fvb-name" type="text" placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-position" type="text" placeholder="Position / Bereich" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-telefon" type="tel" placeholder="Telefon" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-mobil" type="tel" placeholder="Mobil" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+    </div>
+    <div id="fvb-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="firmaVerantwortlichenBearbeitenSchliessen()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="fvb-speichern-btn" onclick="firmaVerantwortlichenBearbeitenSpeichern()" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">💾 Speichern</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

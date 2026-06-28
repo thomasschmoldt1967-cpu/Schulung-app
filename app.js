@@ -807,7 +807,7 @@ async function initApp() {
       SB.get('tenants'),
       SB.get('vorlagen'),
       SB.get('zuweisungen'),
-      SB.get('users', 'select=id,name,email,tenant_id,role')
+      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert')
     ]);
     APP_TENANTS       = tenants;
     APP_USERS         = users; // Für ID→Name Auflösung (z.B. im PDF)
@@ -898,6 +898,7 @@ function doLogout() {
   formulare         = {};
   lernpfadFortschritt = {};
   lernpfadUnterschrift = null;
+  document.getElementById('screen-firma')?.style.setProperty('display','none');
   showScreen('screen-login');
 }
 function routeAfterLogin() {
@@ -910,6 +911,16 @@ function routeAfterLogin() {
   if (currentUser.role === 'admin') {
     renderAdminDashboard();
     showScreen('screen-admin');
+  } else if (currentUser.role === 'firma') {
+    // Firma-Admin: sieht alle Verantwortlichen und Mitarbeiter seines Tenants
+    const tid = currentUser.tenantId;
+    APP_TENANTS = APP_TENANTS.filter(t => t.id === tid);
+    zuweisungen = zuweisungen.filter(z => z.tenantId === tid);
+    const eigeneZuwIds = new Set(zuweisungen.map(z => z.id));
+    Object.keys(formulare).forEach(k => { if (!eigeneZuwIds.has(k)) delete formulare[k]; });
+    APP_USERS = APP_USERS.filter(u => u.tenant_id === tid);
+    renderFirmaDashboard();
+    showScreen('screen-firma');
   } else {
     // ══════════════════════════════════════════════════════
     // MANDANTENTRENNUNG — Sub-User sieht AUSSCHLIESSLICH
@@ -6646,4 +6657,268 @@ if (typeof showToast === 'undefined') {
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
   };
+}
+
+// ══════════════════════════════════════════════════════════════
+// FIRMA-DASHBOARD
+// ══════════════════════════════════════════════════════════════
+
+function renderFirmaDashboard() {
+  const tenant = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+  document.getElementById('firma-username').textContent = currentUser.name;
+  document.getElementById('firma-tenantname').textContent = tenant ? tenant.name : '';
+  // Aktiven Tab rendern
+  const aktiv = document.querySelector('#screen-firma .firma-tab-btn[data-active="true"]');
+  const tabName = aktiv ? aktiv.dataset.tab : 'verantwortliche';
+  firmaTabWechseln(tabName);
+}
+
+function firmaTabWechseln(tab) {
+  // Tab-Buttons
+  document.querySelectorAll('#screen-firma .firma-tab-btn').forEach(b => {
+    const isActive = b.dataset.tab === tab;
+    b.dataset.active = isActive;
+    b.style.fontWeight = isActive ? '700' : '400';
+    b.style.borderBottom = isActive ? '2px solid #1e3a5f' : '2px solid transparent';
+    b.style.color = isActive ? '#1e3a5f' : '#6b7280';
+  });
+  // Tab-Inhalt
+  document.querySelectorAll('#screen-firma .firma-tab-content').forEach(c => {
+    c.style.display = c.dataset.tab === tab ? '' : 'none';
+  });
+  // Inhalt laden
+  if (tab === 'verantwortliche') firmaRenderVerantwortliche();
+  if (tab === 'uebersicht') firmaRenderUebersicht();
+  if (tab === 'schulungen') firmaRenderSchulungen();
+}
+
+async function firmaRenderVerantwortliche() {
+  const cont = document.getElementById('firma-verantwortliche-liste');
+  if (!cont) return;
+  cont.innerHTML = '<div style="text-align:center;padding:20px;color:#6b7280">⏳ Wird geladen…</div>';
+  try {
+    // Alle Verantwortlichen dieses Tenants laden
+    const alle = await SB.get('users',
+      `tenant_id=eq.${currentUser.tenantId}&role=eq.verantwortlicher&archiviert=eq.false&order=name.asc`);
+    if (!alle.length) {
+      cont.innerHTML = '<div style="color:#6b7280;padding:12px">Noch keine Verantwortlichen angelegt.</div>';
+      return;
+    }
+    cont.innerHTML = alle.map(v => `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+        <div style="font-size:1.4rem">${v.aktiv !== false ? '👔' : '⏸'}</div>
+        <div style="flex:1">
+          <div style="font-weight:700;font-size:.92rem;color:#1e3a5f">${escHtml(v.name)}</div>
+          <div style="font-size:.75rem;color:#6b7280">${escHtml(v.email)}</div>
+          ${v.position ? `<div style="font-size:.72rem;color:#4b5563;margin-top:2px">🏷 ${escHtml(v.position)}</div>` : ''}
+          ${v.telefon ? `<div style="font-size:.72rem;color:#4b5563">📞 ${escHtml(v.telefon)}</div>` : ''}
+          ${v.mobil   ? `<div style="font-size:.72rem;color:#4b5563">📱 ${escHtml(v.mobil)}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <button onclick="firmaVerantwortlichenBearbeiten('${v.id}')" style="font-size:.72rem;padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;color:#374151;cursor:pointer">✏️ Bearbeiten</button>
+          <button onclick="firmaVerantwortlichenToggleAktiv('${v.id}',${v.aktiv !== false})" style="font-size:.72rem;padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;color:#374151;cursor:pointer">${v.aktiv !== false ? '⏸ Deaktivieren' : '▶ Aktivieren'}</button>
+        </div>
+      </div>`).join('');
+  } catch(e) {
+    cont.innerHTML = `<div style="color:#dc2626;font-size:.85rem">${escHtml(e.message)}</div>`;
+  }
+}
+
+async function firmaRenderUebersicht() {
+  const cont = document.getElementById('firma-uebersicht-inhalt');
+  if (!cont) return;
+  cont.innerHTML = '<div style="text-align:center;padding:20px;color:#6b7280">⏳ Wird geladen…</div>';
+  try {
+    const verantw = await SB.get('users',
+      `tenant_id=eq.${currentUser.tenantId}&role=eq.verantwortlicher&aktiv=eq.true&archiviert=eq.false&order=name.asc`);
+    const mitarb = await SB.get('users',
+      `tenant_id=eq.${currentUser.tenantId}&role=eq.mitarbeiter&archiviert=eq.false&order=name.asc`);
+    const html = verantw.map(v => {
+      const seine = mitarb; // Vereinfacht — alle Mitarbeiter des Tenants sehen
+      return `
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:8px">
+          <div style="font-weight:700;font-size:.88rem;color:#1e3a5f;margin-bottom:6px">👔 ${escHtml(v.name)} ${v.position ? `<span style="font-weight:400;color:#6b7280">· ${escHtml(v.position)}</span>` : ''}</div>
+          <div style="font-size:.78rem;color:#6b7280">${seine.length} Mitarbeiter im Tenant · ${zuweisungen.filter(z=>z.tenantId===currentUser.tenantId).length} Zuweisungen</div>
+        </div>`;
+    }).join('');
+    cont.innerHTML = html || '<div style="color:#6b7280;padding:12px">Keine Daten vorhanden.</div>';
+  } catch(e) {
+    cont.innerHTML = `<div style="color:#dc2626;font-size:.85rem">${escHtml(e.message)}</div>`;
+  }
+}
+
+async function firmaRenderSchulungen() {
+  const cont = document.getElementById('firma-schulungen-inhalt');
+  if (!cont) return;
+  // Vorlagen laden und Zuweisungen anzeigen
+  try {
+    const vorlagen = await SB.get('vorlagen', `order=titel.asc`);
+    cont.innerHTML = vorlagen.map(v => {
+      const zuws = zuweisungen.filter(z => z.vorlagenId === v.id && z.tenantId === currentUser.tenantId);
+      return `
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px">
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:.88rem;color:#1e3a5f">${escHtml(v.titel)}</div>
+            <div style="font-size:.75rem;color:#6b7280">${zuws.length} Zuweisung${zuws.length!==1?'en':''}</div>
+          </div>
+          <button onclick="firmaSchulungZuweisen('${v.id}')" style="font-size:.75rem;padding:7px 12px;border:none;border-radius:7px;background:#1e3a5f;color:#fff;cursor:pointer;font-weight:600">➕ Zuweisen</button>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    cont.innerHTML = `<div style="color:#dc2626;font-size:.85rem">${escHtml(e.message)}</div>`;
+  }
+}
+
+// Neuen Verantwortlichen anlegen
+function firmaVerantwortlichenAnlegenOeffnen() {
+  // Felder leeren
+  ['fva-name','fva-email','fva-position','fva-telefon','fva-mobil','fva-passwort'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('fva-fehler').textContent = '';
+  document.getElementById('fva-modal').style.display = 'flex';
+}
+function firmaVerantwortlichenAnlegenSchliessen() {
+  document.getElementById('fva-modal').style.display = 'none';
+}
+function firmaVerantwortlichenGenerierePasswort() {
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+  let pw = '';
+  const arr = new Uint8Array(10);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => pw += chars[b % chars.length]);
+  document.getElementById('fva-passwort').value = pw;
+}
+async function firmaVerantwortlichenSpeichern() {
+  const name  = document.getElementById('fva-name').value.trim();
+  const email = document.getElementById('fva-email').value.trim().toLowerCase();
+  const pos   = document.getElementById('fva-position').value.trim();
+  const tel   = document.getElementById('fva-telefon').value.trim();
+  const mob   = document.getElementById('fva-mobil').value.trim();
+  let   pw    = document.getElementById('fva-passwort').value.trim();
+  const fehEl = document.getElementById('fva-fehler');
+  fehEl.textContent = '';
+  if (!name) { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  if (!email || !email.includes('@')) { fehEl.textContent = 'Gültige E-Mail eingeben.'; return; }
+  if (!pw) {
+    pw = '';
+    const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+    const arr = new Uint8Array(10);
+    crypto.getRandomValues(arr);
+    arr.forEach(b => pw += chars[b % chars.length]);
+  }
+  const btn = document.getElementById('fva-speichern-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird angelegt…';
+  try {
+    const id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id, name, email,
+      password_hash: hash,
+      role: 'verantwortlicher',
+      tenant_id: currentUser.tenantId,
+      position: pos || null,
+      telefon: tel || null,
+      mobil: mob || null,
+      aktiv: true,
+      archiviert: false
+    });
+    if (res?.error) {
+      const msg = res.error.message || '';
+      if (msg.includes('duplicate') || msg.includes('unique') || msg.includes('23505')) {
+        fehEl.textContent = 'Diese E-Mail ist bereits registriert.';
+      } else {
+        fehEl.textContent = 'Fehler: ' + msg;
+      }
+      btn.disabled = false; btn.textContent = '✅ Anlegen';
+      return;
+    }
+    await sbAudit('FIRMA_VERANTWORTLICHER_NEU', `${name} (${email}) angelegt von ${currentUser.name}`);
+    firmaVerantwortlichenAnlegenSchliessen();
+    showToast(`✅ ${name} angelegt — Passwort: ${pw}`, '#0f5132');
+    firmaRenderVerantwortliche();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Anlegen';
+  }
+}
+
+// Verantwortlichen bearbeiten
+let _firmaBearbeitenUserId = null;
+async function firmaVerantwortlichenBearbeiten(userId) {
+  _firmaBearbeitenUserId = userId;
+  try {
+    const rows = await SB.get('users', `id=eq.${userId}`);
+    const u = rows[0];
+    if (!u) return;
+    document.getElementById('fvb-name').value     = u.name || '';
+    document.getElementById('fvb-email').value    = u.email || '';
+    document.getElementById('fvb-position').value = u.position || '';
+    document.getElementById('fvb-telefon').value  = u.telefon || '';
+    document.getElementById('fvb-mobil').value    = u.mobil || '';
+    document.getElementById('fvb-fehler').textContent = '';
+    document.getElementById('fvb-modal').style.display = 'flex';
+  } catch(e) { showToast('❌ Fehler: ' + e.message, '#dc2626'); }
+}
+function firmaVerantwortlichenBearbeitenSchliessen() {
+  document.getElementById('fvb-modal').style.display = 'none';
+  _firmaBearbeitenUserId = null;
+}
+async function firmaVerantwortlichenBearbeitenSpeichern() {
+  if (!_firmaBearbeitenUserId) return;
+  const name  = document.getElementById('fvb-name').value.trim();
+  const email = document.getElementById('fvb-email').value.trim().toLowerCase();
+  const pos   = document.getElementById('fvb-position').value.trim();
+  const tel   = document.getElementById('fvb-telefon').value.trim();
+  const mob   = document.getElementById('fvb-mobil').value.trim();
+  const fehEl = document.getElementById('fvb-fehler');
+  fehEl.textContent = '';
+  if (!name) { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  const btn = document.getElementById('fvb-speichern-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+  try {
+    await SB.patch('users', `id=eq.${_firmaBearbeitenUserId}`, {
+      name, email, position: pos || null, telefon: tel || null, mobil: mob || null
+    });
+    await sbAudit('FIRMA_VERANTWORTLICHER_BEARBEITET', `${name} aktualisiert von ${currentUser.name}`);
+    firmaVerantwortlichenBearbeitenSchliessen();
+    showToast(`✅ ${name} aktualisiert`, '#0f5132');
+    firmaRenderVerantwortliche();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '💾 Speichern';
+  }
+}
+
+async function firmaVerantwortlichenToggleAktiv(userId, jetztAktiv) {
+  try {
+    await SB.patch('users', `id=eq.${userId}`, { aktiv: !jetztAktiv });
+    await sbAudit(jetztAktiv ? 'FIRMA_V_DEAKTIVIERT' : 'FIRMA_V_AKTIVIERT',
+      `Verantwortlicher ${userId} ${jetztAktiv ? 'deaktiviert' : 'aktiviert'}`);
+    showToast(jetztAktiv ? '⏸ Deaktiviert' : '▶ Aktiviert', '#1e3a5f');
+    firmaRenderVerantwortliche();
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+async function firmaSchulungZuweisen(vorlagenId) {
+  // Datum-Modal öffnen, dann Zuweisung erstellen
+  const frist = await zuwNeuStartenDatumModal(
+    SCHULUNG_VORLAGEN.find(v=>v.id===vorlagenId)?.titel || vorlagenId,
+    new Date(Date.now()+365*86400000).toISOString().split('T')[0]
+  );
+  if (!frist) return;
+  try {
+    const id = 'zuw_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId,
+      tenant_id: currentUser.tenantId,
+      frist, pflicht: true
+    });
+    zuweisungen.push({ id, vorlagenId, tenantId: currentUser.tenantId, frist, pflicht: true });
+    formulare[id] = {};
+    await sbAudit('FIRMA_ZUWEISUNG', `Vorlage ${vorlagenId} zugewiesen von ${currentUser.name}`);
+    showToast('✅ Schulung zugewiesen!', '#0f5132');
+    firmaRenderSchulungen();
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
 }
