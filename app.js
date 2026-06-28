@@ -1525,6 +1525,63 @@ function vtVorlagenSuche(wert) {
   renderAdminVorlagen();
 }
 
+// ── Lernpfad-Kernkapitel im Admin anzeigen ──
+function adminKernkapitelToggle() {
+  const container = document.getElementById('admin-kk-container');
+  const icon = document.getElementById('admin-kk-toggle-icon');
+  const btn = document.getElementById('admin-kk-toggle-btn');
+  const offen = container.style.display !== 'none';
+  if (offen) {
+    container.style.display = 'none';
+    icon.style.transform = '';
+    btn.querySelector('span:first-child').textContent = '📚 22 Lernpfad-Kernkapitel anzeigen';
+  } else {
+    container.style.display = '';
+    icon.style.transform = 'rotate(180deg)';
+    btn.querySelector('span:first-child').textContent = '📚 Lernpfad-Kernkapitel schließen';
+    renderAdminKernkapitel();
+  }
+}
+
+function renderAdminKernkapitel() {
+  const liste = document.getElementById('admin-kk-list');
+  if (!liste) return;
+
+  const saeuleInfo = {
+    A: { label: 'Säule A — Gesetzliche Basis-Unterweisungen', farbe: '#1a3a5c', bg: '#e8f0fb' },
+    B: { label: 'Säule B — Reinigungstechnologie & Chemie',   farbe: '#166534', bg: '#dcfce7' },
+    C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#7c2d12', bg: '#fff7ed' },
+  };
+
+  // Kapitel nach Säule gruppieren
+  const gruppen = {};
+  LERNPFAD_KAPITEL.forEach(k => {
+    if (!gruppen[k.saeule]) gruppen[k.saeule] = [];
+    gruppen[k.saeule].push(k);
+  });
+
+  liste.innerHTML = Object.entries(gruppen).map(([saeule, kapitel]) => {
+    const info = saeuleInfo[saeule] || { label: `Säule ${saeule}`, farbe: '#374151', bg: '#f9fafb' };
+    return `
+      <div class="card" style="margin-bottom:12px;border-left:4px solid ${info.farbe}">
+        <div style="font-weight:700;font-size:.9rem;color:${info.farbe};margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #e2e8f0">
+          ${info.label}
+        </div>
+        ${kapitel.map(k => `
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <span style="min-width:28px;height:28px;background:${info.bg};color:${info.farbe};border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0">${k.nr}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:600;font-size:.87rem;color:#1a1a2e">${escHtml(k.titel)}</div>
+              <div style="font-size:.75rem;color:#6b7280;margin-top:2px">⚖️ ${escHtml(k.rechtsgrundlage)}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }).join('') + `
+    <div style="font-size:.78rem;color:#6b7280;text-align:center;padding:8px">
+      ${LERNPFAD_KAPITEL.length} Standard-Kernkapitel — fest definiert für alle Unternehmen
+    </div>`;
+}
+
 // ── Vorlage bearbeiten: Editor mit bestehenden Daten vorausfüllen ──
 function vtBearbeiten(id) {
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === id);
