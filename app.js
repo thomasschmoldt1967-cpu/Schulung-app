@@ -60,6 +60,111 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_21', nr:21, saeule:'C', titel:'Hängetrauma — Erkennen und Verhindern',              rechtsgrundlage:'DGUV Information 212-139' },
 ];
 
+// ── LERNPFAD-HTML: Kapitel mit HTML-Inhalten (GHS-Piktogramme etc.) ───────
+// Wenn ein Eintrag hier vorhanden ist, wird er direkt als HTML gerendert
+// (kein escHtml, kein Sprachfallback – nur Deutsch/universal)
+const LERNPFAD_HTML = {
+  kap_10: `
+<div style="font-size:.78rem;color:#374151;line-height:1.5">
+  <div style="margin-bottom:6px">Auf Reinigungsmittelflaschen gibt es <strong>9 GHS-Piktogramme</strong> — erkenne sie und handle richtig:</div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:8px 0">
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="46" font-family="serif">💥</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS01</div>
+      <div style="font-size:.68rem;color:#374151">Explodierende Bombe</div>
+      <div style="font-size:.65rem;color:#6b7280">Explosionsgefahr</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="46" font-family="serif">🔥</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS02</div>
+      <div style="font-size:.68rem;color:#374151">Flamme</div>
+      <div style="font-size:.65rem;color:#6b7280">Entzündbar/brennbar</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🔥</text>
+        <circle cx="50" cy="34" r="10" fill="none" stroke="black" stroke-width="4"/>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS03</div>
+      <div style="font-size:.68rem;color:#374151">Flamme über Kreis</div>
+      <div style="font-size:.65rem;color:#6b7280">Brandfördernd/oxidierend</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🛢</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS04</div>
+      <div style="font-size:.68rem;color:#374151">Gasflasche</div>
+      <div style="font-size:.65rem;color:#6b7280">Gas unter Druck</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">⚗️</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS05</div>
+      <div style="font-size:.68rem;color:#374151">Ätzwirkung</div>
+      <div style="font-size:.65rem;color:#6b7280">Ätzt Haut &amp; Augen</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">☠️</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS06</div>
+      <div style="font-size:.68rem;color:#374151">Totenkopf</div>
+      <div style="font-size:.65rem;color:#6b7280">Akut giftig</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="52" font-weight="bold" fill="black" font-family="sans-serif">!</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS07</div>
+      <div style="font-size:.68rem;color:#374151">Ausrufezeichen</div>
+      <div style="font-size:.65rem;color:#6b7280">Reizend/schädlich</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🫁</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS08</div>
+      <div style="font-size:.68rem;color:#374151">Gesundheitsgefahr</div>
+      <div style="font-size:.65rem;color:#6b7280">Chronisch gefährlich</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;align-items:center;text-align:center;background:#fff;border-radius:8px;padding:6px 4px;border:1px solid #e5e7eb">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style="width:52px;height:52px">
+        <polygon points="50,4 96,96 4,96" fill="white" stroke="#e00" stroke-width="6" stroke-linejoin="round"/>
+        <text x="50" y="78" text-anchor="middle" font-size="42" font-family="serif">🐟</text>
+      </svg>
+      <div style="font-weight:700;font-size:.72rem;color:#b91c1c;margin-top:2px">GHS09</div>
+      <div style="font-size:.68rem;color:#374151">Umwelt</div>
+      <div style="font-size:.65rem;color:#6b7280">Gewässergefährdend</div>
+    </div>
+
+  </div>
+  <div style="font-size:.72rem;color:#6b7280;margin-top:4px">💡 Erkenne das Symbol → Handle richtig → Leben schützen</div>
+</div>`,
+};
+
 // ── LERNPFAD-TEXTE: Erläuterungen in 5 Sprachen ──────────────────────────
 // DE=Deutsch, TR=Türkisch, RO=Rumänisch, SR=Serbisch/Kroatisch, PL=Polnisch
 const LERNPFAD_TEXTE = {
@@ -5536,7 +5641,7 @@ function renderLernpfad() {
             <div style="font-weight:600;font-size:.82rem;color:#1a3a5c">${kap.nr}. ${escHtml(kap.titel)}</div>
             <div style="font-size:.68rem;color:#9ca3af;margin-top:1px">${escHtml(kap.rechtsgrundlage)}</div>
             <div style="font-size:.78rem;color:#374151;margin-top:5px;line-height:1.45;background:#f8fafc;border-left:3px solid ${farbe};padding:5px 8px;border-radius:0 6px 6px 0">
-              ${escHtml((LERNPFAD_TEXTE[kap.id] || {})[lernpfadSprache] || (LERNPFAD_TEXTE[kap.id] || {}).de || '')}
+              ${LERNPFAD_HTML[kap.id] || escHtml((LERNPFAD_TEXTE[kap.id] || {})[lernpfadSprache] || (LERNPFAD_TEXTE[kap.id] || {}).de || '')}
             </div>
             ${metaInfo}
           </div>
