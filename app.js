@@ -2684,86 +2684,21 @@ function renderSubDashboard() {
   lernpfadInitialisieren();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
-  if (!meineZuws.length) {
-    document.getElementById('sub-schulungen-list').innerHTML='<div class="empty-state"><div class="icon">🎉</div><p>Keine Schulungen zugewiesen</p></div>';
-    return;
-  }
-  document.getElementById('sub-schulungen-list').innerHTML = meineZuws.map(z => {
-    const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
-    const kannPdfSpeichern = currentUser.role === 'verantwortlicher' && f.abgeschlossen;
-    const istVerantwortlicher = currentUser.role === 'verantwortlicher';
-    const intervall = z.intervallMonate || v?.intervallMonate || v?.intervall_monate || null;
-    const intervallOptionen = [1,2,3,6,12,24,36].map(m =>
-      `<option value="${m}"${intervall==m?' selected':''}>${m} Monat${m>1?'e':''}</option>`
-    ).join('');
-
-    let naechsteFristInfo = '';
-    if (f.abgeschlossen && intervall && f.abgeschlossenAm) {
-      const naechste = new Date(f.abgeschlossenAm);
-      naechste.setMonth(naechste.getMonth() + parseInt(intervall));
-      const tageRestlich = Math.ceil((naechste - new Date()) / 86400000);
-      const datumStr = naechste.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
-      const farbe = tageRestlich < 0 ? '#dc2626' : tageRestlich < 30 ? '#f59e0b' : '#16a34a';
-      naechsteFristInfo = `<div style="font-size:.76rem;color:${farbe};margin-top:3px">🔄 Nächste Schulung: ${datumStr}${tageRestlich < 0 ? ` (${Math.abs(tageRestlich)} Tage überfällig)` : tageRestlich === 0 ? ' (heute!)' : ` (in ${tageRestlich} Tagen)`}</div>`;
-    }
-
-    return `<div class="schulung-item">
-      <div style="flex:1;cursor:pointer" onclick="oeffneFormular('${z.id}')">
-        <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
-        <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflichtschulung</strong>':''} ${f.abgeschlossen?`• ✅ ${dateStr(f.abgeschlossenAm)}`:''}</div>
-        ${naechsteFristInfo}
-      </div>
-      <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        ${statusBadgeHtml(s)}
-        ${istVerantwortlicher ? `
-          <div style="display:flex;align-items:center;gap:5px;margin-top:3px">
-            <label style="font-size:.7rem;color:#6b7280;white-space:nowrap">🔁</label>
-            <select onchange="zuwIntervallAendern('${z.id}', this.value)"
-              style="font-size:.72rem;padding:3px 6px;border:1px solid #e2e8f0;border-radius:6px;background:#fff;color:#374151;cursor:pointer">
-              <option value="">Kein Intervall</option>
-              ${intervallOptionen}
-            </select>
-          </div>` : ''}
-        ${f.abgeschlossen && istVerantwortlicher ? `
-          <button class="btn btn-sm" style="background:#1a3a5c;color:#fff;font-size:.72rem;margin-top:2px" onclick="event.stopPropagation();zuwNeuStarten('${z.id}')">🔄 Neu zuweisen</button>` : ''}
-        ${kannPdfSpeichern ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;font-size:.72rem" onclick="event.stopPropagation();generatePdf('${z.id}',true)">📥 PDF</button>` : ''}
-        ${istVerantwortlicher ? `<button class="btn btn-outline btn-sm" style="font-size:.72rem" onclick="event.stopPropagation();einladungOeffnen('${z.id}')">🔗 Einladen</button>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Anzahl im Button-Untertitel aktualisieren
-  // Für Mitarbeiter: Liste sofort aufgeklappt, kein Toggle nötig
-  const subEl = document.getElementById('btn-unterweisungen-sub');
-  const liste = document.getElementById('sub-schulungen-list');
-  const pfeil = document.getElementById('btn-unterweisungen-pfeil');
-  const n = meineZuws.length;
-  if (isMitarbeiter) {
-    // Mitarbeiter sieht Themen sofort — kein Tippen nötig
-    if (liste) liste.style.display = 'block';
-    if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '');
-    if (pfeil) pfeil.style.transform = 'rotate(180deg)';
-  } else {
-    if (liste) liste.style.display = 'none';
-    if (subEl) subEl.textContent = n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
-    if (pfeil) pfeil.style.transform = '';
-  }
+  document.getElementById('sub-schulungen-list') && (document.getElementById('sub-schulungen-list').innerHTML = '');
+  if (!meineZuws.length) return;
+  // Schulungsliste intern verfügbar (für PDF etc.), aber nicht mehr im UI angezeigt
+  // Der "Unterweisungsthemen"-Button wurde entfernt — Inhalte sind im Lernpfad abgebildet.
 }
 
 function unterweisungenToggle() {
-  const liste = document.getElementById('sub-schulungen-list');
-  const pfeil = document.getElementById('btn-unterweisungen-pfeil');
-  const sub   = document.getElementById('btn-unterweisungen-sub');
-  if (!liste) return;
-  const istGeschlossen = liste.style.display === 'none' || liste.style.display === '';
-  liste.style.display = istGeschlossen ? 'block' : 'none';
-  if (pfeil) pfeil.style.transform = istGeschlossen ? 'rotate(180deg)' : '';
-  if (sub) {
-    const n = liste.querySelectorAll('.schulung-item').length;
-    sub.textContent = istGeschlossen
-      ? n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Schließen'
-      : n + ' Thema' + (n !== 1 ? 'en' : '') + ' — Tippen zum Anzeigen';
-  }
+  // Funktion bleibt als Stub um JS-Fehler bei alten Referenzen zu vermeiden
+}
+
+
+
+
+function unterweisungenToggle() {
+  // Stub — Button wurde entfernt
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -3252,11 +3187,6 @@ function showToast(text, color='#16a34a') {
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
   initApp();
-  // Unterweisungsthemen-Button Event Listener (robuster als onclick-Attribut)
-  document.addEventListener('click', e => {
-    const btn = e.target.closest('#btn-unterweisungen');
-    if (btn) { e.preventDefault(); unterweisungenToggle(); }
-  });
 });
 
 // ── SERVICE WORKER REGISTRIERUNG (Offline-Modus) ─────────────
