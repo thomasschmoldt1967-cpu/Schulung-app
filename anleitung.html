@@ -482,23 +482,103 @@
 <body>
 <div class="page-wrapper">
 
+  <!-- ===== SPRACHUMSCHALTER ===== -->
+  <div id="lang-bar" style="position:sticky;top:0;z-index:100;background:#1e3a5f;padding:6px 12px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;box-shadow:0 2px 6px rgba(0,0,0,0.3)">
+    <span style="color:#94b4d4;font-size:.75rem;font-weight:600;margin-right:4px">🌐</span>
+    <button onclick="setLang('de')" data-l="de" class="lbtn active" style="background:#2563eb;color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">DE</button>
+    <button onclick="setLang('tr')" data-l="tr" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">TR</button>
+    <button onclick="setLang('ro')" data-l="ro" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">RO</button>
+    <button onclick="setLang('sr')" data-l="sr" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">SR</button>
+    <button onclick="setLang('pl')" data-l="pl" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">PL</button>
+    <button onclick="setLang('en')" data-l="en" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">EN</button>
+    <button onclick="setLang('ar')" data-l="ar" class="lbtn" style="background:rgba(255,255,255,0.1);color:#fff;border:none;border-radius:5px;padding:4px 10px;font-size:.75rem;font-weight:700;cursor:pointer">AR</button>
+  </div>
+
+  <script>
+  // ── Übersetzbare Texte ──────────────────────────────────────────────────
+  const ANLEITUNG_I18N = {
+    'back': {
+      de: 'Zurück zur App', tr: 'Uygulamaya geri dön', ro: 'Înapoi la aplicație',
+      sr: 'Nazad na aplikaciju', pl: 'Powrót do aplikacji',
+      en: 'Back to App', ar: 'العودة إلى التطبيق'
+    },
+    'toc-title': {
+      de: '📋 Inhaltsverzeichnis', tr: '📋 İçindekiler', ro: '📋 Cuprins',
+      sr: '📋 Sadržaj', pl: '📋 Spis treści',
+      en: '📋 Table of Contents', ar: '📋 جدول المحتويات'
+    },
+    'doc-title': {
+      de: 'Bedienungsanleitung', tr: 'Kullanım Kılavuzu',
+      ro: 'Manual de utilizare', sr: 'Uputstvo za upotrebu',
+      pl: 'Instrukcja obsługi', en: 'User Manual', ar: 'دليل المستخدم'
+    },
+    'doc-sub': {
+      de: 'Für Unternehmen und Verantwortliche',
+      tr: 'Şirketler ve Sorumlular için',
+      ro: 'Pentru companii și responsabili',
+      sr: 'Za kompanije i odgovorne',
+      pl: 'Dla firm i odpowiedzialnych',
+      en: 'For Companies and Managers',
+      ar: 'للشركات والمسؤولين'
+    },
+    'print': {
+      de: '🖨️ Anleitung drucken', tr: '🖨️ Kılavuzu yazdır',
+      ro: '🖨️ Tipăriți manualul', sr: '🖨️ Odštampaj uputstvo',
+      pl: '🖨️ Drukuj instrukcję', en: '🖨️ Print Manual', ar: '🖨️ طباعة الدليل'
+    }
+  };
+
+  function setLang(l) {
+    // Buttons aktiv/inaktiv
+    document.querySelectorAll('.lbtn').forEach(b => {
+      const active = b.dataset.l === l;
+      b.style.background = active ? '#2563eb' : 'rgba(255,255,255,0.1)';
+    });
+    // Übersetzbare Elemente updaten
+    Object.keys(ANLEITUNG_I18N).forEach(key => {
+      document.querySelectorAll('.t-' + key).forEach(el => {
+        el.textContent = ANLEITUNG_I18N[key][l] || ANLEITUNG_I18N[key]['de'];
+      });
+    });
+    // RTL für Arabisch
+    document.body.dir = l === 'ar' ? 'rtl' : 'ltr';
+    localStorage.setItem('anleitung-lang', l);
+  }
+
+  // Beim Laden gespeicherte Sprache oder Browsersprache anwenden
+  window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('anleitung-lang');
+    const browser = navigator.language?.slice(0,2);
+    const supported = ['de','tr','ro','sr','pl','en','ar'];
+    const lang = (saved && supported.includes(saved)) ? saved
+               : (browser && supported.includes(browser)) ? browser
+               : 'de';
+    if (lang !== 'de') setLang(lang);
+  });
+  </script>
+
   <!-- ===== COVER ===== -->
   <div class="cover">
     <div class="cover-logo">
       <img src="https://csc-hannover.de/wp-content/uploads/logo.png" alt="CSC GmbH Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'color:#1e3a5f;font-weight:700;font-size:1.2rem;\'>CSC GmbH</span>'">
     </div>
-    <h1>Bedienungsanleitung<br>CSC Schulungsmanagement-App</h1>
-    <div class="subtitle">Für Unternehmen und Verantwortliche</div>
+    <h1><span class="t-doc-title">Bedienungsanleitung</span><br>CSC Schulungsmanagement-App</h1>
+    <div class="subtitle"><span class="t-doc-sub">Für Unternehmen und Verantwortliche</span></div>
     <div class="cover-meta">
       <span>📅 Juni 2026</span>
       <span>🏢 CSC GmbH · Hannover</span>
       <span>🌐 <a href="https://www.csc-hannover.de" target="_blank">www.csc-hannover.de</a></span>
     </div>
+    <div style="margin-top:18px">
+      <a href="https://schulung.csc-hannover.de" style="display:inline-block;background:#fff;color:#1e3a5f;font-weight:700;font-size:.95rem;padding:10px 24px;border-radius:8px;text-decoration:none;box-shadow:0 2px 8px rgba(0,0,0,0.18)">
+        ← <span class="t-back">Zurück zur App</span>
+      </a>
+    </div>
   </div>
 
   <!-- ===== TABLE OF CONTENTS ===== -->
   <div class="toc-card">
-    <h2>📋 Inhaltsverzeichnis</h2>
+    <h2 class="t-toc-title">📋 Inhaltsverzeichnis</h2>
     <ul class="toc-list">
       <li><a href="#sec1">1 · Erste Schritte: Anmeldung</a></li>
       <li><a href="#sec2">2 · Übersicht &amp; Ampelsystem</a></li>
@@ -983,9 +1063,12 @@
   </div>
 
   <!-- ===== PRINT BUTTON ===== -->
-  <div class="print-bar">
+  <div class="print-bar" style="display:flex;gap:10px;align-items:center;justify-content:center">
+    <a href="https://schulung.csc-hannover.de" style="display:inline-block;background:#1e3a5f;color:#fff;font-weight:700;font-size:.9rem;padding:10px 20px;border-radius:8px;text-decoration:none">
+      ← <span class="t-back">Zurück zur App</span>
+    </a>
     <button class="btn-print" onclick="window.print()">
-      🖨️ Anleitung drucken
+      <span class="t-print">🖨️ Anleitung drucken</span>
     </button>
   </div>
 
