@@ -59,6 +59,14 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_20', nr:20, saeule:'C', titel:'Besondere Verhaltensregeln im Kundenobjekt',          rechtsgrundlage:'Art. 5 DSGVO, GeschGehG' },
   { id:'kap_21', nr:21, saeule:'C', titel:'Meldepflichten bei Datenpannen',                      rechtsgrundlage:'Art. 33 DSGVO, § 65 BDSG' },
   { id:'kap_22', nr:22, saeule:'C', titel:'Alkohol, Drogen & Verhaltensregeln am Arbeitsplatz', rechtsgrundlage:'§ 15 ArbSchG, § 106 GewO' },
+  // ── Säule D: Das 4-Farben-System — Hygiene & Kreuzkontaminationsvermeidung ──
+  { id:'kap_23', nr:23, saeule:'D', titel:'Das 4-Farben-System — Überblick & Warum es Leben rettet',       rechtsgrundlage:'HACCP (EG Nr. 852/2004), DGUV V1, RKI-Richtlinien' },
+  { id:'kap_24', nr:24, saeule:'D', titel:'🔴 Rot — Hochrisikozone: Sanitär & WC',                         rechtsgrundlage:'RKI-Hygieneleitlinien, HACCP' },
+  { id:'kap_25', nr:25, saeule:'D', titel:'🟡 Gelb — Sekundärzone: Allgemeiner Sanitärbereich',             rechtsgrundlage:'RKI-Hygieneleitlinien, HACCP' },
+  { id:'kap_26', nr:26, saeule:'D', titel:'🟢 Grün — Sensible Zone: Küche & Lebensmittelbereiche',          rechtsgrundlage:'HACCP (EG Nr. 852/2004), LMHV' },
+  { id:'kap_27', nr:27, saeule:'D', titel:'🔵 Blau — Standardzone: Allgemeine Oberflächen',                 rechtsgrundlage:'DGUV V1, allgemeine Hygiene' },
+  { id:'kap_28', nr:28, saeule:'D', titel:'Das Schloss-Prinzip, pH-Codierung & Mischverbote',              rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
+  { id:'kap_29', nr:29, saeule:'D', titel:'Wechseltuch-Methode, 16-Seiten-Falttechnik & Waschprotokoll',   rechtsgrundlage:'RKI-Richtlinien, HACCP' },
 ];
 
 // ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
@@ -419,7 +427,70 @@ const LERNPFAD_TEXTE = {
     sr: "Ne smiješ početi rad pod utjecajem alkohola, droga ili kanabisa — to ugrožava tebe i druge. Ako uzimate lijekove koji utječu na tvoju sposobnost reakcije, moraš to prijaviti nadređenom. Kršenja mogu dovesti do trenutnog otkaza.",
     pl: "Nie możesz przystąpić do pracy pod wpływem alkoholu, narkotyków lub konopi — zagraża to tobie i innym. Jeśli przyjmujesz leki wpływające na twoją zdolność reagowania, musisz poinformować o tym przełożonego. Naruszenia mogą prowadzić do natychmiastowego zwolnienia.",
     en: "You must not start work under the influence of alcohol, drugs or cannabis — this puts yourself and others at risk. If you take medication that affects your reaction capacity, you must inform your supervisor. Violations can lead to instant dismissal.",
-    ar: "لا يجوز لك البدء في العمل تحت تأثير الكحول أو المخدرات أو الحشيش — فهذا يُعرّضك أنت والآخرين للخطر. إذا كنت تتناول أدوية تؤثر على قدرة التفاعل لديك يجب إبلاغ مشرفك. يمكن أن تؤدي المخالفات إلى الفصل الفوري من العمل."
+    ar: "لا يجوز لك البدء في العمل تحت تأثير الكحول أو المخدرات أو الحشيش — فهذا يُعرّضك أنت والآخرين للخطر. إذا كنت تتناول أدوية تؤثر على قدرة التفاعل لديك يجب إبلاغ مشرفك. يمكن أن تؤدي المخالفات إلى الفصل الفوري من العمل."  },
+  // ── Säule D: Das 4-Farben-System ──────────────────────────────────────────
+  kap_23: {
+    de: "Das 4-Farben-System ist ein international anerkannter Hygienestandard: Jede Farbe steht für eine bestimmte Zone. 🔴 Rot = WC und Hochrisikobereich. 🟡 Gelb = Waschbecken und allgemeiner Sanitärbereich. 🟢 Grün = Küche und Lebensmittelbereiche. 🔵 Blau = Schreibtische, Türen und allgemeine Oberflächen. Mischst du Tücher aus verschiedenen Zonen, überträgst du Keime — das nennt man Kreuzkontamination. Das System verhindert genau das.",
+    tr: "4 renk sistemi uluslararası kabul görmüş bir hijyen standardıdır: Her renk belirli bir bölgeyi temsil eder. 🔴 Kırmızı = Tuvalet ve yüksek risk alanı. 🟡 Sarı = Lavabo ve genel banyo alanı. 🟢 Yeşil = Mutfak ve gıda alanları. 🔵 Mavi = Masalar, kapılar ve genel yüzeyler. Farklı bölgelerden bezleri karıştırırsanız mikrop bulaştırırsınız — buna çapraz kontaminasyon denir. Sistem tam olarak bunu önler.",
+    ro: "Sistemul cu 4 culori este un standard de igienă recunoscut internațional: fiecare culoare reprezintă o anumită zonă. 🔴 Roșu = toaletă și zona de risc înalt. 🟡 Galben = chiuvetă și zona sanitară generală. 🟢 Verde = bucătărie și zone alimentare. 🔵 Albastru = birouri, uși și suprafețe generale. Dacă amesteci cârpe din zone diferite, transmiți germeni — asta se numește contaminare încrucișată. Sistemul previne exact asta.",
+    sr: "Sistem od 4 boje je međunarodno priznat higijenski standard: svaka boja predstavlja određenu zonu. 🔴 Crvena = WC i zona visokog rizika. 🟡 Žuta = lavabo i opšta kupatilska zona. 🟢 Zelena = kuhinja i zone hrane. 🔵 Plava = stolovi, vrata i opšte površine. Ako miješaš krpe iz različitih zona, prenosiš klice — to se zove unakrsna kontaminacija. Sistem upravo to sprečava.",
+    pl: "System 4 kolorów to międzynarodowo uznany standard higieny: każdy kolor oznacza określoną strefę. 🔴 Czerwony = toaleta i strefa wysokiego ryzyka. 🟡 Żółty = umywalka i ogólna strefa sanitarna. 🟢 Zielony = kuchnia i strefy żywnościowe. 🔵 Niebieski = biurka, drzwi i ogólne powierzchnie. Jeśli mieszasz ściereczki z różnych stref, przenosisz drobnoustroje — to nazywa się skażeniem krzyżowym. System dokładnie temu zapobiega.",
+    en: "The 4-colour system is an internationally recognised hygiene standard: each colour represents a specific zone. 🔴 Red = toilet and high-risk area. 🟡 Yellow = washbasin and general sanitary area. 🟢 Green = kitchen and food areas. 🔵 Blue = desks, doors and general surfaces. If you mix cloths from different zones, you transfer germs — this is called cross-contamination. The system prevents exactly that.",
+    ar: "نظام الألوان الأربعة هو معيار نظافة معترف به دولياً: كل لون يمثل منطقة محددة. 🔴 أحمر = المرحاض ومنطقة عالية الخطورة. 🟡 أصفر = الحوض ومنطقة الصرف الصحي العامة. 🟢 أخضر = المطبخ ومناطق الأغذية. 🔵 أزرق = المكاتب والأبواب والأسطح العامة. إذا خلطت القماشات من مناطق مختلفة فأنت تنقل الجراثيم — يُسمى هذا التلوث المتقاطع. النظام يمنع ذلك تماماً."
+  },
+  kap_24: {
+    de: "🔴 Rote Tücher sind ausschließlich für WC, Urinale, Bidets und den direkten Spritzbereich. Diese Zone hat die höchste Keimbelastung — daher gilt: Ein Tuch = Ein Sanitärobjekt. Danach kommt das Tuch sofort in die Wäsche — niemals zurück in den Eimer tauchen! Wäsche bei mindestens 95 °C um Keime sicher abzutöten. Rote Tücher dürfen NIEMALS in einer anderen Zone verwendet werden.",
+    tr: "🔴 Kırmızı bezler yalnızca tuvalet, pisuar, bide ve doğrudan sıçrama alanı içindir. Bu bölgede en yüksek mikrop yoğunluğu vardır — bu nedenle kural: Bir bez = Bir sanitasyon nesnesi. Bundan sonra bez derhal çamaşıra gider — kovaya asla geri daldırmayın! Mikroorganizmaları güvenli şekilde öldürmek için en az 95 °C'de yıkayın. Kırmızı bezler başka bir bölgede ASLA kullanılmamalıdır.",
+    ro: "🔴 Cârpele roșii sunt exclusiv pentru toalete, pisoare, bidete și zona de stropi directă. Această zonă are cea mai mare încărcare de germeni — de aceea regula este: o cârpă = un obiect sanitar. Apoi cârpa merge imediat la spălat — niciodată nu o scufundați înapoi în găleată! Spălați la minimum 95 °C pentru a ucide sigur germenii. Cârpele roșii nu trebuie NICIODATĂ utilizate în altă zonă.",
+    sr: "🔴 Crvene krpe su isključivo za WC, pisoare, bidee i direktnu zonu prskanja. Ova zona ima najveće opterećenje klicama — stoga vrijedi: Jedna krpa = Jedan sanitarni predmet. Zatim krpa odmah ide u pranje — nikad je ne uranjajte natrag u kantu! Perite na najmanje 95 °C da sigurno uništite klice. Crvene krpe se NIKAD ne smiju koristiti u drugoj zoni.",
+    pl: "🔴 Czerwone ściereczki przeznaczone są wyłącznie do toalet, pisuarów, bidetów i bezpośredniej strefy zachlapań. Ta strefa ma największe obciążenie drobnoustrojami — dlatego obowiązuje zasada: jedna ściereczka = jeden obiekt sanitarny. Następnie ściereczka idzie od razu do prania — nigdy nie zanurzaj jej z powrotem w wiaderku! Pranie w temperaturze co najmniej 95 °C, aby bezpiecznie zabić drobnoustroje. Czerwonych ściereczek NIGDY nie wolno używać w innej strefie.",
+    en: "🔴 Red cloths are exclusively for toilets, urinals, bidets and the direct splash zone. This zone has the highest germ load — so the rule is: one cloth = one sanitary object. Then the cloth goes straight into the wash — never dip it back into the bucket! Wash at a minimum of 95 °C to safely kill germs. Red cloths must NEVER be used in any other zone.",
+    ar: "🔴 القماشات الحمراء مخصصة حصرياً للمراحيض والبوالات وأحواض الغسيل ومنطقة الرذاذ المباشرة. هذه المنطقة تحمل أعلى تلوث بالجراثيم — لذا القاعدة: قماشة واحدة = جسم صرف صحي واحد. بعد ذلك تذهب القماشة مباشرة للغسيل — لا تغمسها أبداً في الدلو مرة أخرى! اغسل بدرجة حرارة لا تقل عن 95 °C لقتل الجراثيم بأمان. القماشات الحمراء يجب أن لا تُستخدم أبداً في أي منطقة أخرى."
+  },
+  kap_25: {
+    de: "🟡 Gelbe Tücher sind für Waschbecken, Armaturen, Duschen, Spiegel und Fliesen außerhalb der WC-Spritzzone. Warum eine eigene Farbe? Weil Fäkal- und Urinreste vom WC (rot) nicht auf das Waschbecken übertragen werden dürfen — dort waschen sich Menschen das Gesicht. Die Trennung schützt vor unsichtbarer Kreuzkontamination. Wäsche bei 60 °C bis 95 °C.",
+    tr: "🟡 Sarı bezler lavabolar, musluklar, duşlar, aynalar ve WC sıçrama alanı dışındaki fayanslar içindir. Neden ayrı bir renk? Çünkü WC'den (kırmızı) gelen dışkı ve idrar kalıntıları lavaboya taşınamaz — insanlar orada yüzlerini yıkıyorlar. Ayırma görünmez çapraz kontaminasyondan korur. 60 °C ila 95 °C'de yıkayın.",
+    ro: "🟡 Cârpele galbene sunt pentru chiuvete, robinete, dușuri, oglinzi și gresie din afara zonei de stropi WC. De ce o culoare separată? Deoarece resturile fecale și de urină din WC (roșu) nu trebuie transferate pe chiuvetă — acolo oamenii se spală pe față. Separarea protejează de contaminarea încrucișată invizibilă. Spălați la 60 °C până la 95 °C.",
+    sr: "🟡 Žute krpe su za lavaboe, slavine, tuševe, ogledala i pločice izvan zone prskanja WC-a. Zašto posebna boja? Jer se fekalne i ostatke urina iz WC-a (crveno) ne smiju prenijeti na lavabo — tamo se ljudi peru po licu. Odvajanje štiti od nevidljive unakrsne kontaminacije. Perite na 60 °C do 95 °C.",
+    pl: "🟡 Żółte ściereczki służą do umywalek, kranów, pryszniców, luster i płytek poza strefą zachlapań toalety. Dlaczego osobny kolor? Ponieważ resztki kałowe i moczu z toalety (czerwony) nie mogą być przenoszone na umywalkę — tam ludzie myją sobie twarz. Rozdzielenie chroni przed niewidocznym skażeniem krzyżowym. Pranie w temperaturze 60 °C do 95 °C.",
+    en: "🟡 Yellow cloths are for washbasins, taps, showers, mirrors and tiles outside the toilet splash zone. Why a separate colour? Because faecal and urine residues from the toilet (red) must not be transferred to the washbasin — people wash their faces there. Separation protects against invisible cross-contamination. Wash at 60 °C to 95 °C.",
+    ar: "🟡 القماشات الصفراء مخصصة لأحواض الغسيل والحنفيات والدشات والمرايا والبلاط خارج منطقة رذاذ المرحاض. لماذا لون منفصل؟ لأن بقايا البراز والبول من المرحاض (أحمر) يجب ألا تنتقل إلى حوض الغسيل — الناس يغسلون وجوههم هناك. الفصل يحمي من التلوث المتقاطع غير المرئي. اغسل بدرجة حرارة 60 °C إلى 95 °C."
+  },
+  kap_26: {
+    de: "🟢 Grüne Tücher sind für Küchen, Arbeitsflächen, Schneidebretter, Kühlschränke und Pflegebereiche. Hier hat die Lebensmittelsicherheit (HACCP) höchste Priorität. Ein Küchentuch darf NIEMALS mit Sanitärtextilien in Berührung kommen — das wäre ein schwerwiegender HACCP-Verstoß. Strenge Trennung von allen anderen Zonen ist Pflicht. Wäsche zwingend bei 95 °C.",
+    tr: "🟢 Yeşil bezler mutfaklar, tezgahlar, kesme tahtaları, buzdolapları ve bakım alanları içindir. Burada gıda güvenliği (HACCP) en yüksek önceliğe sahiptir. Bir mutfak bezi ASLA sanitasyon tekstilleriyle temas etmemeli — bu ciddi bir HACCP ihlali olur. Diğer tüm bölgelerden sıkı ayrım zorunludur. Yıkama zorunlu olarak 95 °C'de yapılmalıdır.",
+    ro: "🟢 Cârpele verzi sunt pentru bucătării, suprafețe de lucru, tocătoare, frigidere și zone de îngrijire. Aici siguranța alimentară (HACCP) are prioritate maximă. O cârpă de bucătărie nu trebuie NICIODATĂ să atingă textile sanitare — acesta ar fi o încălcare gravă a HACCP. Separarea strictă de toate celelalte zone este obligatorie. Spălați obligatoriu la 95 °C.",
+    sr: "🟢 Zelene krpe su za kuhinje, radne površine, daske za rezanje, frižidere i zone njege. Ovdje sigurnost hrane (HACCP) ima najviši prioritet. Kuhinjska krpa NIKAD ne smije doći u kontakt s sanitarnim tekstilom — to bi bio ozbiljan prekršaj HACCP-a. Stroga odvojenost od svih ostalih zona je obavezna. Pranje obavezno na 95 °C.",
+    pl: "🟢 Zielone ściereczki przeznaczone są do kuchni, blatów, desek do krojenia, lodówek i stref pielęgnacji. Tu bezpieczeństwo żywności (HACCP) ma najwyższy priorytet. Ściereczka kuchenna NIGDY nie może stykać się z tekstyliami sanitarnymi — byłoby to poważne naruszenie HACCP. Ścisłe oddzielenie od wszystkich innych stref jest obowiązkowe. Pranie obowiązkowo w 95 °C.",
+    en: "🟢 Green cloths are for kitchens, work surfaces, chopping boards, refrigerators and care areas. Here food safety (HACCP) has the highest priority. A kitchen cloth must NEVER come into contact with sanitary textiles — that would be a serious HACCP violation. Strict separation from all other zones is mandatory. Wash obligatorily at 95 °C.",
+    ar: "🟢 القماشات الخضراء مخصصة للمطابخ وأسطح العمل وألواح التقطيع والثلاجات ومناطق الرعاية. هنا سلامة الغذاء (HACCP) لها الأولوية القصوى. يجب أن لا تلامس قماشة المطبخ أبداً مواد نسيجية صحية — سيكون ذلك انتهاكاً خطيراً لـ HACCP. الفصل الصارم عن جميع المناطق الأخرى إلزامي. غسيل إلزامي عند 95 °C."
+  },
+  kap_27: {
+    de: "🔵 Blaue Tücher sind für allgemeine Oberflächen: Schreibtische, Stühle, Türen, Heizkörper, Regale, Fensterbänke. Diese Zone hat die geringste Keimbelastung — einfache Unterhaltsreinigung und Staubwischen. Trotzdem gilt: Blaue Tücher NICHT in Sanitärbereichen oder der Küche verwenden. In der Praxis benötigst du die meisten blauen Tücher — plane genug ein. Wäsche bei 60 °C.",
+    tr: "🔵 Mavi bezler genel yüzeyler içindir: masalar, sandalyeler, kapılar, radyatörler, raflar, pencere eşikleri. Bu bölgede mikrop yoğunluğu en azdır — basit süpürme ve toz alma. Yine de kural geçerlidir: Mavi bezleri banyo veya mutfak alanlarında KULLANMAYIN. Pratikte en fazla mavi bez ihtiyacınız olur — yeterli stok planlayın. 60 °C'de yıkayın.",
+    ro: "🔵 Cârpele albastre sunt pentru suprafețe generale: birouri, scaune, uși, calorifere, rafturi, pervaze. Această zonă are cea mai mică încărcare de germeni — curățenie ușoară de întreținere și ștergerea prafului. Totuși regula se aplică: nu folosiți cârpele albastre în zone sanitare sau bucătărie. În practică aveți nevoie de cele mai multe cârpe albastre — planificați suficient stoc. Spălați la 60 °C.",
+    sr: "🔵 Plave krpe su za opšte površine: stolove, stolice, vrata, radijatore, police, prozorske klupice. Ova zona ima najmanje opterećenje klicama — jednostavno čišćenje i brisanje prašine. Ipak pravilo važi: Plave krpe NE koristiti u kupatilskim ili kuhinjskim zonama. U praksi vam trebaju najviše plave krpe — planujte dovoljno zaliha. Perite na 60 °C.",
+    pl: "🔵 Niebieskie ściereczki służą do ogólnych powierzchni: biurek, krzeseł, drzwi, grzejników, półek, parapetów. Ta strefa ma najmniejsze obciążenie drobnoustrojami — proste sprzątanie bieżące i ścieranie kurzu. Mimo to obowiązuje zasada: nie używaj niebieskich ściereczek w strefach sanitarnych ani w kuchni. W praktyce potrzebujesz najwięcej niebieskich ściereczek — zaplanuj wystarczający zapas. Pranie w 60 °C.",
+    en: "🔵 Blue cloths are for general surfaces: desks, chairs, doors, radiators, shelves, window sills. This zone has the lowest germ load — simple routine cleaning and dusting. Nevertheless the rule applies: do NOT use blue cloths in sanitary areas or the kitchen. In practice you need the most blue cloths — plan enough stock. Wash at 60 °C.",
+    ar: "🔵 القماشات الزرقاء مخصصة للأسطح العامة: المكاتب والكراسي والأبواب والمشعات والأرفف وأعتاب النوافذ. هذه المنطقة تحمل أقل تلوث بالجراثيم — تنظيف روتيني بسيط وإزالة الغبار. ومع ذلك تطبق القاعدة: لا تستخدم القماشات الزرقاء في المناطق الصحية أو المطبخ. في الممارسة العملية تحتاج إلى أكثر القماشات الزرقاء — خطط لمخزون كافٍ. اغسل عند 60 °C."
+  },
+  kap_28: {
+    de: "Das Schloss-Prinzip: Rotes Tuch → Roter Deckel (saure Chemie) → Roter Eimer. Die Farbe des Tuchs und die Farbe der Flasche müssen übereinstimmen — so landet immer die richtige Chemie auf der richtigen Fläche, ohne tiefes Fachwissen. pH-Codierung: Rot (sauer) gegen Kalk und Urinstein. Grün (neutral) für tägliche Reinigung, schont Holz und Lack. Blau (alkalisch) gegen Fett und organische Verschmutzungen. ACHTUNG: Saure (rot) und alkalische (blau) Reiniger NIEMALS mischen — das ist lebensgefährlich!",
+    tr: "Kilit prensibi: Kırmızı bez → Kırmızı kapak (asidik kimyasal) → Kırmızı kova. Bezin rengi ve şişenin rengi eşleşmelidir — böylece her zaman doğru kimyasal doğru yüzeye gelir, derin uzmanlık bilgisi gerekmez. pH kodlaması: Kırmızı (asidik) kireç ve idrar taşına karşı. Yeşil (nötr) günlük temizlik için, ahşap ve lake korur. Mavi (alkalin) yağa ve organik kirlere karşı. DİKKAT: Asidik (kırmızı) ve alkalin (mavi) temizleyicileri ASLA karıştırmayın!",
+    ro: "Principiul lacătului: cârpă roșie → capac roșu (chimical acid) → găleată roșie. Culoarea cârpei și culoarea sticlei trebuie să se potrivească. Codificarea pH: roșu (acid) împotriva calcarului. Verde (neutru) pentru curățenie zilnică. Albastru (alcalin) împotriva grăsimilor. ATENȚIE: Nu amestecați NICIODATĂ agenți de curățare acizi cu alcalini — pericol de viață!",
+    sr: "Princip brave: Crvena krpa → Crveni poklopac (kisela hemija) → Crvena kanta. Boja krpe i boja boce moraju se podudarati. pH kodiranje: Crvena (kisela) protiv kamenca. Zelena (neutralna) za svakodnevno čišćenje. Plava (alkalna) protiv masnoće. PAŽNJA: Kisele i alkalne čistioce NIKAD ne miješajte — opasnost po život!",
+    pl: "Zasada zamka: Czerwona ściereczka → Czerwona nakrętka (chemia kwaśna) → Czerwone wiadro. Kolor ściereczki i kolor butelki muszą się zgadzać. Kodowanie pH: czerwony (kwasowy) przeciw kamieniowi. Zielony (neutralny) do codziennego sprzątania. Niebieski (zasadowy) przeciw tłuszczom. UWAGA: kwaśnych i zasadowych środków NIGDY nie mieszaj — niebezpieczne dla życia!",
+    en: "The lock principle: red cloth → red cap (acidic chemical) → red bucket. The colour of the cloth and bottle must match. pH coding: red (acidic) against limescale. Green (neutral) for daily cleaning. Blue (alkaline) against grease. WARNING: NEVER mix acidic (red) and alkaline (blue) cleaners — life-threatening!",
+    ar: "مبدأ القفل: قماشة حمراء ← غطاء أحمر ← دلو أحمر. يجب تطابق اللون مع الزجاجة. ترميز pH: أحمر ضد الكلس، أخضر للتنظيف اليومي، أزرق ضد الدهون. تحذير: لا تخلط أبداً المنظفات الحمضية مع القلوية — خطر على الحياة!"
+  },
+  kap_29: {
+    de: "Die Wechseltuch-Methode: Ein Tuch = Ein Sanitärobjekt — danach sofort in die Wäsche, kein Zurücktauchen in die Lösung. Pflicht in Kliniken, Pflegeeinrichtungen und Sanitäranlagen (RKI-Richtlinien). Die 16-Seiten-Falttechnik: Tuch zweimal falten ergibt 16 saubere Flächen. Für jede neue Oberfläche eine frische Seite — spart Wasser und maximiert Keimfreiheit. Waschprotokoll: 🔴🟢 bei 95 °C, 🟡🔵 bei 60 °C. NIEMALS Weichspüler — er verklebt die Mikrofasern! Trockner empfohlen — die Hitze ist ein zusätzlicher Hygieneschritt.",
+    tr: "Değiştirme bezi yöntemi: Bir bez = Bir sanitasyon nesnesi — sonra hemen çamaşıra, solüsyona geri daldırmayın. Klinikler ve bakım tesislerinde zorunludur. 16 yüz katlama: Bezi iki kez katlamak 16 temiz yüzey verir. Yıkama: 🔴🟢 95°C, 🟡🔵 60°C. ASLA yumuşatıcı kullanmayın — mikrofiberleri yapıştırır!",
+    ro: "Metoda schimbării cârpei: o cârpă = un obiect sanitar — apoi direct la spălat. Obligatorie în clinici. Tehnica de pliere în 16 fețe: plierea cârpei de două ori dă 16 suprafețe curate. Protocol de spălare: 🔴🟢 la 95°C, 🟡🔵 la 60°C. NICIODATĂ balsam de rufe — lipește microfibra!",
+    sr: "Metoda izmjene krpe: Jedna krpa = Jedan sanitarni predmet — zatim odmah u pranje. Obavezno u klinikama. Tehnika 16 strana: Dvostruko savijanje daje 16 čistih površina. Protokol pranja: 🔴🟢 95°C, 🟡🔵 60°C. NIKAD omekšivač — lijepi mikrovlakna!",
+    pl: "Metoda wymiany ściereczki: jedna ściereczka = jeden obiekt sanitarny — potem od razu do prania. Obowiązkowe w klinikach. Technika 16 stron: Złożenie dwa razy daje 16 czystych powierzchni. Protokół prania: 🔴🟢 w 95°C, 🟡🔵 w 60°C. NIGDY płynu do płukania — skleja mikrowłókna!",
+    en: "The cloth-change method: one cloth = one sanitary object — straight into the wash, no dipping back. Mandatory in clinics (RKI guidelines). 16-face folding technique: folding twice gives 16 clean surfaces. Washing protocol: 🔴🟢 at 95°C, 🟡🔵 at 60°C. NEVER fabric softener — it clogs the microfibres! Tumble dryer recommended.",
+    ar: "طريقة تبديل القماشة: قماشة واحدة = جسم صرف صحي واحد — مباشرة للغسيل. إلزامية في العيادات. تقنية الطي على 16 وجهاً: الطي مرتين يعطي 16 سطحاً نظيفاً. بروتوكول الغسيل: 🔴🟢 عند 95°C، 🟡🔵 عند 60°C. لا تستخدم أبداً منعم القماش!"
   }
 };
 
@@ -1551,6 +1622,7 @@ function renderAdminKernkapitel() {
     A: { label: 'Säule A — Gesetzliche Basis-Unterweisungen', farbe: '#1a3a5c', bg: '#e8f0fb' },
     B: { label: 'Säule B — Reinigungstechnologie & Chemie',   farbe: '#166534', bg: '#dcfce7' },
     C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#7c2d12', bg: '#fff7ed' },
+    D: { label: 'Säule D — Das 4-Farben-System (Hygiene)',    farbe: '#6b21a8', bg: '#faf5ff' },
   };
 
   // Kapitel nach Säule gruppieren
@@ -5817,8 +5889,8 @@ let lernpfadAktuellerDurchgang = 1; // aktuell aktiver Durchgang (der laufende o
 let lernpfadTenantKapitel = []; // { id, titel, beschreibung, reihenfolge } — von Tenant hinzugefügte Kapitel
 
 const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.userId || 'anon'}_d${lernpfadAktuellerDurchgang}`;
-const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309' };
-const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO' };
+const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309', D: '#6b21a8' };
+const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO', D: '🎨 Säule D — Das 4-Farben-System' };
 
 // ── LERNPFAD-SPRACHE ─────────────────────────────────────────
 const LP_SPRACHEN = [
@@ -5835,7 +5907,7 @@ let lernpfadSprache = localStorage.getItem('lernpfad_sprache') || 'de';
 // ── LERNPFAD-UNTERSCHRIFT: Texte in 7 Sprachen ───────────────
 const LP_UNT_TEXTE = {
   hinweis_offen: {
-    de: '✍️ Die Unterzeichnung wird freigeschaltet, wenn alle 22 Kapitel abgehakt wurden.',
+    de: '✍️ Die Unterzeichnung wird freigeschaltet, wenn alle Kapitel abgehakt wurden.',
     tr: '✍️ İmzalama seçeneği, tüm 22 bölüm işaretlendiğinde etkinleştirilecektir.',
     ro: '✍️ Semnarea va fi activată după ce toate cele 22 de capitole au fost bifate.',
     sr: '✍️ Потписивање ће бити омогућено када се означе сва 22 поглавља.',
@@ -5844,7 +5916,7 @@ const LP_UNT_TEXTE = {
     ar: '✍️ سيتم تفعيل التوقيع بعد الانتهاء من جميع الفصول الـ 22.'
   },
   hinweis_komplett: {
-    de: '🎉 Alle 22 Kapitel abgeschlossen! Bitte jetzt unterzeichnen.',
+    de: '🎉 Alle Kapitel abgeschlossen! Bitte jetzt unterzeichnen.',
     tr: '🎉 Tüm 22 bölüm tamamlandı! Lütfen şimdi imzalayın.',
     ro: '🎉 Toate cele 22 de capitole au fost finalizate! Vă rugăm să semnați acum.',
     sr: '🎉 Свих 22 поглавља завршено! Молимо потпишите сада.',
@@ -7302,9 +7374,9 @@ function hilfeInhaltVerantwortlicher() {
         <li>Vorlage auswählen, Frist festlegen (Schnellauswahl: 3/6/9/12 Monate)</li>
         <li>Für Bereichseinweisungen: persönliche Zuweisung möglich</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Lernpfad (22 Kapitel)</h3>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Lernpfad (29 Kapitel)</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Mitarbeiter absolviert 22 Kapitel selbstständig</li>
+        <li>Mitarbeiter absolviert 29 Kapitel selbstständig</li>
         <li>Nach Abschluss: Mitarbeiter unterschreibt → Sie gegenzeichnen</li>
         <li>Neuer Durchgang: über <strong>🔄 Neu starten</strong> in der Mitarbeiterkarte</li>
       </ul>
