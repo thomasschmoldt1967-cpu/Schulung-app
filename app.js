@@ -11,6 +11,7 @@
 const SESSION_KEY        = 'schulung_session';
 const SESSION_HOURS      = 8;    // Session-Timeout: 8h Inaktivität
 const INACTIVITY_MINUTES = 8 * 60; // Minuten bis Auto-Logout
+const LERNPFAD_VORLAGE_ID = '__lernpfad__'; // Pseudo-ID für Lernpfad-Zuweisung
 
 // ── GLOBALER APP-ZUSTAND ─────────────────────────────────────
 let currentUser       = null;
@@ -918,6 +919,19 @@ async function initApp() {
 
 // ── AMPEL ────────────────────────────────────────────────────
 function berechneStatus(zuw) {
+  // Lernpfad-Zuweisung: Status aus lernpfadUnterschrift (eigener User) oder _lpUntCache (andere User)
+  if (zuw.vorlagenId === LERNPFAD_VORLAGE_ID) {
+    const userId = zuw.zugewiesenAn || (currentUser ? currentUser.userId : null);
+    const hat = userId && window._lpUntCache && window._lpUntCache[userId]
+      ? window._lpUntCache[userId].unterzeichnet_am
+      : (lernpfadUnterschrift && lernpfadUnterschrift.unterzeichnetAm);
+    if (hat) return 'gruen';
+    const frist = zuw.frist ? new Date(zuw.frist) : null;
+    const jetzt = new Date();
+    if (frist && frist < jetzt) return 'rot';
+    if (frist && (frist - jetzt) / 86400000 <= 20) return 'gelb';
+    return 'grau';
+  }
   const form  = formulare[zuw.id] || {};
   if (form.abgeschlossen) return 'gruen';           // ✅ Abgeschlossen → grün
   const frist = zuw.frist ? new Date(zuw.frist) : null;
@@ -1405,7 +1419,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (29 Kapitel)</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -1478,9 +1492,11 @@ function adminZeigeTenant(tenantId) {
   const html = `<div class="card"><div class="card-title">🏢 ${escHtml(tenant.name)}</div>
     ${zuws.map(z => {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
+      const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -1497,8 +1513,22 @@ function adminDetailAnzeigen(zuwId) {
   activeDetailZuwId = zuwId;
   const zuw=zuweisungen.find(z=>z.id===zuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId), form=formulare[zuwId]||{}, status=berechneStatus(zuw);
+  const isLP = zuw.vorlagenId === LERNPFAD_VORLAGE_ID;
+
   let feldHtml='';
-  if (form.felder && vorlage) {
+  if (isLP) {
+    // Lernpfad-Detail: Status aus Cache anzeigen
+    const lpUnt = window._lpUntCache && zuw.zugewiesenAn ? window._lpUntCache[zuw.zugewiesenAn] : null;
+    feldHtml = lpUnt && lpUnt.unterzeichnet_am
+      ? `<div style="background:#f0fdf4;border-radius:8px;padding:12px 14px">
+           <div style="font-weight:700;color:#15803d;margin-bottom:4px">✅ Lernpfad unterzeichnet</div>
+           <div style="font-size:.82rem;color:#374151">
+             👤 <b>${escHtml(lpUnt.vollname||'–')}</b> · ${new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE')}
+             ${lpUnt.verantwortlicher_am ? `<br>🧑‍💼 Gegengezeichnet: <b>${escHtml(lpUnt.verantwortlicher_name||'–')}</b> · ${new Date(lpUnt.verantwortlicher_am).toLocaleDateString('de-DE')}` : '<br>⏳ Gegenzeichnung ausstehend'}
+           </div>
+         </div>`
+      : `<div class="empty-state"><div class="icon">📚</div><p>Noch nicht unterzeichnet</p></div>`;
+  } else if (form.felder && vorlage) {
     vorlage.abschnitte.forEach(ab => {
       feldHtml += `<div class="form-section-title">${escHtml(ab.titel)}</div>`;
       ab.felder.forEach(feld => {
@@ -1510,9 +1540,10 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
+  const titelAnzeige = isLP ? '📚 Lernpfad (29 Kapitel)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-      <div class="card-title">${vorlage?escHtml(vorlage.titel):zuwId}</div>
+      <div class="card-title" style="${isLP?'color:#6b21a8':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -2343,9 +2374,12 @@ function renderAdminZuweisungen() {
 
   const rows = gefiltert.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
+    const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
+    const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : '';
     return `<div class="schulung-item">
       <div>
-        <div class="titel">${v?escHtml(v.titel):z.vorlagenId}</div>
+        <div class="titel" style="${titelStyle}">${titel}</div>
         <div class="meta">${t?escHtml(t.name):z.tenantId} • Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
       </div>
       <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
@@ -2384,7 +2418,8 @@ function azVorlagePicker(oeffnen) {
 // Vorlage aus Picker wählen
 function azVorlageWaehlen(id, titel) {
   document.getElementById('az-vorlage').value = id;
-  document.getElementById('az-vorlage-selected-label').textContent = `📄 ${titel}`;
+  const icon = id === LERNPFAD_VORLAGE_ID ? '' : '📄 ';
+  document.getElementById('az-vorlage-selected-label').textContent = `${icon}${titel}`;
   azVorlagePicker(false);
   document.getElementById('az-vorlage-suche').value = '';
 }
@@ -2403,12 +2438,24 @@ function azVorlagenListeRendern(suche) {
     ? SCHULUNG_VORLAGEN.filter(v => v.titel.toLowerCase().includes(s) || (v.beschreibung||'').toLowerCase().includes(s))
     : SCHULUNG_VORLAGEN;
 
-  if (!gefiltert.length) {
+  // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
+  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
+  const lernpfadHtml = lernpfadMatch ? `
+    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
+      onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-size:.76rem;color:#7c3aed;margin-top:2px">
+        Säulen A–D &nbsp;·&nbsp; Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System &nbsp;·&nbsp; inkl. Unterschrift
+      </div>
+    </div>` : '';
+
+  if (!gefiltert.length && !lernpfadMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
     return;
   }
 
-  el.innerHTML = gefiltert.map((v, i) => `
+  el.innerHTML = lernpfadHtml + gefiltert.map((v, i) => `
     <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
@@ -2432,7 +2479,8 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    await sbAudit('ZUWEISUNG', `Vorlage "${vorlagenId}" → ${tenants.join(',')} (Frist: ${frist})`);
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (29 Kapitel)' : vorlagenId;
+    await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
     renderAdminZuweisungen(); renderAdminStats(); renderAdminTenantTable();
@@ -2581,6 +2629,8 @@ async function renderMitarbeiterListe() {
         `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}`);
       if (lpRows && lpRows.length) {
         lpRows.forEach(r => { lpUnterschriften[r.user_id] = r; });
+        // Globalen Cache befüllen damit berechneStatus() Lernpfad-Status kennt
+        window._lpUntCache = lpUnterschriften;
       }
     } catch(e) { /* ignorieren, kein Datenverlust */ }
 
@@ -2974,6 +3024,18 @@ function unterweisungenToggle() {
 //  FORMULAR
 // ══════════════════════════════════════════════════════════════
 function oeffneFormular(zuwId) {
+  // Lernpfad-Zuweisung → direkt zum Lernpfad-Abschnitt scrollen
+  const zuwCheck = zuweisungen.find(z => z.id === zuwId);
+  if (zuwCheck && zuwCheck.vorlagenId === LERNPFAD_VORLAGE_ID) {
+    // Lernpfad aufklappen falls noch zu
+    const cont = document.getElementById('lernpfad-container');
+    if (cont && cont.style.display !== 'block') lernpfadToggle();
+    // Zum Lernpfad-Button scrollen
+    const lpBtn = document.getElementById('btn-lernpfad-pfeil')?.closest('[id^="btn-lernpfad"]') ||
+                  document.getElementById('lernpfad-container');
+    if (lpBtn) lpBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
   // Passiv/archivierte Mitarbeiter dürfen keine neuen Formulare starten
   if (currentUser && currentUser.role === 'mitarbeiter') {
     const userAktiv = currentUser.aktiv !== false;
@@ -5440,16 +5502,27 @@ function bereichsVorlagenSuche(suche) {
   // Wir laden frisch aus dem globalen Array (nach Mandantentrennung)
   // Falls leer (Verantwortlicher hat keine eigenen Zuweisungen), alle zeigen
   let vorlagen = SCHULUNG_VORLAGEN;
-  if (!vorlagen.length) {
+
+  // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
+  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
+  const lernpfadHtml = lernpfadMatch ? `
+    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+      style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
+      onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
+      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-size:.75rem;color:#7c3aed;margin-top:2px">Säulen A–D · Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System · inkl. Unterschrift</div>
+    </div>` : '';
+
+  if (!vorlagen.length && !lernpfadMatch) {
     el.innerHTML = '<div style="padding:12px;text-align:center;color:#9ca3af;font-size:.84rem">Keine Schulungsvorlagen verfügbar</div>';
     return;
   }
   const gef = s ? vorlagen.filter(v => v.titel.toLowerCase().includes(s) || (v.beschreibung||'').toLowerCase().includes(s)) : vorlagen;
-  if (!gef.length) {
+  if (!gef.length && !lernpfadMatch) {
     el.innerHTML = `<div style="padding:12px;text-align:center;color:#9ca3af;font-size:.84rem">Keine Vorlage für „${escHtml(s)}"</div>`;
     return;
   }
-  el.innerHTML = gef.map((v, i) => `
+  el.innerHTML = lernpfadHtml + gef.map((v, i) => `
     <div onclick="bereichsVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:10px 12px;cursor:pointer;border-bottom:${i===gef.length-1?'none':'1px solid #f0f2f5'};transition:background .1s"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
@@ -5558,9 +5631,10 @@ function beFristMonat(monate) {
 function kalenderEintragDetail(zuwId) {
   const z = zuweisungen.find(zw => zw.id === zuwId);
   if (!z) return;
+  const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
   const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
-  const titel = v?.titel || z.vorlagenId;
+  const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v?.titel || z.vorlagenId);
   const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
