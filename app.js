@@ -986,6 +986,22 @@ function doLogout() {
   document.getElementById('screen-firma')?.style.setProperty('display','none');
   showScreen('screen-login');
 }
+
+function doLogoutMitBestaetigung() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:14px;padding:22px 20px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.2)">
+    <div style="font-size:1.1rem;font-weight:700;color:#1e3a5f;margin-bottom:8px">Abmelden?</div>
+    <div style="font-size:.85rem;color:#6b7280;margin-bottom:18px">Möchten Sie sich wirklich abmelden?</div>
+    <div style="display:flex;gap:10px">
+      <button id="_lo_ab" style="flex:1;padding:11px;border-radius:9px;border:1px solid #e5e7eb;background:#f9fafb;font-size:.9rem;font-weight:600;cursor:pointer">Abbrechen</button>
+      <button id="_lo_ok" style="flex:1;padding:11px;border-radius:9px;border:none;background:#dc2626;color:#fff;font-size:.9rem;font-weight:700;cursor:pointer">Abmelden</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  modal.querySelector('#_lo_ab').onclick = () => document.body.removeChild(modal);
+  modal.querySelector('#_lo_ok').onclick = () => { document.body.removeChild(modal); doLogout(); };
+}
 function routeAfterLogin() {
   // Archivierte Mitarbeiter dürfen sich nicht anmelden
   if (currentUser.archiviert) {
@@ -1056,7 +1072,7 @@ async function doLogin() {
   if (!email || !pw) { errEl.textContent='Bitte E-Mail und Passwort eingeben.'; errEl.classList.add('show'); return; }
 
   const loginBtn = document.querySelector('#screen-login .btn-primary');
-  loginBtn.textContent = '…';
+  loginBtn.textContent = '⏳ Anmelden…';
   loginBtn.disabled = true;
 
   try {
@@ -2653,9 +2669,10 @@ async function renderMitarbeiterListe() {
       const offen       = Math.max(0, gesamtZuws - abgeschl - gestartet);
 
       // Pro Zuweisung: Status für diesen Mitarbeiter ermitteln (nur relevante Zuweisungen)
-      const unterweisungsZeilen = maZuws.map(z => {
+        const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
-        const titel = v ? v.titel : z.vorlagenId;
+        const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
+        const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? v.titel : z.vorlagenId);
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
@@ -2683,6 +2700,7 @@ async function renderMitarbeiterListe() {
             <div style="font-size:.8rem;font-weight:700;color:#1e3a5f;
                   white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escHtml(titel)}</div>
             <div style="font-size:.72rem;color:#6b7280">${fristAnzeige}</div>
+            ${f.gestartet && !f.abgeschlossen && f.abgeschlossenVon !== m.id ? `<div style="margin-top:3px;font-size:.68rem;color:#92400e;font-weight:600">✏️ In Bearbeitung</div>` : ''}
           </div>
         </div>`;
       }).join('');
@@ -2797,8 +2815,8 @@ async function renderMitarbeiterListe() {
             </div>
             <div style="text-align:right;flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:3px">
               <div style="font-size:.78rem;font-weight:700;color:${c.text}">${c.label}</div>
-              ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.68rem;color:#6b7280">
-                🟢${abgeschl} 🟡${gestartet} 🔴${offen}
+              ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.68rem;color:#6b7280" title="Abgeschlossen · Bald fällig · Überfällig">
+                🟢 ${abgeschl} &nbsp;🟡 ${gestartet} &nbsp;🔴 ${offen}
               </div>` : ''}
               <div style="font-size:.7rem;color:#9ca3af" id="ma-pfeil-${m.id}">▼</div>
             </div>
@@ -2977,11 +2995,15 @@ function renderSubDashboard() {
   document.getElementById('sub-tenantname').textContent = tenant ? tenant.name : '';
   const meineZuws = zuweisungen.filter(z=>z.tenantId===currentUser.tenantId);
   const stati = meineZuws.map(z=>berechneStatus(z));
-  const g=stati.filter(s=>s==='gruen').length, y=stati.filter(s=>s==='gelb').length, r=stati.filter(s=>s==='rot').length;
+  const g=stati.filter(s=>s==='gruen').length;
+  const y=stati.filter(s=>s==='gelb').length;
+  const r=stati.filter(s=>s==='rot').length;
+  const gr=stati.filter(s=>s==='grau').length;
   document.getElementById('sub-stats').innerHTML = `
     <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
-    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
-    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Dringend</div></div>`;
+    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
+    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>
+    <div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`;
   // Buttons für Mitarbeiter-Rolle ausblenden (nur Unterweisungsthemen anzeigen)
   const isMitarbeiter = currentUser.role === 'mitarbeiter';
   const maBtns = document.getElementById('sub-ma-buttons');
@@ -3003,10 +3025,38 @@ function renderSubDashboard() {
   lernpfadInitialisieren();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
-  document.getElementById('sub-schulungen-list') && (document.getElementById('sub-schulungen-list').innerHTML = '');
+
+  // Schulungsliste für Mitarbeiter: eigene Zuweisungen kompakt anzeigen
+  const slEl = document.getElementById('sub-schulungen-list');
+  if (slEl) {
+    if (isMitarbeiter && meineZuws.length) {
+      slEl.innerHTML = `
+        <div style="margin-bottom:8px;font-size:.82rem;font-weight:700;color:#1e3a5f">📋 Meine Schulungen</div>` +
+        meineZuws.map(z => {
+          const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
+          const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
+          const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const s = berechneStatus(z);
+          const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
+          const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
+          const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
+          const fristText = z.frist ? `Frist: ${datumStr(z.frist)}` : 'Kein Termin';
+          return `<div onclick="${isLP ? 'lernpfadToggle()' : `oeffneFormular('${z.id}')`}"
+            style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
+                   background:${farbe};border:1px solid ${border};border-radius:9px;cursor:pointer">
+            <span style="font-size:1.1rem;flex-shrink:0">${dot}</span>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.85rem;font-weight:700;color:#1e3a5f;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${titel}</div>
+              <div style="font-size:.72rem;color:#6b7280">${fristText}</div>
+            </div>
+            <span style="font-size:.8rem;color:#9ca3af">›</span>
+          </div>`;
+        }).join('');
+    } else {
+      slEl.innerHTML = '';
+    }
+  }
   if (!meineZuws.length) return;
-  // Schulungsliste intern verfügbar (für PDF etc.), aber nicht mehr im UI angezeigt
-  // Der "Unterweisungsthemen"-Button wurde entfernt — Inhalte sind im Lernpfad abgebildet.
 }
 
 function unterweisungenToggle() {
@@ -5350,7 +5400,7 @@ async function zeigeSchulungshistorie(userId) {
       lpUntHistorieBlock = `
         <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
           <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
-            <div style="font-size:1rem;font-weight:700;color:#fff">📚 22-Kapitel Lernpfad — Unterschriften</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (29 Kapitel) — Unterschriften</div>
             <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
               ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
             </div>
@@ -6907,7 +6957,13 @@ async function lernpfadInitialisieren() {
   const gesamt = LERNPFAD_KAPITEL.length;
   const bestanden = LERNPFAD_KAPITEL.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
   const sub = document.getElementById('btn-lernpfad-sub');
-  if (sub) sub.textContent = `${bestanden}/${gesamt} Kapitel — Tippen zum Anzeigen`;
+  if (sub) {
+    const rolle = currentUser?.role;
+    const kontextHinweis = rolle === 'verantwortlicher' || rolle === 'firma'
+      ? ' — für Ihre Mitarbeiter'
+      : ' — Tippen zum Starten';
+    sub.textContent = `${bestanden}/${gesamt} Kapitel${bestanden === 0 ? kontextHinweis : ' — Tippen zum Fortfahren'}`;
+  }
 }
 
 // showToast falls nicht vorhanden
@@ -7290,7 +7346,7 @@ async function generiereSchulungsnachweisPDF(userId) {
 
     // Lernpfad-Block
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('📚 22-Kapitel Lernpfad', margin, y); y += 8;
+    doc.text('📚 Lernpfad (29 Kapitel)', margin, y); y += 8;
     if (lpUnt && lpUnt.unterzeichnet_am) {
       const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
       doc.setFillColor(240, 253, 244);

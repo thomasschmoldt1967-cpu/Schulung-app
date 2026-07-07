@@ -33,6 +33,10 @@
 <!-- LOGIN SCREEN -->
 <div id="screen-login" class="screen">
   <div class="login-box">
+    <!-- Dark-Mode Toggle oben rechts -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button onclick="toggleDarkMode()" title="Dark Mode" style="background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:.6;padding:4px 6px">🌙</button>
+    </div>
     <div class="login-logo">
       <img src="csc-logo.png" alt="SIBEDA" style="height:180px;max-width:340px;width:90%;object-fit:contain;margin-bottom:16px">
       <h2 style="font-size:1.5rem;margin:0 0 6px 0;">Schulungsmanagement</h2>
@@ -52,7 +56,7 @@
     </div>
     <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.78rem;color:#3b82f6;text-decoration:none">🔑 Passwort vergessen?</a>
+      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.72rem;color:#9ca3af;text-decoration:none">Passwort vergessen?</a>
     </div>
     <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:8px 0 0;line-height:1.5">
       Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
@@ -85,7 +89,7 @@
       <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
       <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
@@ -383,32 +387,16 @@
       </div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
       <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
     <div id="sub-stats" class="stats-grid"></div>
+    <!-- Schulungsliste für Mitarbeiter (wird per JS befüllt, nur für Rolle mitarbeiter) -->
+    <div id="sub-schulungen-list" style="margin-bottom:14px"></div>
     <!-- Wiederkehrende Schulungen Hinweis (Verantwortlicher) -->
     <div id="wiederkehrende-hinweise-sub" style="display:none"></div>
     <div id="sub-kalender" style="display:none"></div>
-
-    <!-- Mitarbeiter Buttons (nur für Verantwortliche) -->
-    <div id="sub-ma-buttons" style="margin-bottom:14px;display:flex;flex-wrap:nowrap;gap:10px">
-      <button onclick="mitarbeiterEinzelnOeffnen()" style="display:flex;align-items:center;gap:8px;background:#fff;color:#1e3a5f;padding:12px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left;min-width:0">
-        <span style="font-size:1.4rem;flex-shrink:0">➕</span>
-        <div style="min-width:0">
-          <div style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mitarbeiter anlegen</div>
-          <div style="font-size:.7rem;margin-top:2px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Manuell hinzufügen</div>
-        </div>
-      </button>
-      <button onclick="mitarbeiterImportOeffnen()" style="display:flex;align-items:center;gap:8px;background:#fff;color:#1e3a5f;padding:12px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left;min-width:0">
-        <span style="font-size:1.4rem;flex-shrink:0">👥</span>
-        <div style="min-width:0">
-          <div style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mitarbeiter importieren</div>
-          <div style="font-size:.7rem;margin-top:2px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Excel (.xlsx) hochladen</div>
-        </div>
-      </button>
-    </div>
 
     <!-- Kalender + Bedienungsanleitung Buttons (nur für Verantwortliche: Kalender) -->
     <div id="sub-kalender-buttons" style="margin-bottom:14px;display:flex;gap:10px">
@@ -428,6 +416,24 @@
       </button>
     </div>
 
+    <!-- Mitarbeiter Buttons (nur für Verantwortliche) -->
+    <div id="sub-ma-buttons" style="margin-bottom:14px;display:flex;flex-wrap:nowrap;gap:10px">
+      <button onclick="mitarbeiterEinzelnOeffnen()" style="display:flex;align-items:center;gap:8px;background:#fff;color:#1e3a5f;padding:12px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left;min-width:0">
+        <span style="font-size:1.4rem;flex-shrink:0">➕</span>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mitarbeiter anlegen</div>
+          <div style="font-size:.7rem;margin-top:2px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Manuell hinzufügen</div>
+        </div>
+      </button>
+      <button onclick="mitarbeiterImportOeffnen()" style="display:flex;align-items:center;gap:8px;background:#fff;color:#1e3a5f;padding:12px 12px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left;min-width:0">
+        <span style="font-size:1.4rem;flex-shrink:0">👥</span>
+        <div style="min-width:0">
+          <div style="font-weight:700;font-size:.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Mitarbeiter importieren</div>
+          <div style="font-size:.7rem;margin-top:2px;color:#6b7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Excel (.xlsx) hochladen</div>
+        </div>
+      </button>
+    </div>
+
     <!-- Lernpfad Icon-Button (21 Kapitel) -->
     <div style="margin-bottom:14px">
       <button type="button" id="btn-lernpfad"
@@ -435,7 +441,7 @@
         onclick="lernpfadToggle()">
         <span style="font-size:1.5rem;pointer-events:none">📚</span>
         <div style="flex:1;pointer-events:none">
-          <div style="font-weight:700;font-size:.9rem">22-Kapitel Lernpfad</div>
+          <div style="font-weight:700;font-size:.9rem">📚 Lernpfad — 29 Kapitel</div>
           <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-lernpfad-sub">Tippen zum Anzeigen</div>
         </div>
         <span id="btn-lernpfad-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
@@ -449,9 +455,10 @@
         <h3 style="font-size:1rem;font-weight:700;color:#1e3a5f;margin:0">👤 Meine Mitarbeiter</h3>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="sub-mitarbeiter-count" style="font-size:.8rem;color:#6b7280"></span>
+          <span style="font-size:.68rem;color:#9ca3af" title="Ampellegende">🟢 abgeschl. &nbsp;🟡 bald fällig &nbsp;🔴 überfällig</span>
           <button type="button" onclick="bereichsEinweisungOeffnen()"
             style="font-size:.78rem;padding:5px 12px;border-radius:7px;border:1px solid #1a3a5c;background:#1a3a5c;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">
-            📋 Bereichs-Einweisung
+            📋 Schulung zuweisen
           </button>
         </div>
       </div>
@@ -471,7 +478,7 @@
     <div style="display:flex;align-items:center;gap:14px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info" id="formular-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
@@ -507,7 +514,7 @@
     <div style="display:flex;align-items:center;gap:14px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info" id="detail-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
@@ -995,7 +1002,7 @@
 <div id="bereichs-einweisung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:520px;width:100%;position:relative;max-height:90vh;display:flex;flex-direction:column;gap:0">
     <button onclick="bereichsEinweisungSchliessen()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
-    <div style="font-size:1.15rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Bereichs-Einweisung</div>
+    <div style="font-size:1.15rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Schulung zuweisen</div>
     <div style="font-size:.82rem;color:#6b7280;margin-bottom:14px">Schulungsthema für Mitarbeiter eines Bereichs oder Objekt zuweisen</div>
 
     <!-- Schritt 1: Bereich/Objekt wählen -->
@@ -1179,7 +1186,7 @@
         <div id="firma-tenantname" style="font-size:.68rem;opacity:.7"></div>
       </div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
