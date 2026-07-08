@@ -83,6 +83,9 @@
 ══════════════════════════════════════════════════════════ -->
 <div id="screen-admin" class="screen">
   <header class="app-header">
+    <!-- Hamburger (nur Mobile) -->
+    <button id="admin-sidebar-hamburger" onclick="adminSidebarOpen()" aria-label="Menü öffnen"
+      style="background:none;border:none;cursor:pointer;color:#fff;font-size:1.5rem;padding:4px 8px;line-height:1;display:none">☰</button>
     <h1>📋 Schulungsmanagement</h1>
     <div style="display:flex;align-items:center;gap:10px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
@@ -92,29 +95,35 @@
       <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
-  <div class="content">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="adminTab('uebersicht',this)">Übersicht</button>
-      <button class="tab-btn" onclick="adminTab('schulungen',this)">Schulungsvorlagen</button>
-      <button class="tab-btn" onclick="adminTab('zuweisungen',this)">Zuweisungen</button>
-      <button class="tab-btn" onclick="adminTab('kalender',this)">📅 Kalender</button>
-      <button class="tab-btn" onclick="adminTab('archiv',this)">📦 Archiv</button>
-      <button class="tab-btn" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
-      <button class="tab-btn" onclick="adminTab('audit',this)">Protokoll</button>
-      <button class="tab-btn" id="drive-sync-btn" onclick="syncMissingToDrive()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0">☁️ Drive-Sync</button>
-    </div>
 
-    <!-- Bedienungsanleitung Button (Admin) -->
-    <div style="margin-bottom:14px">
-      <button onclick="hilfeOeffnen('admin')" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25);border:none;cursor:pointer;width:100%;text-align:left">
-        <span style="font-size:1.6rem">📖</span>
-        <div>
-          <div style="font-weight:700;font-size:.95rem">App-Anleitung</div>
-          <div style="font-size:.75rem;opacity:.8;margin-top:2px">Schritt-für-Schritt Anleitung für Administratoren</div>
-        </div>
-        <span style="margin-left:auto;font-size:1.1rem;opacity:.7">›</span>
-      </button>
-    </div>
+  <!-- Sidebar-Overlay (Mobile) -->
+  <div id="admin-sidebar-overlay" onclick="adminSidebarClose()"
+    style="display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45)"></div>
+
+  <div class="admin-layout">
+
+    <!-- ── SIDEBAR (Mobile: Drawer, Desktop: fest) ── -->
+    <nav id="admin-sidebar" class="admin-sidebar">
+      <!-- Schließen-Button Mobile -->
+      <div class="admin-sidebar-close-row">
+        <span style="font-weight:700;font-size:.9rem;color:#1e3a5f">Menü</span>
+        <button onclick="adminSidebarClose()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7280;line-height:1">✕</button>
+      </div>
+
+      <button class="admin-nav-btn active" data-tab="uebersicht"   onclick="adminTab('uebersicht',this)">📊 Übersicht</button>
+      <button class="admin-nav-btn"         data-tab="schulungen"  onclick="adminTab('schulungen',this)">📋 Schulungsvorlagen</button>
+      <button class="admin-nav-btn"         data-tab="zuweisungen" onclick="adminTab('zuweisungen',this)">📅 Zuweisungen</button>
+      <button class="admin-nav-btn"         data-tab="kalender"    onclick="adminTab('kalender',this)">🗓 Kalender</button>
+      <button class="admin-nav-btn"         data-tab="archiv"      onclick="adminTab('archiv',this)">📦 Archiv</button>
+      <button class="admin-nav-btn"         data-tab="unternehmen" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
+      <button class="admin-nav-btn"         data-tab="audit"       onclick="adminTab('audit',this)">📋 Protokoll</button>
+      <div class="admin-nav-divider"></div>
+      <button class="admin-nav-btn admin-nav-sync" onclick="adminSidebarClose();syncMissingToDrive()">☁️ Drive-Sync</button>
+      <button class="admin-nav-btn admin-nav-help" onclick="adminSidebarClose();hilfeOeffnen('admin')">📖 App-Anleitung</button>
+    </nav>
+
+    <!-- ── HAUPTINHALT ── -->
+    <div class="admin-main">
 
     <!-- Tab: Gesamtübersicht -->
     <div id="tab-uebersicht" class="tab-content">
@@ -364,14 +373,15 @@
           <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
           <span id="nu-liste-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
         </div>
-        <div id="nu-liste-bereich" style="display:none;margin-top:12px">
+          <div id="nu-liste-bereich" style="display:none;margin-top:12px">
           <input type="search" id="nu-filter" placeholder="🔍 Unternehmen suchen…" oninput="nuRenderListe()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;box-sizing:border-box;margin-bottom:10px">
           <div id="nu-liste"></div>
         </div>
       </div>
     </div>
-  </div>
-</div>
+    </div><!-- /admin-main -->
+  </div><!-- /admin-layout -->
+</div><!-- /screen-admin -->
 
 <!-- ══════════════════════════════════════════════════════════
      SCREEN: SUBUNTERNEHMEN-DASHBOARD

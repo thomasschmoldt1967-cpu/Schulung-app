@@ -1158,15 +1158,27 @@ function renderAdminDashboard() {
 }
 function adminTab(tabName, btn) {
   activeAdminTab = tabName;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  // Nav-Buttons in Sidebar aktiv setzen
+  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  // Tab-Inhalte umschalten
   document.querySelectorAll('#screen-admin .tab-content').forEach(t => t.style.display='none');
   document.getElementById(`tab-${tabName}`).style.display='';
+  // Sidebar auf Mobile schließen
+  adminSidebarClose();
   if (tabName==='protokoll') loadAuditFromDB();
   if (tabName==='unternehmen') nuRenderListe();
   if (tabName==='kalender') renderKalender();
   if (tabName==='archiv') renderArchiv();
   if (tabName==='uebersicht') renderAdminCharts();
+}
+function adminSidebarOpen() {
+  document.getElementById('admin-sidebar').classList.add('open');
+  document.getElementById('admin-sidebar-overlay').style.display = '';
+}
+function adminSidebarClose() {
+  document.getElementById('admin-sidebar').classList.remove('open');
+  document.getElementById('admin-sidebar-overlay').style.display = 'none';
 }
 async function loadAuditFromDB() {
   try {
@@ -1188,7 +1200,7 @@ function renderAuditTrail() {
 }
 function adminStatFilter(status) {
   // Zum Zuweisungen-Tab wechseln und Status-Filter setzen
-  const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'zuweisungen'"));
+  const btn = document.querySelector('.admin-nav-btn[data-tab="zuweisungen"]');
   if (btn) adminTab('zuweisungen', btn);
   // Liste aufklappen
   const bereich = document.getElementById('zuw-liste-bereich');

@@ -200,6 +200,75 @@ tr:hover td { background: var(--bg); }
 }
 .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
 
+/* ── ADMIN SIDEBAR LAYOUT ────────────────────────────────── */
+.admin-layout {
+  display: flex;
+  min-height: calc(100vh - 68px);
+}
+.admin-sidebar {
+  width: 200px;
+  flex-shrink: 0;
+  background: #f8fafc;
+  border-right: 1px solid var(--border);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.admin-sidebar-close-row {
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 8px 12px;
+}
+.admin-nav-btn {
+  display: block; width: 100%;
+  padding: 11px 14px;
+  background: none; border: none; border-radius: 9px;
+  text-align: left; cursor: pointer;
+  font-size: .88rem; font-weight: 600; color: #374151;
+  transition: background .15s, color .15s;
+}
+.admin-nav-btn:hover  { background: #e8eef7; color: #1e3a5f; }
+.admin-nav-btn.active { background: #1e3a5f; color: #fff; }
+.admin-nav-divider    { height: 1px; background: var(--border); margin: 8px 4px; }
+.admin-nav-sync { color: #16a34a !important; }
+.admin-nav-sync:hover { background: #f0fdf4 !important; }
+.admin-nav-help { color: #1e3a5f; }
+.admin-main {
+  flex: 1;
+  padding: 20px;
+  min-width: 0;
+}
+
+/* Mobile: Sidebar als Drawer */
+@media (max-width: 767px) {
+  #admin-sidebar-hamburger { display: block !important; }
+  .admin-sidebar {
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 50;
+    width: 240px;
+    transform: translateX(-100%);
+    transition: transform .28s ease;
+    box-shadow: 4px 0 24px rgba(0,0,0,.18);
+    background: #fff;
+    padding-top: 16px;
+  }
+  .admin-sidebar.open {
+    transform: translateX(0);
+  }
+  .admin-sidebar-close-row { display: flex; }
+  .admin-layout { display: block; }
+  .admin-main { padding: 16px; }
+}
+
+/* Dark Mode Sidebar */
+body.dark-mode .admin-sidebar     { background: #111827; border-color: #374151; }
+body.dark-mode .admin-nav-btn     { color: #d1d5db; }
+body.dark-mode .admin-nav-btn:hover  { background: #1f2937; color: #f9fafb; }
+body.dark-mode .admin-nav-btn.active { background: #1e3a5f; color: #fff; }
+
 /* ── FORMULAR-ABSCHNITT ──────────────────────────────────── */
 .form-section { margin-bottom: 20px; }
 .form-section-title {
