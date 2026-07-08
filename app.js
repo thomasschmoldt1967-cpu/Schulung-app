@@ -1199,19 +1199,29 @@ function renderAuditTrail() {
   document.getElementById('audit-list').innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280">Tab öffnen zum Laden…</div>';
 }
 function adminStatFilter(status) {
-  // Zum Zuweisungen-Tab wechseln und Status-Filter setzen
+  // 1. Zum Zuweisungen-Tab wechseln
   const btn = document.querySelector('.admin-nav-btn[data-tab="zuweisungen"]');
-  if (btn) adminTab('zuweisungen', btn);
-  // Liste aufklappen
+  // Tab direkt schalten ohne adminTab (der ruft adminSidebarClose auf was bei Mobile stören kann)
+  activeAdminTab = 'zuweisungen';
+  document.querySelectorAll('.admin-nav-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  document.querySelectorAll('#screen-admin .tab-content').forEach(t => t.style.display='none');
+  const tabEl = document.getElementById('tab-zuweisungen');
+  if (tabEl) tabEl.style.display='';
+  // 2. Liste aufklappen
   const bereich = document.getElementById('zuw-liste-bereich');
   if (bereich) bereich.style.display = '';
   const icon = document.getElementById('zuw-toggle-icon');
   if (icon) icon.style.transform = 'rotate(90deg)';
-  // Filter setzen und neu rendern
+  // 3. Filter setzen und rendern
   const sel = document.getElementById('zuw-filter-status');
-  if (sel) { sel.value = status; renderAdminZuweisungen(); }
-  // Zum Abschnitt scrollen
-  setTimeout(() => { const el = document.getElementById('zuw-liste-bereich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+  if (sel) sel.value = status;
+  renderAdminZuweisungen();
+  // 4. Scrollen
+  setTimeout(() => {
+    const el = document.getElementById('zuw-liste-bereich');
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 150);
 }
 
 function renderAdminStats() {
