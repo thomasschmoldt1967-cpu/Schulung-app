@@ -27,6 +27,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 /* ── SCREENS ─────────────────────────────────────────────── */
 .screen { display: none; flex-direction: column; min-height: 100vh; }
 .screen.active { display: flex; }
+/* Admin-Screen: kein flex-column — admin-layout übernimmt das Innenlayout */
+#screen-admin.active { display: block; }
 
 /* ── HEADER ──────────────────────────────────────────────── */
 .app-header {
@@ -203,7 +205,9 @@ tr:hover td { background: var(--bg); }
 /* ── ADMIN SIDEBAR LAYOUT ────────────────────────────────── */
 .admin-layout {
   display: flex;
+  flex-direction: row;
   min-height: calc(100vh - 68px);
+  align-items: stretch;
 }
 .admin-sidebar {
   width: 200px;
@@ -259,7 +263,7 @@ tr:hover td { background: var(--bg); }
     transform: translateX(0);
   }
   .admin-sidebar-close-row { display: flex; }
-  .admin-layout { display: block; }
+  .admin-layout { display: block; min-height: unset; }
   .admin-main { padding: 16px; }
 }
 
