@@ -1652,7 +1652,7 @@ function adminKernkapitelToggle() {
   if (offen) {
     container.style.display = 'none';
     icon.style.transform = '';
-    btn.querySelector('span:first-child').textContent = '📚 22 Lernpfad-Kernkapitel anzeigen';
+    btn.querySelector('span:first-child').textContent = '📚 29 Lernpfad-Kernkapitel anzeigen';
   } else {
     container.style.display = '';
     icon.style.transform = 'rotate(180deg)';
