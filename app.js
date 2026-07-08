@@ -1186,13 +1186,30 @@ async function loadAuditFromDB() {
 function renderAuditTrail() {
   document.getElementById('audit-list').innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280">Tab öffnen zum Laden…</div>';
 }
+function adminStatFilter(status) {
+  // Zum Zuweisungen-Tab wechseln und Status-Filter setzen
+  const btn = [...document.querySelectorAll('.tab-btn')].find(b => b.getAttribute('onclick') && b.getAttribute('onclick').includes("'zuweisungen'"));
+  if (btn) adminTab('zuweisungen', btn);
+  // Liste aufklappen
+  const bereich = document.getElementById('zuw-liste-bereich');
+  if (bereich) bereich.style.display = '';
+  const icon = document.getElementById('zuw-toggle-icon');
+  if (icon) icon.style.transform = 'rotate(90deg)';
+  // Filter setzen und neu rendern
+  const sel = document.getElementById('zuw-filter-status');
+  if (sel) { sel.value = status; renderAdminZuweisungen(); }
+  // Zum Abschnitt scrollen
+  setTimeout(() => { const el = document.getElementById('zuw-liste-bereich'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 100);
+}
+
 function renderAdminStats() {
   let g=0,y=0,r=0;
   zuweisungen.forEach(z => { const s=berechneStatus(z); if(s==='gruen')g++; else if(s==='gelb')y++; else r++; });
+  const kachelStyle = 'cursor:pointer;transition:transform .15s,box-shadow .15s';
   document.getElementById('admin-stats').innerHTML = `
-    <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
-    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
-    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Offen / Überfällig</div></div>
+    <div class="stat-tile gruen" style="${kachelStyle}" onclick="adminStatFilter('gruen')" title="Abgeschlossene anzeigen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
+    <div class="stat-tile gelb" style="${kachelStyle}" onclick="adminStatFilter('gelb')" title="In Bearbeitung anzeigen"><div class="zahl">${y}</div><div class="label">In Bearbeitung</div></div>
+    <div class="stat-tile rot" style="${kachelStyle}" onclick="adminStatFilter('rot')" title="Offene / Überfällige anzeigen"><div class="zahl">${r}</div><div class="label">Offen / Überfällig</div></div>
   `;
   // Charts beim ersten Übersicht-Tab ebenfalls aktualisieren
   setTimeout(renderAdminCharts, 0);

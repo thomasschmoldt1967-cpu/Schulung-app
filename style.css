@@ -263,6 +263,8 @@ tr:hover td { background: var(--bg); }
 .stat-tile.gelb  .zahl { color: var(--yellow); }
 .stat-tile.rot   .zahl { color: var(--red); }
 .stat-tile.grau  .zahl { color: var(--muted); }
+.stat-tile[onclick]:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.12); }
+.stat-tile[onclick]:active { transform: translateY(0); }
 
 /* ── RESPONSIV (Tablet/Desktop) ──────────────────────────── */
 @media (min-width: 640px) {
