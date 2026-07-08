@@ -7422,65 +7422,96 @@ function hilfeInhaltAdmin() {
     <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: CSC-Admin</h2>
     <div style="font-size:.88rem;color:#374151;line-height:1.6">
       <p><strong>Als CSC-Admin haben Sie Zugang zu allen Bereichen der App.</strong></p>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Unternehmen anlegen</h3>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📊 Tab: Übersicht</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Tab <strong>🏢 Unternehmen</strong> → Formular ausfüllen</li>
-        <li>Firmenname, E-Mail, Ansprechpartner, Passwort eingeben</li>
+        <li>Ampelstatus aller Unternehmen auf einen Blick</li>
+        <li>🟢 Grün = alles abgeschlossen · 🟡 Gelb = läuft · 🔴 Rot = überfällig</li>
+        <li>Balkendiagramm: Top-5 Unternehmen mit meisten offenen Schulungen</li>
+        <li>Auf ein Unternehmen tippen → Detailansicht aller Schulungen</li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📋 Tab: Schulungsvorlagen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li><strong>Neue Vorlage erstellen:</strong> Typ wählen → „Eigene Felder" oder „CSC-Formular (PDF)"</li>
+        <li>Titel, Kurzbeschreibung, Wiederholungsintervall (Monate) eingeben</li>
+        <li>Abschnitte & Felder (Freitext, Checkbox, Unterschrift) hinzufügen</li>
+        <li>Unterschriftsfelder konfigurieren (z.B. Mitarbeiter + Vorgesetzter)</li>
+        <li><strong>Bestehende Vorlagen:</strong> Liste aufklappen → Vorlage bearbeiten oder löschen</li>
+        <li><strong>📚 29 Lernpfad-Kernkapitel:</strong> Liste der SIBEDA-Kernkapitel anzeigen</li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📅 Tab: Zuweisungen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Schulungsvorlage auswählen (Suchfeld), Unternehmen wählen, Frist setzen</li>
+        <li>Pflichtschulung ✅ markieren · Wiederholungsintervall festlegen (z.B. 12 Monate)</li>
+        <li>Bestehende Zuweisungen: Frist ändern, Zuweisung löschen</li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📅 Tab: Kalender</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Monatsansicht aller Schulungsfristen über alle Unternehmen</li>
+        <li>Farbige Punkte je Ampelstatus · Auf Datum tippen → Details</li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📦 Tab: Archiv</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Alle abgeschlossenen Schulungen aller Unternehmen</li>
+        <li>Archivierte Mitarbeiter einsehen</li>
+        <li>PDF-Nachweise abrufbar</li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">🏢 Tab: Unternehmen</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li><strong>Neues Unternehmen anlegen:</strong> Name, E-Mail (= Login), Ansprechpartner, Passwort</li>
         <li>🎲 Zufallspasswort generieren empfohlen</li>
-        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+        <li>Login-Daten werden <strong>automatisch per E-Mail zugesandt</strong></li>
+        <li>Unternehmen erhalten die Rolle <em>Unternehmens-Admin</em> und legen selbst Verantwortliche an</li>
+        <li>Bestehende Unternehmen: Liste aufklappen → Daten bearbeiten</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Schulungsvorlagen</h3>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📋 Tab: Protokoll</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Tab <strong>📋 Vorlagen</strong> → neue Vorlage erstellen oder PDF hochladen</li>
-        <li>Vorlagen können Unternehmen zugewiesen werden</li>
+        <li>Vollständiges Audit-Log: alle Aktionen aller Nutzer mit Zeitstempel</li>
+        <li>Aktionen: Login, Logout, Abschluss, Anlegen, Änderungen u.v.m.</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Schulungen zuweisen</h3>
-      <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Tab <strong>📅 Zuweisungen</strong> → Vorlage + Unternehmen + Frist auswählen</li>
-        <li>Pflichtschulungen mit ✅ markieren</li>
-        <li>Intervall für Wiederholungen festlegen (z.B. alle 12 Monate)</li>
-      </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Übersicht & Archiv</h3>
-      <ul style="margin:0;padding-left:18px">
-        <li>Tab <strong>📊 Übersicht</strong>: Ampelstatus aller Unternehmen</li>
-        <li>Tab <strong>📦 Archiv</strong>: Abgeschlossene Schulungen & archivierte Mitarbeiter</li>
-        <li>E-Mail-Erinnerungen laufen täglich automatisch (08:00 Uhr)</li>
-      </ul>
+
       <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
-        <strong>💡 Hinweis:</strong> Das Unternehmen legt seine Verantwortlichen selbst an — Sie müssen das nicht tun.
+        <strong>💡 Automatik:</strong> E-Mail-Erinnerungen werden täglich um 08:00 Uhr automatisch versendet — 30 Tage vor Fristablauf an die zuständigen Verantwortlichen.
       </div>
     </div>`;
 }
 
 function hilfeInhaltFirma() {
   return `
-    <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: Unternehmensverwaltung</h2>
+    <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: Unternehmens-Admin</h2>
     <div style="font-size:.88rem;color:#374151;line-height:1.6">
-      <p><strong>Als Unternehmens-Account verwalten Sie Ihre Verantwortlichen und Schulungen.</strong></p>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Verantwortlichen anlegen</h3>
+      <p><strong>Als Unternehmens-Admin verwalten Sie Ihre Verantwortlichen und behalten den Schulungsstand im Blick.</strong></p>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">👔 Tab: Verantwortliche</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Tab <strong>👔 Verantwortliche</strong> → <strong>➕ Verantwortlichen anlegen</strong></li>
-        <li>Name, E-Mail, Position, Telefon eingeben</li>
-        <li>Passwort generieren oder manuell eingeben</li>
-        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+        <li><strong>➕ Verantwortlichen anlegen:</strong> Name, E-Mail, Position, Telefon, Mobil eingeben</li>
+        <li>🎲 Passwort generieren oder manuell vergeben</li>
+        <li>Login-Daten werden <strong>automatisch per E-Mail zugesandt</strong></li>
+        <li>✏️ Daten bearbeiten: Stift-Symbol neben dem Namen antippen</li>
+        <li>⏸ Konto sperren / freigeben: Aktiv/Inaktiv-Schalter in der Karte</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Verantwortliche verwalten</h3>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📊 Tab: Übersicht</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>✏️ Daten bearbeiten: Stift-Symbol neben dem Namen</li>
-        <li>⏸ Konto sperren/freigeben: Aktiv/Inaktiv-Schalter</li>
+        <li>Ampelstatus aller Mitarbeiter Ihres Unternehmens</li>
+        <li>🟢 Grün = abgeschlossen · 🟡 Gelb = läuft / bald fällig · 🔴 Rot = überfällig</li>
+        <li>Schneller Überblick ohne in einzelne Verantwortlichen-Konten wechseln zu müssen</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Schulungsübersicht</h3>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📋 Tab: Schulungen</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Tab <strong>📊 Übersicht</strong>: Ampelstatus aller Mitarbeiter Ihres Unternehmens</li>
-        <li>🟢 Grün = abgeschlossen · 🟡 Gelb = läuft · 🔴 Rot = überfällig</li>
+        <li>Alle Ihrem Unternehmen zugewiesenen Schulungsvorlagen</li>
+        <li>Schulungen können direkt einzelnen Mitarbeitern zugewiesen werden</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Schulungen zuweisen</h3>
-      <ul style="margin:0;padding-left:18px">
-        <li>Tab <strong>📋 Schulungen</strong>: zugewiesene Vorlagen anzeigen</li>
-        <li>Schulungen können direkt Mitarbeitern zugewiesen werden</li>
-      </ul>
+
       <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
-        <strong>💡 Hinweis:</strong> Die Verantwortlichen legen die Mitarbeiter selbst an und führen die Schulungen durch.
+        <strong>💡 Hinweis:</strong> Die Verantwortlichen legen die Mitarbeiter selbst an und führen die Schulungen durch. Sie sehen den Gesamtstatus — ohne Einzelschulungen bearbeiten zu müssen.
       </div>
     </div>`;
 }
@@ -7490,39 +7521,61 @@ function hilfeInhaltVerantwortlicher() {
     <h2 style="margin:0 0 16px;color:#1a3a5c;font-size:1.1rem">📖 Anleitung: Verantwortlicher</h2>
     <div style="font-size:.88rem;color:#374151;line-height:1.6">
       <p><strong>Als Verantwortlicher verwalten Sie Ihre Mitarbeiter und führen Schulungen durch.</strong></p>
+
       <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">1. Mitarbeiter anlegen</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Button <strong>➕ Mitarbeiter anlegen</strong> → Formular ausfüllen</li>
-        <li>Name, E-Mail, Standort, Bereich eingeben</li>
-        <li>Passwort wird automatisch generiert</li>
-        <li>Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
-        <li>Alternativ: <strong>👥 Mitarbeiter importieren</strong> (Excel-Datei)</li>
+        <li>Button <strong>➕ Mitarbeiter anlegen</strong> → Name, E-Mail, Standort, Bereich eingeben</li>
+        <li>Passwort wird automatisch generiert · Login-Daten werden <strong>per E-Mail zugesandt</strong></li>
+        <li>Alternativ: <strong>👥 Mitarbeiter importieren</strong> → Excel-Datei (.xlsx) hochladen</li>
       </ul>
+
       <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">2. Schulungen zuweisen</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>In der Mitarbeiterliste: Karte aufklappen → <strong>Schulung zuweisen</strong></li>
-        <li>Vorlage auswählen, Frist festlegen (Schnellauswahl: 3/6/9/12 Monate)</li>
-        <li>Für Bereichseinweisungen: persönliche Zuweisung möglich</li>
+        <li>Mitarbeiterkarte antippen → aufklappen → <strong>Schulung zuweisen</strong></li>
+        <li>Vorlage auswählen, Frist festlegen (Schnellauswahl: 3 / 6 / 9 / 12 Monate)</li>
+        <li>Für Bereichseinweisungen: <strong>📋 Schulung zuweisen</strong> (oben rechts) → persönliche Zuweisung für einzelne Mitarbeiter</li>
+        <li>Pflichtschulung ✅ markierbar · Wiederholungsintervall optional</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Lernpfad (29 Kapitel)</h3>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">3. Schulung durchführen</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Mitarbeiter absolviert 29 Kapitel selbstständig</li>
-        <li>Nach Abschluss: Mitarbeiter unterschreibt → Sie gegenzeichnen</li>
-        <li>Neuer Durchgang: über <strong>🔄 Neu starten</strong> in der Mitarbeiterkarte</li>
+        <li>Mitarbeiterkarte → Zuweisung antippen → Formular öffnet sich</li>
+        <li>Formular ausfüllen (Felder, Checkboxen) — Sprache wählen: 🇩🇪 🇬🇧 🇹🇷 🇸🇦 🇪🇸 🇷🇺</li>
+        <li><strong>💾 Zwischenspeichern</strong> möglich (Fortschritt bleibt erhalten)</li>
+        <li><strong>✅ Abschließen & PDF</strong> → Unterschriften einholen → PDF wird automatisch gespeichert</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Schulungshistorie & PDF</h3>
-      <ul style="margin:0;padding-left:18px">
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (29 Kapitel)</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Button <strong>📚 Lernpfad — 29 Kapitel</strong> → aufklappen</li>
+        <li>Mitarbeiter absolviert 29 Kapitel selbstständig am eigenen Gerät</li>
+        <li>Nach Abschluss aller Kapitel: Mitarbeiter unterschreibt digital → Sie gegenzeichnen</li>
+        <li>Neuer Durchgang starten: Mitarbeiterkarte → <strong>🔄 Neu starten</strong></li>
+      </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">5. Schulungshistorie & PDF-Nachweis</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
         <li>Mitarbeiterkarte aufklappen → <strong>📋 Historie</strong></li>
-        <li>Alle abgeschlossenen Schulungen + Unterschriften sehen</li>
-        <li><strong>📄 PDF-Nachweis</strong> generieren und herunterladen</li>
+        <li>Alle abgeschlossenen Schulungen mit Datum und Unterschriften einsehen</li>
+        <li><strong>📄 PDF-Nachweis</strong> generieren und öffnen (alle Schulungen + Lernpfad)</li>
       </ul>
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">5. Mitarbeiter verwalten</h3>
-      <ul style="margin:0;padding-left:18px">
-        <li>Filter: Aktive / Passive / Archivierte / nach Bereich</li>
-        <li>⏸ Passiv setzen (keine neuen Schulungen) oder 📦 Archivieren</li>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">6. Mitarbeiter verwalten</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Filter: Aktive / Passive / Archivierte · nach Bereich / Standort filtern</li>
+        <li>⏸ <strong>Passiv setzen</strong>: Mitarbeiter z.B. im Urlaub — keine neuen Schulungen</li>
+        <li>📦 <strong>Archivieren</strong>: ausgeschiedene Mitarbeiter — Daten bleiben im Archiv erhalten</li>
+        <li>✏️ Mitarbeiterdaten bearbeiten (Name, E-Mail, Standort, Bereich)</li>
       </ul>
+
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">7. Kalender & Ampel</h3>
+      <ul style="margin:0 0 12px;padding-left:18px">
+        <li>Button <strong>📅 Kalender</strong> → Monatsansicht aller Schulungsfristen</li>
+        <li>🟢 Grün = abgeschlossen · 🟡 Gelb = bald fällig (≤ 30 Tage) · 🔴 Rot = überfällig</li>
+      </ul>
+
       <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px;margin-top:16px">
-        <strong>💡 Tipp:</strong> E-Mail-Erinnerungen werden 30 Tage vor Fristablauf automatisch versendet.
+        <strong>💡 Tipp:</strong> E-Mail-Erinnerungen werden 30 Tage vor Fristablauf automatisch an Sie versendet. Passwort jederzeit unter <strong>🔐 Passwort ändern</strong> (nach Login über Einstellungen) anpassbar.
       </div>
     </div>`;
 }
