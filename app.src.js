@@ -3189,6 +3189,22 @@ function oeffneFormularMitSprache(zuwId, sprache) {
     const btnDone = btnArea.querySelector('.btn-success');
     if (btnSave) btnSave.textContent = t.zwischenspeichern;
     if (btnDone) btnDone.textContent = t.abschliessen;
+
+    // PSAgA-Zuweisung: Abschließen-Button sperren bis mindestens ein Modul bestanden
+    const isPsaga = zuw.vorlagenId === '__psaga__';
+    const hinweis = document.getElementById('psaga-schulung-hinweis');
+    if (hinweis) hinweis.style.display = 'none'; // Reset
+    if (btnDone && isPsaga && !readOnly) {
+      const userId = currentUser && currentUser.userId || '';
+      const modulBestanden = PSAGA_MODULE.some(m =>
+        localStorage.getItem(`psaga_bestanden_${m.id}_${userId}`)
+      );
+      btnDone.disabled = !modulBestanden;
+      btnDone.title = modulBestanden ? '' : 'Bitte zuerst die PSAgA-Schulungsmodule absolvieren';
+      btnDone.style.opacity = modulBestanden ? '1' : '0.4';
+      btnDone.style.cursor = modulBestanden ? 'pointer' : 'not-allowed';
+      if (hinweis) hinweis.style.display = modulBestanden ? 'none' : '';
+    }
   }
 
   const body = document.getElementById('formular-body');
