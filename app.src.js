@@ -7645,6 +7645,14 @@ const PSAGA_BUCKET       = 'schulung-folien';
 
 const PSAGA_MODULE = [
   {
+    id:        'psaga-00-einleitung',
+    titel:     'PSAgA Schulung – Einleitung',
+    untertitel:'Modul 00 — Überblick & Lernziele',
+    folien:    12,
+    pfad:      '00-psaga-schulung-einleitung',
+    icon:      '📖'
+  },
+  {
     id:        'psaga-01-rechtliche-grundlagen',
     titel:     'PSAgA Schulung & Rechtliche Grundlagen',
     untertitel:'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz',
@@ -7652,7 +7660,6 @@ const PSAGA_MODULE = [
     pfad:      '01-psaga-schulung-rechtliche-grundlagen',
     icon:      '⚖️'
   }
-  // Weitere Module werden hier ergänzt wenn Upload erfolgt ist
 ];
 
 let psagaAktivesModul   = null;
