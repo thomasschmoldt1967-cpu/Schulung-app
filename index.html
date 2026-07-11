@@ -460,6 +460,43 @@
     </div>
     <div id="lernpfad-container" style="display:none;margin-bottom:18px"></div>
 
+    <!-- PSAgA Schulungsmodule (Folien-Viewer) -->
+    <div id="psaga-schulungen-btn-wrap" style="margin-bottom:14px;display:none">
+      <button type="button" id="btn-psaga-schulungen"
+        style="display:flex;align-items:center;gap:10px;background:#1a3a5c;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(26,58,92,.35);border:none;width:100%;cursor:pointer;text-align:left;-webkit-appearance:none"
+        onclick="psagaSchulungenToggle()">
+        <span style="font-size:1.5rem;pointer-events:none">🪝</span>
+        <div style="flex:1;pointer-events:none">
+          <div style="font-weight:700;font-size:.9rem">PSAgA Schulungsmodule</div>
+          <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-psaga-sub">Präsentationen ansehen</div>
+        </div>
+        <span id="btn-psaga-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
+      </button>
+    </div>
+    <div id="psaga-schulungen-container" style="display:none;margin-bottom:18px"></div>
+
+    <!-- PSAgA Folien-Viewer Modal -->
+    <div id="psaga-folien-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.92);z-index:9999;flex-direction:column;align-items:center;justify-content:center">
+      <div style="width:100%;max-width:700px;padding:0 12px;box-sizing:border-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0 10px">
+          <span id="psaga-folien-titel" style="color:#fff;font-weight:700;font-size:.9rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
+          <button onclick="psagaFolienSchliessen()" style="background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;padding:0 0 0 12px;flex-shrink:0">✕</button>
+        </div>
+        <div style="position:relative;background:#000;border-radius:10px;overflow:hidden">
+          <img id="psaga-folien-bild" src="" alt="Folie" style="width:100%;display:block;max-height:70vh;object-fit:contain">
+          <button onclick="psagaFolienPrev()" style="position:absolute;left:0;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);border:none;color:#fff;font-size:1.8rem;padding:12px 14px;cursor:pointer;border-radius:0 8px 8px 0">‹</button>
+          <button onclick="psagaFolienNext()" style="position:absolute;right:0;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.5);border:none;color:#fff;font-size:1.8rem;padding:12px 14px;cursor:pointer;border-radius:8px 0 0 8px">›</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;padding:10px 0">
+          <span id="psaga-folien-zaehler" style="color:#fff;font-size:.85rem"></span>
+        </div>
+        <div style="display:flex;gap:8px;padding-bottom:12px">
+          <button onclick="psagaFolienPrev()" style="flex:1;background:#374151;border:none;color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-size:.85rem">‹ Zurück</button>
+          <button onclick="psagaFolienNext()" style="flex:1;background:#1a3a5c;border:none;color:#fff;padding:10px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:700">Weiter ›</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Mitarbeiterliste (nur für Verantwortliche) -->
     <div id="sub-mitarbeiter-section" style="display:none;margin-top:24px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px">
