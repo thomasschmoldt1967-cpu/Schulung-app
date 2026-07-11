@@ -7660,7 +7660,52 @@ const PSAGA_SUPABASE_URL = 'https://vziankbxuiqwekdbjewg.supabase.co';
 const PSAGA_BUCKET       = 'schulung-folien';
 
 // TTS-Texte pro Modul und Folie (optional — falls nicht gefüllt, ist Ton-Button stumm)
-if (typeof PSAGA_TTS_TEXTE === 'undefined') { var PSAGA_TTS_TEXTE = {}; }
+const PSAGA_TTS_TEXTE = {
+  'psaga-01-rechtliche-grundlagen': [
+    // Folie 1
+    'Willkommen zur PSAgA Schulung nach DGUV Regel 112-198. Diese Schulung vermittelt Ihnen die rechtlichen Grundlagen der persönlichen Schutzausrüstung gegen Absturz. Bitte schenken Sie den folgenden Folien Ihre volle Aufmerksamkeit.',
+    // Folie 2
+    'Arbeiten in der Höhe gehören zu den gefährlichsten Tätigkeiten im Arbeitsalltag. Persönliche Schutzausrüstung gegen Absturz – kurz PSAgA – schützt Beschäftigte vor schweren oder tödlichen Sturzverletzungen. Diese Schulung erklärt Ihnen, warum regelmäßige Unterweisungen gesetzlich vorgeschrieben sind.',
+    // Folie 3
+    'Die rechtlichen Grundlagen der PSAgA sind im Arbeitsschutzgesetz, der PSA-Benutzungsverordnung und der DGUV Regel 112-198 verankert. Der Arbeitgeber ist verpflichtet, geeignete PSAgA bereitzustellen und die Beschäftigten regelmäßig zu unterweisen. Diese Pflichten sind nicht optional – Verstöße können zu empfindlichen Bußgeldern und strafrechtlichen Konsequenzen führen.',
+    // Folie 4
+    'Paragraph 1 des Arbeitsschutzgesetzes verpflichtet den Arbeitgeber, alle erforderlichen Maßnahmen zur Sicherheit und zum Gesundheitsschutz der Beschäftigten zu treffen. Unterweisungen sind dabei ein zentrales Element – sie müssen arbeitsplatzbezogen, regelmäßig und dokumentiert erfolgen. Nur wer seine Mitarbeiter nachweislich unterwiesen hat, erfüllt seine gesetzliche Sorgfaltspflicht.',
+    // Folie 5
+    'Das Hängetrauma ist ein lebensbedrohlicher Zustand, der bereits nach wenigen Minuten des bewusstlosen Hängens im Gurtsystem auftreten kann. Blut versackt in den Beinen, der Rückfluss zum Herzen wird unterbrochen – der Tod kann innerhalb von 30 Minuten eintreten. Deshalb ist schnelle Rettung nach einem Sturz absolut entscheidend – und ein Rettungsplan Pflicht.',
+    // Folie 6
+    'Paragraph 3 der PSA-Benutzungsverordnung regelt die Unterweisungspflicht des Arbeitgebers. Vor dem erstmaligen Einsatz von PSAgA und danach in regelmäßigen Abständen müssen Beschäftigte über die korrekte Benutzung, Wartung und Lagerung der Ausrüstung unterwiesen werden. Die Unterweisung muss verständlich und auf die konkrete Arbeitssituation zugeschnitten sein.',
+    // Folie 7
+    'Die EU-Verordnung 2016 Schrägstrich 425 teilt persönliche Schutzausrüstung in drei Risikokategorien ein. Kategorie I umfasst geringe Risiken wie einfache Handschuhe. Kategorie II deckt mittlere Risiken ab. Kategorie III – zu der PSAgA gehört – schützt vor tödlichen oder irreversiblen Gesundheitsgefahren und unterliegt den strengsten Anforderungen an Prüfung und Zertifizierung.',
+    // Folie 8
+    'PSAgA fällt ausnahmslos in Kategorie III der EU-Verordnung 2016 Schrägstrich 425 – den höchsten Schutzstandard für persönliche Schutzausrüstung. Das bedeutet: Auffanggurte, Verbindungsmittel und Höhensicherungsgeräte müssen von einer benannten Prüfstelle zertifiziert sein. Jedes Gerät muss eine CE-Kennzeichnung und eine EG-Baumusterprüfbescheinigung tragen.',
+    // Folie 9
+    'Für PSAgA gelten mehrere Normen und Gesetze gleichzeitig. Das Arbeitsschutzgesetz bildet den übergeordneten Rahmen. Die DGUV Regel 112-198 konkretisiert die Anforderungen für Absturzschutz. Die DIN EN 361 definiert die technischen Anforderungen an Auffanggurte. Diese Normen ergänzen sich und müssen alle eingehalten werden.',
+    // Folie 10
+    'Bei der sicheren Arbeit in der Höhe tragen sowohl Arbeitgeber als auch Beschäftigte klare Verantwortung. Der Arbeitgeber muss geeignete PSAgA bereitstellen, unterweisen und dokumentieren. Die Beschäftigten sind ihrerseits verpflichtet, die PSAgA bestimmungsgemäß zu benutzen und Mängel sofort zu melden. Nur im Zusammenspiel beider Seiten funktioniert Arbeitssicherheit.',
+    // Folie 11
+    'Nach Paragraph 2 der PSA-Benutzungsverordnung muss der Arbeitgeber zunächst eine Gefährdungsbeurteilung durchführen und auf dieser Basis die geeignete PSAgA auswählen. Er hat die Ausrüstung kostenlos bereitzustellen, auf Funktionsfähigkeit zu prüfen und regelmäßig zu warten. Außerdem muss er sicherstellen, dass die PSAgA den individuellen ergonomischen und gesundheitlichen Anforderungen der Beschäftigten entspricht.',
+    // Folie 12
+    'Paragraph 15 des Arbeitsschutzgesetzes verpflichtet Beschäftigte, ihre Gesundheit und die ihrer Kollegen nicht zu gefährden. Sie müssen die bereitgestellte PSAgA bestimmungsgemäß und entsprechend der Unterweisung benutzen. Eigenmächtige Veränderungen an der Ausrüstung sind verboten – und jeder erkannte Mangel muss unverzüglich dem Arbeitgeber gemeldet werden.',
+    // Folie 13
+    'Ein vollständiges PSAgA-System besteht aus drei Grundkomponenten: dem Auffanggurt, dem Verbindungsmittel und dem Anschlagpunkt. Der Auffanggurt verteilt die Fangstoßkraft auf Brust, Schultern und Oberschenkel. Das Verbindungsmittel – etwa ein Bandfalldämpfer oder ein Höhensicherungsgerät – begrenzt die Fallstrecke und den Fangstoß. Der Anschlagpunkt muss für eine Last von mindestens 12 Kilonewton ausgelegt sein.',
+    // Folie 14
+    'Vor jeder Benutzung muss PSAgA einer Sichtprüfung unterzogen werden. Zu prüfen sind alle Nähte, Schnallen, Karabiner und das Gurtband auf Verschleiß, Risse oder Korrosion. Nach einem Fangstoß ist die gesamte Ausrüstung sofort außer Betrieb zu nehmen und durch eine befähigte Person zu prüfen. Die jährliche Prüfung durch einen Sachkundigen ist gesetzlich vorgeschrieben.',
+    // Folie 15
+    'Der Anschlagpunkt ist das Herzstück jedes Absturzsicherungssystems. Er muss so positioniert sein, dass die freie Fallhöhe auf ein Minimum reduziert wird – idealerweise über Kopfhöhe. Anschlagpunkte an Gebäuden oder Konstruktionen müssen von einem Statiker oder Tragwerksplaner freigegeben sein. Mobile Anschlageinrichtungen müssen ebenfalls geprüft und zugelassen sein.',
+    // Folie 16
+    'Die Fallstrecke ist der Abstand, den ein Beschäftigter zurücklegt, bevor das PSAgA-System greift. Sie setzt sich zusammen aus dem freien Fall, dem Auslöseweg des Verbindungsmittels und der Körpergröße. Der entstehende Fangstoß darf 6 Kilonewton nicht überschreiten. Daher ist die richtige Dimensionierung des Gesamtsystems entscheidend – zu niedrige Anschlagpunkte können zum Aufprall am Untergrund führen.',
+    // Folie 17
+    'Nach einem Absturz kann der Verunglückte bewusstlos im Gurt hängen. Ein Rettungsplan muss deshalb vor Arbeitsbeginn festgelegt und allen Beteiligten bekannt sein. Der Plan umfasst: wer rettet, mit welchen Mitteln und wie schnell. Die Rettung muss innerhalb von wenigen Minuten erfolgen, um das Hängetrauma zu verhindern. Rettungsübungen sollten regelmäßig durchgeführt werden.',
+    // Folie 18
+    'Alle Unterweisungen zur PSAgA müssen schriftlich dokumentiert werden. Die Dokumentation muss Namen, Datum, Inhalt der Unterweisung und die Unterschrift des Unterweisenden enthalten. Diese Nachweise sind im Falle eines Arbeitsunfalls gegenüber Berufsgenossenschaft und Aufsichtsbehörden vorzulegen. Ohne Dokumentation gilt die Unterweisung als nicht erfolgt.',
+    // Folie 19
+    'Wir kommen nun zu den konkreten Pflichten der einzelnen Akteure. Sowohl Arbeitgeber als auch Beschäftigte tragen Verantwortung – jeder in seinem Bereich. Im Folgenden werden diese Pflichten detailliert erläutert.',
+    // Folie 20
+    'Der Arbeitgeber muss gemäß Paragraph 2 PSA-Benutzungsverordnung ausschließlich PSAgA bereitstellen, die der EU-Verordnung 2016 Schrägstrich 425 entspricht. Er trägt die Verantwortung für Wartung, Reparatur und hygienisch einwandfreien Zustand der Ausrüstung. Zusätzlich muss er eine Gefährdungsbeurteilung durchführen und sicherstellen, dass die PSAgA den ergonomischen Anforderungen der Beschäftigten entspricht.',
+    // Folie 21
+    'Beschäftigte sind nach Paragraph 15 Arbeitsschutzgesetz verpflichtet, die PSAgA gemäß Unterweisung und Weisung des Arbeitgebers zu benutzen. Eigene Handlungen dürfen weder sie selbst noch andere gefährden. Jeder festgestellte Defekt an Schutzsystemen muss unverzüglich gemeldet werden – das schreibt Paragraph 16 des Arbeitsschutzgesetzes vor. Vor jeder Benutzung ist eine Sichtprüfung der Ausrüstung durchzuführen. Damit endet diese Schulung – bitte bereiten Sie sich nun auf den Wissenstest vor.'
+  ]
+};
 
 const PSAGA_MODULE = [
   {
