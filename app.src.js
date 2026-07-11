@@ -7643,6 +7643,9 @@ function hilfeInhaltVerantwortlicher() {
 const PSAGA_SUPABASE_URL = 'https://vziankbxuiqwekdbjewg.supabase.co';
 const PSAGA_BUCKET       = 'schulung-folien';
 
+// TTS-Texte pro Modul und Folie (optional — falls nicht gefüllt, ist Ton-Button stumm)
+if (typeof PSAGA_TTS_TEXTE === 'undefined') { var PSAGA_TTS_TEXTE = {}; }
+
 const PSAGA_MODULE = [
   {
     id:        'psaga-00-einleitung',
@@ -7731,14 +7734,50 @@ function psagaFolienOeffnen(modulId) {
   }
 }
 
+// TTS für PSAgA-Folien
+let psagaTTSAktiv = false;
+let psagaTTSUtterance = null;
+
+function psagaTTSToggle() {
+  psagaTTSAktiv = !psagaTTSAktiv;
+  const btn = document.getElementById('psaga-tts-btn');
+  if (btn) btn.textContent = psagaTTSAktiv ? '🔊 Ton AN' : '🔊 Ton';
+  if (psagaTTSAktiv) {
+    psagaTTSSprechen();
+  } else {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+  }
+}
+
+function psagaTTSSprechen() {
+  if (!psagaTTSAktiv || !psagaAktivesModul) return;
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const texte = PSAGA_TTS_TEXTE && PSAGA_TTS_TEXTE[psagaAktivesModul.id];
+  if (!texte) return;
+  const text = texte[psagaAktuelleFolie - 1];
+  if (!text) return;
+  psagaTTSUtterance = new SpeechSynthesisUtterance(text);
+  psagaTTSUtterance.lang = 'de-DE';
+  psagaTTSUtterance.rate = 0.92;
+  window.speechSynthesis.speak(psagaTTSUtterance);
+}
+
 function psagaFolienAnzeigen() {
   if (!psagaAktivesModul) return;
   const bild    = document.getElementById('psaga-folien-bild');
   const titel   = document.getElementById('psaga-folien-titel');
   const zaehler = document.getElementById('psaga-folien-zaehler');
+  const nextBtn = document.getElementById('psaga-folien-next-btn');
   if (bild)    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
   if (titel)   titel.textContent = psagaAktivesModul.titel;
   if (zaehler) zaehler.textContent = `Folie ${psagaAktuelleFolie} von ${psagaAktivesModul.folien}`;
+  const isLetzte = psagaAktuelleFolie === psagaAktivesModul.folien;
+  if (nextBtn) {
+    nextBtn.textContent = isLetzte ? '✅ Abschließen' : 'Weiter ›';
+    nextBtn.style.background = isLetzte ? '#0f5132' : '#1a3a5c';
+  }
+  psagaTTSSprechen();
 }
 
 function psagaFolienNext() {
@@ -7761,6 +7800,10 @@ function psagaFolienPrev() {
 }
 
 function psagaFolienSchliessen() {
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  psagaTTSAktiv = false;
+  const btn = document.getElementById('psaga-tts-btn');
+  if (btn) btn.textContent = '🔊 Ton';
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
     modal.style.display = 'none';
