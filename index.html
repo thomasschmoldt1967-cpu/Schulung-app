@@ -34,6 +34,10 @@
 <!-- LOGIN SCREEN -->
 <div id="screen-login" class="screen">
   <div class="login-box">
+    <!-- Dark-Mode Toggle oben rechts -->
+    <div style="display:flex;justify-content:flex-end;margin-bottom:4px">
+      <button onclick="toggleDarkMode()" title="Dark Mode" style="background:none;border:none;font-size:1.2rem;cursor:pointer;opacity:.6;padding:4px 6px">🌙</button>
+    </div>
     <div class="login-logo">
       <img src="csc-logo.png" alt="SIBEDA" style="height:180px;max-width:340px;width:90%;object-fit:contain;margin-bottom:16px">
       <h2 style="font-size:1.5rem;margin:0 0 6px 0;">Schulungsmanagement</h2>
@@ -42,7 +46,7 @@
     <div id="login-fehler" class="error-msg"></div>
     <div class="form-group">
       <label for="login-email">E-Mail-Adresse</label>
-      <input type="email" id="login-email" placeholder="name@firma.de" autocomplete="email">
+      <input type="email" id="login-email" placeholder="name@unternehmen.de" autocomplete="email">
     </div>
     <div class="form-group">
       <label for="login-password">Passwort</label>
@@ -53,7 +57,7 @@
     </div>
     <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.78rem;color:#3b82f6;text-decoration:none">🔑 Passwort vergessen?</a>
+      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.72rem;color:#9ca3af;text-decoration:none">Passwort vergessen?</a>
     </div>
     <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:8px 0 0;line-height:1.5">
       Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
@@ -80,38 +84,47 @@
 ══════════════════════════════════════════════════════════ -->
 <div id="screen-admin" class="screen">
   <header class="app-header">
+    <!-- Hamburger (nur Mobile) -->
+    <button id="admin-sidebar-hamburger" onclick="adminSidebarOpen()" aria-label="Menü öffnen"
+      style="background:none;border:none;cursor:pointer;color:#fff;font-size:1.5rem;padding:4px 8px;line-height:1;display:none">☰</button>
     <h1>📋 Schulungsmanagement</h1>
     <div style="display:flex;align-items:center;gap:10px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
       <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
-  <div class="content">
-    <div class="tabs">
-      <button class="tab-btn active" onclick="adminTab('uebersicht',this)">Übersicht</button>
-      <button class="tab-btn" onclick="adminTab('schulungen',this)">Schulungsvorlagen</button>
-      <button class="tab-btn" onclick="adminTab('zuweisungen',this)">Zuweisungen</button>
-      <button class="tab-btn" onclick="adminTab('kalender',this)">📅 Kalender</button>
-      <button class="tab-btn" onclick="adminTab('archiv',this)">📦 Archiv</button>
-      <button class="tab-btn" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
-      <button class="tab-btn" onclick="adminTab('audit',this)">Protokoll</button>
-      <button class="tab-btn" id="drive-sync-btn" onclick="syncMissingToDrive()" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0">☁️ Drive-Sync</button>
-    </div>
 
-    <!-- Bedienungsanleitung Button (Admin) -->
-    <div style="margin-bottom:14px">
-      <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:12px;background:#1e3a5f;color:#fff;padding:14px 18px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25)">
-        <span style="font-size:1.6rem">📖</span>
-        <div>
-          <div style="font-weight:700;font-size:.95rem">Bedienungsanleitung</div>
-          <div style="font-size:.75rem;opacity:.8;margin-top:2px">Schritt-für-Schritt Anleitung zur App</div>
-        </div>
-        <span style="margin-left:auto;font-size:1.1rem;opacity:.7">›</span>
-      </a>
-    </div>
+  <!-- Sidebar-Overlay (Mobile) -->
+  <div id="admin-sidebar-overlay" onclick="adminSidebarClose()"
+    style="display:none;position:fixed;inset:0;z-index:40;background:rgba(0,0,0,.45)"></div>
+
+  <div class="admin-layout">
+
+    <!-- ── SIDEBAR (Mobile: Drawer, Desktop: fest) ── -->
+    <nav id="admin-sidebar" class="admin-sidebar">
+      <!-- Schließen-Button Mobile -->
+      <div class="admin-sidebar-close-row">
+        <span style="font-weight:700;font-size:.9rem;color:#1e3a5f">Menü</span>
+        <button onclick="adminSidebarClose()" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#6b7280;line-height:1">✕</button>
+      </div>
+
+      <button class="admin-nav-btn active" data-tab="uebersicht"   onclick="adminTab('uebersicht',this)">📊 Übersicht</button>
+      <button class="admin-nav-btn"         data-tab="schulungen"  onclick="adminTab('schulungen',this)">📋 Schulungsvorlagen</button>
+      <button class="admin-nav-btn"         data-tab="zuweisungen" onclick="adminTab('zuweisungen',this)">📅 Zuweisungen</button>
+      <button class="admin-nav-btn"         data-tab="kalender"    onclick="adminTab('kalender',this)">🗓 Kalender</button>
+      <button class="admin-nav-btn"         data-tab="archiv"      onclick="adminTab('archiv',this)">📦 Archiv</button>
+      <button class="admin-nav-btn"         data-tab="unternehmen" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
+      <button class="admin-nav-btn"         data-tab="audit"       onclick="adminTab('audit',this)">📋 Protokoll</button>
+      <div class="admin-nav-divider"></div>
+      <button class="admin-nav-btn admin-nav-sync" onclick="adminSidebarClose();syncMissingToDrive()">☁️ Drive-Sync</button>
+      <button class="admin-nav-btn admin-nav-help" onclick="adminSidebarClose();hilfeOeffnen('admin')">📖 App-Anleitung</button>
+    </nav>
+
+    <!-- ── HAUPTINHALT ── -->
+    <div class="admin-main">
 
     <!-- Tab: Gesamtübersicht -->
     <div id="tab-uebersicht" class="tab-content">
@@ -233,6 +246,18 @@
           <div id="admin-vorlagen-list"></div>
         </div>
       </div>
+
+      <!-- Lernpfad-Kernkapitel -->
+      <div style="margin-top:16px">
+        <button onclick="adminKernkapitelToggle()" id="admin-kk-toggle-btn"
+          style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:13px 16px;background:#1a3a5c;color:#fff;border:none;border-radius:12px;font-size:.95rem;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(26,58,92,.2)">
+          <span>📚 29 Lernpfad-Kernkapitel anzeigen</span>
+          <span id="admin-kk-toggle-icon" style="font-size:1.1rem;transition:transform .2s">▼</span>
+        </button>
+        <div id="admin-kk-container" style="display:none;margin-top:10px">
+          <div id="admin-kk-list"></div>
+        </div>
+      </div>
     </div>
 
     <!-- Tab: Zuweisungen -->
@@ -322,8 +347,8 @@
             <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
           </div>
           <div class="form-group">
-            <label>E-Mail (Verantwortlicher) *</label>
-            <input type="email" id="nu-email" placeholder="verantwortlicher@firma.de">
+            <label>E-Mail (Unternehmens-Login) *</label>
+            <input type="email" id="nu-email" placeholder="verantwortlicher@unternehmen.de">
           </div>
           <div class="form-group">
             <label>Ansprechpartner Name *</label>
@@ -349,14 +374,15 @@
           <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
           <span id="nu-liste-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
         </div>
-        <div id="nu-liste-bereich" style="display:none;margin-top:12px">
+          <div id="nu-liste-bereich" style="display:none;margin-top:12px">
           <input type="search" id="nu-filter" placeholder="🔍 Unternehmen suchen…" oninput="nuRenderListe()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;box-sizing:border-box;margin-bottom:10px">
           <div id="nu-liste"></div>
         </div>
       </div>
     </div>
-  </div>
-</div>
+    </div><!-- /admin-main -->
+  </div><!-- /admin-layout -->
+</div><!-- /screen-admin -->
 
 <!-- ══════════════════════════════════════════════════════════
      SCREEN: SUBUNTERNEHMEN-DASHBOARD
@@ -372,12 +398,34 @@
       </div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
       <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
     <div id="sub-stats" class="stats-grid"></div>
+    <!-- Schulungsliste für Mitarbeiter (wird per JS befüllt, nur für Rolle mitarbeiter) -->
+    <div id="sub-schulungen-list" style="margin-bottom:14px"></div>
+    <!-- Wiederkehrende Schulungen Hinweis (Verantwortlicher) -->
+    <div id="wiederkehrende-hinweise-sub" style="display:none"></div>
     <div id="sub-kalender" style="display:none"></div>
+
+    <!-- Kalender + Bedienungsanleitung Buttons (nur für Verantwortliche: Kalender) -->
+    <div id="sub-kalender-buttons" style="margin-bottom:14px;display:flex;gap:10px">
+      <button onclick="subKalenderOeffnen()" style="display:flex;align-items:center;gap:10px;background:#fff;color:#1e3a5f;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left">
+        <span style="font-size:1.5rem">📅</span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem">Kalender</div>
+          <div style="font-size:.72rem;opacity:1;margin-top:2px;color:#6b7280">Alle Schulungsfristen im Überblick</div>
+        </div>
+      </button>
+      <button onclick="hilfeOeffnen('verantwortlicher')" style="display:flex;align-items:center;gap:10px;background:#fff;color:#1e3a5f;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left">
+        <span style="font-size:1.5rem">📖</span>
+        <div>
+          <div style="font-weight:700;font-size:.9rem">App-Anleitung</div>
+          <div style="font-size:.72rem;opacity:1;margin-top:2px;color:#6b7280">Schritt-für-Schritt Anleitung</div>
+        </div>
+      </button>
+    </div>
 
     <!-- Mitarbeiter Buttons (nur für Verantwortliche) -->
     <div id="sub-ma-buttons" style="margin-bottom:14px;display:flex;flex-wrap:nowrap;gap:10px">
@@ -397,24 +445,6 @@
       </button>
     </div>
 
-    <!-- Kalender + Bedienungsanleitung Buttons (nur für Verantwortliche: Kalender) -->
-    <div id="sub-kalender-buttons" style="margin-bottom:14px;display:flex;gap:10px">
-      <button onclick="subKalenderOeffnen()" style="display:flex;align-items:center;gap:10px;background:#fff;color:#1e3a5f;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1;cursor:pointer;text-align:left">
-        <span style="font-size:1.5rem">📅</span>
-        <div>
-          <div style="font-weight:700;font-size:.9rem">Kalender</div>
-          <div style="font-size:.72rem;opacity:1;margin-top:2px;color:#6b7280">Alle Schulungsfristen im Überblick</div>
-        </div>
-      </button>
-      <a href="anleitung.html" target="_blank" style="display:flex;align-items:center;gap:10px;background:#fff;color:#1e3a5f;padding:14px 16px;border-radius:12px;text-decoration:none;box-shadow:0 2px 8px rgba(30,58,95,.25);border:1.5px solid #1e3a5f;flex:1">
-        <span style="font-size:1.5rem">📖</span>
-        <div>
-          <div style="font-weight:700;font-size:.9rem">Anleitung</div>
-          <div style="font-size:.72rem;opacity:1;margin-top:2px;color:#6b7280">Schritt-für-Schritt Anleitung</div>
-        </div>
-      </a>
-    </div>
-
     <!-- Lernpfad Icon-Button (21 Kapitel) -->
     <div style="margin-bottom:14px">
       <button type="button" id="btn-lernpfad"
@@ -422,7 +452,7 @@
         onclick="lernpfadToggle()">
         <span style="font-size:1.5rem;pointer-events:none">📚</span>
         <div style="flex:1;pointer-events:none">
-          <div style="font-weight:700;font-size:.9rem">22-Kapitel Lernpfad</div>
+          <div style="font-weight:700;font-size:.9rem">Lernpfad — 29 Kapitel</div>
           <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-lernpfad-sub">Tippen zum Anzeigen</div>
         </div>
         <span id="btn-lernpfad-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
@@ -436,9 +466,10 @@
         <h3 style="font-size:1rem;font-weight:700;color:#1e3a5f;margin:0">👤 Meine Mitarbeiter</h3>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="sub-mitarbeiter-count" style="font-size:.8rem;color:#6b7280"></span>
+          <span style="font-size:.68rem;color:#9ca3af" title="Ampellegende">🟢 abgeschl. &nbsp;🟡 bald fällig &nbsp;🔴 überfällig</span>
           <button type="button" onclick="bereichsEinweisungOeffnen()"
             style="font-size:.78rem;padding:5px 12px;border-radius:7px;border:1px solid #1a3a5c;background:#1a3a5c;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">
-            📋 Bereichs-Einweisung
+            📋 Schulung zuweisen
           </button>
         </div>
       </div>
@@ -458,7 +489,7 @@
     <div style="display:flex;align-items:center;gap:14px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info" id="formular-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
@@ -494,7 +525,7 @@
     <div style="display:flex;align-items:center;gap:14px">
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info" id="detail-user-info"></div>
-      <button class="btn-logout" onclick="doLogout()">Abmelden</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
   <div class="content">
@@ -545,7 +576,7 @@
     <h3 style="margin:0 0 16px;font-size:1.1rem;color:#1e3a5f">🔑 Passwort zurücksetzen</h3>
     <div class="form-group">
       <label>E-Mail-Adresse</label>
-      <input type="email" id="pw-reset-email" placeholder="name@firma.de">
+      <input id="pw-reset-email" type="email" placeholder="name@unternehmen.de">
     </div>
     <div id="pw-reset-msg" style="font-size:.82rem;margin:8px 0;min-height:20px"></div>
     <div style="display:flex;gap:8px;margin-top:12px">
@@ -655,7 +686,7 @@
     <h3 style="font-size:.95rem;color:#1e3a5f;margin:16px 0 6px">1. Verantwortlicher</h3>
     <p style="margin:0 0 12px">
       <strong>CSC GmbH</strong><br>
-      Peiner Straße 39a · 30880 Laatzen<br>
+      Petermax-Müller-Straße 3 · 30880 Laatzen<br>
       Telefon: <a href="tel:+4951029319730" style="color:#3b82f6">05102 9319730</a><br>
       Fax: 05102 93197-39<br>
       E-Mail: <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a><br>
@@ -728,7 +759,7 @@
       Sie haben das Recht auf: <strong>Auskunft · Berichtigung · Löschung · Einschränkung der Verarbeitung · Widerspruch · Datenübertragbarkeit</strong><br><br>
       Sofern die Verarbeitung auf einer Einwilligung beruht, haben Sie das Recht, diese jederzeit zu widerrufen (Art. 7 Abs. 3 DSGVO).<br><br>
       Anfragen richten Sie bitte an:<br>
-      <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a> oder schriftlich: CSC GmbH, Peiner Straße 39a, 30880 Laatzen
+      <a href="mailto:info@csc-hannover.de" style="color:#3b82f6">info@csc-hannover.de</a> oder schriftlich: CSC GmbH, Petermax-Müller-Straße 3, 30880 Laatzen
     </p>
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:14px 0">
 
@@ -759,7 +790,7 @@
 
     <p style="margin:0 0 12px">
       <strong>CSC GmbH</strong><br>
-      Peiner Straße 39a<br>
+      Petermax-Müller-Straße 3<br>
       30880 Laatzen
     </p>
 
@@ -790,7 +821,7 @@
     <hr style="border:none;border-top:1px solid #e5e7eb;margin:16px 0">
 
     <h3 style="font-size:.9rem;color:#1e3a5f;margin:0 0 6px">Verantwortlich für den Inhalt (§ 18 Abs. 2 MStV)</h3>
-    <p style="margin:0 0 12px">Thomas Schmoldt<br>Peiner Straße 39a · 30880 Laatzen</p>
+    <p style="margin:0 0 12px">Thomas Schmoldt<br>Petermax-Müller-Straße 3 · 30880 Laatzen</p>
 
     <h3 style="font-size:.9rem;color:#1e3a5f;margin:12px 0 6px">Haftungsausschluss</h3>
     <p style="margin:0 0 12px;font-size:.82rem;color:#6b7280">
@@ -982,7 +1013,7 @@
 <div id="bereichs-einweisung-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9000;align-items:center;justify-content:center;padding:16px">
   <div style="background:#fff;border-radius:16px;padding:20px;max-width:520px;width:100%;position:relative;max-height:90vh;display:flex;flex-direction:column;gap:0">
     <button onclick="bereichsEinweisungSchliessen()" style="position:absolute;top:14px;right:14px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#9ca3af">✕</button>
-    <div style="font-size:1.15rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Bereichs-Einweisung</div>
+    <div style="font-size:1.15rem;font-weight:700;color:#1a3a5c;margin-bottom:4px">📋 Schulung zuweisen</div>
     <div style="font-size:.82rem;color:#6b7280;margin-bottom:14px">Schulungsthema für Mitarbeiter eines Bereichs oder Objekt zuweisen</div>
 
     <!-- Schritt 1: Bereich/Objekt wählen -->
@@ -1031,6 +1062,13 @@
     <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap">
       <div style="flex:1;min-width:130px">
         <label style="font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:4px">4. Frist</label>
+        <!-- Schnellauswahl Monate -->
+        <div style="display:flex;gap:5px;margin-bottom:6px;flex-wrap:wrap">
+          <button type="button" onclick="beFristMonat(3)"  style="flex:1;min-width:38px;padding:5px 2px;border:1.5px solid #d1d5db;border-radius:7px;font-size:.78rem;font-weight:600;background:#f9fafb;color:#1e3a5f;cursor:pointer">3 M</button>
+          <button type="button" onclick="beFristMonat(6)"  style="flex:1;min-width:38px;padding:5px 2px;border:1.5px solid #d1d5db;border-radius:7px;font-size:.78rem;font-weight:600;background:#f9fafb;color:#1e3a5f;cursor:pointer">6 M</button>
+          <button type="button" onclick="beFristMonat(9)"  style="flex:1;min-width:38px;padding:5px 2px;border:1.5px solid #d1d5db;border-radius:7px;font-size:.78rem;font-weight:600;background:#f9fafb;color:#1e3a5f;cursor:pointer">9 M</button>
+          <button type="button" onclick="beFristMonat(12)" style="flex:1;min-width:38px;padding:5px 2px;border:1.5px solid #d1d5db;border-radius:7px;font-size:.78rem;font-weight:600;background:#f9fafb;color:#1e3a5f;cursor:pointer">12 M</button>
+        </div>
         <input type="date" id="be-frist" style="width:100%;border:1px solid #d1d5db;border-radius:7px;padding:7px 10px;font-size:.85rem;box-sizing:border-box">
       </div>
       <div style="display:flex;align-items:center;gap:6px;margin-top:20px">
@@ -1060,6 +1098,205 @@
     <div id="historie-name" style="font-size:.9rem;color:#6b7280;margin-bottom:14px"></div>
     <div id="historie-inhalt" style="flex:1;overflow-y:auto"></div>
     <button onclick="historieSchliessen()" class="btn btn-primary" style="margin-top:14px;width:100%">Schließen</button>
+  </div>
+</div>
+
+<!-- ── Lernpfad-Unterschrift Modal ── -->
+<div id="lp-unt-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,0.3)">
+    <h3 id="lp-unt-titel" style="margin:0 0 6px;font-size:1rem;color:#0f5132">✍️ Lernpfad unterzeichnen</h3>
+    <p id="lp-unt-hinweis" style="margin:0 0 12px;font-size:.82rem;color:#374151">Bitte mit dem Finger unterzeichnen:</p>
+
+    <!-- Canvas für Unterschrift -->
+    <canvas id="lp-unt-canvas"
+      style="width:100%;height:160px;border:2px solid #d1d5db;border-radius:10px;background:#f9fafb;touch-action:none;display:block"
+      width="440" height="160"></canvas>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;margin-bottom:14px">
+      <span id="lp-unt-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span>
+      <button onclick="lpUntCanvasLeeren()"
+        style="background:#f3f4f6;color:#374151;border:none;padding:6px 14px;border-radius:8px;font-size:.82rem;cursor:pointer">
+        🗑 Löschen
+      </button>
+    </div>
+
+    <div style="display:flex;gap:10px">
+      <button onclick="lpUntModalSchliessen()"
+        style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+        Abbrechen
+      </button>
+      <button id="lp-unt-bestaetigen-btn" onclick="lpUntBestaetigen()" disabled
+        style="flex:2;background:#d1d5db;color:#9ca3af;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:not-allowed">
+        ✅ Unterzeichnen bestätigen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Lernpfad Neu starten Modal ── -->
+<div id="lp-neustart-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 8px;font-size:1rem;color:#7c3aed">🔄 Neuen Lernpfad-Durchgang starten</h3>
+    <p style="margin:0 0 14px;font-size:.85rem;color:#374151">
+      Für Mitarbeiter: <strong id="lpns-ma-name"></strong><br>
+      <span style="color:#6b7280;font-size:.78rem">Alle 22 Kapitel und die Unterschrift werden zurückgesetzt. Der alte Durchgang bleibt in der Historie erhalten.</span>
+    </p>
+    <input type="hidden" id="lpns-ma-id">
+    <div style="display:flex;gap:10px">
+      <button onclick="lernpfadNeuStartenSchliessen()"
+        style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+        Abbrechen
+      </button>
+      <button id="lpns-bestaetigen-btn" onclick="lernpfadNeuStartenBestaetigt()"
+        style="flex:2;background:#7c3aed;color:#fff;border:none;padding:12px;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer">
+        🔄 Neu starten
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Lernpfad Kapitel-Editor Modal ── -->
+<div id="lp-kapitel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;padding:20px;box-shadow:0 8px 32px rgba(0,0,0,.3)">
+    <h3 style="margin:0 0 12px;font-size:1rem;color:#7c3aed">✏️ Firmenspezifische Kapitel verwalten</h3>
+    <p style="margin:0 0 12px;font-size:.78rem;color:#6b7280">Diese Kapitel erscheinen zusätzlich zu den 22 Standard-Kapiteln im Lernpfad Ihrer Mitarbeiter.</p>
+
+    <!-- Vorhandene Kapitel -->
+    <div id="lpke-liste" style="margin-bottom:14px"></div>
+
+    <!-- Neues Kapitel hinzufügen -->
+    <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:14px">
+      <div style="font-size:.82rem;font-weight:700;color:#374151;margin-bottom:8px">➕ Neues Kapitel</div>
+      <input id="lpke-neuer-titel" type="text" placeholder="Titel (z.B. Brandschutzunterweisung Lager)"
+        style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.85rem;margin-bottom:8px;box-sizing:border-box">
+      <textarea id="lpke-neue-beschreibung" placeholder="Beschreibung / Inhalt (optional)"
+        rows="2" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.82rem;resize:vertical;margin-bottom:10px;box-sizing:border-box"></textarea>
+      <button id="lpke-hinzufuegen-btn" onclick="lernpfadTenantKapitelHinzufuegen()"
+        style="width:100%;background:#7c3aed;color:#fff;border:none;padding:10px;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+        ➕ Kapitel hinzufügen
+      </button>
+    </div>
+
+    <button onclick="lernpfadKapitelEditorSchliessen()"
+      style="width:100%;margin-top:12px;background:#f3f4f6;color:#374151;border:none;padding:11px;border-radius:10px;font-size:.9rem;font-weight:600;cursor:pointer">
+      Schließen
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: FIRMA-DASHBOARD
+══════════════════════════════════════════════════════════ -->
+<div id="screen-firma" class="screen">
+  <header class="app-header">
+    <h1>🏢 Unternehmensverwaltung</h1>
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
+      <div class="user-info">
+        <div id="firma-username"></div>
+        <div id="firma-tenantname" style="font-size:.68rem;opacity:.7"></div>
+      </div>
+      <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
+      <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
+    </div>
+  </header>
+  <div class="content">
+    <!-- Tab-Leiste -->
+    <div style="display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin-bottom:14px;overflow-x:auto">
+      <button class="firma-tab-btn" data-tab="verantwortliche" onclick="firmaTabWechseln('verantwortliche')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid #1e3a5f;font-weight:700;color:#1e3a5f">
+        👔 Verantwortliche
+      </button>
+      <button class="firma-tab-btn" data-tab="uebersicht" onclick="firmaTabWechseln('uebersicht')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
+        📊 Übersicht
+      </button>
+      <button class="firma-tab-btn" data-tab="schulungen" onclick="firmaTabWechseln('schulungen')"
+        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
+        📋 Schulungen
+      </button>
+    </div>
+
+    <!-- Tab: Verantwortliche -->
+    <div class="firma-tab-content" data-tab="verantwortliche">
+      <!-- App-Anleitung Button -->
+      <div style="margin-bottom:12px">
+        <button onclick="hilfeOeffnen('firma')" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:12px 16px;border-radius:10px;border:none;cursor:pointer;width:100%;text-align:left;box-shadow:0 2px 6px rgba(30,58,95,.2)">
+          <span style="font-size:1.3rem">📖</span>
+          <div>
+            <div style="font-weight:700;font-size:.88rem">App-Anleitung</div>
+            <div style="font-size:.72rem;opacity:.8">Anleitung für Unternehmensadmins</div>
+          </div>
+          <span style="margin-left:auto;font-size:1rem;opacity:.7">›</span>
+        </button>
+      </div>
+      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+        <button onclick="firmaVerantwortlichenAnlegenOeffnen()"
+          style="background:#1e3a5f;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">
+          ➕ Verantwortlichen anlegen
+        </button>
+      </div>
+      <div id="firma-verantwortliche-liste"></div>
+    </div>
+
+    <!-- Tab: Übersicht -->
+    <div class="firma-tab-content" data-tab="uebersicht" style="display:none">
+      <div id="firma-uebersicht-inhalt"></div>
+    </div>
+
+    <!-- Tab: Schulungen -->
+    <div class="firma-tab-content" data-tab="schulungen" style="display:none">
+      <div id="firma-schulungen-inhalt"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Verantwortlichen anlegen (firma) -->
+<div id="fva-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Verantwortlichen anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="fva-name" type="text" placeholder="Name *"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-email" type="email" placeholder="E-Mail *"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-position" type="text" placeholder="Position / Bereich (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-telefon" type="tel" placeholder="Telefon (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fva-mobil" type="tel" placeholder="Mobil (optional)"
+        style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="fva-passwort" type="text" placeholder="Passwort (leer = auto)"
+          style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="firmaVerantwortlichenGenerierePasswort()"
+          style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="fva-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="firmaVerantwortlichenAnlegenSchliessen()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="fva-speichern-btn" onclick="firmaVerantwortlichenSpeichern()" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">✅ Anlegen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Verantwortlichen bearbeiten (firma) -->
+<div id="fvb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9000;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">✏️ Verantwortlichen bearbeiten</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="fvb-name" type="text" placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-position" type="text" placeholder="Position / Bereich" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-telefon" type="tel" placeholder="Telefon" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="fvb-mobil" type="tel" placeholder="Mobil" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+    </div>
+    <div id="fvb-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="firmaVerantwortlichenBearbeitenSchliessen()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="fvb-speichern-btn" onclick="firmaVerantwortlichenBearbeitenSpeichern()" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">💾 Speichern</button>
+    </div>
   </div>
 </div>
 
