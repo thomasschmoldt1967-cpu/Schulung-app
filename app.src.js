@@ -3060,8 +3060,10 @@ function renderSubDashboard() {
   // Buttons für Mitarbeiter-Rolle ausblenden (nur Unterweisungsthemen anzeigen)
   const isMitarbeiter = currentUser.role === 'mitarbeiter';
   const maBtns = document.getElementById('sub-ma-buttons');
+  const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
+  if (maImport) maImport.style.display = isMitarbeiter ? 'none' : '';
   if (kalBtns) {
     if (isMitarbeiter) {
       // Für Mitarbeiter: weder Kalender noch Anleitung anzeigen
