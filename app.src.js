@@ -3057,13 +3057,14 @@ function renderSubDashboard() {
     <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>
     <div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`;
-  // Buttons für Mitarbeiter-Rolle ausblenden (nur Unterweisungsthemen anzeigen)
+  // Buttons für Mitarbeiter- und Verantwortlicher-Rolle ausblenden
   const isMitarbeiter = currentUser.role === 'mitarbeiter';
+  const isVerantwortlicher = currentUser.role === 'verantwortlicher';
   const maBtns = document.getElementById('sub-ma-buttons');
   const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
-  if (maImport) maImport.style.display = isMitarbeiter ? 'none' : '';
+  if (maImport) maImport.style.display = (isMitarbeiter || isVerantwortlicher) ? 'none' : '';
   if (kalBtns) {
     if (isMitarbeiter) {
       // Für Mitarbeiter: weder Kalender noch Anleitung anzeigen
