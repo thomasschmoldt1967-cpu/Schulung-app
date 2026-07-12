@@ -3052,11 +3052,12 @@ function renderSubDashboard() {
   const y=stati.filter(s=>s==='gelb').length;
   const r=stati.filter(s=>s==='rot').length;
   const gr=stati.filter(s=>s==='grau').length;
+  const isMitarbeiterStats = currentUser.role === 'mitarbeiter';
   document.getElementById('sub-stats').innerHTML = `
     <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
     <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
     <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>
-    <div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`;
+    ${isMitarbeiterStats ? '' : `<div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`}`;
   // Buttons für Mitarbeiter- und Verantwortlicher-Rolle ausblenden
   const isMitarbeiter = currentUser.role === 'mitarbeiter';
   const isVerantwortlicher = currentUser.role === 'verantwortlicher';
