@@ -3064,7 +3064,9 @@ function renderSubDashboard() {
   const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
-  if (maImport) maImport.style.display = (isMitarbeiter || isVerantwortlicher) ? 'none' : '';
+  // Mitarbeiter-Import nur für firma und admin sichtbar
+  const kannImportieren = currentUser.role === 'firma' || currentUser.role === 'admin';
+  if (maImport) maImport.style.display = kannImportieren ? '' : 'none';
   if (kalBtns) {
     if (isMitarbeiter) {
       // Für Mitarbeiter: weder Kalender noch Anleitung anzeigen
