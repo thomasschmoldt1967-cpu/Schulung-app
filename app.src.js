@@ -7879,9 +7879,20 @@ function psagaFolienOeffnen(modulId) {
   }
 }
 
-// TTS für PSAgA-Folien
+// TTS / Audio für PSAgA-Folien
+// Modul 00: Original-MP3 aus Supabase Storage
+// Modul 01+: Web Speech API (TTS-Texte)
 let psagaTTSAktiv = false;
 let psagaTTSUtterance = null;
+let psagaAudioEl = null; // <audio>-Element für Modul-00-MP3s
+
+function psagaAudioStop() {
+  if (psagaAudioEl) {
+    psagaAudioEl.pause();
+    psagaAudioEl.src = '';
+  }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
 
 function psagaTTSToggle() {
   psagaTTSAktiv = !psagaTTSAktiv;
@@ -7890,14 +7901,30 @@ function psagaTTSToggle() {
   if (psagaTTSAktiv) {
     psagaTTSSprechen();
   } else {
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    psagaAudioStop();
   }
 }
 
 function psagaTTSSprechen() {
   if (!psagaTTSAktiv || !psagaAktivesModul) return;
+  psagaAudioStop();
+
+  // Modul 00: Original-MP3 abspielen
+  if (psagaAktivesModul.id === 'psaga-00-einleitung') {
+    const nr = String(psagaAktuelleFolie).padStart(2, '0');
+    const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${psagaAktivesModul.pfad}/audio-${nr}.mp3`;
+    if (!psagaAudioEl) {
+      psagaAudioEl = document.createElement('audio');
+      psagaAudioEl.style.display = 'none';
+      document.body.appendChild(psagaAudioEl);
+    }
+    psagaAudioEl.src = url;
+    psagaAudioEl.play().catch(() => {});
+    return;
+  }
+
+  // Modul 01+: Web Speech API
   if (!window.speechSynthesis) return;
-  window.speechSynthesis.cancel();
   const texte = PSAGA_TTS_TEXTE && PSAGA_TTS_TEXTE[psagaAktivesModul.id];
   if (!texte) return;
   const text = texte[psagaAktuelleFolie - 1];
@@ -8082,7 +8109,7 @@ function psagaFolienPrev() {
 }
 
 function psagaFolienSchliessen() {
-  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  psagaAudioStop();
   psagaTTSAktiv = false;
   const btn = document.getElementById('psaga-tts-btn');
   if (btn) btn.textContent = '🔊 Ton';
