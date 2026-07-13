@@ -6724,7 +6724,7 @@ function renderLernpfad() {
   const gesamt   = alleKapitel.length;
   const bestanden = alleKapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
   const pct      = Math.round(bestanden / gesamt * 100);
-  const alle22   = bestanden === gesamt;
+  const alle22   = bestanden >= gesamt;
   const isVerantwortlicherView = currentUser.role === 'verantwortlicher';
 
   let html = `
@@ -6761,7 +6761,7 @@ function renderLernpfad() {
     </div>`;
 
   // Pro Säule gruppiert
-  ['A','B','C'].forEach(saeule => {
+  ['A','B','C','D'].forEach(saeule => {
     const kapitel = LERNPFAD_KAPITEL.filter(k => k.saeule === saeule);
     const absolviert = kapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
     const farbe = SAEULE_FARBEN[saeule];
