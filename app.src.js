@@ -7927,8 +7927,14 @@ function psagaQuizStarten(modul) {
 
 function psagaQuizAnzeigen() {
   const fragen = PSAGA_QUIZ[psagaQuizModulId] || [];
-  const modal  = document.getElementById('psaga-quiz-modal');
-  if (!modal) return;
+  // Modal dynamisch erstellen falls nicht im DOM
+  let modal = document.getElementById('psaga-quiz-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'psaga-quiz-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:#0f172a;z-index:10000;flex-direction:column;overflow:hidden';
+    document.body.appendChild(modal);
+  }
   if (psagaQuizIndex >= fragen.length) {
     // Alle Fragen richtig beantwortet
     modal.style.display = 'none';
@@ -7958,8 +7964,13 @@ function psagaQuizAnzeigen() {
 
 function psagaQuizAnzeigenMitHinweis() {
   const fragen = PSAGA_QUIZ[psagaQuizModulId] || [];
-  const modal  = document.getElementById('psaga-quiz-modal');
-  if (!modal) return;
+  let modal = document.getElementById('psaga-quiz-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'psaga-quiz-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:#0f172a;z-index:10000;flex-direction:column;overflow:hidden';
+    document.body.appendChild(modal);
+  }
   const q = fragen[psagaQuizIndex];
   modal.style.display = 'flex';
   modal.innerHTML = `
@@ -7996,7 +8007,7 @@ function psagaAntwortPruefen(gewaehlterIndex) {
     });
     psagaQuizRichtig.push(psagaQuizIndex);
     // Weiter-Button einblenden
-    const cont = document.getElementById('psaga-quiz-modal');
+    const cont = document.getElementById('psaga-quiz-modal') || document.querySelector('[id="psaga-quiz-modal"]');
     if (cont) {
       const weiterDiv = document.createElement('div');
       weiterDiv.style.cssText = 'padding:16px 20px;display:flex;justify-content:space-between;align-items:center;background:#0f172a;flex-shrink:0';
