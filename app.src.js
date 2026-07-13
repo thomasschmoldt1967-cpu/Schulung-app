@@ -8109,11 +8109,6 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
       doc.addImage(SIBEDA_LOGO_B64, 'JPEG', ML, 7, 46, 18);
     } catch(e) {}
 
-    // SIBEDA-Logo rechts (gespiegelt / zweites Exemplar)
-    try {
-      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', W - MR - 46, 7, 46, 18);
-    } catch(e) {}
-
     doc.setTextColor(255,255,255);
     doc.setFontSize(18); doc.setFont('helvetica','bold');
     doc.text('SCHULUNGSZERTIFIKAT', W/2, 20, {align:'center'});
