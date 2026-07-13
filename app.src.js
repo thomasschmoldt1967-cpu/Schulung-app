@@ -8195,7 +8195,7 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
 
     doc.setFontSize(7); doc.setFont('helvetica','normal');
     doc.setTextColor(80, 80, 80);
-    doc.text('Ausgebildeter Trainer / Sachkundiger Prüfer', ML+7, y+6);
+    doc.text('Ausgebildeter Trainer', ML+7, y+6);
 
     // Kreative Unterschrift "Thomas Schmoldt" in Blau (kursiv, größer)
     doc.setFont('helvetica','bolditalic');
