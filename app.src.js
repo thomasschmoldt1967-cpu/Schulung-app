@@ -8030,7 +8030,7 @@ function psagaBestanden(modul) {
   const userName = currentUser?.name   || 'Mitarbeiter';
   const tenantId = currentUser?.tenantId || '';
   const jetzt    = new Date();
-  const ablauf   = new Date(jetzt.getTime() + 365*24*60*60*1000);
+  const ablauf   = new Date(jetzt.getTime() + 364*24*60*60*1000);
   // localStorage-Eintrag
   localStorage.setItem(`psaga_bestanden_${modul.id}_${userId}`, JSON.stringify({
     modulId: modul.id, modulTitel: modul.titel,
@@ -8188,21 +8188,29 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     doc.setDrawColor(...GRUEN); doc.setLineWidth(0.5);
     doc.line(ML, y, W-MR, y); y += 8;
 
-    // ── Unterschriften ────────────────────────────────────────────────────────
-    const sigW = CW/2 - 4;
-    doc.setFillColor(235,245,255); doc.roundedRect(ML, y, sigW, 22, 2, 2, 'F');
-    doc.setFillColor(240,253,244); doc.roundedRect(ML+sigW+8, y, sigW, 22, 2, 2, 'F');
+    // ── Unterschrift Trainer (volle Breite, kreativ) ──────────────────────────
+    doc.setFillColor(235, 245, 255);
+    doc.roundedRect(ML, y, CW, 28, 2, 2, 'F');
+    doc.setFillColor(...BLAU); doc.rect(ML, y, 3, 28, 'F');
+
     doc.setFontSize(7); doc.setFont('helvetica','normal');
-    doc.setTextColor(80,80,80);
-    doc.text('Ausgebildeter Trainer / Vorgesetzter', ML+3, y+6);
-    doc.text('Teilnehmer / Beschäftigter', ML+sigW+11, y+6);
-    doc.setDrawColor(150,150,150); doc.setLineWidth(0.3);
-    doc.line(ML+3, y+17, ML+sigW-3, y+17);
-    doc.line(ML+sigW+11, y+17, ML+CW-3, y+17);
-    doc.setFontSize(7); doc.setTextColor(120,120,120);
-    doc.text('Unterschrift & Datum', ML+3, y+21);
-    doc.text('Unterschrift & Datum', ML+sigW+11, y+21);
-    y += 28;
+    doc.setTextColor(80, 80, 80);
+    doc.text('Ausgebildeter Trainer / Sachkundiger Prüfer', ML+7, y+6);
+
+    // Kreative Unterschrift "Thomas Schmoldt" in Blau (kursiv, größer)
+    doc.setFont('helvetica','bolditalic');
+    doc.setFontSize(17);
+    doc.setTextColor(...BLAU);
+    doc.text('Thomas Schmoldt', ML+7, y+18);
+
+    // Kleines Dekor-Element: Unterstrich in Blau
+    doc.setDrawColor(...BLAU); doc.setLineWidth(0.5);
+    doc.line(ML+7, y+21, ML+7+68, y+21);
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.setTextColor(120,120,120);
+    doc.text('CSC GmbH · ' + datum.toLocaleDateString('de-DE'), ML+7, y+26);
+    y += 34;
 
     // ── Rechtsgrundlagen ──────────────────────────────────────────────────────
     doc.setFillColor(...HELLGRUEN);
