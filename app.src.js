@@ -7906,13 +7906,13 @@ function psagaFolienNext() {
     psagaFolienAnzeigen();
   } else {
     // Letzte Folie: Quiz starten (wenn vorhanden) oder direkt abschließen
-    const hatQuiz = !!(PSAGA_QUIZ[psagaAktivesModul.id] && PSAGA_QUIZ[psagaAktivesModul.id].length);
+    const modulKopie = psagaAktivesModul; // Kopie VOR schliessen (schliessen setzt auf null!)
+    const hatQuiz = !!(PSAGA_QUIZ[modulKopie.id] && PSAGA_QUIZ[modulKopie.id].length);
+    psagaFolienSchliessen();
     if (hatQuiz) {
-      psagaFolienSchliessen();
-      psagaQuizStarten(psagaAktivesModul);
+      psagaQuizStarten(modulKopie);
     } else {
-      psagaFolienSchliessen();
-      psagaBestanden(psagaAktivesModul);
+      psagaBestanden(modulKopie);
     }
   }
 }
