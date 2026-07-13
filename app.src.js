@@ -8104,8 +8104,14 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     doc.setFillColor(...GRUEN);
     doc.triangle(W-20, 0, W, 0, W, 20, 'F');
 
+    // SIBEDA-Logo links
     try {
       doc.addImage(SIBEDA_LOGO_B64, 'JPEG', ML, 7, 46, 18);
+    } catch(e) {}
+
+    // SIBEDA-Logo rechts (gespiegelt / zweites Exemplar)
+    try {
+      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', W - MR - 46, 7, 46, 18);
     } catch(e) {}
 
     doc.setTextColor(255,255,255);
@@ -8204,17 +8210,17 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     doc.setTextColor(80, 80, 80);
     doc.text('Ausgebildeter Trainer', ML+7, y+6);
 
-    doc.setFont('helvetica','bolditalic');
-    doc.setFontSize(16);
-    doc.setTextColor(...BLAU);
-    doc.text('Thomas Schmoldt', ML+7, y+17);
-
     doc.setDrawColor(...BLAU); doc.setLineWidth(0.5);
-    doc.line(ML+7, y+21, ML+halfW-4, y+21);
+    doc.line(ML+7, y+14, ML+halfW-4, y+14);
+
+    doc.setFont('helvetica','bolditalic');
+    doc.setFontSize(13);
+    doc.setTextColor(...BLAU);
+    doc.text('gez. Thomas Schmoldt', ML+7, y+22);
 
     doc.setFont('helvetica','normal'); doc.setFontSize(7);
     doc.setTextColor(120,120,120);
-    doc.text('CSC GmbH · ' + datum.toLocaleDateString('de-DE'), ML+7, y+27);
+    doc.text('CSC GmbH · ' + datum.toLocaleDateString('de-DE'), ML+7, y+29);
 
     // Rechte Hälfte: FISAT-Logo + ISO 9001 · ISO 14001
     const rx = ML + halfW + 4;
