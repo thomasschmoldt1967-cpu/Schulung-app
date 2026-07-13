@@ -433,3 +433,13 @@ body.dark-mode td             { border-color:#374151; }
 body.dark-mode .table-wrap    { border-color:#374151; }
 body.dark-mode .sprach-btn    { background:#374151;color:#e5e7eb;border-color:#4b5563; }
 body.dark-mode .upload-zone   { background:#1f2937;border-color:#4b5563;color:#9ca3af; }
+
+/* ── PSAgA Auto-Button Pulsieren ─────────────────────────────────────────── */
+@keyframes psaga-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); background: #065f46; }
+  60%  { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);  background: #059669; }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);  background: #065f46; }
+}
+#psaga-auto-btn.pulsing {
+  animation: psaga-pulse 1.6s ease-in-out infinite;
+}

@@ -7910,13 +7910,16 @@ function psagaAutoButtonUpdate() {
   autoBtn.style.display = istModul00 ? '' : 'none';
   if (!psagaAutoModus) {
     autoBtn.textContent = '▶ Auto';
-    autoBtn.style.background = '#1a3a5c';
+    autoBtn.style.background = '';
+    autoBtn.classList.add('pulsing');
   } else if (psagaAutoPause) {
     autoBtn.textContent = '▶ Weiter';
     autoBtn.style.background = '#92400e';
+    autoBtn.classList.remove('pulsing');
   } else {
     autoBtn.textContent = '⏸ Pause';
     autoBtn.style.background = '#065f46';
+    autoBtn.classList.remove('pulsing');
   }
 }
 
