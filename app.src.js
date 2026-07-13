@@ -7667,6 +7667,32 @@ const PSAGA_BUCKET       = 'schulung-folien';
 
 // TTS-Texte pro Modul und Folie (optional — falls nicht gefüllt, ist Ton-Button stumm)
 const PSAGA_TTS_TEXTE = {
+  'psaga-00-einleitung': [
+    // Folie 1
+    'Willkommen zur Unterweisung zur persönlichen Schutzausrüstung gegen Absturz. In dieser Einleitung erhalten Sie einen Überblick über den Aufbau der Schulung und den roten Faden, der Sie durch die einzelnen Module führt.',
+    // Folie 2
+    'Die Schulung besteht aus acht praxisnahen Modulen. Schritt für Schritt geht es von den rechtlichen Grundlagen über die Auswahl und Benutzung der Ausrüstung bis hin zu Pflege, Prüfung und Notfallmaßnahmen.',
+    // Folie 3
+    'Zu Beginn klären wir die Grundlagen. Dazu gehören die Bedeutung der persönlichen Schutzausrüstung gegen Absturz, typische Risikokategorien sowie relevante Normen und rechtliche Anforderungen.',
+    // Folie 4
+    'Anschließend betrachten wir die Gefährdungsbeurteilung. Vor jedem Einsatz muss klar sein, welche Gefahren bestehen und welche Schutzmaßnahmen erforderlich sind. Das Stopp-Prinzip hilft dabei, Maßnahmen sinnvoll zu priorisieren.',
+    // Folie 5
+    'Danach geht es um die verschiedenen Systemarten. Rückhaltesysteme, Positionierungssysteme und Auffangsysteme haben unterschiedliche Aufgaben und müssen passend zur jeweiligen Arbeitssituation ausgewählt werden.',
+    // Folie 6
+    'In den Modulen vier bis sechs stehen die Komponenten der persönlichen Schutzausrüstung gegen Absturz im Mittelpunkt. Dazu zählen Auffanggurte, Falldämpfer, Höhensicherungsgeräte und Steigschutzsysteme.',
+    // Folie 7
+    'Ein weiterer Schwerpunkt sind Anschlageinrichtungen. Sie können dauerhaft vorhanden oder temporär eingesetzt werden. Entscheidend ist, dass sie geeignet, korrekt verwendet und ausreichend tragfähig sind.',
+    // Folie 8
+    'Bei der sicheren Benutzung geht es unter anderem um die Prüfung vor dem Gebrauch, um Sturzphysik, Fangstoß, Fallhöhe und Kantenproblematik. Gerade hier zeigt sich, wie wichtig sorgfältige Vorbereitung ist.',
+    // Folie 9
+    'In den letzten Modulen geht es um Pflege, Lagerung, Reinigung und Prüfung der Ausrüstung. Beschädigte oder ablegereife persönliche Schutzausrüstung gegen Absturz darf nicht weiterverwendet werden. Die regelmäßige Sachkundigenprüfung ist dabei ein fester Bestandteil.',
+    // Folie 10
+    'Außerdem behandeln wir Rettung und Notfallmaßnahmen. Für Arbeiten mit persönlicher Schutzausrüstung gegen Absturz muss immer ein Rettungskonzept vorhanden sein. Besonders die Gefahr des Hängetraumas macht deutlich, dass im Ernstfall schnell und richtig gehandelt werden muss.',
+    // Folie 11
+    'Jedes Modul endet mit einer Wissensabfrage mit mehreren Antwortmöglichkeiten. Das Bestehen ist Voraussetzung, um das nächste Modul freizuschalten. So wird sichergestellt, dass die Inhalte verstanden wurden.',
+    // Folie 12
+    'Das gemeinsame Ziel ist einfach und wichtig: Alle sollen gesund nach Hause kommen. Diese Unterweisung soll dabei helfen, Risiken zu erkennen, richtig zu handeln und Sicherheit im Arbeitsalltag konsequent umzusetzen.'
+  ],
   'psaga-01-rechtliche-grundlagen': [
     // Folie 1
     'Willkommen zur PSAgA Schulung nach DGUV Regel 112-198. Diese Schulung vermittelt Ihnen die rechtlichen Grundlagen der persönlichen Schutzausrüstung gegen Absturz. Bitte schenken Sie den folgenden Folien Ihre volle Aufmerksamkeit.',
