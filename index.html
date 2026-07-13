@@ -515,6 +515,7 @@
         <span id="psaga-folien-titel" style="color:#fff;font-weight:700;font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
           <button id="psaga-tts-btn" onclick="psagaTTSToggle()" style="background:#374151;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">🔊 Ton</button>
+          <button id="psaga-auto-btn" onclick="psagaAutoToggle()" style="display:none;background:#1a3a5c;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">▶ Auto</button>
           <button onclick="psagaFolienSchliessen()" style="background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;padding:0 0 0 4px;line-height:1">✕</button>
         </div>
       </div>
@@ -641,7 +642,7 @@
 <!-- data.js nicht mehr benötigt — Daten kommen aus Supabase -->
 <!-- SheetJS für Excel-Import -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="app.js?v=80"></script>
+<script src="app.js?v=81"></script>
 
 <!-- ══════════════════════════════════════════════════════════
      MODAL: Passwort vergessen

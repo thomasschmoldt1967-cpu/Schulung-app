@@ -7871,7 +7871,10 @@ function psagaFolienOeffnen(modulId) {
   psagaAktivesModul  = PSAGA_MODULE.find(m => m.id === modulId);
   if (!psagaAktivesModul) return;
   psagaAktuelleFolie = 1;
+  psagaAutoModus = false;
+  psagaAutoPause = false;
   psagaFolienAnzeigen();
+  psagaAutoButtonUpdate();
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
     modal.style.display = 'flex';
@@ -7880,18 +7883,88 @@ function psagaFolienOeffnen(modulId) {
 }
 
 // TTS / Audio für PSAgA-Folien
-// Modul 00: Original-MP3 aus Supabase Storage
+// Modul 00: Original-MP3 aus Supabase Storage + Auto-Durchlauf
 // Modul 01+: Web Speech API (TTS-Texte)
 let psagaTTSAktiv = false;
 let psagaTTSUtterance = null;
-let psagaAudioEl = null; // <audio>-Element für Modul-00-MP3s
+let psagaAudioEl = null;     // <audio>-Element für Modul-00-MP3s
+let psagaAutoModus = false;  // Auto-Durchlauf aktiv?
+let psagaAutoPause = false;  // Pausiert (aber nicht deaktiviert)?
+let psagaAutoTimer = null;   // setTimeout-Handle für 1,5s Wartezeit
 
 function psagaAudioStop() {
+  if (psagaAutoTimer) { clearTimeout(psagaAutoTimer); psagaAutoTimer = null; }
   if (psagaAudioEl) {
+    psagaAudioEl.onended = null;
     psagaAudioEl.pause();
     psagaAudioEl.src = '';
   }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
+}
+
+// Auto-Button: nur für Modul 00 sichtbar
+function psagaAutoButtonUpdate() {
+  const autoBtn = document.getElementById('psaga-auto-btn');
+  if (!autoBtn) return;
+  const istModul00 = psagaAktivesModul && psagaAktivesModul.id === 'psaga-00-einleitung';
+  autoBtn.style.display = istModul00 ? '' : 'none';
+  if (!psagaAutoModus) {
+    autoBtn.textContent = '▶ Auto';
+    autoBtn.style.background = '#1a3a5c';
+  } else if (psagaAutoPause) {
+    autoBtn.textContent = '▶ Weiter';
+    autoBtn.style.background = '#92400e';
+  } else {
+    autoBtn.textContent = '⏸ Pause';
+    autoBtn.style.background = '#065f46';
+  }
+}
+
+function psagaAutoToggle() {
+  if (!psagaAutoModus) {
+    // Auto starten
+    psagaAutoModus = true;
+    psagaAutoPause = false;
+    // Ton automatisch einschalten falls aus
+    if (!psagaTTSAktiv) {
+      psagaTTSAktiv = true;
+      const ttsBtn = document.getElementById('psaga-tts-btn');
+      if (ttsBtn) ttsBtn.textContent = '🔊 Ton AN';
+    }
+    psagaAutoButtonUpdate();
+    psagaTTSSprechen();
+  } else if (!psagaAutoPause) {
+    // Pause
+    psagaAutoPause = true;
+    if (psagaAutoTimer) { clearTimeout(psagaAutoTimer); psagaAutoTimer = null; }
+    if (psagaAudioEl) psagaAudioEl.pause();
+    psagaAutoButtonUpdate();
+  } else {
+    // Weiter nach Pause
+    psagaAutoPause = false;
+    psagaAutoButtonUpdate();
+    if (psagaAudioEl && psagaAudioEl.src && !psagaAudioEl.ended) {
+      // Audio war pausiert → fortsetzen
+      psagaAudioEl.play().catch(() => {});
+    } else {
+      // Audio war bereits fertig → nächste Folie
+      psagaAutoWeiter();
+    }
+  }
+}
+
+function psagaAutoWeiter() {
+  if (!psagaAutoModus || psagaAutoPause || !psagaAktivesModul) return;
+  if (psagaAktuelleFolie < psagaAktivesModul.folien) {
+    psagaAktuelleFolie++;
+    psagaFolienAnzeigen();
+  } else {
+    // Letzte Folie erreicht → Auto-Modus beenden, normal abschließen
+    psagaAutoModus = false;
+    psagaAutoPause = false;
+    psagaAutoButtonUpdate();
+    psagaFolienNext(); // löst Quiz oder Abschließen aus
+  }
 }
 
 function psagaTTSToggle() {
@@ -7901,6 +7974,10 @@ function psagaTTSToggle() {
   if (psagaTTSAktiv) {
     psagaTTSSprechen();
   } else {
+    // Ton aus → auch Auto-Modus beenden
+    psagaAutoModus = false;
+    psagaAutoPause = false;
+    psagaAutoButtonUpdate();
     psagaAudioStop();
   }
 }
@@ -7919,6 +7996,12 @@ function psagaTTSSprechen() {
       document.body.appendChild(psagaAudioEl);
     }
     psagaAudioEl.src = url;
+    // Auto-Modus: nach Ende 1,5s warten dann weiterblättern
+    psagaAudioEl.onended = function() {
+      if (psagaAutoModus && !psagaAutoPause) {
+        psagaAutoTimer = setTimeout(psagaAutoWeiter, 1500);
+      }
+    };
     psagaAudioEl.play().catch(() => {});
     return;
   }
@@ -8109,6 +8192,8 @@ function psagaFolienPrev() {
 }
 
 function psagaFolienSchliessen() {
+  psagaAutoModus = false;
+  psagaAutoPause = false;
   psagaAudioStop();
   psagaTTSAktiv = false;
   const btn = document.getElementById('psaga-tts-btn');
