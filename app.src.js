@@ -8232,79 +8232,125 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     }
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, ML = 15, MR = 15, CW = W - ML - MR;
+    const W = 210, ML = 12, MR = 12, CW = W - ML - MR;
 
+    // ── Farben ────────────────────────────────────────────────────────────────
     const DUNKELBLAU = [26, 45, 78];
     const BLAU       = [46, 122, 191];
-    const GRUEN      = [109, 179, 63];
-    const GOLD       = [234, 179, 8];
-    const HELLGRUEN  = [220, 245, 190];
+    const CYAN       = [0, 180, 210];
+    const GOLD       = [220, 160, 0];
+    const GRUEN      = [30, 160, 80];
+    const WEISS      = [255, 255, 255];
+    const HELLBLAU   = [235, 244, 255];
+    const HELLGRUEN  = [230, 248, 238];
+    const HELLGOLD   = [255, 248, 220];
+    const GRAU_TEXT  = [70, 80, 100];
+    const GRAU_LEICHT= [245, 247, 251];
+    const GRAU_LINIE = [200, 210, 225];
 
-    // ── Header-Banner ─────────────────────────────────────────────────────────
-    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 0, W, 40, 'F');
-    doc.setFillColor(...BLAU);
-    doc.triangle(W-40, 0, W, 0, W, 40, 'F');
-    doc.setFillColor(...GRUEN);
-    doc.triangle(W-20, 0, W, 0, W, 20, 'F');
+    const fmtDat = d => d.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
 
-    // SIBEDA-Logo links
+    // ── Header — hell, professionell ──────────────────────────────────────────
+    const HH = 48;
+    // Leichter Hintergrundverlauf (simuliert mit Rechtecken)
+    for (let i = 0; i < HH; i++) {
+      const v = Math.round(248 - i / HH * 12);
+      doc.setFillColor(v, v, Math.min(255, v + 8));
+      doc.rect(0, i * (HH / HH), W, 1.05, 'F');
+    }
+    // Dicker Dunkelblau-Balken ganz links
+    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 0, 6, HH, 'F');
+    // Goldene Akzentlinie rechts neben dem Balken
+    doc.setFillColor(...GOLD); doc.rect(6, 0, 2, HH, 'F');
+    // Blaue Trennlinie unten
+    doc.setFillColor(...BLAU); doc.rect(0, HH - 1, W, 1, 'F');
+
+    // SIBEDA-Logo — links, groß (52×20mm), auf hellem Hintergrund
     try {
-      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', ML, 7, 46, 18);
+      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', 10, (HH - 20) / 2, 52, 20);
     } catch(e) {}
 
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(18); doc.setFont('helvetica','bold');
-    doc.text('SCHULUNGSZERTIFIKAT', W/2, 20, {align:'center'});
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.text('gemäß DGUV Regel 112-198 · PSA-BV', W/2, 29, {align:'center'});
+    // Titel rechts von SIBEDA
+    const txStart = 68;
+    doc.setTextColor(...DUNKELBLAU);
+    doc.setFontSize(22); doc.setFont('helvetica','bold');
+    doc.text('SCHULUNGSZERTIFIKAT', txStart, 15);
+    // Unterstreichung
+    doc.setFillColor(...BLAU); doc.rect(txStart, 18, 95, 1, 'F');
+    doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+    doc.setTextColor(...GRAU_TEXT);
+    doc.text('gemäß DGUV Regel 112-198  ·  PSA-BV', txStart, 26);
 
-    let y = 50;
+    // ISO-Siegel oben rechts — proportional (299×229 → Höhe 17mm, Breite ~22mm)
+    try {
+      const isoH = 17, isoW = Math.round(isoH * 299 / 229); // ~22mm
+      const isoGap = 3;
+      const isoY = (HH - isoH) / 2;
+      const iso14X = W - MR - isoW;
+      const iso9X  = iso14X - isoGap - isoW;
+      doc.addImage(ISO9001_LOGO_B64,  'PNG', iso9X,  isoY, isoW, isoH);
+      doc.addImage(ISO14001_LOGO_B64, 'PNG', iso14X, isoY, isoW, isoH);
+    } catch(e) {}
+
+    let y = HH + 8;
 
     // ── Teilnehmer-Box ────────────────────────────────────────────────────────
-    doc.setFillColor(235, 245, 255);
-    doc.roundedRect(ML, y, CW, 26, 2, 2, 'F');
+    doc.setFillColor(...HELLBLAU);
+    doc.roundedRect(ML, y, CW, 24, 3, 3, 'F');
+    doc.setFillColor(...DUNKELBLAU);
+    doc.roundedRect(ML, y, 4, 24, 2, 2, 'F');
+    doc.setFontSize(15); doc.setFont('helvetica','bold');
     doc.setTextColor(...DUNKELBLAU);
-    doc.setFontSize(14); doc.setFont('helvetica','bold');
-    doc.text(userName, ML+5, y+10);
-    doc.setFontSize(9); doc.setFont('helvetica','normal');
-    doc.setTextColor(80,80,80);
+    doc.text(userName, ML+8, y+10);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.setTextColor(...GRAU_TEXT);
     const tenant = APP_TENANTS ? APP_TENANTS.find(t => t.id === tenantId) : null;
-    if (tenant) doc.text(tenant.name || '', ML+5, y+17);
-    doc.text('CSC GmbH · Petermax-Müller-Straße 3 · 30880 Laatzen', ML+5, y+23);
-    y += 32;
+    const tenantName = tenant ? tenant.name + '  ·  ' : '';
+    doc.text(tenantName + 'Petermax-Müller-Straße 3  ·  30880 Laatzen', ML+8, y+18);
+    // Grüner Haken-Badge rechts
+    doc.setFillColor(...GRUEN);
+    doc.circle(ML+CW-8, y+12, 5, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold');
+    doc.setTextColor(255,255,255);
+    doc.text('✓', ML+CW-8, y+14.5, {align:'center'});
+    y += 30;
 
     // ── Datum-Zeile ───────────────────────────────────────────────────────────
-    const fmtDat = d => d.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
-    const colW2 = CW/2;
-    doc.setFillColor(...BLAU); doc.roundedRect(ML, y, colW2-2, 14, 2, 2, 'F');
-    doc.setFillColor(...GOLD); doc.roundedRect(ML+colW2, y, colW2, 14, 2, 2, 'F');
-    doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.setTextColor(255,255,255);
-    doc.text('Schulungsdatum', ML+4, y+5);
-    doc.setFontSize(10);
-    doc.text(fmtDat(datum), ML+4, y+11);
-    doc.setTextColor(26,45,78);
-    doc.setFontSize(8);
-    doc.text('Gültig bis', ML+colW2+4, y+5);
-    doc.setFontSize(10);
-    doc.text(fmtDat(ablauf), ML+colW2+4, y+11);
-    y += 20;
+    const colW2 = (CW - 4) / 2;
+    // Schulungsdatum
+    doc.setFillColor(...HELLBLAU);
+    doc.roundedRect(ML, y, colW2, 16, 3, 3, 'F');
+    doc.setFillColor(...BLAU); doc.roundedRect(ML, y, 4, 16, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('SCHULUNGSDATUM', ML+8, y+6);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(fmtDat(datum), ML+8, y+13);
+    // Gültig bis
+    doc.setFillColor(...HELLGOLD);
+    doc.roundedRect(ML+colW2+4, y, colW2, 16, 3, 3, 'F');
+    doc.setFillColor(...GOLD); doc.roundedRect(ML+colW2+4, y, 4, 16, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
+    doc.text('GÜLTIG BIS', ML+colW2+12, y+6);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(fmtDat(ablauf), ML+colW2+12, y+13);
+    y += 22;
 
-    // ── Schulungsmodul-Box ────────────────────────────────────────────────────
+    // ── Modul-Box ─────────────────────────────────────────────────────────────
     doc.setFillColor(...DUNKELBLAU);
-    doc.roundedRect(ML, y, CW, 18, 2, 2, 'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(11); doc.setFont('helvetica','bold');
-    doc.text(modul.titel || 'PSAgA Schulung nach DGUV 112-198', ML+5, y+7);
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text(modul.untertitel || 'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz', ML+5, y+14);
-    y += 24;
+    doc.roundedRect(ML, y, CW, 18, 3, 3, 'F');
+    doc.setFillColor(...CYAN); doc.roundedRect(ML, y, 4, 18, 2, 2, 'F');
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
+    doc.text(modul.titel || 'PSAgA Schulung nach DGUV 112-198', ML+8, y+7);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.setTextColor(180, 210, 240);
+    doc.text(modul.untertitel || 'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz', ML+8, y+14);
+    y += 22;
 
     // ── Schulungsinhalte ──────────────────────────────────────────────────────
-    doc.setFillColor(...GRUEN); doc.rect(ML, y, 3, 8, 'F');
-    doc.setTextColor(...DUNKELBLAU); doc.setFontSize(10); doc.setFont('helvetica','bold');
-    doc.text('Schulungsinhalte', ML+6, y+6);
-    y += 12;
+    doc.setFillColor(...GRUEN); doc.rect(ML, y, 4, 8, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('Schulungsinhalte', ML+7, y+6);
+    y += 11;
 
     const kapitel = [
       '1. PSAgA Schulung nach DGUV 112-198',
@@ -8320,90 +8366,71 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
       '11. Pflichten des Arbeitgebers (§ 2 PSA-BV)',
       '12. Pflichten der Beschäftigten (§ 15 ArbSchG)',
     ];
-    const tcw = (CW-6)/2, th = 6.2;
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(40,40,40);
-    kapitel.forEach((k,ti) => {
-      const col = ti%2, row = Math.floor(ti/2);
-      const tx = ML + col*(tcw+6), ty2 = y + row*th;
-      doc.setFillColor(248,250,252);
-      doc.rect(tx, ty2-3.5, tcw, th-0.5, 'F');
-      doc.text('• '+k, tx+2, ty2+0.5, {maxWidth: tcw-3});
+    const tcw = (CW - 6) / 2, th = 6.5;
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    kapitel.forEach((k, ti) => {
+      const col = ti % 2, row = Math.floor(ti / 2);
+      const tx = ML + col * (tcw + 6), ty2 = y + row * th;
+      doc.setFillColor(...GRAU_LEICHT);
+      doc.roundedRect(tx, ty2 - 2, tcw, th - 0.3, 1, 1, 'F');
+      doc.setFillColor(...BLAU); doc.rect(tx, ty2 - 2, 2.5, th - 0.3, 'F');
+      doc.setTextColor(...GRAU_TEXT);
+      doc.text(k, tx + 5, ty2 + 1.5, {maxWidth: tcw - 6});
     });
-    y += Math.ceil(kapitel.length/2)*th + 8;
+    y += Math.ceil(kapitel.length / 2) * th + 6;
 
     // ── Trennlinie ────────────────────────────────────────────────────────────
-    doc.setDrawColor(...GRUEN); doc.setLineWidth(0.5);
-    doc.line(ML, y, W-MR, y); y += 8;
+    doc.setFillColor(...GRAU_LINIE); doc.rect(ML, y, CW, 0.8, 'F');
+    y += 7;
 
-    // ── Unterschrift-Block: links Trainer, rechts FISAT-Logo + ISO-Normen ──────
-    const sigH  = 34;
-    const halfW = (CW - 4) / 2;
+    // ── Unterschrift-Block ────────────────────────────────────────────────────
+    const sigH = 36, halfW = (CW - 4) / 2;
 
-    // Linke Hälfte: Trainer-Signatur
-    doc.setFillColor(235, 245, 255);
-    doc.roundedRect(ML, y, halfW, sigH, 2, 2, 'F');
-    doc.setFillColor(...BLAU); doc.rect(ML, y, 3, sigH, 'F');
-
-    doc.setFontSize(7); doc.setFont('helvetica','normal');
-    doc.setTextColor(80, 80, 80);
-    doc.text('Ausgebildeter Trainer', ML+7, y+6);
-
+    // Links: Trainer-Signatur
+    doc.setFillColor(...HELLBLAU);
+    doc.roundedRect(ML, y, halfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...BLAU); doc.roundedRect(ML, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Ausgebildeter Trainer', ML+8, y+7);
     doc.setDrawColor(...BLAU); doc.setLineWidth(0.5);
-    doc.line(ML+7, y+14, ML+halfW-4, y+14);
+    doc.line(ML+8, y+17, ML+halfW-4, y+17);
+    doc.setFontSize(13); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...BLAU);
+    doc.text('gez. Thomas Schmoldt', ML+8, y+25);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text('CSC GmbH  ·  ' + fmtDat(datum), ML+8, y+32);
 
-    doc.setFont('helvetica','bolditalic');
-    doc.setFontSize(13);
-    doc.setTextColor(...BLAU);
-    doc.text('gez. Thomas Schmoldt', ML+7, y+22);
-
-    doc.setFont('helvetica','normal'); doc.setFontSize(7);
-    doc.setTextColor(120,120,120);
-    doc.text('CSC GmbH · ' + datum.toLocaleDateString('de-DE'), ML+7, y+29);
-
-    // Rechte Hälfte: FISAT-Logo + ISO 9001 · ISO 14001
+    // Rechts: FISAT zentriert
     const rx = ML + halfW + 4;
-    doc.setFillColor(240, 248, 255);
-    doc.roundedRect(rx, y, halfW, sigH, 2, 2, 'F');
-    doc.setFillColor(...GRUEN); doc.rect(rx, y, 3, sigH, 'F');
-
-    // FISAT-Logo (zentriert in rechter Box)
+    doc.setFillColor(...HELLGRUEN);
+    doc.roundedRect(rx, y, halfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx, y, 4, sigH, 2, 2, 'F');
     try {
-      const logoH2 = 16, logoW2 = 16;
-      const logoX2 = rx + (halfW - logoW2) / 2;
-      doc.addImage(FISAT_LOGO_B64, 'PNG', logoX2, y + 2, logoW2, logoH2);
+      const lw = 22, lh = 22;
+      const lx = rx + 4 + (halfW - 4 - lw) / 2;
+      const ly = y + (sigH - lh) / 2 - 3;
+      doc.addImage(FISAT_LOGO_B64, 'PNG', lx, ly, lw, lh);
+      doc.setFontSize(6); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
+      doc.text('FISAT MITGLIED', rx + 4 + (halfW - 4) / 2, ly + lh + 4, {align:'center'});
     } catch(e) {}
-
-    // ISO 9001 + ISO 14001 Siegel als echte Grafiken nebeneinander
-    try {
-      const isoSize = 13;
-      const isoY = y + 20;
-      const iso9X  = rx + halfW/2 - isoSize - 2;
-      const iso14X = rx + halfW/2 + 2;
-      doc.addImage(ISO9001_LOGO_B64,  'PNG', iso9X,  isoY, isoSize, isoSize);
-      doc.addImage(ISO14001_LOGO_B64, 'PNG', iso14X, isoY, isoSize, isoSize);
-    } catch(e) {}
-    doc.setFont('helvetica','normal'); doc.setFontSize(5.5);
-    doc.setTextColor(100,100,100);
-    doc.text('Qualitäts- & Umweltmanagement', rx + halfW/2, y+36, {align:'center'});
-
     y += sigH + 6;
 
     // ── Rechtsgrundlagen ──────────────────────────────────────────────────────
     doc.setFillColor(...HELLGRUEN);
     doc.roundedRect(ML, y, CW, 10, 2, 2, 'F');
-    doc.setTextColor(30,80,30); doc.setFontSize(7); doc.setFont('helvetica','normal');
-    doc.text('Rechtsgrundlagen: ArbSchG § 12 · PSA-BV · DGUV Regel 112-198 · EU-VO 2016/425 · DIN EN 361', W/2, y+6.5, {align:'center'});
+    doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRUEN);
+    doc.text('Rechtsgrundlagen: ArbSchG § 12  ·  PSA-BV  ·  DGUV 112-198  ·  EU-VO 2016/425  ·  DIN EN 361', W/2, y+6.5, {align:'center'});
     y += 14;
 
     // ── Footer ────────────────────────────────────────────────────────────────
     doc.setFillColor(...DUNKELBLAU); doc.rect(0, y, W, 20, 'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('CSC GmbH · Petermax-Müller-Straße 3 · 30880 Laatzen · www.csc-hannover.de', W/2, y+7, {align:'center'});
+    doc.setFillColor(...GOLD); doc.rect(0, y, 6, 20, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255);
+    doc.text('CSC GmbH  ·  Petermax-Müller-Straße 3  ·  30880 Laatzen  ·  www.csc-hannover.de', W/2, y+8, {align:'center'});
     const zertNr = 'PSAgA-' + datum.getFullYear() + '-' + String(datum.getMonth()+1).padStart(2,'0') + '-' + String(Date.now()).slice(-5);
-    doc.text('Zertifikat-Nr.: ' + zertNr, W/2, y+14, {align:'center'});
+    doc.setTextColor(180, 210, 240);
+    doc.text('Zertifikat-Nr.:  ' + zertNr, W/2, y+15, {align:'center'});
 
     // ── Download ──────────────────────────────────────────────────────────────
-    const datei = `PSAgA-Zertifikat_${(userName||'Mitarbeiter').replace(/\s+/g,'_')}_${datum.toISOString().slice(0,10)}.pdf`;
     const blob = doc.output('blob');
     const url  = URL.createObjectURL(blob);
     window.open(url, '_blank');
