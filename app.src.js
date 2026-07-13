@@ -7798,7 +7798,8 @@ const PSAGA_MODULE = [
     untertitel:'Modul 00 — Überblick & Lernziele',
     folien:    12,
     pfad:      '00-psaga-schulung-einleitung',
-    icon:      '📖'
+    icon:      '📖',
+    hasAudio:  true
   },
   {
     id:        'psaga-01-rechtliche-grundlagen',
@@ -7806,7 +7807,8 @@ const PSAGA_MODULE = [
     untertitel:'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz',
     folien:    21,
     pfad:      '01-psaga-schulung-rechtliche-grundlagen',
-    icon:      '⚖️'
+    icon:      '⚖️',
+    hasAudio:  false
   }
 ];
 
@@ -7906,7 +7908,7 @@ function psagaAudioStop() {
 function psagaAutoButtonUpdate() {
   const autoBtn = document.getElementById('psaga-auto-btn');
   if (!autoBtn) return;
-  const istModul00 = psagaAktivesModul && psagaAktivesModul.id === 'psaga-00-einleitung';
+  const istModul00 = psagaAktivesModul && psagaAktivesModul.hasAudio;
   autoBtn.style.display = istModul00 ? '' : 'none';
   if (!psagaAutoModus) {
     autoBtn.textContent = '▶ Auto';
@@ -7989,8 +7991,8 @@ function psagaTTSSprechen() {
   if (!psagaTTSAktiv || !psagaAktivesModul) return;
   psagaAudioStop();
 
-  // Modul 00: Original-MP3 abspielen
-  if (psagaAktivesModul.id === 'psaga-00-einleitung') {
+  // Modul mit Original-MP3-Tonspur: aus PPTX extrahierte Audio-Dateien abspielen
+  if (psagaAktivesModul.hasAudio) {
     const nr = String(psagaAktuelleFolie).padStart(2, '0');
     const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${psagaAktivesModul.pfad}/audio-${nr}.mp3`;
     if (!psagaAudioEl) {
