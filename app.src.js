@@ -8003,17 +8003,19 @@ function psagaSchulungenRender() {
       <div style="font-size:.72rem;opacity:.8;margin-top:2px">Präsentationen — Tippen zum Starten</div>
     </div>`;
 
+  const userId = currentUser?.userId || '';
   PSAGA_MODULE.forEach(m => {
+    const bestanden = !!localStorage.getItem(`psaga_bestanden_${m.id}_${userId}`);
     html += `
       <div onclick="psagaFolienOeffnen('${m.id}')"
-        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #f0f2f5;cursor:pointer">
+        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #f0f2f5;cursor:pointer;background:${bestanden ? '#f0fdf4' : '#fff'}">
         <span style="font-size:2rem;flex-shrink:0">${m.icon}</span>
         <div style="flex:1;min-width:0">
           <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">${escHtml(m.titel)}</div>
           <div style="font-size:.72rem;color:#6b7280;margin-top:2px">${escHtml(m.untertitel)}</div>
           <div style="font-size:.7rem;color:#9ca3af;margin-top:3px">📊 ${m.folien} Folien</div>
         </div>
-        <span style="font-size:1.3rem;color:#9ca3af;flex-shrink:0">▶</span>
+        <span style="font-size:1.3rem;flex-shrink:0;${bestanden ? 'color:#16a34a;font-weight:700' : 'color:#9ca3af'}">${bestanden ? '✅' : '▶'}</span>
       </div>`;
   });
 
@@ -8181,9 +8183,11 @@ function psagaFolienAnzeigen() {
   const titel   = document.getElementById('psaga-folien-titel');
   const zaehler = document.getElementById('psaga-folien-zaehler');
   const nextBtn = document.getElementById('psaga-folien-next-btn');
+  const progBar = document.getElementById('psaga-progress-bar');
   if (bild)    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
   if (titel)   titel.textContent = psagaAktivesModul.titel;
   if (zaehler) zaehler.textContent = `Folie ${psagaAktuelleFolie} von ${psagaAktivesModul.folien}`;
+  if (progBar) progBar.style.width = `${Math.round(psagaAktuelleFolie / psagaAktivesModul.folien * 100)}%`;
   const isLetzte = psagaAktuelleFolie === psagaAktivesModul.folien;
   if (nextBtn) {
     nextBtn.textContent = isLetzte ? '✅ Abschließen' : 'Weiter ›';
