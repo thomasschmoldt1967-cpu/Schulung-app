@@ -8403,7 +8403,7 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     const fmtDat = d => d.toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
 
     // ── Header — hell, professionell ──────────────────────────────────────────
-    const HH = 48;
+    const HH = 56; // etwas höher für bessere Aufteilung
     // Leichter Hintergrundverlauf (simuliert mit Rechtecken)
     for (let i = 0; i < HH; i++) {
       const v = Math.round(248 - i / HH * 12);
@@ -8417,27 +8417,34 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     // Blaue Trennlinie unten
     doc.setFillColor(...BLAU); doc.rect(0, HH - 1, W, 1, 'F');
 
-    // SIBEDA-Logo — links, groß (52×20mm), auf hellem Hintergrund
+    // SIBEDA-Logo — links, proportional skaliert auf Höhe 24mm
+    // Original SIBEDA-Logo ist Querformat → Breite berechnen aus Seitenverhältnis ~3:1
     try {
-      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', 10, (HH - 20) / 2, 52, 20);
+      const sibeH = 24;
+      const sibeW = Math.round(sibeH * 3.0); // Querformat ca. 3:1 → 72mm breit wäre zu viel
+      // Sicherer Wert: 58mm breit bei 24mm hoch (gemessen am Original)
+      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', 10, (HH - sibeH) / 2, 58, sibeH);
     } catch(e) {}
 
-    // Titel rechts von SIBEDA
-    const txStart = 68;
+    // Titel — vertikal zentriert in oberer Hälfte, links neben ISO-Siegeln
+    // ISO-Siegel sind ca. 2×22mm = 47mm + Abstand → Titel endet bei ~W-60
+    const txStart = 74;
+    const titleAreaW = W - txStart - 52; // Platz lassen für ISO-Siegel rechts
     doc.setTextColor(...DUNKELBLAU);
-    doc.setFontSize(22); doc.setFont('helvetica','bold');
-    doc.text('SCHULUNGSZERTIFIKAT', txStart, 15);
+    doc.setFontSize(20); doc.setFont('helvetica','bold');
+    doc.text('SCHULUNGSZERTIFIKAT', txStart, 18);
     // Unterstreichung
-    doc.setFillColor(...BLAU); doc.rect(txStart, 18, 95, 1, 'F');
-    doc.setFontSize(8.5); doc.setFont('helvetica','normal');
+    doc.setFillColor(...BLAU); doc.rect(txStart, 21, titleAreaW, 1, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.setTextColor(...GRAU_TEXT);
-    doc.text('gemäß DGUV Regel 112-198  ·  PSA-BV', txStart, 26);
+    doc.text('gemäß DGUV Regel 112-198  ·  PSA-BV', txStart, 29);
 
-    // ISO-Siegel oben rechts — proportional (299×229 → Höhe 17mm, Breite ~22mm)
+    // ISO-Siegel — rechts, in der UNTEREN Hälfte des Headers (unter Titel-Höhe)
+    // So überdecken sie den Schriftzug nicht
     try {
-      const isoH = 17, isoW = Math.round(isoH * 299 / 229); // ~22mm
+      const isoH = 16, isoW = Math.round(isoH * 299 / 229); // proportional ~21mm
       const isoGap = 3;
-      const isoY = (HH - isoH) / 2;
+      const isoY = HH - isoH - 4; // 4mm vom unteren Rand des Headers
       const iso14X = W - MR - isoW;
       const iso9X  = iso14X - isoGap - isoW;
       doc.addImage(ISO9001_LOGO_B64,  'PNG', iso9X,  isoY, isoW, isoH);
