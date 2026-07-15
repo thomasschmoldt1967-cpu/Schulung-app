@@ -8498,26 +8498,28 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     doc.text(modul.untertitel || 'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz', ML+8, y+14);
     y += 22;
 
-    // ── Schulungsinhalte ──────────────────────────────────────────────────────
+    // ── Schulungsinhalte — dynamisch aus PSAGA_MODULE ─────────────────────────
     doc.setFillColor(...GRUEN); doc.rect(ML, y, 4, 8, 'F');
     doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text('Schulungsinhalte', ML+7, y+6);
     y += 11;
 
-    const kapitel = [
-      '1. PSAgA Schulung nach DGUV 112-198',
-      '2. Einleitung — PSAgA Unterweisung',
-      '3. Rechtliche Grundlagen der PSAgA',
-      '4. Warum Unterweisungen Pflicht sind (§ 1 ArbSchG)',
-      '5. Hängetrauma — Erkennung & schnelle Rettung',
-      '6. PSA-BV § 3: Die Unterweisungspflicht',
-      '7. Die drei Risikokategorien (EU-VO 2016/425)',
-      '8. Kategorie III: PSAgA — Schutz vor tödl. Risiken',
-      '9. Normenüberblick: ArbSchG, DGUV 112-198, DIN EN 361',
-      '10. Pflichten der Akteure — Überblick',
-      '11. Pflichten des Arbeitgebers (§ 2 PSA-BV)',
-      '12. Pflichten der Beschäftigten (§ 15 ArbSchG)',
-    ];
+    // Alle absolvierten Module des aktuellen Nutzers ermitteln (localStorage)
+    const userId = (typeof currentUser !== 'undefined' && currentUser?.userId) ? currentUser.userId : '';
+    const bestandeneModule = PSAGA_MODULE.filter(m =>
+      localStorage.getItem('psaga_bestanden_' + m.id + '_' + userId)
+    );
+    // Fallback: wenn nichts im localStorage → aktuelles Modul anzeigen
+    const moduleListeFuerZertifikat = bestandeneModule.length > 0
+      ? bestandeneModule
+      : [modul];
+    // Kapitel-Liste: "Nr. Titel (Untertitel-Kurzform)"
+    const kapitel = moduleListeFuerZertifikat.map((m, i) => {
+      const nr = m.id.replace('psaga-','').split('-')[0];
+      const anzeige = (parseInt(nr) || (i+1)) + '.  ' + m.titel;
+      return anzeige;
+    });
+
     const tcw = (CW - 6) / 2, th = 6.5;
     doc.setFontSize(7.5); doc.setFont('helvetica','normal');
     kapitel.forEach((k, ti) => {
