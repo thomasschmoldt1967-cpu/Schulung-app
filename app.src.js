@@ -7782,6 +7782,139 @@ const PSAGA_QUIZ = {
       ],
       richtig: 2
     }
+  ],
+  'psaga-03-rueckhaltesysteme': [
+    {frage:"Was ist das Hauptziel eines Rückhaltesystems?", antworten:["Den Sturz auffangen und bremsen","Den Bewegungsbereich begrenzen, sodass die Absturzkante nicht erreicht wird","Die Fallenergie durch einen Dämpfer absorbieren","Den Anwender am Anschlagpunkt fixieren"], richtig:1},
+    {frage:"Welches Prinzip beschreibt die Wirkungsweise eines Rückhaltesystems?", antworten:["Das Bremsprinzip","Das Dämpfungsprinzip","Das 'Anlein-Prinzip'","Das Auffangprinzip"], richtig:2},
+    {frage:"An welcher Stelle in der Schutzmaßnahmenhierarchie steht die Prävention?", antworten:["An letzter Stelle","An zweiter Stelle nach kollektiven Maßnahmen","An erster Stelle – Gefahr zuerst vermeiden","Gleichrangig mit kollektiven Maßnahmen"], richtig:2},
+    {frage:"Welche Norm regelt den Auffanggurt als Körperhaltevorrichtung im Rückhaltesystem?", antworten:["DIN EN 362","DIN EN 354","DIN EN 361","DIN EN 795"], richtig:2},
+    {frage:"Was unterscheidet ein Rückhaltesystem grundlegend von einem Auffangsystem?", antworten:["Das Rückhaltesystem ist günstiger","Das Rückhaltesystem verhindert den Fall, das Auffangsystem fängt ihn auf","Das Auffangsystem ist wartungsfreier","Das Rückhaltesystem braucht keinen Anschlagpunkt"], richtig:1}
+  ],
+  'psaga-04-arbeitsplatzpositionierung': [
+    {frage:"Was ermöglicht die Arbeitsplatzpositionierung beim Arbeiten in der Höhe?", antworten:["Freies Hängen ohne Gurt","Freihändiges Arbeiten durch sicheres Hineinlehnen in das Halteseil","Auffangen nach einem Sturz","Den Abstieg ohne Seil"], richtig:1},
+    {frage:"Welcher Gurt wird typischerweise für die Arbeitsplatzpositionierung eingesetzt?", antworten:["Sitzgurt nach DIN EN 813","Auffanggurt nach DIN EN 361","Haltegurt nach DIN EN 358 mit seitlichen Halteösen","Klettersteigset nach DIN EN 958"], richtig:2},
+    {frage:"Warum reduziert die Arbeitsplatzpositionierung das Sturzrisiko?", antworten:["Weil kein Anschlagpunkt benötigt wird","Weil beide Hände frei sind und eine kontrollierte stabile Körperhaltung entsteht","Weil der Gurt den Fall automatisch auffängt","Weil kein Halteseil erforderlich ist"], richtig:1},
+    {frage:"Was muss bei einem Positionierungssystem zwingend vorhanden sein?", antworten:["Ein separates Auffangsystem als Zweitsicherung","Ein Höhensicherungsgerät","Ein Falldämpfer im Halteseil","Ein Schraubkarabiner"], richtig:0},
+    {frage:"Wie entsteht die stabile Arbeitsposition beim Positionierungssystem?", antworten:["Durch Abstützen an der Wand","Durch bewusstes Hineinlehnen in das straffe Halteseil","Durch Fixierung beider Füße","Durch Verwendung eines Sitzbretts"], richtig:1}
+  ],
+  'psaga-05-auffangsysteme': [
+    {frage:"Was ist die Hauptaufgabe eines Auffangsystems nach DIN EN 363?", antworten:["Den Anwender am Absturz hindern","Den freien Fall begrenzen und die Person nach dem Auffangen sicher halten","Den Anwender am Anschlagpunkt fixieren","Die Fallenergie vollständig absorbieren"], richtig:1},
+    {frage:"Was versteht man unter 'Fangstoß'?", antworten:["Die Haltekraft des Karabiners","Die auf den Körper wirkende Kraft beim Auffangen des Sturzes","Die Zugfestigkeit des Seils","Die Belastung des Anschlagpunktes"], richtig:1},
+    {frage:"Welche drei Kernfunktionen erfüllt ein wirksames Auffangsystem?", antworten:["Stoppen, Dämpfen, Halten","Bremsen, Auffangen, Retten","Fixieren, Dämpfen, Melden","Stoppen, Warnen, Fixieren"], richtig:0},
+    {frage:"Welche Körperhaltevorrichtung ist zentraler Bestandteil eines Auffangsystems?", antworten:["Haltegurt nach DIN EN 358","Auffanggurt nach DIN EN 361","Sitzgurt nach DIN EN 813","Brustgurt nach DIN EN 12277"], richtig:1},
+    {frage:"Wann kommt ein Auffangsystem zum Einsatz?", antworten:["Wenn kollektive Schutzmaßnahmen ausreichen","Wenn ein Absturz nicht verhindert werden kann und aufgefangen werden muss","Nur bei Dacharbeiten über 5 Meter","Immer als erste Maßnahme vor anderen Schutzmaßnahmen"], richtig:1}
+  ],
+  'psaga-06-auffanggurte': [
+    {frage:"Welche Norm regelt den Auffanggurt?", antworten:["DIN EN 358","DIN EN 354","DIN EN 361","DIN EN 795"], richtig:2},
+    {frage:"Wohin leitet ein korrekt angelegter Auffanggurt die Fangkräfte ab?", antworten:["In die Schultern und den Rücken","In die Wirbelsäule","In tragfähige Körperteile wie Becken und Oberschenkel","In die Arme und den Brustkorb"], richtig:2},
+    {frage:"Welches Material wird für tragende Gurtbänder nach DIN EN 361 verwendet?", antworten:["Nylon und Baumwolle","Hochfestes Polyester oder Polyamid (mind. 40mm Breite)","Carbon und Kevlar","Leder und Stahl"], richtig:1},
+    {frage:"Was sind die drei Kernanforderungen an einen Auffanggurt?", antworten:["Leicht, günstig, wartungsfrei","Sicherer Halt, Lastverteilung, Stabilität nach dem Auffangen","Komfort, Mobilität, Langlebigkeit","Waschbar, UV-beständig, chemikalienresistent"], richtig:1},
+    {frage:"Was ist beim Anlegen eines Auffanggurts zwingend zu beachten?", antworten:["Der Gurt muss möglichst locker sitzen für Komfort","Der Gurt muss korrekt und körpergerecht angelegt sein – zu locker oder falsch kann beim Auffangen gefährlich sein","Der Dorsal-Anschlagpunkt muss vorne sein","Brustgurt und Beinschlaufen sind optional"], richtig:1}
+  ],
+  'psaga-07-verbindungskomponenten': [
+    {frage:"Welche Norm regelt Karabiner als Verbindungselement?", antworten:["DIN EN 795","DIN EN 362","DIN EN 354","DIN EN 361"], richtig:1},
+    {frage:"Was ist die Aufgabe eines Falldämpfers im PSAgA-System?", antworten:["Den Anschlagpunkt zu sichern","Die Zugkraft auf den Gurt zu erhöhen","Die Sturzenergie zu absorbieren und den Fangstoß auf den Körper zu begrenzen","Das Seil vor Kanten zu schützen"], richtig:2},
+    {frage:"Was beschreibt das Prinzip 'Sicherungskette'?", antworten:["Eine Kette aus Stahlgliedern als Verbindungsmittel","Alle Systemteile sind nur so sicher wie das schwächste Glied – jedes Bauteil muss funktionieren","Die Reihenfolge der Prüfungen","Die Verbindung mehrerer Anwender"], richtig:1},
+    {frage:"Was muss bei einem Schraubverschlusskarabiner nach dem Einhängen zwingend erfolgen?", antworten:["Er schließt automatisch","Manuelles vollständiges Verschrauben der Hülse","Anbringen einer Sicherungslasche","Prüfung mit einem Prüfwerkzeug"], richtig:1},
+    {frage:"Welche drei Bauteilgruppen sind typische Verbindungskomponenten im PSAgA-System?", antworten:["Gurt, Helm, Schuhe","Karabiner, Verbindungsmittel (Seile/Bänder), Falldämpfer","Anschlagpunkt, Dreibein, Winde","Schrauben, Bolzen, Nieten"], richtig:1}
+  ],
+  'psaga-08-hoehensicherungsgeraete': [
+    {frage:"Wie funktioniert der Sperrmechanismus eines Höhensicherungsgeräts?", antworten:["Durch manuelles Festziehen","Durch eine Fliehkraftbremse, die bei schnellem Auszug blockiert","Durch eine Schraube die sich bei Zug festzieht","Durch einen Gummidämpfer"], richtig:1},
+    {frage:"Welcher Vorteil bietet ein HSG gegenüber herkömmlichen Verbindungsmitteln?", antworten:["Es ist günstiger in der Anschaffung","Es minimiert die Fallstrecke durch frühzeitiges Blockieren","Es braucht keinen Anschlagpunkt","Es kann unter Wasser eingesetzt werden"], richtig:1},
+    {frage:"Was hält das Verbindungsmittel eines HSG stets straff?", antworten:["Schwerkraft","Eine interne Federkraft (Einzugmechanik)","Der Anwender selbst","Ein Elektromotor"], richtig:1},
+    {frage:"Was ist bei einem HSG nach einem Sturzereignis zu tun?", antworten:["Weiter benutzen wenn keine Schäden sichtbar sind","Nur Seilende prüfen","HSG sofort außer Betrieb nehmen und zur Herstellerinspektion einschicken","Seil ersetzen und weiternutzen"], richtig:2},
+    {frage:"Wofür steht die Abkürzung HSG?", antworten:["Hauptsicherungsgerät","Höhensicherungsgerät","Hochsicherheitsgurt","Hakenstahlgestell"], richtig:1}
+  ],
+  'psaga-09-steigschutzsysteme': [
+    {frage:"Welche Norm regelt mitlaufende Auffanggeräte an fester Führung?", antworten:["DIN EN 353-2","DIN EN 361","DIN EN 353-1","DIN EN 795"], richtig:2},
+    {frage:"Was ist die 'feste Führung' bei Steigschutzleitern?", antworten:["Ein Sicherheitsseil das der Anwender selbst spannt","Eine dauerhaft mit der Leiter verbundene Schiene oder ein Drahtseil","Ein mobiles Dreibeinstativ","Ein Gurt der an der Leiter befestigt wird"], richtig:1},
+    {frage:"Was tut der 'Läufer' im Steigschutzsystem beim Auf- und Abstieg?", antworten:["Er bleibt am untersten Punkt fixiert","Er begleitet die Person und blockiert selbsttätig im Sturzfall","Er wird vor dem Aufstieg oben eingehängt","Er bremst die Person beim normalen Abstieg"], richtig:1},
+    {frage:"Wofür werden Steigschutzsysteme mit fester Führung eingesetzt?", antworten:["Für Horizontalarbeiten auf dem Dach","Für den Schutz beim Auf- und Abstieg an dauerhaft installierten Leitern (z.B. Masten, Türme)","Für Arbeitsplatzpositionierung","Für Dachneigungen unter 30°"], richtig:1},
+    {frage:"Welchen Vorteil bieten Zwischenhalter bei der festen Führung?", antworten:["Kosteneinsparung","Begrenzung des Pendelschlags und Übertragung der Last in die Struktur","Ermöglichung von Horizontalbewegungen","Vereinfachung der Prüfung"], richtig:1}
+  ],
+  'psaga-10-auffanggeraete': [
+    {frage:"Welche Norm regelt mitlaufende Auffanggeräte an beweglicher Führung?", antworten:["DIN EN 353-1","DIN EN 795","DIN EN 353-2","DIN EN 363"], richtig:2},
+    {frage:"Was ist der wesentliche Unterschied zwischen fester und beweglicher Führung?", antworten:["Bewegliche Führung ist billiger","Bewegliche Führung ist temporär/mobil, feste Führung ist permanent installiert","Feste Führung ist für alle Bereiche geeignet","Bewegliche Führung blockiert schneller"], richtig:1},
+    {frage:"Was verhindert Endsicherungen an der beweglichen Ankerleine?", antworten:["Das Verrutschen des Läufers","Das unbeabsichtigte Abrutschen des Läufers vom Seilende","Das Verknoten des Seils","Das Einfrieren des Seils"], richtig:1},
+    {frage:"Welches Material wird bevorzugt für bewegliche Ankerleinen verwendet?", antworten:["Hanfseil","Kernmantelseile aus Chemiefaser oder Drahtseil","Gummiband","Stahlkette"], richtig:1},
+    {frage:"Woran ist vor jedem Einsatz die Ankerleine zu prüfen?", antworten:["An der Farbe","Auf Reißfestigkeit mittels Lasttest","Auf Abrieb, Schäden, korrekten Sitz und ausreichende Befestigung am Anschlagpunkt","Nur auf die Länge"], richtig:2}
+  ],
+  'psaga-11-anschlageinrichtungen': [
+    {frage:"Welche Norm regelt Anschlageinrichtungen für PSAgA?", antworten:["DIN EN 361","DIN EN 354","DIN EN 795","DIN EN 362"], richtig:2},
+    {frage:"Was kennzeichnet einen Anschlagpunkt des Typs B nach DIN EN 795?", antworten:["Permanent am Bauwerk befestigt","Transportabel und wiederentfernbar (z.B. Trägerklemmen, Dreibeine)","Ein horizontales Schienensystem","Ein Einpunktsystem aus Stahl"], richtig:1},
+    {frage:"Warum reicht eine Normkennzeichnung allein nicht für einen sicheren Anschlagpunkt?", antworten:["Weil Normen nicht verbindlich sind","Weil Planung, Untergrundnachweis, Montage und regelmäßige Prüfung ebenso entscheidend sind","Weil nur die Tragfähigkeit zählt","Weil die Norm nur für Stahl gilt"], richtig:1},
+    {frage:"Was sind permanente Anschlageinrichtungen (Typ A, C, D)?", antworten:["Mobile Systeme für temporären Einsatz","Dauerhaft am Objekt verbleibende Systeme die statische Nachweise erfordern","Tragbare Einpunktsysteme","Systeme nur für Dacharbeiten"], richtig:1},
+    {frage:"Was ist bei horizontalen Schienensystemen (Typ C) zu beachten?", antworten:["Sie sind für Vertikalbewegungen gedacht","Sie erlauben laterale Bewegungen und müssen an Endpunkten verankert sein","Sie erfordern keinen statischen Nachweis","Sie sind nur für eine Person geeignet"], richtig:1}
+  ],
+  'psaga-12-tragfaehigkeit-untergrund': [
+    {frage:"Welche Mindest-Tragkraft muss ein Anschlagpunkt nach DIN EN 795 für eine Person (statisch) aufweisen?", antworten:["2 kN","4 kN","6 kN","10 kN"], richtig:2},
+    {frage:"Was ist bei Stahlbeton als Untergrund für Anschlageinrichtungen kritisch zu prüfen?", antworten:["Nur die Betonoberfläche","Randabstände, Bewehrungslage und Mindestfestigkeitsklasse C20/25","Allein die Betondicke","Die Farbe des Betons"], richtig:1},
+    {frage:"Warum ist die '6 kN-Regel' als allgemeine Vorgabe missverständlich?", antworten:["Weil 6 kN zu hoch ist","Weil im Sturzfall deutlich höhere dynamische Kräfte entstehen können und die tatsächliche Last von vielen Faktoren abhängt","Weil sie nur für Holz gilt","Weil sie veraltet ist"], richtig:1},
+    {frage:"Was bedeutet 'dynamische Lastspitze' im Zusammenhang mit Anschlagpunkten?", antworten:["Die statische Dauerlast","Die kurzzeitig sehr hohe Kraft die beim Auffangen eines Sturzes entsteht","Das Eigengewicht des Anwenders","Die Windlast auf das System"], richtig:1},
+    {frage:"Wer darf die Planung und Montage von permanenten Anschlageinrichtungen durchführen?", antworten:["Jeder Handwerker","Nur zertifizierte Fachfirmen nach Statiknachweis","Der Arbeitgeber selbst","Nur der Hersteller der PSAgA"], richtig:1}
+  ],
+  'psaga-13-check-vor-gebrauch': [
+    {frage:"Was ist der Zweck der Prüfung vor Gebrauch (Pre-Use Check)?", antworten:["Den jährlichen Sachkundigencheck zu ersetzen","Erkennbare Schäden und Funktionsmängel vor dem Einsatz zu entdecken – nicht die technische Jahresprüfung","Nur die Länge des Seils zu kontrollieren","Die PSAgA für den nächsten Anwender vorzubereiten"], richtig:1},
+    {frage:"Welche Rechtsgrundlage verpflichtet den Anwender zur Prüfung vor Gebrauch?", antworten:["Nur Herstellerhinweise","DGUV Regel 112-198 und § 15 ArbSchG","DIN EN 361","ISO 9001"], richtig:1},
+    {frage:"Was umfasst die 'Sichtprüfung' beim Pre-Use Check?", antworten:["Nur Karabiner und Ösen","Gurtbänder, Seile, Nähte, Metallteile und Gehäuse auf Risse, Abrieb, Verformung, Korrosion","Nur das Etikett auf Datum","Die Gebrauchsanleitung lesen"], richtig:1},
+    {frage:"Was gehört zur 'Funktionsprüfung' bei der Vorkontrolle?", antworten:["Wiegen der Ausrüstung","Testen von Schnallen, Karabinerverschlüssen und Mechaniken der Verbindungsmittel","Messen der Seillänge","Dokumentation in einem Prüfbuch"], richtig:1},
+    {frage:"Was tut man ZUERST bei der täglichen Routine vor der Arbeit in der Höhe?", antworten:["PSAgA anlegen und sofort aufsteigen","Aufgabe, Anschlagmöglichkeiten, Wetter, Kanten, Fallraum und Rettungsplan prüfen – BEVOR Ausrüstung angelegt wird","Kollegen informieren","Jahresprotokoll kontrollieren"], richtig:1}
+  ],
+  'psaga-14-kantenproblematik': [
+    {frage:"Welcher Kantenradius gilt im Arbeitsschutz als 'scharf'?", antworten:["Weniger als 5 mm","Weniger als 2 mm","Weniger als 0,5 mm","Weniger als 0,1 mm"], richtig:2},
+    {frage:"Welche zwei physikalischen Schädigungsmechanismen entstehen an einer Kante?", antworten:["Dehnung und Kompression","Schnittgefahr (direkte Durchtrennung) und Reibungswärme (Schmelzen der Fasern)","Korrosion und UV-Abbau","Verdrillung und Knotenbildung"], richtig:1},
+    {frage:"Welche Materialien sind besonders gefährlich für textile PSAgA?", antworten:["Holz und Kunststoff","Beton, Stahl und Glaskanten","Gummi und Schaumstoff","Textile Oberflächen"], richtig:1},
+    {frage:"Welche Maßnahme schützt Seile und Verbindungsmittel an scharfen Kanten?", antworten:["Nass machen des Seils","Verwendung von Kantenschutz, Kantenschutzrollen oder speziell kantentauglichen Verbindungsmitteln","Schneller Zug über die Kante","Verwenden älterer Seile"], richtig:1},
+    {frage:"Warum darf eine PSAgA nach Kantenberührung unter Last keinesfalls weiterbenutzt werden?", antworten:["Sie muss nur gereinigt werden","Faserschäden sind oft unsichtbar aber die Tragfähigkeit kann massiv reduziert sein","Nur äußere Risse sind relevant","Beschädigungen heilen sich beim nächsten Einsatz aus"], richtig:1}
+  ],
+  'psaga-15-lagerung-werterhalt': [
+    {frage:"Was sind die drei Hauptfeinde bei der Lagerung von PSAgA?", antworten:["Feuchtigkeit, Kälte, Erschütterung","Licht (UV), Hitze, Chemikalien","Staub, Druck, Licht","Temperaturschwankung, Lagerzeit, Feuchtigkeit"], richtig:1},
+    {frage:"Welche Wirkung hat UV-Strahlung auf textile PSAgA?", antworten:["Sie verbessert die Flexibilität","Sie baut Polymerketten ab, macht Fasern brüchig und reduziert die Tragfähigkeit","Sie sterilisiert die Ausrüstung","Sie hat keine Wirkung auf Polyester"], richtig:1},
+    {frage:"Ab welcher Temperatur können physikalische Eigenschaften von Gurtbändern dauerhaft verändert werden?", antworten:["Ab 30°C","Ab 60°C","Ab 100°C","Ab 200°C"], richtig:1},
+    {frage:"Was ist beim Lagern von PSAgA in der Nähe von Chemikalien zu beachten?", antworten:["Chemikalien verbessern die Haltbarkeit","Säuren, Laugen und Lösungsmittel können PSAgA unsichtbar schädigen – getrennte Lagerung ist Pflicht","Nur bei direktem Kontakt besteht Gefahr","Chemikalien sind nur für Metallteile schädlich"], richtig:1},
+    {frage:"Wie ist PSAgA korrekt zu lagern?", antworten:["Auf dem Boden gefaltet unter direktem Sonnenlicht","Trocken, dunkel, kühl, gut durchlüftet und getrennt von Chemikalien – idealerweise aufgehängt","Zusammen mit Reinigungsmitteln","In luftdichten Plastikbeuteln bei hoher Temperatur"], richtig:1}
+  ],
+  'psaga-16-reinigung-materialpflege': [
+    {frage:"Welche maximale Temperatur gilt für die Wäsche textiler PSAgA?", antworten:["60°C","40°C","30°C (bzw. lt. Herstellerangaben)","20°C"], richtig:2},
+    {frage:"Wie wirkt Schmutz (Sand, Staub) auf PSAgA-Fasern?", antworten:["Er schützt vor UV-Strahlung","Er wirkt wie winzige Messer zwischen den Fasern und schädigt diese bei Bewegung (innere Abrasion)","Er ist harmlos","Er erhöht die Griffigkeit"], richtig:1},
+    {frage:"Was ist bei Reinigungsmitteln für PSAgA zu beachten?", antworten:["Je aggressiver desto besser","Nur milde, pH-neutrale Mittel verwenden – aggressive Chemikalien können Fasern und Beschichtungen schädigen","Bleichmittel sind geeignet für helle Gurte","Reinigungsmittel sind egal wenn man danach spült"], richtig:1},
+    {frage:"Wie muss PSAgA nach der Reinigung getrocknet werden?", antworten:["Im Wäschetrockner bei hoher Temperatur","An der Luft bei Raumtemperatur, nicht in direktem Sonnenlicht","Mit einem Heißluftgebläse","Direkt über einer Heizung"], richtig:1},
+    {frage:"Wann muss PSAgA trotz optisch gutem Zustand außer Betrieb genommen werden?", antworten:["Nur wenn sie zerrissen ist","Nach Einwirkung unbekannter Chemikalien oder nach einem Sturzereignis – auch wenn keine sichtbaren Schäden erkennbar sind","Erst nach 20 Jahren","Wenn sie unangenehm riecht"], richtig:1}
+  ],
+  'psaga-17-ablegereife-lebensdauer': [
+    {frage:"Welche Norm / Regel regelt die Ablegereife von PSAgA?", antworten:["DIN EN 361","DGUV Regel 112-198 und Herstellerangaben","ISO 9001","DIN EN 795"], richtig:1},
+    {frage:"Welche maximale Einsatzdauer gilt als Faustregel für textile PSAgA-Komponenten?", antworten:["5 Jahre ab Inbetriebnahme","10 Jahre ab Herstellungsdatum (je nach Herstellerangabe)","20 Jahre","Keine Begrenzung wenn regelmäßig geprüft"], richtig:1},
+    {frage:"Was führt zur sofortigen Ablegereife unabhängig von Alter oder Zustand?", antworten:["Eine optisch sichtbare Verschmutzung","Ein Sturzereignis oder extreme chemische Einflüsse","Das Erreichen von 5 Einsatzjahren","Ein verblasstes Etikett"], richtig:1},
+    {frage:"Warum reicht eine alleinige Zeitgrenze (z.B. 10 Jahre) nicht aus?", antworten:["Weil Zeitgrenzen gesetzlich nicht existieren","Weil Nutzungsintensität, Lagerung und Ereignisse die Ablegereife schon früher auslösen können","Weil nur der Hersteller entscheiden darf","Weil 10 Jahre immer ausreicht"], richtig:1},
+    {frage:"Was ist beim Ausmustern von PSAgA zu tun?", antworten:["Sie reparieren und wieder einsetzen","Sie kennzeichnen und vernichten – sie darf nicht anderweitig eingesetzt werden","Im Lager behalten als Reserve","Einem anderen Mitarbeiter geben"], richtig:1}
+  ],
+  'psaga-18-pruefpflicht-sachkundigenpruefung': [
+    {frage:"Wie häufig muss PSAgA nach DGUV Regel 112-198 durch einen Sachkundigen geprüft werden?", antworten:["Alle 2 Jahre","Alle 6 Monate","Mindestens alle 12 Monate","Nur bei sichtbaren Schäden"], richtig:2},
+    {frage:"Was kann kürzere Prüfintervalle als 12 Monate erforderlich machen?", antworten:["Neue Ausrüstung","Extreme Beanspruchung durch Chemie, Hitze, Gase oder Staubentwicklung","Wechselnde Anwender","Lagerung im Freien"], richtig:1},
+    {frage:"Wer darf die wiederkehrende Sachkundigenprüfung von PSAgA durchführen?", antworten:["Jeder Arbeitnehmer","Eine vom Arbeitgeber beauftragte Sachkundige Person mit nachgewiesener Qualifikation","Der Hersteller der PSAgA ausschließlich","Jeder Vorgesetzte"], richtig:1},
+    {frage:"Was ermöglicht die lückenlose Dokumentation der Sachkundigenprüfung?", antworten:["Nichts – sie ist nur eine Formalie","Haftungsschutz für den Unternehmer und Nachweis der ordnungsgemäßen Überprüfung","Kostenersparnis","Verlängerung der Prüfintervalle"], richtig:1},
+    {frage:"Was ist bei PSAgA nach einem Sturzereignis bezüglich der Prüfung zu tun?", antworten:["Weiterverwenden wenn das nächste Prüfjahr noch nicht erreicht ist","Sofort außer Betrieb nehmen und zur Überprüfung durch einen Sachkundigen einschicken – unabhängig vom regulären Intervall","Nur die Karabiner prüfen","Normales Prüfintervall abwarten"], richtig:1}
+  ],
+  'psaga-19-rettungskonzept': [
+    {frage:"Wann muss ein Rettungskonzept für PSAgA-Einsätze vorhanden sein?", antworten:["Nur bei Arbeiten über 10 Meter Höhe","Vor jeder Arbeit mit PSAgA – das Konzept muss vor dem Aufstieg existieren","Nur bei mehr als 5 Arbeitern","Erst nach einem Unfall"], richtig:1},
+    {frage:"Welche gesetzliche Grundlage verpflichtet den Arbeitgeber zur Rettungsplanung?", antworten:["Nur die DGUV Regel 112-198","§ 10 ArbSchG (Erste Hilfe, Brandbekämpfung, Evakuierung) und DGUV R 112-199","Nur die Betriebsvereinbarung","DIN EN 361"], richtig:1},
+    {frage:"Was droht einer im Gurt hängenden Person wenn sie nicht schnell gerettet wird?", antworten:["Nur Erschöpfung","Hängetrauma (orthostatischer Schock) durch mangelnden Blutrückstrom","Überhitzung","Sehverlust"], richtig:1},
+    {frage:"Was ist beim Retten einer hängenden Person IMMER zuerst zu tun?", antworten:["Sofort klettern ohne Sicherung","Notruf 112 absetzen und eigene Sicherung herstellen – Eigenschutz hat Vorrang","Die Person schütteln","Auf den Einsatzleiter warten"], richtig:1},
+    {frage:"Welche Aussage zum Rettungskonzept ist korrekt?", antworten:["Improvisation ist für Experten akzeptabel","Das Rettungskonzept muss allen Beteiligten bekannt sein und Mittel sowie Verantwortlichkeiten benennen","Ein Konzept ist nur für Hochhäuser nötig","Feuerwehr ist immer schnell genug – kein eigenes Konzept nötig"], richtig:1}
+  ],
+  'psaga-20-haengetrauma': [
+    {frage:"Was ist ein Hängetrauma?", antworten:["Ein Knochenbruch durch den Sturz","Ein orthostatischer Schock durch regungsloses Hängen im Gurt mit Einschränkung des Blutkreislaufs","Eine psychische Reaktion nach dem Sturz","Eine Verletzung durch den Gurt selbst"], richtig:1},
+    {frage:"Warum ist regungsloses Hängen im Gurt gefährlich?", antworten:["Der Gurt schnürt den Bauch ein","Die Beinmuskelpumpe fällt aus – Blut versackt in den Beinen, das Herz bekommt zu wenig zurück","Der Gurt dreht sich und verursacht Schwindel","Der Anwender kann nicht atmen"], richtig:1},
+    {frage:"Nach wie vielen Minuten regungslosen Hängens kann es zu lebensbedrohlichen Situationen kommen?", antworten:["Erst nach 2 Stunden","Nach 30 bis 60 Minuten","Bereits nach ca. 5 bis 20 Minuten (individuell unterschiedlich)","Nie, wenn man weiter atmet"], richtig:2},
+    {frage:"Was müssen hängende Personen tun um das Hängetrauma zu verzögern?", antworten:["Stillhalten und auf Rettung warten","Sich so weit möglich bewegen – Beine anwinkeln, Pedalieren – um die Muskelpumpe aktiv zu halten","Schreien","Den Gurt lockern"], richtig:1},
+    {frage:"Wie ist eine gerettete Person nach Hängetrauma-Verdacht NICHT zu lagern?", antworten:["Stabil sitzend oder leicht angewinkelt","Flach auf dem Rücken mit hochgelagerten Beinen – dies kann den Zustand verschlechtern","Sitzend mit angewinkelten Knien","In der stabilen Seitenlage wenn bewusstlos"], richtig:1}
+  ],
+  'psaga-21-erste-hilfe-nach-sturz': [
+    {frage:"Was ist nach einem aufgefangenen Sturz sofort zu tun?", antworten:["Abwarten ob der Gestürzte von selbst aufsteht","Notruf 112 absetzen, Eigenschutz sichern, Person schnellstmöglich aus der Hängeposition retten","PSAgA auf Schäden prüfen","Sturz protokollieren"], richtig:1},
+    {frage:"Warum hat Eigenschutz bei der Rettung absolute Priorität?", antworten:["Damit man keine Haftung übernimmt","Ein zweiter Unfall nützt niemanden – ungesicherter Ersthelfer gefährdet sich selbst und kann nicht helfen","Weil es so vorgeschrieben ist","Um die Versicherung nicht zu gefährden"], richtig:1},
+    {frage:"Welche Informationen sind beim Notruf (112) zu einem Sturz-Unfall besonders wichtig?", antworten:["Nur Name und Firma","Ort, Art des Unfalls, 'Sturz in den Gurt / Hängetrauma-Gefahr' und Anzahl der Verletzten","Nur Telefonnummer","Versicherungsnummer"], richtig:1},
+    {frage:"Wie ist eine bewusstlose Person nach der Rettung aus dem Gurt zu lagern?", antworten:["Auf dem Bauch","Stehend abgestützt","In der stabilen Seitenlage","Flach auf dem Rücken mit hochgelegten Beinen"], richtig:2},
+    {frage:"Wie lange darf eine gerettete Person nach Sturz ohne medizinische Untersuchung sein?", antworten:["48 Stunden","Bis zum nächsten Werktag","Gar nicht – jede gestürzte Person muss umgehend medizinisch untersucht werden","Bis Symptome auftreten"], richtig:2}
   ]
 };
 
@@ -7809,7 +7942,26 @@ const PSAGA_MODULE = [
     pfad:      '01-psaga-schulung-rechtliche-grundlagen',
     icon:      '⚖️',
     hasAudio:  false
-  }
+  },
+  { id:'psaga-03-rueckhaltesysteme', titel:'Rückhaltesysteme', untertitel:'Modul 03 — Absturzprävention durch Bewegungsbegrenzung', folien:11, pfad:'03-psaga-03-rueckhaltesysteme', icon:'🔗', hasAudio:true },
+  { id:'psaga-04-arbeitsplatzpositionierung', titel:'Arbeitsplatzpositionierung', untertitel:'Modul 04 — Stabiler Halt und ergonomisches Arbeiten', folien:11, pfad:'04-psaga-04-arbeitsplatzpositionierung', icon:'🧰', hasAudio:true },
+  { id:'psaga-05-auffangsysteme', titel:'Auffangsysteme', untertitel:'Modul 05 — Den freien Fall sicher stoppen', folien:10, pfad:'05-psaga-05-auffangsysteme', icon:'🛡️', hasAudio:true },
+  { id:'psaga-06-auffanggurte', titel:'Auffanggurte', untertitel:'Modul 06 — Aufbau und Funktion nach DIN EN 361', folien:11, pfad:'06-psaga-06-auffanggurte', icon:'🦺', hasAudio:true },
+  { id:'psaga-07-verbindungskomponenten', titel:'Verbindungskomponenten', untertitel:'Modul 07 — Karabiner, Falldämpfer und Verbindungsmittel', folien:11, pfad:'07-psaga-07-verbindungskomponenten', icon:'🔩', hasAudio:true },
+  { id:'psaga-08-hoehensicherungsgeraete', titel:'Höhensicherungsgeräte', untertitel:'Modul 08 — Selbsttätig einziehende Auffanggeräte', folien:10, pfad:'08-psaga-08-hoehensicherungsgeraete', icon:'↕️', hasAudio:true },
+  { id:'psaga-09-steigschutzsysteme', titel:'Steigschutzsysteme', untertitel:'Modul 09 — Mitlaufende Auffanggeräte an fester Führung', folien:10, pfad:'09-psaga-09-steigschutzsysteme', icon:'🪜', hasAudio:true },
+  { id:'psaga-10-auffanggeraete', titel:'Auffanggeräte – bewegliche Führung', untertitel:'Modul 10 — Mitlaufende Auffanggeräte nach DIN EN 353-2', folien:10, pfad:'10-psaga-10-auffanggeraete', icon:'🎣', hasAudio:true },
+  { id:'psaga-11-anschlageinrichtungen', titel:'Anschlageinrichtungen', untertitel:'Modul 11 — Typen nach DIN EN 795', folien:11, pfad:'11-psaga-11-anschlageinrichtungen', icon:'⚓', hasAudio:true },
+  { id:'psaga-12-tragfaehigkeit-untergrund', titel:'Tragfähigkeit & Untergrund', untertitel:'Modul 12 — Statik, Befestigung und Materialgüte', folien:11, pfad:'12-psaga-12-tragfaehigkeit-untergrund', icon:'🏗️', hasAudio:true },
+  { id:'psaga-13-check-vor-gebrauch', titel:'Check vor Gebrauch', untertitel:'Modul 13 — Sicht- und Funktionsprüfung durch den Anwender', folien:11, pfad:'13-psaga-13-check-vor-gebrauch', icon:'🔍', hasAudio:true },
+  { id:'psaga-14-kantenproblematik', titel:'Kantenproblematik', untertitel:'Modul 14 — Warum scharfe Kanten für PSAgA lebensgefährlich sind', folien:11, pfad:'14-psaga-14-kantenproblematik', icon:'⚠️', hasAudio:true },
+  { id:'psaga-15-lagerung-werterhalt', titel:'Lagerung & Werterhalt', untertitel:'Modul 15 — Schutz vor Licht, Hitze und Chemie', folien:11, pfad:'15-psaga-15-lagerung-werterhalt', icon:'📦', hasAudio:true },
+  { id:'psaga-16-reinigung-materialpflege', titel:'Reinigung & Materialpflege', untertitel:'Modul 16 — Werterhalt und Sicherheit durch korrekte Pflege', folien:11, pfad:'16-psaga-16-reinigung-materialpflege', icon:'🧹', hasAudio:true },
+  { id:'psaga-17-ablegereife-lebensdauer', titel:'Ablegereife & Lebensdauer', untertitel:'Modul 17 — Wann muss PSAgA ausgemustert werden?', folien:11, pfad:'17-psaga-17-ablegereife-lebensdauer', icon:'⏱️', hasAudio:true },
+  { id:'psaga-18-pruefpflicht-sachkundigenpruefung', titel:'Prüfpflicht & Sachkundigenprüfung', untertitel:'Modul 18 — Gesetzliche Anforderungen nach DGUV 112-198', folien:11, pfad:'18-psaga-18-pruefpflicht-sachkundigenpruefung', icon:'📋', hasAudio:true },
+  { id:'psaga-19-rettungskonzept', titel:'Rettungskonzept', untertitel:'Modul 19 — Planung und zeitkritische Intervention', folien:11, pfad:'19-psaga-19-rettungskonzept', icon:'🚑', hasAudio:true },
+  { id:'psaga-20-haengetrauma', titel:'Hängetrauma', untertitel:'Modul 20 — Orthostatischer Schock: Erkennung und Prävention', folien:11, pfad:'20-psaga-20-haengetrauma', icon:'🏥', hasAudio:true },
+  { id:'psaga-21-erste-hilfe-nach-sturz', titel:'Erste Hilfe nach Sturz', untertitel:'Modul 21 — Fachgerechte Maßnahmen nach einem Sturz', folien:11, pfad:'21-psaga-21-erste-hilfe-nach-sturz', icon:'🆘', hasAudio:true }
 ];
 
 let psagaAktivesModul   = null;
