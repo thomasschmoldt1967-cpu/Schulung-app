@@ -7997,25 +7997,66 @@ function psagaSchulungenRender() {
   const cont = document.getElementById('psaga-schulungen-container');
   if (!cont) return;
 
+  const userId = currentUser?.userId || '';
+
+  // Fortschritts-Zähler: wie viele Module bestanden?
+  const bestandenAnzahl = PSAGA_MODULE.filter(m =>
+    !!localStorage.getItem(`psaga_bestanden_${m.id}_${userId}`)
+  ).length;
+  const gesamtAnzahl = PSAGA_MODULE.length;
+
   let html = `<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
     <div style="padding:10px 14px;background:#1a3a5c;color:#fff">
       <div style="font-weight:700;font-size:.85rem">🪝 PSAgA Schulungsmodule</div>
-      <div style="font-size:.72rem;opacity:.8;margin-top:2px">Präsentationen — Tippen zum Starten</div>
+      <div style="font-size:.72rem;opacity:.8;margin-top:2px">Schritt für Schritt — ${bestandenAnzahl} von ${gesamtAnzahl} Kapiteln abgeschlossen</div>
+      <div style="margin-top:6px;height:5px;background:rgba(255,255,255,.2);border-radius:3px">
+        <div style="height:100%;background:#22c55e;border-radius:3px;width:${Math.round(bestandenAnzahl/gesamtAnzahl*100)}%;transition:width .4s"></div>
+      </div>
     </div>`;
 
-  const userId = currentUser?.userId || '';
-  PSAGA_MODULE.forEach(m => {
+  PSAGA_MODULE.forEach((m, idx) => {
     const bestanden = !!localStorage.getItem(`psaga_bestanden_${m.id}_${userId}`);
+    // Modul 00 (Index 0) ist immer zugänglich.
+    // Alle weiteren: zugänglich wenn das VORHERIGE Modul bestanden ist.
+    const vorherigBestanden = idx === 0 || !!localStorage.getItem(`psaga_bestanden_${PSAGA_MODULE[idx-1].id}_${userId}`);
+    const gesperrt = !vorherigBestanden && !bestanden;
+
+    let hintergrund, symbol, symbolStyle, cursorStyle, hinweis;
+    if (bestanden) {
+      hintergrund = '#f0fdf4';
+      symbol = '✅';
+      symbolStyle = 'color:#16a34a;font-weight:700';
+      cursorStyle = 'pointer';
+      hinweis = '';
+    } else if (gesperrt) {
+      hintergrund = '#f9fafb';
+      symbol = '🔒';
+      symbolStyle = 'color:#d1d5db';
+      cursorStyle = 'not-allowed';
+      hinweis = `<div style="font-size:.68rem;color:#f59e0b;margin-top:3px">⚠️ Bitte zuerst Kapitel ${idx} abschließen</div>`;
+    } else {
+      hintergrund = '#fff';
+      symbol = '▶';
+      symbolStyle = 'color:#9ca3af';
+      cursorStyle = 'pointer';
+      hinweis = '';
+    }
+
+    const clickHandler = gesperrt
+      ? `showToast('🔒 Bitte zuerst Kapitel ${idx} absolvieren und bestehen!', '#92400e')`
+      : `psagaFolienOeffnen('${m.id}')`;
+
     html += `
-      <div onclick="psagaFolienOeffnen('${m.id}')"
-        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #f0f2f5;cursor:pointer;background:${bestanden ? '#f0fdf4' : '#fff'}">
-        <span style="font-size:2rem;flex-shrink:0">${m.icon}</span>
+      <div onclick="${clickHandler}"
+        style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid #f0f2f5;cursor:${cursorStyle};background:${hintergrund};opacity:${gesperrt ? '0.6' : '1'}">
+        <span style="font-size:2rem;flex-shrink:0">${gesperrt ? '🔒' : m.icon}</span>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">${escHtml(m.titel)}</div>
+          <div style="font-weight:700;font-size:.85rem;color:${gesperrt ? '#9ca3af' : '#1a3a5c'}">${escHtml(m.titel)}</div>
           <div style="font-size:.72rem;color:#6b7280;margin-top:2px">${escHtml(m.untertitel)}</div>
           <div style="font-size:.7rem;color:#9ca3af;margin-top:3px">📊 ${m.folien} Folien</div>
+          ${hinweis}
         </div>
-        <span style="font-size:1.3rem;flex-shrink:0;${bestanden ? 'color:#16a34a;font-weight:700' : 'color:#9ca3af'}">${bestanden ? '✅' : '▶'}</span>
+        <span style="font-size:1.3rem;flex-shrink:0;${symbolStyle}">${symbol}</span>
       </div>`;
   });
 
@@ -8026,6 +8067,19 @@ function psagaSchulungenRender() {
 function psagaFolienOeffnen(modulId) {
   psagaAktivesModul  = PSAGA_MODULE.find(m => m.id === modulId);
   if (!psagaAktivesModul) return;
+
+  // Sicherheitsprüfung: Modul gesperrt wenn Vorgänger nicht bestanden
+  const idx = PSAGA_MODULE.findIndex(m => m.id === modulId);
+  const userId = currentUser?.userId || '';
+  if (idx > 0) {
+    const vorherigBestanden = !!localStorage.getItem(`psaga_bestanden_${PSAGA_MODULE[idx-1].id}_${userId}`);
+    if (!vorherigBestanden) {
+      showToast(`🔒 Bitte zuerst Kapitel ${idx} abschließen!`, '#92400e');
+      psagaAktivesModul = null;
+      return;
+    }
+  }
+
   psagaAktuelleFolie = 1;
   psagaAutoModus = false;
   psagaAutoPause = false;
@@ -8340,8 +8394,26 @@ function psagaBestanden(modul) {
     user_id: userId, user_name: userName, tenant_id: tenantId,
     ablauf_datum: ablauf.toISOString().slice(0,10)
   })).catch(()=>{});
-  showToast('🏆 Modul bestanden! Zertifikat wird erstellt…', '#0f5132');
-  setTimeout(() => psagaZertifikatPDF(modul, userName, tenantId, jetzt, ablauf), 800);
+
+  // Modulliste neu rendern (Sperr-Status aktualisieren)
+  psagaSchulungenRender();
+
+  // Prüfen: Alle Module bestanden?
+  const alleModule = PSAGA_MODULE;
+  const allebestanden = alleModule.every(m =>
+    !!localStorage.getItem(`psaga_bestanden_${m.id}_${userId}`)
+  );
+
+  if (allebestanden) {
+    // 🏆 Alle Kapitel abgeschlossen → Zertifikat ausstellen
+    showToast('🏆 Alle Kapitel bestanden! Zertifikat wird erstellt…', '#0f5132');
+    setTimeout(() => psagaZertifikatPDF(modul, userName, tenantId, jetzt, ablauf), 800);
+  } else {
+    // Nächstes offenes Modul ermitteln
+    const aktIdx = alleModule.findIndex(m => m.id === modul.id);
+    const naechstes = alleModule[aktIdx + 1];
+    showToast(`✅ Kapitel ${aktIdx + 1} bestanden! Weiter mit Kapitel ${aktIdx + 2}…`, '#1a3a5c');
+  }
 }
 
 function psagaFolienPrev() {
