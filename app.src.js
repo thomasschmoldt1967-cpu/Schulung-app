@@ -7993,7 +7993,7 @@ const PSAGA_MODULE = [
     folien:    21,
     pfad:      '01-psaga-01-rechtliche-grundlagen',
     icon:      '⚖️',
-    hasAudio:  false
+    hasAudio:  true
   },
   {
     id:        'psaga-02-gefaehrdungsbeurteilung',
