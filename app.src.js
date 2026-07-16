@@ -7783,6 +7783,58 @@ const PSAGA_QUIZ = {
       richtig: 2
     }
   ],
+  'psaga-02-gefaehrdungsbeurteilung': [
+    {
+      frage: 'Was beschreibt das STOP-Prinzip im Arbeitsschutz?',
+      antworten: [
+        'Sofortige Tätigkeitsunterbrechung bei Gefahr',
+        'Die gesetzlich vorgeschriebene Reihenfolge von Schutzmaßnahmen: Substitution → Technik → Organisation → Person',
+        'Eine Checkliste für den Einsatz von PSAgA',
+        'Die Norm für persönliche Schutzausrüstung'
+      ],
+      richtig: 1
+    },
+    {
+      frage: 'Warum hat Kollektivschutz (z.B. Geländer) Vorrang vor PSAgA?',
+      antworten: [
+        'Weil er günstiger ist',
+        'Weil PSAgA keine Zulassung hat',
+        'Weil Kollektivschutz alle Personen im Bereich gleichzeitig schützt, unabhängig von ihrer Ausrüstung',
+        'Weil PSAgA nur bei Sturz wirkt und keine Prävention bietet'
+      ],
+      richtig: 2
+    },
+    {
+      frage: 'Ab welcher Absturzhöhe ist laut ASR A2.1 grundsätzlich Absturzschutz erforderlich (Regelfall Büro/Industrie)?',
+      antworten: [
+        'Ab 0,5 Meter',
+        'Ab 1,0 Meter',
+        'Ab 2,0 Meter',
+        'Nur ab 5,0 Meter'
+      ],
+      richtig: 2
+    },
+    {
+      frage: 'Welche Voraussetzung muss ein Beschäftigter zwingend erfüllen, um mit PSAgA arbeiten zu dürfen?',
+      antworten: [
+        'Mindestens 10 Jahre Berufserfahrung',
+        'Gesundheitliche Eignung (ehem. G41), Unterweisung und Beauftragung durch den Arbeitgeber',
+        'Einen gültigen Führerschein der Klasse B',
+        'Mitgliedschaft in einer Berufsgenossenschaft'
+      ],
+      richtig: 1
+    },
+    {
+      frage: 'Was bedeutet "S" im STOP-Prinzip?',
+      antworten: [
+        'Sicherung — PSAgA anlegen',
+        'Substitution — die gefährliche Tätigkeit oder Gefahrenquelle ersetzen oder vermeiden',
+        'Schulung — Mitarbeiter unterweisen',
+        'Sicherheitsabstand — Mindestabstand zur Kante einhalten'
+      ],
+      richtig: 1
+    }
+  ],
   'psaga-03-rueckhaltesysteme': [
     {frage:"Was ist das Hauptziel eines Rückhaltesystems?", antworten:["Den Sturz auffangen und bremsen","Den Bewegungsbereich begrenzen, sodass die Absturzkante nicht erreicht wird","Die Fallenergie durch einen Dämpfer absorbieren","Den Anwender am Anschlagpunkt fixieren"], richtig:1},
     {frage:"Welches Prinzip beschreibt die Wirkungsweise eines Rückhaltesystems?", antworten:["Das Bremsprinzip","Das Dämpfungsprinzip","Das 'Anlein-Prinzip'","Das Auffangprinzip"], richtig:2},
@@ -7936,12 +7988,21 @@ const PSAGA_MODULE = [
   },
   {
     id:        'psaga-01-rechtliche-grundlagen',
-    titel:     'PSAgA Schulung & Rechtliche Grundlagen',
-    untertitel:'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz',
+    titel:     'PSAgA Schulung nach DGUV 112-198',
+    untertitel:'Modul 01 — Rechtliche Grundlagen & PSA-Pflichten',
     folien:    21,
-    pfad:      '01-psaga-schulung-rechtliche-grundlagen',
+    pfad:      '01-psaga-01-rechtliche-grundlagen',
     icon:      '⚖️',
     hasAudio:  false
+  },
+  {
+    id:        'psaga-02-gefaehrdungsbeurteilung',
+    titel:     'Gefährdungsbeurteilung & STOP-Prinzip',
+    untertitel:'Modul 02 — Strategische Sicherheit bei Arbeiten in der Höhe',
+    folien:    10,
+    pfad:      '02-psaga-02-gefaehrdungsbeurteilung',
+    icon:      '🔎',
+    hasAudio:  true
   },
   { id:'psaga-03-rueckhaltesysteme', titel:'Rückhaltesysteme', untertitel:'Modul 03 — Absturzprävention durch Bewegungsbegrenzung', folien:11, pfad:'03-psaga-03-rueckhaltesysteme', icon:'🔗', hasAudio:true },
   { id:'psaga-04-arbeitsplatzpositionierung', titel:'Arbeitsplatzpositionierung', untertitel:'Modul 04 — Stabiler Halt und ergonomisches Arbeiten', folien:11, pfad:'04-psaga-04-arbeitsplatzpositionierung', icon:'🧰', hasAudio:true },
