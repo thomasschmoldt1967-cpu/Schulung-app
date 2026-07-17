@@ -1481,7 +1481,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (29 Kapitel)</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (29 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -1555,10 +1555,11 @@ function adminZeigeTenant(tenantId) {
     ${zuws.map(z => {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const isPsaga = z.vorlagenId === '__psaga__';
+      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':''}">${titel}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -1576,6 +1577,7 @@ function adminDetailAnzeigen(zuwId) {
   const zuw=zuweisungen.find(z=>z.id===zuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId), form=formulare[zuwId]||{}, status=berechneStatus(zuw);
   const isLP = zuw.vorlagenId === LERNPFAD_VORLAGE_ID;
+  const isPsaga = zuw.vorlagenId === '__psaga__';
 
   let feldHtml='';
   if (isLP) {
@@ -1602,10 +1604,10 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (29 Kapitel)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-      <div class="card-title" style="${isLP?'color:#6b21a8':''}">${titelAnzeige}</div>
+      <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -2437,8 +2439,9 @@ function renderAdminZuweisungen() {
   const rows = gefiltert.map(z => {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-    const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
-    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : '';
+    const isPsaga = z.vorlagenId === '__psaga__';
+    const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
     return `<div class="schulung-item">
       <div>
         <div class="titel" style="${titelStyle}">${titel}</div>
@@ -2512,12 +2515,23 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  if (!gefiltert.length && !lernpfadMatch) {
+  const psagaMatch = !s || 'psaga'.includes(s) || 'absturz'.includes(s) || 'höhe'.includes(s) || 'psa'.includes(s) || 'schulung'.includes(s) || '22 modul'.includes(s);
+  const psagaHtml = psagaMatch ? `
+    <div onclick="azVorlageWaehlen('__psaga__','🪝 PSAgA-Schulung (22 Module)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f0fdf4"
+      onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+      <div style="font-weight:600;font-size:.88rem;color:#166534">🪝 PSAgA-Schulung (22 Module)</div>
+      <div style="font-size:.76rem;color:#16a34a;margin-top:2px">
+        Kapitel 00–21 &nbsp;·&nbsp; Audio + Quiz &nbsp;·&nbsp; DGUV 112-198 &nbsp;·&nbsp; Zertifikat nach Abschluss
+      </div>
+    </div>` : '';
+
+  if (!gefiltert.length && !lernpfadMatch && !psagaMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
     return;
   }
 
-  el.innerHTML = lernpfadHtml + gefiltert.map((v, i) => `
+  el.innerHTML = lernpfadHtml + psagaHtml + gefiltert.map((v, i) => `
     <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
