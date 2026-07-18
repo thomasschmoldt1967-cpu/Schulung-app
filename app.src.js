@@ -709,6 +709,17 @@ async function pwResetAnfordern() {
   }
   btn.disabled = false; btn.textContent = '🔑 Link generieren';
 }
+function zeigeInfoModal(titel, text) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `<div style="background:#fff;border-radius:12px;padding:24px;max-width:380px;width:100%;box-shadow:0 10px 40px rgba(0,0,0,.2)">
+    <h3 style="margin:0 0 10px;color:#1e3a5f">${titel}</h3>
+    <p style="margin:0 0 18px;color:#374151">${text}</p>
+    <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px 20px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600">OK</button>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
 async function pruefePasswordResetToken() {
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('pwreset');
@@ -716,23 +727,67 @@ async function pruefePasswordResetToken() {
 
   try {
     const res = await SB.get('pw_reset_tokens', `token=eq.${token}`);
-    if (!res.length) { alert('Ungültiger oder abgelaufener Reset-Link.'); return false; }
+    if (!res.length) {
+      zeigeInfoModal('❌ Ungültiger Link', 'Dieser Reset-Link ist ungültig oder abgelaufen.');
+      window.history.replaceState({}, '', window.location.pathname);
+      return false;
+    }
     const rec = res[0];
     if (rec.genutzt || new Date(rec.gueltig_bis) < new Date()) {
-      alert('Dieser Reset-Link ist bereits abgelaufen oder wurde verwendet.'); return false;
+      zeigeInfoModal('❌ Link abgelaufen', 'Dieser Reset-Link wurde bereits verwendet oder ist abgelaufen. Bitte einen neuen Link anfordern.');
+      window.history.replaceState({}, '', window.location.pathname);
+      return false;
     }
-    // Neues Passwort eingeben
-    const newPw = prompt('Neues Passwort eingeben (min. 8 Zeichen):');
-    if (!newPw || newPw.length < 8) { alert('Passwort zu kurz.'); return false; }
-    const hash = await hashPasswort(newPw);
-    await SB.patch('users', `id=eq.${rec.user_id}`, { password_hash: hash });
-    await SB.patch('pw_reset_tokens', `id=eq.${rec.id}`, { genutzt: true });
-    // URL säubern
-    window.history.replaceState({}, '', window.location.pathname);
-    alert('✅ Passwort erfolgreich geändert! Sie können sich jetzt anmelden.');
-    return false; // Normalen Login-Flow starten
+    // Neues Passwort per Custom-Modal eingeben
+    await new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.innerHTML = `
+        <div style="background:#fff;border-radius:12px;padding:28px 24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+          <h3 style="margin:0 0 8px;color:#1e3a5f;font-size:1.15rem">🔑 Neues Passwort setzen</h3>
+          <p style="margin:0 0 18px;color:#6b7280;font-size:.9rem">Bitte geben Sie Ihr neues Passwort ein (min. 8 Zeichen).</p>
+          <input id="pwreset-neu1" type="password" placeholder="Neues Passwort"
+            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:1rem;margin-bottom:10px;box-sizing:border-box">
+          <input id="pwreset-neu2" type="password" placeholder="Passwort wiederholen"
+            style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:1rem;margin-bottom:16px;box-sizing:border-box">
+          <div id="pwreset-err" style="color:#dc2626;font-size:.85rem;margin-bottom:12px;display:none"></div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button id="pwreset-cancel" style="padding:10px 18px;border:1px solid #d1d5db;background:#f9fafb;border-radius:8px;cursor:pointer;font-size:.95rem">Abbrechen</button>
+            <button id="pwreset-ok" style="padding:10px 18px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;font-weight:600">✅ Speichern</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      const inp1 = overlay.querySelector('#pwreset-neu1');
+      const inp2 = overlay.querySelector('#pwreset-neu2');
+      const errEl = overlay.querySelector('#pwreset-err');
+      overlay.querySelector('#pwreset-cancel').onclick = () => { overlay.remove(); resolve(null); };
+      overlay.querySelector('#pwreset-ok').onclick = async () => {
+        const pw1 = inp1.value, pw2 = inp2.value;
+        if (pw1.length < 8) { errEl.textContent = '❌ Passwort muss mindestens 8 Zeichen haben.'; errEl.style.display='block'; return; }
+        if (pw1 !== pw2) { errEl.textContent = '❌ Passwörter stimmen nicht überein.'; errEl.style.display='block'; return; }
+        const btn = overlay.querySelector('#pwreset-ok');
+        btn.disabled = true; btn.textContent = 'Wird gespeichert…';
+        try {
+          const hash = await hashPasswort(pw1);
+          await SB.patch('users', `id=eq.${rec.user_id}`, { password_hash: hash });
+          await SB.patch('pw_reset_tokens', `id=eq.${rec.id}`, { genutzt: true });
+          overlay.remove();
+          resolve(pw1);
+        } catch(e) {
+          errEl.textContent = '❌ Fehler: ' + e.message;
+          errEl.style.display = 'block';
+          btn.disabled = false; btn.textContent = '✅ Speichern';
+        }
+      };
+    }).then(pw => {
+      if (pw) {
+        window.history.replaceState({}, '', window.location.pathname);
+        showToast('✅ Passwort erfolgreich geändert! Bitte neu anmelden.', '#16a34a');
+      }
+    });
+    return false;
   } catch(e) {
-    alert('Fehler beim Passwort-Reset: ' + e.message);
+    zeigeInfoModal('❌ Fehler', 'Fehler beim Passwort-Reset: ' + e.message);
     return false;
   }
 }
@@ -1317,10 +1372,12 @@ async function renderArchiv() {
   el.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280">⏳ Wird geladen…</div>';
 
   try {
-    // Alle abgeschlossenen Formulare laden
-    const abgeschlossene = await SB.get('formulare',
-      'abgeschlossen=eq.true&order=abgeschlossen_am.desc&limit=200'
-    );
+    // Alle abgeschlossenen Formulare laden (mit Tenant-Filter für Non-Admins)
+    let archivQuery = 'abgeschlossen=eq.true&order=abgeschlossen_am.desc&limit=200';
+    if (currentUser && currentUser.role !== 'admin' && currentUser.tenantId) {
+      archivQuery += `&tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}`;
+    }
+    const abgeschlossene = await SB.get('formulare', archivQuery);
 
     // Archivierte Mitarbeiter laden
     let archivierteMa = [];
@@ -7122,6 +7179,29 @@ async function lernpfadZertifikatGenerieren() {
   doc.text(`Gültigkeitsdauer: 12 Monate. Nächste Unterweisung erforderlich bis: ${gueltigBisStr}`, 20, y+10);
 
   const datei = `Lernpfad-Zertifikat_${currentUser.name.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
+
+  // In Supabase Storage speichern
+  try {
+    const pdfBlob = doc.output('blob');
+    const beschNr = 'LP-' + (tenant ? tenant.name.substring(0,6).replace(/\s/g,'') : 'TEN') + '-' + new Date().getFullYear() + '-' + Date.now().toString().slice(-6);
+    const pdfPath = `${currentUser.tenantId || 'unbekannt'}/lernpfad_${currentUser.userId}_${Date.now()}.pdf`;
+    const pdfUrl = await SB.uploadPdf(pdfBlob, pdfPath).catch(() => null);
+    if (pdfUrl) {
+      await SB.upsert('psaga_bescheinigungen', {
+        id: 'lp_' + currentUser.userId + '_' + Date.now(),
+        tenant_id: currentUser.tenantId || '',
+        user_id: currentUser.userId,
+        user_name: currentUser.name,
+        datum: new Date().toISOString().slice(0,10),
+        ablauf: new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().slice(0,10),
+        bescheinigungs_nr: beschNr,
+        pdf_url: pdfUrl,
+        erstellt_am: new Date().toISOString()
+      }).catch(() => {});
+      showToast('✅ Bescheinigung gespeichert', '#16a34a');
+    }
+  } catch(eUpload) { console.warn('Lernpfad-PDF Upload:', eUpload); }
+
   doc.save(datei);
   await sbAudit('LERNPFAD_ZERTIFIKAT', `Gesamtzertifikat erstellt für ${currentUser.name}`);
   showToast('🏆 Zertifikat wurde heruntergeladen!', '#0f5132');
