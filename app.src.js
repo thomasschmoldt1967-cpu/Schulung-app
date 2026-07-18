@@ -2522,7 +2522,7 @@ function azVorlagenListeRendern(suche) {
       onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
       <div style="font-weight:600;font-size:.88rem;color:#166534">🪝 PSAgA-Schulung (22 Module)</div>
       <div style="font-size:.76rem;color:#16a34a;margin-top:2px">
-        Kapitel 00–21 &nbsp;·&nbsp; Audio + Quiz &nbsp;·&nbsp; DGUV 112-198 &nbsp;·&nbsp; Zertifikat nach Abschluss
+        Kapitel 00–21 &nbsp;·&nbsp; Audio + Quiz &nbsp;·&nbsp; DGUV 112-198 &nbsp;·&nbsp; Teilnahmebescheinigung nach Abschluss
       </div>
     </div>` : '';
 
@@ -8516,7 +8516,7 @@ function psagaAntwortPruefen(gewaehlterIndex) {
         <span style="color:#22c55e;font-weight:600">✅ Richtig!</span>
         <button onclick="psagaQuizIndex++;psagaQuizAnzeigen()"
           style="background:#1a3a5c;color:#fff;border:none;border-radius:8px;padding:12px 24px;font-size:1em;font-weight:600;cursor:pointer">
-          ${psagaQuizIndex+1 >= fragen.length ? '🏆 Zertifikat erstellen' : 'Weiter →'}
+          ${psagaQuizIndex+1 >= fragen.length ? '📄 Bescheinigung erstellen' : 'Weiter →'}
         </button>`;
       cont.appendChild(weiterDiv);
     }
@@ -8556,7 +8556,7 @@ function psagaBestanden(modul) {
 
   if (allebestanden) {
     // 🏆 Alle Kapitel abgeschlossen → Zertifikat ausstellen
-    showToast('🏆 Alle Kapitel bestanden! Zertifikat wird erstellt…', '#0f5132');
+    showToast('🏆 Alle Kapitel bestanden! Teilnahmebescheinigung wird erstellt…', '#0f5132');
     setTimeout(() => psagaZertifikatPDF(modul, userName, tenantId, jetzt, ablauf), 800);
   } else {
     // Nächstes offenes Modul ermitteln
@@ -8658,12 +8658,12 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     const titleAreaW = W - txStart - 52; // Platz lassen für ISO-Siegel rechts
     doc.setTextColor(...DUNKELBLAU);
     doc.setFontSize(20); doc.setFont('helvetica','bold');
-    doc.text('SCHULUNGSZERTIFIKAT', txStart, 18);
+    doc.text('TEILNAHMEBESCHEINIGUNG', txStart, 18);
     // Unterstreichung
     doc.setFillColor(...BLAU); doc.rect(txStart, 21, titleAreaW, 1, 'F');
     doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.setTextColor(...GRAU_TEXT);
-    doc.text('gemäß DGUV Regel 112-198  ·  PSA-BV', txStart, 29);
+    doc.text('gemäß DGUV Regel 112-198  ·  PSA-BV  ·  ArbSchG', txStart, 29);
 
     // ISO-Siegel — rechts, in der UNTEREN Hälfte des Headers (unter Titel-Höhe)
     // So überdecken sie den Schriftzug nicht
@@ -8813,15 +8813,50 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     doc.setFillColor(...GOLD); doc.rect(0, y, 6, 20, 'F');
     doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(255,255,255);
     doc.text('CSC GmbH  ·  Petermax-Müller-Straße 3  ·  30880 Laatzen  ·  www.csc-hannover.de', W/2, y+8, {align:'center'});
-    const zertNr = 'PSAgA-' + datum.getFullYear() + '-' + String(datum.getMonth()+1).padStart(2,'0') + '-' + String(Date.now()).slice(-5);
+    const zertNr = 'TB-PSAgA-' + datum.getFullYear() + '-' + String(datum.getMonth()+1).padStart(2,'0') + '-' + String(Date.now()).slice(-5);
     doc.setTextColor(180, 210, 240);
-    doc.text('Zertifikat-Nr.:  ' + zertNr, W/2, y+15, {align:'center'});
+    doc.text('Bescheinigungs-Nr.:  ' + zertNr, W/2, y+15, {align:'center'});
 
-    // ── Download ──────────────────────────────────────────────────────────────
+    // ── Speichern in Supabase Storage + Download ──────────────────────────────
     const blob = doc.output('blob');
     const url  = URL.createObjectURL(blob);
     window.open(url, '_blank');
-    showToast('🏆 Zertifikat erstellt!', '#0f5132');
+    showToast('📄 Teilnahmebescheinigung erstellt!', '#0f5132');
+
+    // In Supabase Storage speichern
+    try {
+      const userId  = currentUser?.userId || 'unbekannt';
+      const datStr  = datum.toISOString().slice(0,10).replace(/-/g,'');
+      const fileName = `psaga_bescheinigung_${userId}_${datStr}.pdf`;
+      const storagePath = `${tenantId || 'allgemein'}/${fileName}`;
+      const publicUrl = await SB.uploadPdf(blob, storagePath);
+
+      // In DB speichern — eigene Tabelle psaga_bescheinigungen (falls vorhanden) oder audit
+      try {
+        await SB.post('psaga_bescheinigungen', {
+          id: 'psagab_' + Date.now() + '_' + Math.random().toString(36).slice(2,5),
+          user_id: userId,
+          user_name: userName,
+          tenant_id: tenantId || null,
+          datum: datum.toISOString().slice(0,10),
+          ablauf: ablauf.toISOString().slice(0,10),
+          bescheinigungs_nr: zertNr,
+          pdf_url: publicUrl,
+          erstellt_am: new Date().toISOString()
+        });
+        showToast('🗄️ Bescheinigung gespeichert', '#0f5132');
+      } catch(dbErr) {
+        // Tabelle existiert noch nicht → nur Audit-Log
+        await sbAudit('PSAGA_BESCHEINIGUNG', JSON.stringify({
+          user_id: userId, user_name: userName, tenant_id: tenantId,
+          datum: datum.toISOString().slice(0,10), nr: zertNr, pdf_url: publicUrl
+        })).catch(()=>{});
+        showToast('🗄️ Bescheinigung in Audit gespeichert', '#2563eb');
+      }
+    } catch(uploadErr) {
+      console.warn('Bescheinigung-Upload fehlgeschlagen:', uploadErr.message);
+      showToast('⚠️ PDF geöffnet, aber Speicherung fehlgeschlagen: ' + uploadErr.message, '#b45309');
+    }
   } catch(e) {
     console.error('Zertifikat-Fehler:', e);
     showToast('⚠️ Zertifikat konnte nicht erstellt werden: ' + e.message, '#7f1d1d');
