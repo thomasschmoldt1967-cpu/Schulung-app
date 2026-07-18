@@ -2551,7 +2551,8 @@ async function createZuweisung() {
   if (!vorlagenId) { msgEl.textContent='Bitte eine Schulungsvorlage auswählen.'; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); return; }
   if (!frist) { msgEl.textContent='Bitte eine Frist angeben.'; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); return; }
   const tenants = tenantSel ? [tenantSel] : APP_TENANTS.map(t=>t.id);
-  const neu = tenants.map(tid => ({ id:`z_${tid}_${vorlagenId}_${Date.now()}`, vorlage_id:vorlagenId, tenant_id:tid, frist, pflicht }));
+  const ts = Date.now();
+  const neu = tenants.map((tid, i) => ({ id:`zuw_${ts}_${i}_${Math.random().toString(36).slice(2,6)}`, vorlage_id:vorlagenId, tenant_id:tid, frist, pflicht }));
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
