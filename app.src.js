@@ -8379,6 +8379,17 @@ function psagaFolienOeffnen(modulId) {
   }
 
   psagaAktuelleFolie = 1;
+  // Gespeicherte Position laden
+  const fsKey = `psaga_folie_${psagaAktivesModul.id}_${currentUser?.userId||''}`;
+  const fsSaved = localStorage.getItem(fsKey);
+  if (fsSaved) {
+    const savedIdx = parseInt(fsSaved, 10);
+    const maxIdx = psagaAktivesModul.folien;
+    if (savedIdx > 1 && savedIdx <= maxIdx) {
+      psagaAktuelleFolie = savedIdx;
+      setTimeout(() => showToast('📌 Weiter ab Folie ' + savedIdx), 500);
+    }
+  }
   psagaAutoModus = false;
   psagaAutoPause = false;
   psagaFolienAnzeigen();
@@ -8552,11 +8563,17 @@ function psagaFolienNext() {
   if (!psagaAktivesModul) return;
   if (psagaAktuelleFolie < psagaAktivesModul.folien) {
     psagaAktuelleFolie++;
+    // Folien-Position merken
+    const fsKey = `psaga_folie_${psagaAktivesModul.id}_${currentUser?.userId||''}`;
+    localStorage.setItem(fsKey, String(psagaAktuelleFolie));
     psagaFolienAnzeigen();
   } else {
     // Letzte Folie: Quiz starten (wenn vorhanden) oder direkt abschließen
     const modulKopie = psagaAktivesModul; // Kopie VOR schliessen (schliessen setzt auf null!)
     const hatQuiz = !!(PSAGA_QUIZ[modulKopie.id] && PSAGA_QUIZ[modulKopie.id].length);
+    // Gespeicherte Position nach Abschluss löschen
+    const fsKeyDone = `psaga_folie_${modulKopie.id}_${currentUser?.userId||''}`;
+    localStorage.removeItem(fsKeyDone);
     psagaFolienSchliessen();
     if (hatQuiz) {
       psagaQuizStarten(modulKopie);
@@ -8568,6 +8585,22 @@ function psagaFolienNext() {
 
 function psagaQuizStarten(modul) {
   psagaQuizModulId = modul.id;
+  // Gespeicherten Stand laden falls vorhanden und gleiches Modul
+  const savedRaw = localStorage.getItem('psaga_quiz_state');
+  if (savedRaw) {
+    try {
+      const saved = JSON.parse(savedRaw);
+      if (saved.modulId === modul.id && saved.index > 0) {
+        psagaQuizIndex   = saved.index;
+        psagaQuizFehler  = saved.fehler || 0;
+        psagaQuizRichtig = saved.richtig || [];
+        localStorage.removeItem('psaga_quiz_state'); // nach Laden löschen
+        psagaQuizAnzeigen();
+        return;
+      }
+    } catch(e) {}
+  }
+  // Kein gespeicherter Stand: von vorne
   psagaQuizIndex   = 0;
   psagaQuizFehler  = 0;
   psagaQuizRichtig = [];
@@ -8596,7 +8629,7 @@ function psagaQuizAnzeigen() {
   document.body.style.overflow = 'hidden';
   modal.innerHTML = `
     <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative">
-      <button onclick="this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
+      <button onclick="const qState={modulId:psagaQuizModulId,index:psagaQuizIndex,fehler:psagaQuizFehler,richtig:psagaQuizRichtig};localStorage.setItem('psaga_quiz_state',JSON.stringify(qState));this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
         style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;" 
         title="Schließen">✕</button>
       <span style="font-size:1.3em">📝</span>
@@ -8627,7 +8660,7 @@ function psagaQuizAnzeigenMitHinweis() {
   modal.style.display = 'flex';
   modal.innerHTML = `
     <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative">
-      <button onclick="this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
+      <button onclick="const qState={modulId:psagaQuizModulId,index:psagaQuizIndex,fehler:psagaQuizFehler,richtig:psagaQuizRichtig};localStorage.setItem('psaga_quiz_state',JSON.stringify(qState));this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
         style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;" 
         title="Schließen">✕</button>
       <span style="font-size:1.3em">📝</span>
@@ -8735,6 +8768,9 @@ function psagaFolienPrev() {
   if (!psagaAktivesModul) return;
   if (psagaAktuelleFolie > 1) {
     psagaAktuelleFolie--;
+    // Folien-Position merken
+    const fsKey = `psaga_folie_${psagaAktivesModul.id}_${currentUser?.userId||''}`;
+    localStorage.setItem(fsKey, String(psagaAktuelleFolie));
     psagaFolienAnzeigen();
   }
 }
