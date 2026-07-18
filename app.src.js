@@ -3413,11 +3413,15 @@ async function saveFormularToDB(felder, abschliessen, abgeschlossenAm, abgeschlo
 }
 
 async function doAbschluss(felder) {
+  // Schutz gegen Doppelklick
+  const abschlussBtn = document.querySelector('.btn-abschluss-bestaetigen, [onclick*="doAbschluss"]');
+  if (abschlussBtn) { abschlussBtn.disabled = true; abschlussBtn.textContent = 'Wird gespeichert…'; }
   const zuw=zuweisungen.find(z=>z.id===activeZuwId), vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId);
   const ts=now();
   closeModal();
-  await saveFormularToDB(felder, true, ts, currentUser.id);
+  try {
+  await saveFormularToDB(felder, true, ts, currentUser.userId);
   await sbAudit('ABSCHLUSS', `Schulung "${vorlage.titel}" abgeschlossen (${zuw.tenantId})`);
   // Push-Benachrichtigung senden
   pushSchulungsAbschluss(vorlage, tenant);
@@ -3427,6 +3431,11 @@ async function doAbschluss(felder) {
     if (currentUser.role==='admin') { renderAdminDashboard(); showScreen('screen-admin'); }
     else { renderSubDashboard(); showScreen('screen-sub'); }
   }, 1500);
+  if (abschlussBtn) { abschlussBtn.disabled = false; abschlussBtn.textContent = 'Bestätigen'; }
+  } catch(e) {
+    if (abschlussBtn) { abschlussBtn.disabled = false; abschlussBtn.textContent = 'Bestätigen'; }
+    throw e;
+  }
 }
 
 function backFromFormular() { if(currentUser.role==='admin') showScreen('screen-admin'); else showScreen('screen-sub'); }
@@ -6544,7 +6553,8 @@ async function _lpUntSpeichernMA(unterschriftBild) {
     vollname:         currentUser.name,
     unterzeichnet_am: ts,
     alle_kapitel_am:  ts,
-    aktualisiert_am:  ts
+    aktualisiert_am:  ts,
+    unterschrift_bild: unterschriftBild || null
   });
   lernpfadUnterschrift = { vollname: currentUser.name, unterzeichnetAm: ts, durchgang: lernpfadAktuellerDurchgang };
   await sbAudit('LERNPFAD_UNTERZEICHNET', `Lernpfad unterzeichnet von ${currentUser.name} (Durchgang ${lernpfadAktuellerDurchgang})`);
@@ -6663,8 +6673,8 @@ async function lernpfadBestaetigen(kapitelId, userId) {
       `Kapitel ${kap.nr}: "${kap.titel}" bestätigt für User ${userId}`);
     showToast(`✅ Kapitel ${kap.nr} bestätigt`, '#16a34a');
     // Lokalen Cache updaten (wenn eigener User)
-    if (userId === currentUser.id) {
-      lernpfadFortschritt[kapitelId] = { abgehakt: true, abgehaktAm: ts, bestaetigtAm: ts, bestaetigtVon: currentUser.id };
+    if (userId === currentUser.userId) {
+      lernpfadFortschritt[kapitelId] = { abgehakt: true, abgehaktAm: ts, bestaetigtAm: ts, bestaetigtVon: currentUser.userId };
       localStorage.setItem(LP_STORAGE_KEY(), JSON.stringify(lernpfadFortschritt));
       renderLernpfad();
     }
@@ -6883,7 +6893,7 @@ function renderLernpfad() {
         </button>`;
       } else if (isVerantwortlicher && abgehakt && !bestaetigt) {
         // Verantwortlicher: Bestätigen
-        aktionsBtn = `<button onclick="lernpfadBestaetigen('${kap.id}','${currentUser.id}')"
+        aktionsBtn = `<button onclick="lernpfadBestaetigen('${kap.id}','${currentUser.userId}')"
           style="font-size:.7rem;padding:4px 10px;border-radius:6px;border:1px solid #7c3aed;
                  background:#faf5ff;color:#7c3aed;cursor:pointer;white-space:nowrap;font-weight:600">
           ✔ Bestätigen
@@ -8267,11 +8277,25 @@ function psagaSchulungenToggle() {
   if (!open) psagaSchulungenRender();
 }
 
-function psagaSchulungenRender() {
+async function psagaSchulungenRender() {
   const cont = document.getElementById('psaga-schulungen-container');
   if (!cont) return;
 
   const userId = currentUser?.userId || '';
+
+  // Supabase-Fortschritt nachladen falls localStorage leer
+  try {
+    const sbFortschritt = await SB.get('psaga_zuweisung', 
+      `user_id=eq.${encodeURIComponent(userId)}&bestanden=eq.true`);
+    if (sbFortschritt && sbFortschritt.length) {
+      sbFortschritt.forEach(r => {
+        const key = `psaga_bestanden_${r.modul_id}_${userId}`;
+        if (!localStorage.getItem(key)) {
+          localStorage.setItem(key, JSON.stringify({ bestanden: true, bestanden_am: r.bestanden_am }));
+        }
+      });
+    }
+  } catch(e) { console.warn('PSAgA Fortschritt-Sync:', e); }
 
   // Fortschritts-Zähler: wie viele Module bestanden?
   const bestandenAnzahl = PSAGA_MODULE.filter(m =>
@@ -8571,7 +8595,10 @@ function psagaQuizAnzeigen() {
   modal.style.display = 'flex';
   document.body.style.overflow = 'hidden';
   modal.innerHTML = `
-    <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative">
+      <button onclick="this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
+        style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;" 
+        title="Schließen">✕</button>
       <span style="font-size:1.3em">📝</span>
       <span style="font-weight:700;font-size:1.1em">Wissenstest — Frage ${psagaQuizIndex+1} von ${fragen.length}</span>
     </div>
@@ -8599,7 +8626,10 @@ function psagaQuizAnzeigenMitHinweis() {
   const q = fragen[psagaQuizIndex];
   modal.style.display = 'flex';
   modal.innerHTML = `
-    <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div style="background:#1a2d4e;color:#fff;padding:16px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;position:relative">
+      <button onclick="this.closest('#psaga-quiz-modal').style.display='none'; document.body.style.overflow=''; document.querySelectorAll('#psaga-quiz-modal').forEach(e=>e.remove());" 
+        style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;" 
+        title="Schließen">✕</button>
       <span style="font-size:1.3em">📝</span>
       <span style="font-weight:700;font-size:1.1em">Wissenstest — Frage ${psagaQuizIndex+1} von ${fragen.length}</span>
     </div>
@@ -8650,7 +8680,7 @@ function psagaAntwortPruefen(gewaehlterIndex) {
   }
 }
 
-function psagaBestanden(modul) {
+async function psagaBestanden(modul) {
   const userId   = currentUser?.userId || '';
   const userName = currentUser?.name   || 'Mitarbeiter';
   const tenantId = currentUser?.tenantId || '';
@@ -8662,6 +8692,17 @@ function psagaBestanden(modul) {
     datum: jetzt.toISOString(), ablauf: ablauf.toISOString(),
     fehler: psagaQuizFehler
   }));
+  // Supabase-Sync PSAgA-Fortschritt
+  try {
+    await SB.upsert('psaga_zuweisung', {
+      id: `psaga_${userId}_${modul.id}`,
+      user_id: userId,
+      tenant_id: currentUser.tenantId || '',
+      modul_id: modul.id,
+      bestanden: true,
+      bestanden_am: new Date().toISOString()
+    });
+  } catch(e) { console.warn('PSAgA Supabase-Sync fehlgeschlagen:', e); }
   // Audit
   sbAudit('PSAGA_BESTANDEN', JSON.stringify({
     modul_id: modul.id, modul_titel: modul.titel,
