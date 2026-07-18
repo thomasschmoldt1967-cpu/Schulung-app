@@ -3543,7 +3543,9 @@ function generatePdf(zuwId, downloadOnly) {
   }
 
   // Parallel zu Supabase Storage UND Google Drive hochladen
-  if (!downloadOnly && form.abgeschlossen) {
+  // WICHTIG: Immer hochladen (nicht nur wenn form.abgeschlossen bereits true ist —
+  // beim ersten Abschluss ist das local-state noch false)
+  if (!downloadOnly) {
     const pdfBlob   = doc.output('blob');
     const pdfBase64 = doc.output('datauristring').split(',')[1];
     uploadPdfToSupabase(pdfBlob, fn, zuwId, zuw.tenantId);
@@ -7181,6 +7183,7 @@ function firmaTabWechseln(tab) {
   if (tab === 'verantwortliche') firmaRenderVerantwortliche();
   if (tab === 'uebersicht') firmaRenderUebersicht();
   if (tab === 'schulungen') firmaRenderSchulungen();
+  if (tab === 'historie') firmaRenderHistorie();
 }
 
 async function firmaRenderVerantwortliche() {
@@ -7257,6 +7260,127 @@ async function firmaRenderSchulungen() {
     }).join('');
   } catch(e) {
     cont.innerHTML = `<div style="color:#dc2626;font-size:.85rem">${escHtml(e.message)}</div>`;
+  }
+}
+
+async function firmaRenderHistorie() {
+  const cont = document.getElementById('firma-historie-inhalt');
+  if (!cont) return;
+  cont.innerHTML = '<div style="text-align:center;padding:20px;color:#6b7280">⏳ Wird geladen…</div>';
+  try {
+    const tid = currentUser.tenantId;
+
+    // Alle Mitarbeiter des Tenants laden
+    const mitarb = await SB.get('users',
+      `tenant_id=eq.${tid}&role=eq.mitarbeiter&archiviert=eq.false&order=name.asc`);
+
+    // Alle abgeschlossenen Formulare des Tenants laden
+    const alleZuwIds = zuweisungen.filter(z => z.tenantId === tid).map(z => z.id);
+    let abgForms = [];
+    if (alleZuwIds.length) {
+      abgForms = await SB.get('formulare',
+        `id=in.(${alleZuwIds.join(',')})&abgeschlossen=eq.true&order=abgeschlossen_am.desc`);
+    }
+
+    // Lernpfad-Unterschriften laden
+    const lpUnts = await SB.get('lernpfad_unterschriften',
+      `tenant_id=eq.${tid}&order=unterzeichnet_am.desc`);
+
+    // Filter-State
+    const filterEl = document.getElementById('hist-filter-ma');
+    const filterMa = filterEl ? filterEl.value : '';
+
+    // Suchleiste + Filter oben
+    let html = `
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <select id="hist-filter-ma" onchange="firmaRenderHistorie()"
+          style="padding:7px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;background:#fff;flex:1;min-width:140px">
+          <option value="">— Alle Mitarbeiter —</option>
+          ${mitarb.map(m=>`<option value="${m.id}" ${filterMa===m.id?'selected':''}>${escHtml(m.name)}</option>`).join('')}
+        </select>
+        <span style="font-size:.78rem;color:#6b7280">${abgForms.length + lpUnts.length} Einträge gesamt</span>
+      </div>`;
+
+    // Je Mitarbeiter gruppiert
+    const maMap = {};
+    mitarb.forEach(m => { maMap[m.id] = m; });
+
+    // Alle Nachweise sammeln
+    let eintraege = [];
+
+    // 1. Normale Schulungen (formulare)
+    abgForms.forEach(f => {
+      const zuw = zuweisungen.find(z => z.id === f.id);
+      const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
+      const isLP = zuw?.vorlagenId === '__lernpfad__';
+      const isPsaga = zuw?.vorlagenId === '__psaga__';
+      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      eintraege.push({
+        userId: f.abgeschlossen_von || '?',
+        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
+        titel,
+        datum: f.abgeschlossen_am,
+        pdfUrl: f.pdf_path || null,
+        extra: zuw?.frist ? `Frist: ${zuw.frist}` : ''
+      });
+    });
+
+    // 2. Lernpfad-Unterschriften
+    lpUnts.forEach(u => {
+      eintraege.push({
+        userId: u.user_id,
+        userName: u.vollname,
+        typ: 'lernpfad_unt',
+        titel: '📚 Lernpfad-Unterschrift',
+        datum: u.unterzeichnet_am,
+        pdfUrl: null,
+        extra: u.verantwortlicher_name ? `Gegengezeichnet: ${u.verantwortlicher_name}` : '⏳ Gegenzeichnung ausstehend'
+      });
+    });
+
+    // Nach Mitarbeiter filtern falls ausgewählt
+    if (filterMa) {
+      eintraege = eintraege.filter(e => e.userId === filterMa);
+    }
+
+    if (!eintraege.length) {
+      cont.innerHTML = html + '<div style="text-align:center;padding:30px;color:#9ca3af;font-size:.88rem">📭 Keine abgeschlossenen Schulungen vorhanden</div>';
+      return;
+    }
+
+    // Nach Mitarbeiter gruppieren
+    const gruppenMap = {};
+    eintraege.forEach(e => {
+      const key = e.userId;
+      if (!gruppenMap[key]) gruppenMap[key] = { name: e.userName || maMap[key]?.name || e.userId, eintraege: [] };
+      gruppenMap[key].eintraege.push(e);
+    });
+
+    const typColors = { lernpfad:'#6b21a8', psaga:'#166534', lernpfad_unt:'#7c3aed', schulung:'#1e3a5f' };
+    const typBg = { lernpfad:'#f5f3ff', psaga:'#f0fdf4', lernpfad_unt:'#ede9fe', schulung:'#f0f4ff' };
+
+    html += Object.values(gruppenMap).sort((a,b)=>a.name.localeCompare(b.name)).map(gr => `
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:12px;overflow:hidden">
+        <div style="background:#f8fafc;padding:10px 14px;border-bottom:1px solid #e5e7eb;font-weight:700;font-size:.88rem;color:#1e3a5f">
+          👤 ${escHtml(gr.name)} <span style="font-weight:400;color:#6b7280;font-size:.78rem">(${gr.eintraege.length} Nachweise)</span>
+        </div>
+        ${gr.eintraege.sort((a,b)=>new Date(b.datum)-new Date(a.datum)).map(e => `
+          <div style="padding:10px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px">
+            <div style="background:${typBg[e.typ]||'#f0f4ff'};border-radius:6px;padding:4px 8px;font-size:.72rem;font-weight:700;color:${typColors[e.typ]||'#1e3a5f'};white-space:nowrap">
+              ${e.typ==='psaga'?'PSAgA':e.typ==='lernpfad'?'Lernpfad':e.typ==='lernpfad_unt'?'LP-Unt.':'Schulung'}
+            </div>
+            <div style="flex:1;min-width:0">
+              <div style="font-size:.83rem;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(e.titel)}</div>
+              <div style="font-size:.72rem;color:#6b7280">${e.datum ? new Date(e.datum).toLocaleDateString('de-DE') : '–'} ${e.extra ? '· '+escHtml(e.extra) : ''}</div>
+            </div>
+            ${e.pdfUrl ? `<a href="${e.pdfUrl}" target="_blank" style="font-size:.72rem;padding:5px 10px;border:1px solid #3b82f6;border-radius:6px;color:#3b82f6;text-decoration:none;white-space:nowrap">📄 PDF</a>` : '<span style="font-size:.72rem;color:#9ca3af;white-space:nowrap">kein PDF</span>'}
+          </div>`).join('')}
+      </div>`).join('');
+
+    cont.innerHTML = html;
+  } catch(e) {
+    cont.innerHTML = `<div style="color:#dc2626;font-size:.85rem;padding:12px">${escHtml(e.message)}</div>`;
+    console.error('firmaRenderHistorie:', e);
   }
 }
 
