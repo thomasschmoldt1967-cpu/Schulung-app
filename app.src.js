@@ -2552,6 +2552,22 @@ async function createZuweisung() {
   if (!frist) { msgEl.textContent='Bitte eine Frist angeben.'; msgEl.style.color='#dc2626'; msgEl.classList.add('show'); return; }
   const tenants = tenantSel ? [tenantSel] : APP_TENANTS.map(t=>t.id);
   const ts = Date.now();
+
+  // Duplikat-Check: Vorlage bereits diesem Tenant zugewiesen?
+  const duplikate = tenants.filter(tid =>
+    zuweisungen.some(z => z.tenantId === tid && z.vorlagenId === vorlagenId)
+  );
+  if (duplikate.length > 0) {
+    const namen = duplikate.map(tid => {
+      const t = APP_TENANTS.find(t => t.id === tid);
+      return t ? t.name : tid;
+    }).join(', ');
+    msgEl.textContent = `⚠️ Diese Vorlage ist bereits zugewiesen an: ${namen}. Bitte zuerst die bestehende Zuweisung löschen.`;
+    msgEl.style.color = '#dc2626';
+    msgEl.classList.add('show');
+    return;
+  }
+
   const neu = tenants.map((tid, i) => ({ id:`zuw_${ts}_${i}_${Math.random().toString(36).slice(2,6)}`, vorlage_id:vorlagenId, tenant_id:tid, frist, pflicht }));
   try {
     await SB.post('zuweisungen', neu);
@@ -2567,22 +2583,24 @@ async function deleteZuweisung(id) {
   // Sicherheitsprüfung: abgeschlossene Formulare NICHT löschen
   const form = formulare[id];
   if (form && form.abgeschlossen) {
-    alert('⚠️ Diese Zuweisung kann nicht gelöscht werden, da bereits ein ausgefülltes Formular existiert.\n\nAbgeschlossene Schulungsnachweise dürfen nicht entfernt werden (Dokumentationspflicht).');
+    showToast('⚠️ Zuweisung kann nicht gelöscht werden — abgeschlossener Nachweis vorhanden (Dokumentationspflicht)', '#7f1d1d');
     return;
   }
   const hatEintrag = form && form.gestartet;
   const warnung = hatEintrag
-    ? 'Zuweisung löschen?\n\n⚠️ Es gibt bereits einen begonnenen Eintrag. Dieser wird ebenfalls gelöscht.'
+    ? 'Zuweisung löschen?<br><br>⚠️ Es gibt bereits einen begonnenen Eintrag. Dieser wird ebenfalls gelöscht.'
     : 'Zuweisung wirklich löschen?';
-  if (!confirm(warnung)) return;
-  try {
-    await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${id}`, { method:'DELETE', headers:SB.h });
-    await fetch(`${SUPABASE_URL}/rest/v1/formulare?id=eq.${id}`,   { method:'DELETE', headers:SB.h });
-    zuweisungen = zuweisungen.filter(z=>z.id!==id);
-    delete formulare[id];
-    await sbAudit('LOESCHEN',`Zuweisung ${id} gelöscht`);
-    renderAdminZuweisungen(); renderAdminStats(); renderAdminTenantTable();
-  } catch(e) { alert('Fehler: '+e.message); }
+  showConfirmModal(warnung, async () => {
+    try {
+      await fetch(`${SUPABASE_URL}/rest/v1/zuweisungen?id=eq.${id}`, { method:'DELETE', headers:SB.h });
+      await fetch(`${SUPABASE_URL}/rest/v1/formulare?id=eq.${id}`,   { method:'DELETE', headers:SB.h });
+      zuweisungen = zuweisungen.filter(z=>z.id!==id);
+      delete formulare[id];
+      await sbAudit('LOESCHEN',`Zuweisung ${id} gelöscht`);
+      showToast('🗑 Zuweisung gelöscht', '#6b7280');
+      renderAdminZuweisungen(); renderAdminStats(); renderAdminTenantTable();
+    } catch(e) { showToast('Fehler: '+e.message, '#dc2626'); }
+  }, { jaLabel: 'Ja, löschen' });
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -2593,39 +2611,42 @@ async function deleteZuweisung(id) {
 // ══════════════════════════════════════════════════════════════
 // ── MITARBEITER: AKTIV/PASSIV/ARCHIV ───────────────────────────
 async function mitarbeiterToggleAktiv(userId, jetztAktiv) {
-  if (!confirm(jetztAktiv
-    ? 'Mitarbeiter auf PASSIV setzen? Er erhält dann keine neuen Schulungen.'
-    : 'Mitarbeiter wieder auf AKTIV setzen?')) return;
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
-      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ aktiv: !jetztAktiv })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    sbAudit(jetztAktiv ? 'MITARBEITER_PASSIV' : 'MITARBEITER_AKTIV', { userId, tenantId: currentUser.tenantId });
-    showToast(jetztAktiv ? '⏸ Mitarbeiter auf Passiv gesetzt' : '▶ Mitarbeiter wieder aktiv', '#2563eb');
-    renderMitarbeiterListe();
-  } catch(e) {
-    showToast('Fehler: ' + e.message, '#dc2626');
-  }
+  const text = jetztAktiv
+    ? 'Mitarbeiter auf <strong>PASSIV</strong> setzen?<br>Er erhält dann keine neuen Schulungen.'
+    : 'Mitarbeiter wieder auf <strong>AKTIV</strong> setzen?';
+  showConfirmModal(text, async () => {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ aktiv: !jetztAktiv })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      sbAudit(jetztAktiv ? 'MITARBEITER_PASSIV' : 'MITARBEITER_AKTIV', { userId, tenantId: currentUser.tenantId });
+      showToast(jetztAktiv ? '⏸ Mitarbeiter auf Passiv gesetzt' : '▶ Mitarbeiter wieder aktiv', '#2563eb');
+      renderMitarbeiterListe();
+    } catch(e) {
+      showToast('Fehler: ' + e.message, '#dc2626');
+    }
+  }, { jaLabel: jetztAktiv ? 'Ja, deaktivieren' : 'Ja, aktivieren', jaColor: jetztAktiv ? '#b45309' : '#16a34a' });
 }
 
 async function mitarbeiterArchivieren(userId, name) {
-  if (!confirm(`Mitarbeiter „${name}" wirklich archivieren?\n\nEr wird aus der aktiven Liste entfernt und im Archiv gespeichert.`)) return;
-  try {
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
-      method: 'PATCH',
-      headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
-      body: JSON.stringify({ archiviert: true, archiviert_am: new Date().toISOString(), aktiv: false })
-    });
-    if (!r.ok) throw new Error(await r.text());
-    sbAudit('MITARBEITER_ARCHIVIERT', { userId, name, tenantId: currentUser.tenantId });
-    showToast('📦 Mitarbeiter archiviert', '#6b7280');
-    renderMitarbeiterListe();
-  } catch(e) {
-    showToast('Fehler: ' + e.message, '#dc2626');
-  }
+  showConfirmModal(`Mitarbeiter <strong>${escHtml(name)}</strong> wirklich archivieren?<br><br>Er wird aus der aktiven Liste entfernt und im Archiv gespeichert.`, async () => {
+    try {
+      const r = await fetch(`${SUPABASE_URL}/rest/v1/users?id=eq.${encodeURIComponent(userId)}`, {
+        method: 'PATCH',
+        headers: { ...SB.h, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify({ archiviert: true, archiviert_am: new Date().toISOString(), aktiv: false })
+      });
+      if (!r.ok) throw new Error(await r.text());
+      sbAudit('MITARBEITER_ARCHIVIERT', { userId, name, tenantId: currentUser.tenantId });
+      showToast('📦 Mitarbeiter archiviert', '#6b7280');
+      renderMitarbeiterListe();
+    } catch(e) {
+      showToast('Fehler: ' + e.message, '#dc2626');
+    }
+  }, { jaLabel: 'Ja, archivieren' });
 }
 
 async function renderMitarbeiterListe() {
@@ -3655,6 +3676,30 @@ function showToast(text, color='#16a34a') {
   setTimeout(() => msg.remove(), 4000);
 }
 
+// Ersatz für confirm() — PWA-sicher (kein nativer Dialog)
+function showConfirmModal(text, onJa, optionen = {}) {
+  const vorhandenes = document.getElementById('_confirm_modal');
+  if (vorhandenes) vorhandenes.remove();
+  const jaLabel  = optionen.jaLabel  || 'Ja, fortfahren';
+  const neinLabel= optionen.neinLabel|| 'Abbrechen';
+  const jaColor  = optionen.jaColor  || '#dc2626';
+  const overlay = document.createElement('div');
+  overlay.id = '_confirm_modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:99998;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:24px;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+      <div style="font-size:.95rem;color:#1e293b;line-height:1.5;margin-bottom:20px">${text}</div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button id="_cm_nein" style="padding:9px 18px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;color:#374151;font-size:.88rem;cursor:pointer">${neinLabel}</button>
+        <button id="_cm_ja"   style="padding:9px 18px;border:none;border-radius:8px;background:${jaColor};color:#fff;font-size:.88rem;font-weight:600;cursor:pointer">${jaLabel}</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('_cm_nein').onclick = () => overlay.remove();
+  document.getElementById('_cm_ja').onclick   = () => { overlay.remove(); onJa(); };
+  overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+}
+
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
@@ -3696,37 +3741,65 @@ async function nuAnlegen() {
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
     msgEl.textContent = '⚠️ Ungültige E-Mail-Adresse.'; return;
   }
+  if (passwort.length < 8) {
+    msgEl.textContent = '⚠️ Passwort muss mindestens 8 Zeichen haben.'; return;
+  }
 
   msgEl.style.color = '#2563eb';
-  msgEl.textContent = '⏳ Wird angelegt …';
+  msgEl.textContent = '⏳ Wird geprüft …';
 
+  let tenantId = null;
   try {
+    // 0. Duplicate-Check: E-Mail bereits vergeben?
+    const existing = await SB.get('users', `email=eq.${encodeURIComponent(email)}&select=id`);
+    if (existing && existing.length > 0) {
+      msgEl.style.color = '#dc2626';
+      msgEl.textContent = `⚠️ Die E-Mail-Adresse „${email}" ist bereits vergeben. Bitte eine andere verwenden.`;
+      return;
+    }
+
+    // Duplicate-Check: Unternehmensname bereits vorhanden?
+    const existingTenant = APP_TENANTS.find(t => t.name.toLowerCase() === name.toLowerCase());
+    if (existingTenant) {
+      msgEl.style.color = '#dc2626';
+      msgEl.textContent = `⚠️ Ein Unternehmen mit dem Namen „${name}" existiert bereits.`;
+      return;
+    }
+
+    msgEl.textContent = '⏳ Wird angelegt …';
+
     // 1. Tenant anlegen
-    const tenantId = 'tenant_' + Date.now();
+    tenantId = 'tenant_' + Date.now();
     const tRes = await SB.post('tenants', { id: tenantId, name });
-    if (tRes.error) throw new Error('Tenant: ' + (tRes.error.message || JSON.stringify(tRes.error)));
+    if (tRes && tRes.error) throw new Error('Tenant: ' + (tRes.error.message || JSON.stringify(tRes.error)));
 
     // 2. Passwort hashen (bcrypt)
     const hash = await hashPasswort(passwort);
 
     // 3. User (Unternehmens-Account mit firma-Rolle) anlegen
-    const userId = 'user_' + Date.now();
+    const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
     const uRes = await SB.post('users', {
       id: userId,
       name: kontakt,
       email,
       password_hash: hash,
       role: 'firma',
-      tenant_id: tenantId
+      tenant_id: tenantId,
+      aktiv: true,
+      archiviert: false
     });
-    if (uRes.error) throw new Error('User: ' + (uRes.error.message || JSON.stringify(uRes.error)));
+    if (uRes && uRes.error) {
+      // Rollback: Tenant wieder löschen damit keine Geisterfirma entsteht
+      try { await SB.delete('tenants', `id=eq.${tenantId}`); } catch(re) { console.warn('Rollback Fehler:', re.message); }
+      throw new Error('Benutzer: ' + (uRes.error.message || JSON.stringify(uRes.error)));
+    }
 
     // 4. App-State aktualisieren
     APP_TENANTS.push({ id: tenantId, name });
     try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
 
     msgEl.style.color = '#16a34a';
-    msgEl.textContent = `✅ "${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
+    msgEl.textContent = `✅ „${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
 
     // E-Mail mit Zugangsdaten versenden
     const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name });
@@ -3748,6 +3821,7 @@ async function nuAnlegen() {
   } catch(e) {
     msgEl.style.color = '#dc2626';
     msgEl.textContent = '❌ Fehler: ' + e.message;
+    console.error('nuAnlegen Fehler:', e);
   }
 }
 
