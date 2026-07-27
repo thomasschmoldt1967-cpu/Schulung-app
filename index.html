@@ -491,6 +491,13 @@
           <div style="font-weight:700;font-size:.85rem">Mitarbeiter anlegen</div>
           <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Manuell hinzufügen</div>
         </button>
+        <!-- Bereiche-Button (nur für Verantwortliche) -->
+        <button id="sub-bereiche-btn" onclick="verantwBereicheModal()"
+          style="display:none;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none;margin-top:10px">
+          <span style="font-size:1.8rem">🏗</span>
+          <div style="font-weight:700;font-size:.85rem">Bereiche & Bereichsleiter</div>
+          <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Bereiche verwalten</div>
+        </button>
       </div>
 
       <!-- Mitarbeiter importieren -->
@@ -1386,6 +1393,65 @@
       <button onclick="firmaVerantwortlichenBearbeitenSchliessen()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
       <button id="fvb-speichern-btn" onclick="firmaVerantwortlichenBearbeitenSpeichern()" style="flex:2;background:#1e3a5f;color:#fff;border:none;padding:11px;border-radius:9px;font-size:.9rem;font-weight:700;cursor:pointer">💾 Speichern</button>
     </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     SCREEN: BEREICHSLEITER
+════════════════════════════════════════════════════════════ -->
+<div id="screen-bereichsleiter" class="screen">
+  <header class="app-header">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <div>
+        <div style="font-size:.75rem;opacity:.7">Bereichsleiter</div>
+        <h1 id="bl-bereichname" style="font-size:1rem;margin:0;font-weight:700">Mein Bereich</h1>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div style="text-align:right">
+          <div id="bl-username" style="font-size:.82rem;font-weight:600"></div>
+        </div>
+        <button onclick="doLogoutMitBestaetigung()" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:8px;padding:7px 12px;font-size:.8rem;cursor:pointer">Abmelden</button>
+      </div>
+    </div>
+  </header>
+
+  <div style="padding:16px;max-width:600px;margin:0 auto">
+    <!-- Ampel-Stats -->
+    <div id="bl-stats" class="stats-grid" style="margin-bottom:16px"></div>
+
+    <!-- Aktionsbuttons -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
+      <button onclick="blMitarbeiterAnlegenModal()" class="btn-primary" style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px;border-radius:12px;font-size:.82rem">
+        <span style="font-size:1.5rem">➕</span>
+        <span style="font-weight:700">Mitarbeiter anlegen</span>
+      </button>
+      <button onclick="blSchulungsFreigabenAnzeigen()" style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 10px;background:#fff;color:#1e3a5f;border:1.5px solid #1e3a5f;border-radius:12px;cursor:pointer;font-size:.82rem">
+        <span style="font-size:1.5rem">📋</span>
+        <span style="font-weight:700">Schulungsfreigaben</span>
+      </button>
+    </div>
+
+    <!-- Suche -->
+    <div style="margin-bottom:12px">
+      <input type="search" placeholder="🔍 Mitarbeiter suchen …" oninput="blRenderMitarbeiterListe(this.value)"
+        style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:9px;font-size:.88rem;box-sizing:border-box">
+    </div>
+
+    <!-- Mitarbeiterliste -->
+    <div id="bl-mitarbeiter-list"></div>
+  </div>
+</div>
+
+<!-- Modal: Bereiche-Verwaltung (Verantwortlicher) -->
+<div id="verw-bereiche-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9400;overflow-y:auto;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:520px;margin:0 auto;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <h3 style="margin:0;font-size:1rem;color:#1e3a5f">🏗 Bereiche & Bereichsleiter</h3>
+      <button onclick="document.getElementById('verw-bereiche-modal').style.display='none'"
+        style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    <button onclick="verantwBereichNeuModal()" class="btn-primary" style="width:100%;margin-bottom:14px;padding:11px;font-size:.9rem">➕ Neuen Bereich anlegen</button>
+    <div id="verw-bereiche-list"></div>
   </div>
 </div>
 
