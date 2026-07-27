@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Bedienungsanleitung – CSC Schulungsmanagement-App</title>
+  <title>Bedienungsanleitung – CSC Schulungsmanagement-App v102</title>
   <style>
     /* ===== RESET & BASE ===== */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -167,6 +167,7 @@
       margin-bottom: 22px;
       padding-bottom: 16px;
       border-bottom: 2px solid var(--blue-light);
+      position: relative;
     }
     .section-number {
       background: var(--blue-dark);
@@ -186,11 +187,31 @@
       font-weight: 700;
       color: var(--blue-dark);
       line-height: 1.3;
+      flex: 1;
     }
     .section-icon {
       font-size: 1.4rem;
       flex-shrink: 0;
     }
+
+    /* ===== ROLE BADGE ===== */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .role-badge-admin    { background: #1e3a5f; color: #fff; }
+    .role-badge-firma    { background: #7c3aed; color: #fff; }
+    .role-badge-verantw  { background: #2e7d32; color: #fff; }
+    .role-badge-bereich  { background: #ea6c00; color: #fff; }
+    .role-badge-mitarb   { background: #5a6a7a; color: #fff; }
+    .role-badge-alle     { background: #2e7bcf; color: #fff; }
 
     /* ===== STEP LIST ===== */
     .step-list {
@@ -327,6 +348,53 @@
       gap: 10px;
     }
     .info-box .info-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== ROLE TABLE ===== */
+    .role-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 18px 0;
+      font-size: 0.9rem;
+    }
+    .role-table th {
+      background: var(--blue-dark);
+      color: var(--white);
+      padding: 10px 14px;
+      text-align: left;
+      font-weight: 700;
+    }
+    .role-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--gray-border);
+      vertical-align: top;
+    }
+    .role-table tr:nth-child(even) td { background: var(--gray-bg); }
+    .role-table tr:hover td { background: var(--blue-light); }
+
+    /* ===== CASCADE DIAGRAM ===== */
+    .cascade-diagram {
+      background: #f0f4ff;
+      border: 1px solid #c5d3f5;
+      border-radius: 10px;
+      padding: 24px 28px;
+      margin: 18px 0;
+      font-family: "Courier New", monospace;
+      font-size: 0.9rem;
+      line-height: 2.2;
+      color: var(--blue-dark);
+    }
+    .cascade-diagram .cd-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .cascade-diagram .cd-arrow {
+      display: flex;
+      align-items: center;
+      padding-left: 20px;
+      color: var(--accent);
+      font-size: 1.1rem;
+    }
 
     /* ===== FAQ ===== */
     .faq-list {
@@ -513,13 +581,13 @@
       pl: 'Instrukcja obsługi', en: 'User Manual', ar: 'دليل المستخدم'
     },
     'doc-sub': {
-      de: 'Für Unternehmen und Verantwortliche',
-      tr: 'Şirketler ve Sorumlular için',
-      ro: 'Pentru companii și responsabili',
-      sr: 'Za kompanije i odgovorne',
-      pl: 'Dla firm i odpowiedzialnych',
-      en: 'For Companies and Managers',
-      ar: 'للشركات والمسؤولين'
+      de: 'Für alle Rollen – v102',
+      tr: 'Tüm roller için – v102',
+      ro: 'Pentru toate rolurile – v102',
+      sr: 'Za sve uloge – v102',
+      pl: 'Dla wszystkich ról – v102',
+      en: 'For All Roles – v102',
+      ar: 'لجميع الأدوار – v102'
     },
     'print': {
       de: '🖨️ Anleitung drucken', tr: '🖨️ Kılavuzu yazdır',
@@ -563,9 +631,9 @@
       <img src="https://csc-hannover.de/wp-content/uploads/logo.png" alt="CSC GmbH Logo" onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'color:#1e3a5f;font-weight:700;font-size:1.2rem;\'>CSC GmbH</span>'">
     </div>
     <h1><span class="t-doc-title">Bedienungsanleitung</span><br>CSC Schulungsmanagement-App</h1>
-    <div class="subtitle"><span class="t-doc-sub">Für Unternehmen und Verantwortliche</span></div>
+    <div class="subtitle"><span class="t-doc-sub">Für alle Rollen – v102</span></div>
     <div class="cover-meta">
-      <span>📅 Juni 2026</span>
+      <span>📅 Juli 2026</span>
       <span>🏢 CSC GmbH · Hannover</span>
       <span>🌐 <a href="https://www.csc-hannover.de" target="_blank">www.csc-hannover.de</a></span>
     </div>
@@ -581,13 +649,18 @@
     <h2 class="t-toc-title">📋 Inhaltsverzeichnis</h2>
     <ul class="toc-list">
       <li><a href="#sec1">1 · Erste Schritte: Anmeldung</a></li>
-      <li><a href="#sec2">2 · Übersicht &amp; Ampelsystem</a></li>
-      <li><a href="#sec3">3 · Schulung ausfüllen</a></li>
-      <li><a href="#sec4">4 · Mitarbeiter einladen</a></li>
-      <li><a href="#sec4a">4a · Mitarbeiter einzeln anlegen</a></li>
-      <li><a href="#sec4b">4b · Mitarbeiter importieren (Excel)</a></li>
-      <li><a href="#sec5">5 · Häufige Fragen (FAQ)</a></li>
-      <li><a href="#sec6">6 · Kontakt &amp; Support</a></li>
+      <li><a href="#sec2">2 · Das Ampelsystem</a></li>
+      <li><a href="#sec3">3 · Rollensystem – Überblick</a></li>
+      <li><a href="#sec4">4 · Admin-Ablauf</a></li>
+      <li><a href="#sec5">5 · Firma-Ablauf</a></li>
+      <li><a href="#sec6">6 · Verantwortlicher-Ablauf</a></li>
+      <li><a href="#sec7">7 · Bereichsleiter-Ablauf ✨ NEU</a></li>
+      <li><a href="#sec8">8 · Mitarbeiter-Ablauf</a></li>
+      <li><a href="#sec9">9 · Mitarbeiter anlegen</a></li>
+      <li><a href="#sec10">10 · Bereiche &amp; Bereichsleiter ✨ NEU</a></li>
+      <li><a href="#sec11">11 · Schulungskaskade ✨ NEU</a></li>
+      <li><a href="#sec12">12 · Häufige Fragen (FAQ)</a></li>
+      <li><a href="#sec13">13 · Kontakt &amp; Support</a></li>
     </ul>
   </div>
 
@@ -597,35 +670,54 @@
       <div class="section-number">1</div>
       <div class="section-icon">🚀</div>
       <h2>Erste Schritte: Anmeldung</h2>
+      <span class="role-badge role-badge-alle">🌐 Alle Rollen</span>
     </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Die Anmeldung funktioniert für alle Rollen (Admin, Firma, Verantwortlicher, Bereichsleiter, Mitarbeiter) auf die gleiche Weise – die App erkennt Ihre Rolle automatisch und leitet Sie zum richtigen Dashboard weiter.</p>
     <ol class="step-list">
       <li>
         <div class="step-content">
           <strong>App aufrufen</strong><br>
-          Öffnen Sie Ihren Browser und navigieren Sie zu:<br>
+          Öffnen Sie Ihren Browser (Chrome, Firefox, Safari) und navigieren Sie zu:<br>
           <a href="https://schulung.csc-hannover.de" target="_blank">https://schulung.csc-hannover.de</a>
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Zugangsdaten eingeben</strong><br>
-          Geben Sie Ihre <strong>E-Mail-Adresse</strong> und Ihr <strong>Passwort</strong> ein.<br>
-          Diese Zugangsdaten erhalten Sie von der CSC GmbH.
+          Geben Sie Ihre <strong>E-Mail-Adresse</strong> (oder Ihren <strong>Benutzernamen</strong>) und Ihr <strong>Passwort</strong> ein.<br>
+          Die Zugangsdaten wurden Ihnen von Ihrem Vorgesetzten oder der CSC GmbH mitgeteilt.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>Auf "Anmelden" tippen</strong><br>
-          Bestätigen Sie Ihre Eingabe durch Tippen auf den Anmelden-Button.
+          <strong>Auf „Anmelden" tippen</strong><br>
+          Bestätigen Sie Ihre Eingabe durch Tippen auf den blauen <code>Anmelden</code>-Button.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>Schulungsübersicht</strong><br>
-          Sie sehen nun die Übersicht aller Ihnen zugewiesenen Schulungen und deren aktuellen Status.
+          <strong>Automatische Weiterleitung je Rolle</strong><br>
+          Die App erkennt Ihre Rolle und leitet Sie automatisch weiter:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>👑 <strong>Admin</strong> → Admin-Dashboard (alle Firmen)</li>
+            <li>🏢 <strong>Firma</strong> → Firmen-Dashboard (Verantwortliche)</li>
+            <li>✅ <strong>Verantwortlicher</strong> → Sub-Dashboard (Mitarbeiter &amp; Bereiche)</li>
+            <li>🏗 <strong>Bereichsleiter</strong> → Bereichsleiter-Dashboard (eigener Bereich)</li>
+            <li>👤 <strong>Mitarbeiter</strong> → Schulungsliste (eigene Schulungen)</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>QR-Code-Login (für Mitarbeiter)</strong><br>
+          Mitarbeiter können alternativ mit einem gedruckten QR-Code einloggen – ganz ohne Passwort. Einfach QR-Code mit dem Smartphone scannen → sofort eingeloggt.
         </div>
       </li>
     </ol>
+    <div class="info-box">
+      <span class="info-icon">ℹ️</span>
+      <span><strong>Passwort vergessen?</strong> Wenden Sie sich an die CSC GmbH (<a href="mailto:info@csc-hannover.de">info@csc-hannover.de</a>) oder an Ihren Verantwortlichen – das Passwort kann jederzeit zurückgesetzt werden.</span>
+    </div>
   </div>
 
   <!-- ===== SECTION 2: AMPELSYSTEM ===== -->
@@ -633,35 +725,36 @@
     <div class="section-header">
       <div class="section-number">2</div>
       <div class="section-icon">🚦</div>
-      <h2>Übersicht verstehen – Das Ampelsystem</h2>
+      <h2>Das Ampelsystem</h2>
+      <span class="role-badge role-badge-alle">🌐 Alle Rollen</span>
     </div>
 
-    <p style="margin-bottom:16px;color:var(--text-light);">Der Status jeder Schulung wird durch eine farbige Anzeige (Ampelsystem) sofort erkennbar gemacht:</p>
+    <p style="margin-bottom:16px;color:var(--text-light);">Der Status jeder Schulung wird durch eine farbige Ampel sofort erkennbar – für alle Rollen gilt dasselbe Farbsystem:</p>
 
     <div class="traffic-light">
       <div class="tl-item tl-green">
         <span class="tl-dot">🟢</span>
         <span class="tl-label">Grün</span>
-        <span class="tl-desc">Schulung wurde vollständig abgeschlossen und gespeichert</span>
+        <span class="tl-desc">Schulung vollständig abgeschlossen und unterschrieben ✅</span>
       </div>
       <div class="tl-item tl-yellow">
         <span class="tl-dot">🟡</span>
         <span class="tl-label">Gelb</span>
-        <span class="tl-desc">Schulung ist in Bearbeitung oder die Frist ist noch offen</span>
+        <span class="tl-desc">Schulung begonnen, aber noch nicht vollständig abgeschlossen – oder Frist läuft demnächst ab</span>
       </div>
       <div class="tl-item tl-red">
         <span class="tl-dot">🔴</span>
         <span class="tl-label">Rot</span>
-        <span class="tl-desc">Schulung wurde nicht begonnen oder die Frist ist überschritten</span>
+        <span class="tl-desc">Schulung noch nicht begonnen oder Frist überschritten – sofortige Aufmerksamkeit erforderlich!</span>
       </div>
     </div>
 
-    <p style="margin-bottom:12px;font-weight:600;color:var(--blue-dark);">Kacheln in der Übersicht:</p>
+    <p style="margin-bottom:12px;font-weight:600;color:var(--blue-dark);">Statusübersicht in der Kachel-Ansicht:</p>
     <div class="tiles-grid">
       <div class="tile-box tile-green">
         <span class="tile-icon">✅</span>
         <div class="tile-name">Abgeschlossen</div>
-        <div class="tile-hint" style="color:var(--green);">Alle Pflichtfelder ausgefüllt und unterschrieben</div>
+        <div class="tile-hint" style="color:var(--green);">Alle Felder ausgefüllt, unterschrieben und gespeichert</div>
       </div>
       <div class="tile-box tile-yellow">
         <span class="tile-icon">⏳</span>
@@ -670,36 +763,407 @@
       </div>
       <div class="tile-box tile-red">
         <span class="tile-icon">📋</span>
-        <div class="tile-name">Offen</div>
+        <div class="tile-name">Offen / Überfällig</div>
         <div class="tile-hint" style="color:var(--red);">Noch nicht begonnen oder Frist abgelaufen</div>
       </div>
     </div>
+
+    <div class="info-box" style="margin-top:20px;">
+      <span class="info-icon">ℹ️</span>
+      <span>Das Ampelsystem wird auf <strong>allen Ebenen</strong> angezeigt: Mitarbeiter sehen den Status ihrer eigenen Schulungen – Bereichsleiter und Verantwortliche sehen die Ampel-Statistik für ihre gesamte Gruppe.</span>
+    </div>
   </div>
 
-  <!-- ===== SECTION 3: SCHULUNG AUSFÜLLEN ===== -->
+  <!-- ===== SECTION 3: ROLLENSYSTEM ÜBERBLICK ===== -->
   <div class="section-card" id="sec3">
     <div class="section-header">
       <div class="section-number">3</div>
-      <div class="section-icon">📝</div>
-      <h2>Schulung ausfüllen</h2>
+      <div class="section-icon">🎭</div>
+      <h2>Rollensystem – Überblick (Wer ist was?)</h2>
+      <span class="role-badge role-badge-alle">🌐 Überblick</span>
     </div>
+
+    <p style="margin-bottom:16px;color:var(--text-light);">Die App kennt 5 Rollen in einer klar definierten Hierarchie. Jede Rolle hat spezifische Rechte und Aufgaben:</p>
+
+    <!-- Hierarchie-Diagramm -->
+    <div class="cascade-diagram">
+      <div class="cd-step">👑 <strong>Admin</strong> &nbsp;→&nbsp; Systemweit: alle Firmen, alle Vorlagen, alle Berichte</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">🏢 <strong>Firma</strong> &nbsp;→&nbsp; Eine Firma: eigene Verantwortliche verwalten</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">✅ <strong>Verantwortlicher</strong> &nbsp;→&nbsp; Mitarbeiter &amp; Bereiche der eigenen Firma</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">🏗 <strong>Bereichsleiter</strong> &nbsp;→&nbsp; Einen Bereich: eigene Mitarbeiter, freigegebene Schulungen</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">👤 <strong>Mitarbeiter</strong> &nbsp;→&nbsp; Eigene Schulungen ausfüllen und unterschreiben</div>
+    </div>
+
+    <!-- Rollentabelle -->
+    <table class="role-table">
+      <tr>
+        <th>Rolle</th>
+        <th>Badge</th>
+        <th>Kann …</th>
+      </tr>
+      <tr>
+        <td><strong>Admin</strong></td>
+        <td><span class="role-badge role-badge-admin">👑 Admin</span></td>
+        <td>Alle Firmen anlegen/verwalten, systemweite Schulungsvorlagen erstellen, PDF-Berichte für alle Unternehmen generieren, Firmen suchen</td>
+      </tr>
+      <tr>
+        <td><strong>Firma</strong></td>
+        <td><span class="role-badge role-badge-firma">🏢 Firma</span></td>
+        <td>Verantwortliche anlegen/verwalten, Schulungsvorlagen zuweisen, Gesamtüberblick über alle Schulungsstatus der Firma</td>
+      </tr>
+      <tr>
+        <td><strong>Verantwortlicher</strong></td>
+        <td><span class="role-badge role-badge-verantw">✅ Verantwortlicher</span></td>
+        <td>Mitarbeiter anlegen (einzeln + Excel), Bereiche &amp; Bereichsleiter anlegen, Schulungen zuweisen (an Mitarbeiter oder ganzen Bereich), PDF-Nachweise herunterladen, Ampelstatus überwachen</td>
+      </tr>
+      <tr>
+        <td><strong>Bereichsleiter</strong> ✨</td>
+        <td><span class="role-badge role-badge-bereich">🏗 Bereichsleiter</span></td>
+        <td>Nur eigenen Bereich sehen, Mitarbeiter des eigenen Bereichs anlegen, freigegebene Schulungen an Mitarbeiter zuweisen, Ampelstatus überwachen</td>
+      </tr>
+      <tr>
+        <td><strong>Mitarbeiter</strong></td>
+        <td><span class="role-badge role-badge-mitarb">👤 Mitarbeiter</span></td>
+        <td>Eigene zugewiesene Schulungen sehen, Formulare ausfüllen, Sprache wählen, Unterschrift leisten, Schulung abschließen</td>
+      </tr>
+    </table>
+
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>Die Rolle <strong>Bereichsleiter</strong> ist neu ab Version v102. Sie ergänzt die Hierarchie zwischen Verantwortlichem und Mitarbeiter und ermöglicht die Verwaltung von Objekten, Standorten oder Abteilungen als eigenständige Bereiche.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 4: ADMIN-ABLAUF ===== -->
+  <div class="section-card" id="sec4">
+    <div class="section-header">
+      <div class="section-number">4</div>
+      <div class="section-icon">👑</div>
+      <h2>Admin-Ablauf – Kompletter Ablauf</h2>
+      <span class="role-badge role-badge-admin">👑 Admin</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Der Admin hat die höchste Berechtigung in der App. Er verwaltet alle Unternehmen systemweit und stellt die Schulungsvorlagen zur Verfügung.</p>
     <ol class="step-list">
       <li>
         <div class="step-content">
-          <strong>Schulung auswählen</strong><br>
-          Tippen Sie in der Schulungsliste auf die gewünschte Schulung, um sie zu öffnen.
+          <strong>Login mit Admin-Zugangsdaten</strong><br>
+          Öffnen Sie <a href="https://schulung.csc-hannover.de" target="_blank">schulung.csc-hannover.de</a> und melden Sie sich mit Ihren Admin-Zugangsdaten (E-Mail + Passwort) an. Die App leitet Sie automatisch zum <strong>Admin-Dashboard</strong> weiter.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>Formular ausfüllen</strong><br>
-          Füllen Sie das Formular Schritt für Schritt aus. Pflichtfelder sind entsprechend markiert.
+          <strong>Admin-Dashboard – Firmenübersicht</strong><br>
+          Sie sehen eine Liste aller registrierten Unternehmen mit Ampelstatus. Das <strong>Suchfeld</strong> oben ermöglicht die schnelle Filterung nach Firmenname. Klicken Sie auf eine Firma, um Details einzusehen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Neue Firma anlegen</strong><br>
+          Tippen Sie auf <code>➕ Neue Firma anlegen</code> und füllen Sie das Formular aus:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li><strong>Firmenname</strong> (Pflichtfeld)</li>
+            <li><strong>Kontaktperson</strong> (optional)</li>
+            <li><strong>Logo</strong> hochladen (optional, .png/.jpg)</li>
+          </ul>
+          Bestätigen Sie mit <code>✅ Speichern</code>.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Firma-Zugangsdaten anlegen und vergeben</strong><br>
+          Nach dem Anlegen der Firma tippen Sie auf <code>🔑 Zugangsdaten erstellen</code>. Legen Sie E-Mail und Passwort für den Firma-Account fest. <strong>Notieren Sie das Passwort sofort</strong> und geben Sie es an den zuständigen Ansprechpartner der Firma weiter.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungsvorlagen systemweit verwalten</strong><br>
+          Öffnen Sie den Bereich <code>📚 Schulungsvorlagen</code>. Hier können Sie:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>Neue Vorlagen erstellen (Titel, Beschreibung, Intervall in Monaten)</li>
+            <li>Bestehende Vorlagen bearbeiten oder löschen</li>
+            <li>Vorlagen für bestimmte Firmen freigeben</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>PDF-Bericht für Unternehmen erstellen</strong><br>
+          Tippen Sie in der Firmenübersicht auf <code>📄 PDF-Bericht</code>. Wählen Sie das gewünschte Unternehmen und den Zeitraum → ein vollständig formatierter Schulungsbericht (inkl. Ampelstatistik und Unterschriften-Nachweis) wird generiert und als PDF heruntergeladen. Ideal für Audits und Behörden.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Suche nach Firmen im Dashboard</strong><br>
+          Das Suchfeld im Admin-Dashboard filtert die Firmenübersicht in Echtzeit. Geben Sie den Firmennamen (oder Teile davon) ein – die Liste aktualisiert sich sofort.
+        </div>
+      </li>
+    </ol>
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>Als Admin sehen Sie <strong>alle Firmen</strong> und <strong>alle Schulungsstatus</strong> auf einen Blick. Für Push-Benachrichtigungen tippen Sie auf das 🔔-Symbol im Header – der Browser fragt einmalig nach Erlaubnis.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 5: FIRMA-ABLAUF ===== -->
+  <div class="section-card" id="sec5">
+    <div class="section-header">
+      <div class="section-number">5</div>
+      <div class="section-icon">🏢</div>
+      <h2>Firma-Ablauf – Kompletter Ablauf</h2>
+      <span class="role-badge role-badge-firma">🏢 Firma</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Der Firma-Account verwaltet das eigene Unternehmen: er legt Verantwortliche an und weist Schulungsvorlagen zu.</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Login mit Firma-Zugangsdaten</strong><br>
+          Melden Sie sich mit Ihrer Firmen-E-Mail und dem Passwort an. Die App leitet Sie zum <strong>Firmen-Dashboard</strong> weiter.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Firmen-Dashboard – Übersicht der Verantwortlichen</strong><br>
+          Sie sehen eine Liste aller Verantwortlichen innerhalb Ihrer Firma mit deren Schulungsstatus-Übersicht (Ampelfarben). Tippen Sie auf einen Verantwortlichen, um Details einzusehen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Neuen Verantwortlichen anlegen</strong><br>
+          Tippen Sie auf <code>➕ Verantwortlichen anlegen</code> und füllen Sie das Formular aus:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li><strong>Name</strong> (Pflichtfeld)</li>
+            <li><strong>E-Mail-Adresse</strong> (dient als Login)</li>
+            <li><strong>Passwort</strong> festlegen (oder automatisch generieren)</li>
+          </ul>
+          Bestätigen Sie mit <code>✅ Anlegen</code>. <strong>Zugangsdaten sofort notieren!</strong>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungsvorlagen zuweisen</strong><br>
+          Tippen Sie auf einen Verantwortlichen → <code>📚 Schulungen zuweisen</code>. Wählen Sie aus den vom Admin freigegebenen Vorlagen aus. Die zugewiesenen Vorlagen erscheinen im Dashboard des Verantwortlichen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Gesamtübersicht aller Schulungsstatus</strong><br>
+          Das Firmen-Dashboard zeigt eine aggregierte Ampelstatistik: wie viele Mitarbeiter im gesamten Unternehmen Schulungen abgeschlossen haben (Grün/Gelb/Rot). Für Details tippen Sie auf den jeweiligen Verantwortlichen.
+        </div>
+      </li>
+    </ol>
+    <div class="info-box">
+      <span class="info-icon">ℹ️</span>
+      <span>Der Firma-Account hat <strong>keinen direkten Zugriff</strong> auf Mitarbeiterdaten – diese verwalten die Verantwortlichen eigenständig. Der Firma-Account sieht nur die aggregierte Statusübersicht.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 6: VERANTWORTLICHER-ABLAUF ===== -->
+  <div class="section-card" id="sec6">
+    <div class="section-header">
+      <div class="section-number">6</div>
+      <div class="section-icon">✅</div>
+      <h2>Verantwortlicher-Ablauf – Kompletter Ablauf</h2>
+      <span class="role-badge role-badge-verantw">✅ Verantwortlicher</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Der Verantwortliche ist die zentrale Rolle: Er verwaltet Mitarbeiter, legt Bereiche und Bereichsleiter an und weist Schulungen zu – entweder an einzelne Mitarbeiter oder an ganze Bereiche.</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Login mit Verantwortlicher-Zugangsdaten</strong><br>
+          Melden Sie sich unter <a href="https://schulung.csc-hannover.de" target="_blank">schulung.csc-hannover.de</a> an. Die App leitet Sie zum <strong>Sub-Dashboard</strong> weiter.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Sub-Dashboard – Übersicht</strong><br>
+          Das Dashboard zeigt:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>📋 Mitarbeiterliste mit Ampelstatus</li>
+            <li>🏗 Bereiche mit Bereichsleiter-Übersicht</li>
+            <li>📊 Ampel-Statistik gesamt</li>
+            <li>📚 Schulungsvorlagen-Verwaltung</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mitarbeiter anlegen (einzeln) ODER Bereiche anlegen</strong><br>
+          Sie haben zwei Möglichkeiten:
+          <div class="invite-options" style="margin-top:12px;">
+            <div class="invite-option">
+              <span class="opt-icon">👤</span>
+              <div class="opt-title">Mitarbeiter direkt anlegen</div>
+              <p>Tippen Sie auf <code>➕ Mitarbeiter anlegen</code> → Name, E-Mail, Passwort eingeben → Mitarbeiter gehört direkt zum Verantwortlichen (ohne Bereich).</p>
+            </div>
+            <div class="invite-option">
+              <span class="opt-icon">🏗</span>
+              <div class="opt-title">Bereich anlegen</div>
+              <p>Tippen Sie auf <code>🏗 Bereiche &amp; Bereichsleiter</code> → Bereich mit Name, Ort, Objekt anlegen → Bereichsleiter anlegen → Bereichsleiter verwaltet eigene Mitarbeiter.</p>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungen zuweisen</strong><br>
+          Sie können Schulungen zuweisen an:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>👤 <strong>Einzelne Mitarbeiter</strong>: Tippen Sie auf einen Mitarbeiter → <code>📚 Schulung zuweisen</code></li>
+            <li>🏗 <strong>Ganzen Bereich</strong>: Tippen Sie auf einen Bereich → <code>📚 Schulung für Bereich freigeben</code> → der Bereichsleiter weist die Schulung dann seinen Mitarbeitern zu</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungsvorlagen verwalten</strong><br>
+          Tippen Sie auf <code>📚 Vorlagen</code>. Sie sehen alle Ihnen vom Firma-Account zugewiesenen Schulungsvorlagen. Sie können Fälligkeitsdaten anpassen und Schulungen wiederkehrend einplanen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>PDF-Nachweis herunterladen</strong><br>
+          Tippen Sie auf <code>📄 PDF-Bericht</code> → wählen Sie Mitarbeiter oder Zeitraum → ein offizieller Schulungsnachweis mit Unterschriften wird als PDF erstellt und heruntergeladen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mitarbeiterliste mit Ampelstatus einsehen</strong><br>
+          In der Mitarbeiterliste sehen Sie für jeden Mitarbeiter den aktuellen Ampelstatus aller Schulungen. Rote Einträge erfordern sofortige Aufmerksamkeit.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Bereiche &amp; Bereichsleiter anlegen</strong><br>
+          Tippen Sie auf <code>🏗 Bereiche &amp; Bereichsleiter</code> → vollständige Verwaltung aller Bereiche. Details siehe <a href="#sec10">Abschnitt 10</a>.
+        </div>
+      </li>
+    </ol>
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span>Der Verantwortliche ist die <strong>zentrale Schaltstelle</strong>: Er entscheidet, ob Mitarbeiter direkt oder über Bereiche (mit Bereichsleiter) verwaltet werden. Beide Wege können parallel genutzt werden.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 7: BEREICHSLEITER-ABLAUF ===== -->
+  <div class="section-card" id="sec7">
+    <div class="section-header">
+      <div class="section-number">7</div>
+      <div class="section-icon">🏗</div>
+      <h2>Bereichsleiter-Ablauf – Kompletter Ablauf <span style="font-size:0.75rem;background:#fff3e0;color:#e65100;border-radius:6px;padding:2px 8px;font-weight:700;margin-left:6px;">✨ NEU in v102</span></h2>
+      <span class="role-badge role-badge-bereich">🏗 Bereichsleiter</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Der Bereichsleiter ist eine neue Rolle in v102. Er verwaltet einen abgegrenzten Bereich (z.B. ein Objekt, einen Standort oder eine Abteilung) eigenständig – ohne Zugriff auf andere Bereiche oder Mitarbeiter.</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Login mit Bereichsleiter-Zugangsdaten</strong><br>
+          Melden Sie sich unter <a href="https://schulung.csc-hannover.de" target="_blank">schulung.csc-hannover.de</a> an. Die App erkennt Ihre Rolle und leitet Sie direkt zum <strong>Bereichsleiter-Dashboard</strong> weiter.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Bereichsleiter-Dashboard – Überblick</strong><br>
+          Das Dashboard zeigt ausschließlich:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>🏗 <strong>Ihren Bereich</strong>: Name, Ort, Objekt</li>
+            <li>📊 <strong>Ampel-Statistik</strong>: wie viele Mitarbeiter Grün/Gelb/Rot</li>
+            <li>👤 <strong>Ihre Mitarbeiter</strong>: Liste mit Schulungsstatus</li>
+            <li>📚 <strong>Freigegebene Schulungen</strong>: vom Verantwortlichen für diesen Bereich freigegeben</li>
+          </ul>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Eingeschränkte Sicht – nur eigener Bereich</strong><br>
+          Der Bereichsleiter sieht <strong>ausschließlich</strong> seinen eigenen Bereich und seine Mitarbeiter. Andere Bereiche, andere Mitarbeiter oder andere Schulungen sind nicht sichtbar und nicht zugänglich.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mitarbeiter anlegen</strong><br>
+          Tippen Sie auf <code>➕ Mitarbeiter anlegen</code> und füllen Sie das Formular aus:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li><strong>Name</strong> (Pflichtfeld)</li>
+            <li><strong>E-Mail</strong> (optional – für Login oder Einladung)</li>
+            <li><strong>Personalnummer</strong> (optional)</li>
+            <li><strong>Passwort</strong> festlegen (oder automatisch generieren)</li>
+          </ul>
+          Der neue Mitarbeiter wird <strong>automatisch dem eigenen Bereich</strong> zugeordnet (<code>bereich_id</code> wird automatisch gesetzt).
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Freigegebene Schulungen vom Verantwortlichen einsehen</strong><br>
+          Der Abschnitt <code>📚 Freigegebene Schulungen</code> zeigt alle Schulungen, die der Verantwortliche für diesen Bereich freigegeben hat. Diese Schulungen können dem Bereichsleiter <strong>nicht eigenmächtig verändert</strong> werden – er kann sie nur seinen Mitarbeitern zuweisen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungen an Mitarbeiter zuweisen</strong><br>
+          Tippen Sie auf eine freigegebene Schulung → <code>👤 Mitarbeiter zuweisen</code>. Wählen Sie einen oder mehrere Mitarbeiter aus Ihrer Bereichsliste aus → bestätigen Sie mit <code>✅ Zuweisen</code>. Die Schulung erscheint sofort in der Schulungsliste des Mitarbeiters.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Ampelstatus der Mitarbeiter überwachen</strong><br>
+          In der Mitarbeiterliste sehen Sie den aktuellen Ampelstatus für jeden Mitarbeiter. Bei roten Einträgen können Sie den Mitarbeiter ansprechen oder eine Erinnerung aussprechen. Der Gesamtstatus des Bereichs wird an den Verantwortlichen gemeldet.
+        </div>
+      </li>
+    </ol>
+    <div class="info-box">
+      <span class="info-icon">🏗</span>
+      <span>Der Bereichsleiter ist der <strong>operative Manager vor Ort</strong>: Er kennt seine Mitarbeiter, sorgt für die Durchführung der Schulungen und meldet den Status zurück. Er hat <strong>keine Admin-Rechte</strong> und kann keine Schulungsvorlagen erstellen oder bearbeiten.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 8: MITARBEITER-ABLAUF ===== -->
+  <div class="section-card" id="sec8">
+    <div class="section-header">
+      <div class="section-number">8</div>
+      <div class="section-icon">👤</div>
+      <h2>Mitarbeiter-Ablauf – Kompletter Ablauf</h2>
+      <span class="role-badge role-badge-mitarb">👤 Mitarbeiter</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Der Mitarbeiter ist der Endnutzer der App: Er sieht ausschließlich die ihm zugewiesenen Schulungen, füllt diese aus und unterschreibt digital.</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Login – Passwort oder QR-Code</strong><br>
+          Der Mitarbeiter kann sich auf zwei Wegen anmelden:
+          <div class="invite-options" style="margin-top:12px;">
+            <div class="invite-option">
+              <span class="opt-icon">🔐</span>
+              <div class="opt-title">Login mit Passwort</div>
+              <p>E-Mail und Passwort eingeben (Zugangsdaten vom Bereichsleiter oder Verantwortlichen erhalten).</p>
+            </div>
+            <div class="invite-option">
+              <span class="opt-icon">📱</span>
+              <div class="opt-title">QR-Code-Login</div>
+              <p>QR-Code-Ausdruck mit Smartphone scannen → direkt eingeloggt, kein Passwort nötig. Ideal für Mitarbeiter ohne eigene E-Mail.</p>
+            </div>
+          </div>
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulungsliste</strong><br>
+          Nach dem Login sieht der Mitarbeiter eine Übersicht aller ihm zugewiesenen Schulungen mit aktuellem Ampelstatus. Rote und gelbe Schulungen sind dringend zu bearbeiten.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Schulung öffnen und Formular ausfüllen</strong><br>
+          Tippen Sie auf eine Schulung, um sie zu öffnen. Das Formular führt Schritt für Schritt durch alle Abschnitte. Pflichtfelder sind markiert.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Sprache wählen</strong><br>
-          Wählen Sie oben rechts im Formular die gewünschte Sprache:
+          Wählen Sie oben im Formular die gewünschte Sprache:
           <div class="lang-badges" style="margin-top:10px;">
             <span class="badge">🇩🇪 DE Deutsch</span>
             <span class="badge">🇬🇧 EN Englisch</span>
@@ -708,147 +1172,102 @@
             <span class="badge">🇪🇸 ES Spanisch</span>
             <span class="badge">🇷🇺 RU Russisch</span>
           </div>
+          Das Formular wird sofort in der gewählten Sprache angezeigt.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Unterschrift leisten</strong><br>
-          Unterschreiben Sie mit dem Finger direkt auf dem Touchscreen im dafür vorgesehenen Unterschriftenfeld.
+          Am Ende des Formulars befindet sich ein Unterschriftenfeld. Unterschreiben Sie mit dem Finger direkt auf dem Touchscreen – auf Smartphone, Tablet oder mit der Maus am PC.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>Schulung abschließen</strong><br>
-          Tippen Sie auf <code>Abschließen</code> → Die Schulung wird automatisch gespeichert und der Status wechselt auf Grün.
+          <strong>Schulung abschließen → Status wird Grün</strong><br>
+          Tippen Sie auf <code>✅ Abschließen</code>. Die Schulung wird automatisch gespeichert, der Status wechselt sofort auf <strong>Grün</strong>. Der Verantwortliche und ggf. der Bereichsleiter sehen die Änderung in Echtzeit.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>PDF-Nachweis speichern</strong><br>
-          Als Verantwortlicher können Sie nach dem Abschluss auf <code>PDF speichern</code> tippen, um einen offiziellen Nachweis zu erstellen und zu archivieren.
-        </div>
-      </li>
-    </ol>
-  </div>
-
-  <!-- ===== SECTION 4: EINLADEN ===== -->
-  <div class="section-card" id="sec4">
-    <div class="section-header">
-      <div class="section-number">4</div>
-      <div class="section-icon">👥</div>
-      <h2>Mitarbeiter einladen – Einladungslink &amp; QR-Code</h2>
-    </div>
-    <p style="margin-bottom:18px;color:var(--text-light);">Mit der Einladefunktion können Mitarbeiter Schulungen bequem auf ihrem eigenen Gerät ausfüllen und unterschreiben – ganz ohne eigenes App-Konto.</p>
-    <ol class="step-list">
-      <li>
-        <div class="step-content">
-          <strong>Einladen-Button tippen</strong><br>
-          Tippen Sie in der Schulungsliste neben der gewünschten Schulung auf den Button <code>🔗 Einladen</code>.
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <strong>Link generieren</strong><br>
-          Tippen Sie auf <code>🔗 Link generieren</code> – ein einmaliger Einladungslink wird erstellt.
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <strong>Link oder QR-Code weitergeben</strong><br>
-          Wählen Sie eine der beiden Möglichkeiten:
-          <div class="invite-options">
-            <div class="invite-option">
-              <span class="opt-icon">📤</span>
-              <div class="opt-title">Link teilen (WhatsApp / SMS)</div>
-              <p>Tippen Sie auf <code>📤 Teilen</code> und senden Sie den Link direkt per WhatsApp, SMS oder E-Mail an Ihren Mitarbeiter.</p>
-            </div>
-            <div class="invite-option">
-              <span class="opt-icon">🖨️</span>
-              <div class="opt-title">QR-Code ausdrucken</div>
-              <p>Tippen Sie auf <code>🖨️ QR-Code drucken</code> und hängen Sie den Ausdruck gut sichtbar aus – z.&nbsp;B. im Pausenraum oder am Schwarzen Brett.</p>
-            </div>
-          </div>
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <strong>Mitarbeiter öffnet die Schulung</strong><br>
-          Der Mitarbeiter öffnet den Link im Browser oder scannt den QR-Code mit dem Smartphone.
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <strong>Formular ausfüllen &amp; unterschreiben</strong><br>
-          Der Mitarbeiter gibt seinen Namen ein, füllt das Formular aus und leistet seine Unterschrift auf dem Touchscreen.
-        </div>
-      </li>
-      <li>
-        <div class="step-content">
-          <strong>Fertig! ✅</strong><br>
-          Die Unterschrift wird automatisch gespeichert und in Ihrer Schulungsübersicht als abgeschlossen angezeigt.
+          <strong>Lernpfad: 22 Kapitel sequentiell abarbeiten</strong><br>
+          Bei umfangreicheren Schulungsprogrammen folgt der Mitarbeiter einem strukturierten Lernpfad mit 22 Kapiteln, aufgeteilt in 4 Säulen:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>🅰 <strong>Säule A</strong>: Grundlagen &amp; Sicherheit</li>
+            <li>🅱 <strong>Säule B</strong>: Arbeitsabläufe &amp; Prozesse</li>
+            <li>🆀 <strong>Säule C</strong>: Qualität &amp; Compliance</li>
+            <li>🅳 <strong>Säule D</strong>: Notfallverfahren &amp; Erste Hilfe</li>
+          </ul>
+          Kapitel werden sequentiell freigeschaltet – erst nach Abschluss des vorherigen Kapitels.
         </div>
       </li>
     </ol>
     <div class="info-box">
       <span class="info-icon">ℹ️</span>
-      <span><strong>Wichtiger Hinweis:</strong> Jeder generierte Link ist <strong>7 Tage gültig</strong> und kann nur <strong>einmal genutzt</strong> werden. Für jeden weiteren Mitarbeiter oder nach Ablauf der Gültigkeit muss ein neuer Link generiert werden.</span>
+      <span>Abgeschlossene Schulungen bleiben dauerhaft gespeichert und können in der <strong>📋 Historie</strong> eingesehen werden. Ein PDF-Nachweis kann vom Verantwortlichen oder Bereichsleiter heruntergeladen werden.</span>
     </div>
   </div>
 
-  <!-- ===== SECTION 4a: EINZELNEN MITARBEITER ANLEGEN ===== -->
-  <div class="section-card" id="sec4a">
+  <!-- ===== SECTION 9: MITARBEITER ANLEGEN ===== -->
+  <div class="section-card" id="sec9">
     <div class="section-header">
-      <div class="section-number">4a</div>
+      <div class="section-number">9</div>
       <div class="section-icon">➕</div>
-      <h2>Einzelnen Mitarbeiter anlegen</h2>
+      <h2>Mitarbeiter anlegen – Einzeln &amp; Excel-Import</h2>
+      <span class="role-badge role-badge-verantw">✅ Verantwortlicher</span>
     </div>
-    <p style="margin-bottom:18px;color:var(--text-light);">Möchten Sie einen einzelnen Mitarbeiter mit eigenem App-Konto anlegen, ohne eine Excel-Datei zu erstellen? Nutzen Sie die Einzelanlage direkt im Dashboard.</p>
+    <p style="margin-bottom:18px;color:var(--text-light);">Mitarbeiter können einzeln manuell oder per Excel-Massenimport angelegt werden. Bereichsleiter können ebenfalls Mitarbeiter für ihren Bereich anlegen.</p>
+
+    <!-- 9a: Einzeln anlegen -->
+    <h3 style="color:var(--blue-dark);font-size:1.05rem;margin:0 0 14px;display:flex;align-items:center;gap:10px;">
+      <span style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">9a</span>
+      Einzelnen Mitarbeiter anlegen
+    </h3>
     <ol class="step-list">
       <li>
         <div class="step-content">
           <strong>Schaltfläche öffnen</strong><br>
-          Tippen Sie im Dashboard auf die Schaltfläche <code>➕ Mitarbeiter anlegen</code>.
+          Tippen Sie im Dashboard auf <code>➕ Mitarbeiter anlegen</code>.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Name eingeben</strong><br>
-          Tragen Sie den vollständigen Namen des Mitarbeiters ein.
+          Tragen Sie den vollständigen Namen des Mitarbeiters ein (Pflichtfeld).
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>E-Mail-Adresse eingeben</strong><br>
-          Tragen Sie die E-Mail-Adresse des Mitarbeiters ein. Sie dient später als Login-Name.
+          Tragen Sie die E-Mail-Adresse ein – sie dient als Login-Name. Bei Mitarbeitern ohne E-Mail kann das Feld leer bleiben (Login dann per QR-Code).
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Passwort festlegen</strong><br>
-          Sie haben drei Möglichkeiten:<br>
-          <ul style="margin-top:8px;padding-left:20px;line-height:2">
-            <li>Feld <strong>leer lassen</strong> → App generiert automatisch ein sicheres Passwort</li>
-            <li>Auf <strong>🎲</strong> tippen → Zufallspasswort wird erzeugt und eingetragen</li>
-            <li><strong>Eigenes Passwort</strong> eingeben</li>
+          Drei Möglichkeiten:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>Feld <strong>leer lassen</strong> → App generiert automatisch sicheres Passwort</li>
+            <li>Auf <strong>🎲</strong> tippen → Zufallspasswort wird eingetragen</li>
+            <li><strong>Eigenes Passwort</strong> manuell eingeben</li>
           </ul>
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Auf „✅ Anlegen" tippen</strong><br>
-          Der Mitarbeiter wird sofort in Ihrem Unternehmen angelegt.
+          Der Mitarbeiter wird sofort im System angelegt und der Schulungsliste des Verantwortlichen oder Bereichsleiters zugeordnet.
         </div>
       </li>
       <li>
         <div class="step-content">
-          <strong>Zugangsdaten notieren</strong><br>
+          <strong>Zugangsdaten sofort notieren</strong><br>
           Nach dem Anlegen werden Name, E-Mail und Passwort einmalig angezeigt. Geben Sie die Daten direkt an den Mitarbeiter weiter.
         </div>
       </li>
     </ol>
 
     <!-- ROTE PASSWORT-WARNUNG -->
-    <div style="background:#fff0f0;border:2px solid #c62828;border-radius:10px;padding:16px 20px;margin-top:20px;display:flex;align-items:flex-start;gap:14px;">
+    <div style="background:#fff0f0;border:2px solid #c62828;border-radius:10px;padding:16px 20px;margin-top:20px;margin-bottom:28px;display:flex;align-items:flex-start;gap:14px;">
       <span style="font-size:1.6rem;flex-shrink:0;">⚠️</span>
       <div>
         <div style="font-weight:700;color:#c62828;font-size:1rem;margin-bottom:6px;">Wichtig: Passwort sofort notieren!</div>
@@ -859,58 +1278,54 @@
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ===== SECTION 4b: EXCEL-IMPORT ===== -->
-  <div class="section-card" id="sec4b">
-    <div class="section-header">
-      <div class="section-number">4b</div>
-      <div class="section-icon">📥</div>
-      <h2>Mitarbeiter importieren – Excel-Tabelle hochladen</h2>
-    </div>
-    <p style="margin-bottom:18px;color:var(--text-light);">Mit dem Excel-Import können Sie mehrere Mitarbeiter auf einmal anlegen – ohne jeden Mitarbeiter einzeln einzutragen. Ideal bei neuen Projekten oder vielen Mitarbeitern.</p>
+    <!-- 9b: Excel-Import -->
+    <h3 style="color:var(--blue-dark);font-size:1.05rem;margin:0 0 14px;display:flex;align-items:center;gap:10px;">
+      <span style="background:var(--accent);color:#fff;border-radius:50%;width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8rem;font-weight:700;">9b</span>
+      Mitarbeiter importieren – Excel-Tabelle hochladen
+    </h3>
+    <p style="margin-bottom:16px;color:var(--text-light);">Mit dem Excel-Import können Sie mehrere Mitarbeiter auf einmal anlegen. Ideal für neue Objekte oder Teams mit vielen Mitarbeitern.</p>
     <ol class="step-list">
       <li>
         <div class="step-content">
           <strong>Excel-Vorlage vorbereiten</strong><br>
-          Erstellen Sie eine Excel-Datei (.xlsx) mit folgenden Spalten:<br>
+          Erstellen Sie eine Excel-Datei (.xlsx) mit folgenden Spalten:
           <table style="margin-top:8px;border-collapse:collapse;width:100%;font-size:.85rem">
             <tr style="background:#f0f9ff"><th style="padding:6px 10px;border:1px solid #bae6fd;text-align:left">Spalte A</th><th style="padding:6px 10px;border:1px solid #bae6fd;text-align:left">Spalte B</th><th style="padding:6px 10px;border:1px solid #bae6fd;text-align:left">Spalte C</th></tr>
             <tr><td style="padding:6px 10px;border:1px solid #e5e7eb"><strong>Name</strong> (Pflicht)</td><td style="padding:6px 10px;border:1px solid #e5e7eb"><strong>E-Mail</strong> (Pflicht)</td><td style="padding:6px 10px;border:1px solid #e5e7eb">Passwort (optional)</td></tr>
             <tr style="background:#f9fafb"><td style="padding:6px 10px;border:1px solid #e5e7eb">Max Mustermann</td><td style="padding:6px 10px;border:1px solid #e5e7eb">max@firma.de</td><td style="padding:6px 10px;border:1px solid #e5e7eb">Mein123!</td></tr>
           </table>
-          <div style="margin-top:8px;font-size:.82rem;color:#6b7280">Tipp: Lassen Sie Spalte C leer – die App generiert automatisch sichere Passwörter.</div>
+          <div style="margin-top:8px;font-size:.82rem;color:#6b7280">💡 Tipp: Spalte C leer lassen → App generiert automatisch sichere Passwörter.</div>
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Import öffnen</strong><br>
-          Tippen Sie im Dashboard auf die Schaltfläche <code>👥 Mitarbeiter importieren</code>.
+          Tippen Sie im Dashboard auf <code>👥 Mitarbeiter importieren</code>.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Datei auswählen</strong><br>
-          Wählen Sie Ihre vorbereitete Excel-Datei (.xlsx oder .xls) aus. Die App liest die Daten sofort ein und zeigt eine Vorschau aller erkannten Mitarbeiter.
+          Wählen Sie Ihre Excel-Datei (.xlsx oder .xls). Die App liest die Daten sofort ein und zeigt eine Vorschau aller erkannten Mitarbeiter.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Vorschau prüfen</strong><br>
-          Kontrollieren Sie die Liste: Name, E-Mail und das (ggf. automatisch generierte) Passwort werden angezeigt. Fehlerhafte Zeilen (z.&nbsp;B. ungültige E-Mail) werden rot markiert und übersprungen.
+          Kontrollieren Sie die Liste: Name, E-Mail und das generierte Passwort werden angezeigt. Fehlerhafte Zeilen (z.&nbsp;B. ungültige E-Mail) werden rot markiert und übersprungen.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Importieren</strong><br>
-          Tippen Sie auf <code>✅ Importieren</code>. Die App legt alle gültigen Mitarbeiter in Ihrem Unternehmen an.<br>
-          Bereits vorhandene E-Mail-Adressen werden automatisch übersprungen (kein Fehler).
+          Tippen Sie auf <code>✅ Importieren</code>. Die App legt alle gültigen Mitarbeiter an. Bereits vorhandene E-Mail-Adressen werden automatisch übersprungen.
         </div>
       </li>
       <li>
         <div class="step-content">
           <strong>Zugangsdaten notieren ✅</strong><br>
-          Das Ergebnis zeigt für jeden angelegten Mitarbeiter Name, E-Mail und Passwort. Notieren oder kopieren Sie die Zugangsdaten – das Passwort wird danach nicht mehr angezeigt.
+          Das Ergebnis zeigt für jeden Mitarbeiter Name, E-Mail und Passwort. Notieren oder kopieren Sie die Zugangsdaten – danach nicht mehr abrufbar!
         </div>
       </li>
     </ol>
@@ -923,23 +1338,167 @@
         <div style="color:#7f1d1d;font-size:0.92rem;line-height:1.6;">
           Die Passwörter werden <strong style="color:#c62828;">nur einmalig</strong> im Ergebnisschritt angezeigt.<br>
           Sobald Sie auf <strong>„✓ Fertig"</strong> tippen, sind die Passwörter <strong style="color:#c62828;">nicht mehr abrufbar</strong>.<br>
-          Bitte notieren, kopieren oder fotografieren Sie die Zugangsdaten – und geben Sie sie direkt an die Mitarbeiter weiter.
+          Bitte notieren, kopieren oder fotografieren Sie die Zugangsdaten und geben Sie sie direkt an die Mitarbeiter weiter.
         </div>
       </div>
     </div>
 
     <div class="info-box">
       <span class="info-icon">ℹ️</span>
-      <span><strong>Hinweis:</strong> Importierte Mitarbeiter erhalten die Rolle <strong>„Mitarbeiter"</strong>. Sie können sich mit ihrer E-Mail und dem angezeigten Passwort in der App anmelden und Schulungen ausfüllen. Ein späteres Passwort-Ändern ist über den 🔑-Button in der App möglich.</span>
+      <span><strong>Hinweis:</strong> Importierte Mitarbeiter erhalten die Rolle <strong>„Mitarbeiter"</strong>. Sie können sich mit ihrer E-Mail und dem angezeigten Passwort anmelden und Schulungen ausfüllen. Ein Passwort kann jederzeit über den 🔑-Button zurückgesetzt werden.</span>
     </div>
   </div>
 
-  <!-- ===== SECTION 5: FAQ ===== -->
-  <div class="section-card" id="sec5">
+  <!-- ===== SECTION 10: BEREICHE & BEREICHSLEITER ===== -->
+  <div class="section-card" id="sec10">
     <div class="section-header">
-      <div class="section-number">5</div>
+      <div class="section-number">10</div>
+      <div class="section-icon">🏗</div>
+      <h2>Bereiche &amp; Bereichsleiter verwalten <span style="font-size:0.75rem;background:#fff3e0;color:#e65100;border-radius:6px;padding:2px 8px;font-weight:700;margin-left:6px;">✨ NEU in v102</span></h2>
+      <span class="role-badge role-badge-verantw">✅ Verantwortlicher</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Bereiche ermöglichen die strukturierte Verwaltung größerer Teams: Jeder Bereich hat einen Bereichsleiter, der seine Mitarbeiter eigenständig verwaltet. Beispiele: „Objekt Nord", „Objekt Süd", „Lager Berlin", „Produktion Schicht A".</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Bereichsverwaltung öffnen</strong><br>
+          Tippen Sie im Verantwortlicher-Dashboard auf den Button <code>🏗 Bereiche &amp; Bereichsleiter</code>. Sie sehen eine Übersicht aller bereits angelegten Bereiche mit Ampelstatus.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Neuen Bereich anlegen</strong><br>
+          Tippen Sie auf <code>➕ Neuen Bereich anlegen</code> und füllen Sie das Formular aus:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li><strong>Name</strong> des Bereichs (z.B. „Objekt Nord") – Pflichtfeld</li>
+            <li><strong>Ort</strong> (z.B. „Hannover") – optional</li>
+            <li><strong>Objekt</strong> (z.B. „Lagerhalle 3") – optional</li>
+          </ul>
+          Bestätigen Sie mit <code>✅ Bereich anlegen</code>. Der Bereich wird in der Datenbank als neuer Eintrag in der Tabelle <code>bereiche</code> gespeichert.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Bereichsleiter zum Bereich anlegen</strong><br>
+          Tippen Sie innerhalb des Bereichs auf <code>👤 Bereichsleiter anlegen</code> und füllen Sie das Formular aus:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li><strong>Name</strong> des Bereichsleiters</li>
+            <li><strong>E-Mail-Adresse</strong> (für Login und automatische Einladungs-E-Mail)</li>
+            <li><strong>Passwort</strong> (oder automatisch generieren)</li>
+          </ul>
+          Nach dem Anlegen erhält der Bereichsleiter <strong>automatisch eine Einladungs-E-Mail</strong> mit seinen Zugangsdaten und dem Link zur App.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Ampelstatus je Bereich auf einen Blick</strong><br>
+          In der Bereiche-Übersicht sehen Sie für jeden Bereich sofort die Ampelstatistik: wie viele Mitarbeiter Grün, Gelb oder Rot sind. So erkennen Sie auf Anhieb, welcher Bereich Aufmerksamkeit benötigt.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mehrere Bereiche anlegen</strong><br>
+          Sie können unbegrenzt viele Bereiche anlegen. Typische Beispiele:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>🏗 Objekt Nord (Hannover)</li>
+            <li>🏗 Objekt Süd (Braunschweig)</li>
+            <li>🏗 Lager Ost (Berlin)</li>
+            <li>🏗 Produktion Schicht A</li>
+          </ul>
+          Jeder Bereich hat seinen eigenen Bereichsleiter und seine eigene Mitarbeiterliste.
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box">
+      <span class="info-icon">💡</span>
+      <span><strong>Datenbankstruktur (für Entwickler):</strong> Bereiche werden in der Tabelle <code>bereiche</code> gespeichert (Felder: <code>id</code>, <code>tenant_id</code>, <code>name</code>, <code>ort</code>, <code>objekt</code>). Mitarbeiter und Bereichsleiter haben eine <code>bereich_id</code> in der Tabelle <code>users</code>. Schulungszuweisungen für einen Bereich haben <code>bereich_id</code> gesetzt und <code>zugewiesen_an = NULL</code>.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 11: SCHULUNGSKASKADE ===== -->
+  <div class="section-card" id="sec11">
+    <div class="section-header">
+      <div class="section-number">11</div>
+      <div class="section-icon">🔄</div>
+      <h2>Schulungskaskade: Wie Schulungen fließen <span style="font-size:0.75rem;background:#fff3e0;color:#e65100;border-radius:6px;padding:2px 8px;font-weight:700;margin-left:6px;">✨ NEU in v102</span></h2>
+      <span class="role-badge role-badge-alle">🌐 Überblick</span>
+    </div>
+    <p style="margin-bottom:18px;color:var(--text-light);">Schulungen fließen in der App von oben nach unten durch die Rollenhierarchie – jede Ebene gibt Schulungen für die nächste frei. Der Status läuft in umgekehrter Richtung zurück nach oben.</p>
+
+    <!-- Fluss-Diagramm -->
+    <div class="cascade-diagram">
+      <div style="font-weight:700;color:#1e3a5f;margin-bottom:8px;font-family:sans-serif;font-size:0.95rem;">📊 Schulungskaskade – Übersicht</div>
+      <div class="cd-step">👑 <strong>Admin</strong> &nbsp;→&nbsp; erstellt Schulungsvorlage (systemweit verfügbar)</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">✅ <strong>Verantwortlicher</strong> &nbsp;→&nbsp; gibt Vorlage für einen Bereich frei<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<code style="font-size:0.8em;">(bereich_id gesetzt · zugewiesen_an = NULL)</code></div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">🏗 <strong>Bereichsleiter</strong> &nbsp;→&nbsp; sieht freigegebene Schulungen · weist sie Mitarbeitern zu</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">👤 <strong>Mitarbeiter</strong> &nbsp;→&nbsp; führt Schulung durch + unterschreibt digital</div>
+      <div class="cd-arrow">↓</div>
+      <div class="cd-step">🟢 <strong>Ampel: Grün ✅</strong> &nbsp;→&nbsp; Status läuft zurück nach oben (Bereichsleiter → Verantwortlicher → Firma)</div>
+    </div>
+
+    <p style="margin-bottom:16px;font-weight:600;color:var(--blue-dark);">Schritte im Detail:</p>
+    <ol class="step-list">
+      <li>
+        <div class="step-content">
+          <strong>Admin legt Schulungsvorlage an</strong><br>
+          Im Admin-Bereich unter <code>📚 Schulungsvorlagen</code> wird eine neue Vorlage erstellt: Titel, Beschreibung, Schulungsinhalt, Intervall (z.B. alle 12 Monate). Die Vorlage steht danach allen Firmen und Verantwortlichen zur Verfügung.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Verantwortlicher gibt Vorlage für einen Bereich frei</strong><br>
+          Der Verantwortliche wählt im Dashboard eine Schulungsvorlage aus und weist sie <strong>einem Bereich</strong> zu (statt einem einzelnen Mitarbeiter). Technisch: <code>bereich_id</code> wird gesetzt, <code>zugewiesen_an = NULL</code>. Die Schulung erscheint nun im Dashboard des Bereichsleiters dieses Bereichs.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Bereichsleiter sieht freigegebene Schulungen</strong><br>
+          Im Bereichsleiter-Dashboard erscheint die Schulung unter <code>📚 Freigegebene Schulungen</code>. Der Bereichsleiter kann sie einsehen, aber nicht bearbeiten oder löschen.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Bereichsleiter weist Schulung seinen Mitarbeitern zu</strong><br>
+          Der Bereichsleiter wählt die freigegebene Schulung aus und weist sie einem oder mehreren Mitarbeitern seines Bereichs zu. Technisch: <code>zugewiesen_an</code> wird auf die <code>user_id</code> des Mitarbeiters gesetzt. Die Schulung erscheint sofort in der Schulungsliste des Mitarbeiters.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Mitarbeiter führt Schulung durch und unterschreibt</strong><br>
+          Der Mitarbeiter öffnet die Schulung, füllt das Formular aus, wählt die gewünschte Sprache und leistet die digitale Unterschrift. Mit <code>✅ Abschließen</code> wird die Schulung gespeichert und der Status auf Grün gesetzt.
+        </div>
+      </li>
+      <li>
+        <div class="step-content">
+          <strong>Status läuft zurück durch die Hierarchie</strong><br>
+          Der abgeschlossene Status wird automatisch nach oben weitergegeben:
+          <ul style="margin-top:8px;padding-left:20px;line-height:2.2;">
+            <li>👤 Mitarbeiter: Status = 🟢 Grün</li>
+            <li>🏗 Bereichsleiter: sieht Ampel-Update in seiner Mitarbeiterliste</li>
+            <li>✅ Verantwortlicher: sieht Gesamt-Ampelstatus des Bereichs</li>
+            <li>🏢 Firma: sieht aggregierte Statistik aller Verantwortlichen</li>
+          </ul>
+        </div>
+      </li>
+    </ol>
+
+    <div class="info-box">
+      <span class="info-icon">🔄</span>
+      <span><strong>Wiederkehrende Schulungen:</strong> Hat eine Vorlage ein Intervall (z.B. 12 Monate), erscheint nach Ablauf automatisch ein Hinweis <em>„🔄 Wiederkehrende Schulung fällig"</em> – mit einem Button zum sofortigen Neu-Zuweisen. So werden keine Fristen vergessen.</span>
+    </div>
+  </div>
+
+  <!-- ===== SECTION 12: FAQ ===== -->
+  <div class="section-card" id="sec12">
+    <div class="section-header">
+      <div class="section-number">12</div>
       <div class="section-icon">❓</div>
       <h2>Häufige Fragen (FAQ)</h2>
+      <span class="role-badge role-badge-alle">🌐 Alle Rollen</span>
     </div>
     <div class="faq-list">
 
@@ -950,18 +1509,87 @@
         </div>
         <div class="faq-a">
           <span class="a-icon">✅</span>
-          <span>Bitte kontaktieren Sie die CSC GmbH direkt per E-Mail: <a href="mailto:info@csc-hannover.de">info@csc-hannover.de</a> – Ihr Passwort wird zeitnah zurückgesetzt.</span>
+          <span>Wenden Sie sich an Ihren Bereichsleiter, Verantwortlichen oder direkt an die CSC GmbH per E-Mail: <a href="mailto:info@csc-hannover.de">info@csc-hannover.de</a>. Das Passwort wird zeitnah zurückgesetzt. Über den 🔑-Button in der Mitarbeiterliste kann ein neues Passwort sofort gesetzt werden.</span>
         </div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q">
           <span class="q-icon">❓</span>
-          <span>Kann ein Mitarbeiter die Schulung auf jedem Gerät unterzeichnen?</span>
+          <span>Kann ein Mitarbeiter den QR-Code-Login nutzen?</span>
         </div>
         <div class="faq-a">
           <span class="a-icon">✅</span>
-          <span>Ja – die App funktioniert auf <strong>Smartphone</strong>, <strong>Tablet</strong> und <strong>PC</strong>. Für die Unterschrift empfiehlt sich ein Gerät mit Touchscreen.</span>
+          <span>Ja! In der Mitarbeiterliste hat jeder Mitarbeiter einen <strong>„🔑 QR-Login"</strong>-Button. Tippen → QR-Code anzeigen → ausdrucken → dem Mitarbeiter geben. Der Mitarbeiter scannt den QR-Code mit dem Smartphone → sofort eingeloggt, kein Passwort nötig. Ideal für Mitarbeiter ohne eigene E-Mail-Adresse oder die sich kein Passwort merken können.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Was ist ein Bereich?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Ein Bereich ist eine organisatorische Einheit innerhalb eines Unternehmens – z.B. ein Standort, ein Objekt, eine Abteilung oder eine Schicht. Jeder Bereich hat einen eigenen Bereichsleiter und eine eigene Mitarbeiterliste. Bereiche ermöglichen die dezentrale Verwaltung großer Teams.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Wer kann Bereiche anlegen?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Nur der <strong>Verantwortliche</strong> kann Bereiche anlegen und Bereichsleiter zuweisen. Der Bereichsleiter selbst kann nur seine Mitarbeiter verwalten – keine neuen Bereiche anlegen.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Wie sieht der Bereichsleiter seine Schulungen?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Der Bereichsleiter sieht im Bereichsleiter-Dashboard unter <strong>„📚 Freigegebene Schulungen"</strong> alle Schulungen, die der Verantwortliche für seinen Bereich freigegeben hat. Er kann diese Schulungen dann seinen Mitarbeitern zuweisen.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Wie viele Bereiche kann ich anlegen?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Es gibt <strong>keine Begrenzung</strong> der Anzahl von Bereichen. Sie können so viele Bereiche anlegen, wie Ihre Unternehmensstruktur erfordert – z.B. einen pro Standort, Schicht oder Projekt.</span>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Was ist der Unterschied: Mitarbeiter direkt anlegen vs. über Bereich?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <div>
+            <strong>Direkt anlegen:</strong> Der Mitarbeiter gehört direkt zum Verantwortlichen (kein Bereich). Der Verantwortliche weist Schulungen direkt zu und überwacht den Status selbst.<br><br>
+            <strong>Über Bereich anlegen:</strong> Der Mitarbeiter gehört einem Bereich an. Der Bereichsleiter legt den Mitarbeiter an, weist Schulungen zu und überwacht den Status. Der Verantwortliche sieht nur die aggregierte Ampelstatistik des Bereichs.
+          </div>
+        </div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q">
+          <span class="q-icon">❓</span>
+          <span>Kann ein Mitarbeiter mehreren Bereichen angehören?</span>
+        </div>
+        <div class="faq-a">
+          <span class="a-icon">✅</span>
+          <span>Nein – jeder Mitarbeiter gehört genau <strong>einem Bereich</strong> an (oder direkt einem Verantwortlichen ohne Bereich). Eine Mehrfachzuordnung zu verschiedenen Bereichen ist nicht möglich. Bei einem Wechsel kann der Verantwortliche den Mitarbeiter einem anderen Bereich zuordnen.</span>
         </div>
       </div>
 
@@ -972,29 +1600,7 @@
         </div>
         <div class="faq-a">
           <span class="a-icon">✅</span>
-          <span>Ein Einladungslink ist <strong>7 Tage</strong> gültig. Nach Ablauf dieser Frist muss ein neuer Link generiert werden.</span>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          <span class="q-icon">❓</span>
-          <span>Was passiert, nachdem eine Schulung abgeschlossen wurde?</span>
-        </div>
-        <div class="faq-a">
-          <span class="a-icon">✅</span>
-          <span>Die Daten werden <strong>automatisch gespeichert</strong>, der Status wechselt auf Grün, und ein <strong>PDF-Dokument</strong> wird als offizieller Nachweis erstellt.</span>
-        </div>
-      </div>
-
-      <div class="faq-item">
-        <div class="faq-q">
-          <span class="q-icon">❓</span>
-          <span>Kann ein Mitarbeiter denselben Einladungslink zweimal nutzen?</span>
-        </div>
-        <div class="faq-a">
-          <span class="a-icon">✅</span>
-          <span>Nein – jeder Link ist <strong>einmalig</strong>. Nach der ersten Nutzung ist der Link nicht mehr gültig. Bitte generieren Sie für jeden Mitarbeiter einen eigenen Link.</span>
+          <span>Ein Einladungslink ist <strong>7 Tage</strong> gültig und kann nur <strong>einmal genutzt</strong> werden. Nach Ablauf oder Nutzung muss ein neuer Link generiert werden. Die automatische Einladungs-E-Mail an neue Bereichsleiter enthält ebenfalls einen zeitlich begrenzten Aktivierungslink.</span>
         </div>
       </div>
 
@@ -1006,7 +1612,7 @@
         <div class="faq-a">
           <span class="a-icon">✅</span>
           <div>
-            Die App ist in folgenden Sprachen verfügbar:
+            Die App-Oberfläche und Schulungsformulare sind in folgenden Sprachen verfügbar:
             <div class="lang-badges" style="margin-top:10px;">
               <span class="badge">🇩🇪 Deutsch</span>
               <span class="badge">🇬🇧 Englisch</span>
@@ -1015,6 +1621,7 @@
               <span class="badge">🇪🇸 Spanisch</span>
               <span class="badge">🇷🇺 Russisch</span>
             </div>
+            Diese Anleitung ist zusätzlich in <strong>Rumänisch (RO)</strong>, <strong>Serbisch (SR)</strong> und <strong>Polnisch (PL)</strong> verfügbar – über den Sprachumschalter oben.
           </div>
         </div>
       </div>
@@ -1022,14 +1629,14 @@
     </div>
   </div>
 
-  <!-- ===== SECTION 6: CONTACT ===== -->
-  <div class="contact-card" id="sec6">
+  <!-- ===== SECTION 13: KONTAKT & SUPPORT ===== -->
+  <div class="contact-card" id="sec13">
     <div class="section-header">
-      <div class="section-number">6</div>
+      <div class="section-number">13</div>
       <div class="section-icon">📞</div>
       <h2>Kontakt &amp; Support</h2>
     </div>
-    <p style="margin-bottom:20px;opacity:0.85;">Bei Fragen oder technischen Problemen steht Ihnen das Team der CSC GmbH gerne zur Verfügung:</p>
+    <p style="margin-bottom:20px;opacity:0.85;">Bei Fragen, technischen Problemen oder Schulungsbedarf steht Ihnen das Team der CSC GmbH gerne zur Verfügung:</p>
     <div class="contact-grid">
       <div class="contact-item">
         <div class="ci-icon">🏢</div>
@@ -1072,67 +1679,10 @@
     </button>
   </div>
 
-  <!-- ===== NEU IN VERSION 2.6 ===== -->
-  <div class="section" id="sec-v26">
-    <div class="section-header">
-      <span class="section-icon">🚀</span>
-      <div>
-        <div class="section-title">Neue Funktionen (Version 2.6)</div>
-        <div class="section-subtitle">Alle neuen Features auf einen Blick</div>
-      </div>
-    </div>
-    <div class="section-body">
-
-      <div style="display:grid;gap:14px">
-
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#1d4ed8;margin-bottom:6px">🔔 Push-Benachrichtigungen</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">Beim Admin-Login erscheint ein 🔔-Button im Header. Einmal tippen → Browser fragt nach Erlaubnis → ab sofort erhalten Sie eine Benachrichtigung wenn eine Schulung abgeschlossen wird. Funktioniert auch wenn die App im Hintergrund ist.</p>
-        </div>
-
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#16a34a;margin-bottom:6px">📄 PDF-Bericht</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">In der Übersicht rechts oben: Button <strong>„📄 PDF-Bericht"</strong>. Wählen Sie Unternehmen + Zeitraum → komplett formatierter Bericht mit Zusammenfassung und Schulungsliste als PDF. Ideal für Audits oder Behörden.</p>
-        </div>
-
-        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#92400e;margin-bottom:6px">🔄 Wiederkehrende Schulungen</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">Schulungsvorlagen haben ein Intervall (z.B. 12 Monate). Wenn eine Schulung abgeschlossen ist und das Intervall abläuft, erscheint automatisch ein gelber Hinweis in der Übersicht: <em>„🔄 Wiederkehrende Schulung fällig"</em> mit einem Button zum sofortigen Neu-Zuweisen.</p>
-        </div>
-
-        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#1d4ed8;margin-bottom:6px">🔑 QR-Code-Login für Mitarbeiter</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">In der Mitarbeiterliste hat jeder Mitarbeiter jetzt einen <strong>„🔑 QR-Login"</strong>-Button. Tippen → QR-Code anzeigen → ausdrucken → dem Mitarbeiter geben. Mitarbeiter scannt QR mit dem Smartphone → direkt eingeloggt, kein Passwort nötig. Ideal für Mitarbeiter die sich kein Passwort merken können.</p>
-        </div>
-
-        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#7c3aed;margin-bottom:6px">📅 Verbesserter Kalender</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">Der Kalender zeigt jetzt farbige Ampel-Kacheln pro Tag + einen Tage-Countdown (z.B. „12 Tage"). Filter-Buttons oben: 🔍 Alle · 🔴 Überfällig · 🟡 Bald fällig · 🟢 Abgeschlossen. 6 Monate Vorschau statt 3.</p>
-        </div>
-
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#16a34a;margin-bottom:6px">🔍 Suche im Admin-Dashboard</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">In der Unternehmensübersicht gibt es jetzt ein Suchfeld. Einfach Firmennamen tippen → Liste wird sofort gefiltert. Praktisch wenn viele Unternehmen verwaltet werden.</p>
-        </div>
-
-        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#c2410c;margin-bottom:6px">📧 E-Mail-Benachrichtigungen</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">Vorbereitet für automatische E-Mail-Benachrichtigungen bei Schulungsfristen. Aktivierung: Supabase Edge Function „send-email" einrichten + Resend.com kostenlos nutzen. Der 📧-Button in der Übersicht sendet eine Test-E-Mail.</p>
-        </div>
-
-        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px">
-          <div style="font-weight:700;color:#16a34a;margin-bottom:6px">📋 Schulungshistorie pro Mitarbeiter</div>
-          <p style="color:#374151;font-size:.88rem;margin:0">In der Mitarbeiterliste: <strong>„📋 Historie"</strong>-Button pro Mitarbeiter → alle bisher abgeschlossenen Schulungen chronologisch, mit PDF-Download-Link. Vollständige Dokumentation auf einen Blick.</p>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
   <!-- ===== FOOTER ===== -->
   <div class="footer">
     <p>© 2026 CSC GmbH · Hannover · <a href="https://www.csc-hannover.de" target="_blank" style="color:var(--text-light);">www.csc-hannover.de</a></p>
-    <p style="margin-top:4px;">Bedienungsanleitung CSC Schulungsmanagement-App · Version 2.6 · Juni 2026</p>
+    <p style="margin-top:4px;">Bedienungsanleitung CSC Schulungsmanagement-App · Version v102 · Juli 2026</p>
   </div>
 
 </div>
