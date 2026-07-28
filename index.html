@@ -1455,5 +1455,23 @@
   </div>
 </div>
 
+
+<script>
+// Rechtsklick-Schutz auf PDF-Container und Schulungsbilder
+document.addEventListener('contextmenu', function(e) {
+  const t = e.target;
+  if (t.closest('iframe') || t.closest('[oncontextmenu]') ||
+      t.tagName === 'IMG' && t.closest('[data-schutz]')) {
+    e.preventDefault();
+    return false;
+  }
+});
+// Drag-Schutz auf Bilder in Schulungsmodulen
+document.addEventListener('dragstart', function(e) {
+  if (e.target.tagName === 'IMG' && e.target.closest('.schulung-inhalt, [data-schutz]')) {
+    e.preventDefault();
+  }
+});
+</script>
 </body>
 </html>

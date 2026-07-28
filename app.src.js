@@ -971,7 +971,27 @@ const SB = {
       body: pdfBlob
     });
     if (!r.ok) { const t = await r.text(); throw new Error(t); }
-    return `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
+    // Gibt jetzt den Storage-Pfad zurück (kein public URL mehr)
+    return `schulung-pdfs/${path}`;
+  },
+  async signedUrl(storagePath, expiresIn = 300) {
+    // Generiert eine signierte URL die nach expiresIn Sekunden abläuft (Standard: 5 Min)
+    // storagePath Format: "bucket/pfad/zur/datei.pdf"
+    const parts = storagePath.replace(/^\//, '').split('/');
+    const bucket = parts.shift();
+    const filePath = parts.join('/');
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${bucket}/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ expiresIn })
+    });
+    if (!r.ok) throw new Error('Signierte URL konnte nicht erstellt werden: ' + await r.text());
+    const data = await r.json();
+    return `${SUPABASE_URL}/storage/v1${data.signedURL}`;
   },
   async delete(table, filter) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
@@ -1574,6 +1594,20 @@ async function vorgesetzterPwSpeichern(userId, userName, neuesPw, overlayEl) {
   }
 }
 
+// ══════════════════════════════════════════════════════════════
+//  PDF ÖFFNEN — immer über signierte URL (5 Min gültig)
+// ══════════════════════════════════════════════════════════════
+async function oeffnePdfSigniert(storagePath) {
+  if (!storagePath) return;
+  try {
+    showToast('⏳ PDF wird vorbereitet…', '#0047cc');
+    const url = await SB.signedUrl(storagePath, 300);
+    window.open(url, '_blank', 'noopener');
+  } catch(e) {
+    showToast('❌ PDF konnte nicht geöffnet werden: ' + e.message.substring(0,60), '#dc2626');
+  }
+}
+
 // ── AUDIT ────────────────────────────────────────────────────
 async function sbAudit(action, detail) {
   try {
@@ -1821,7 +1855,7 @@ async function renderArchiv() {
               <div style="font-size:.88rem;font-weight:600">${escHtml(f.titel)}</div>
               <div style="font-size:.76rem;color:#6b7280">${escHtml(f.tenant)} · ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'} ${f.mitarbeiter_name?`· ${escHtml(f.mitarbeiter_name)}`:''}</div>
             </div>
-            ${f.pdf_path?`<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>`:''}\n          </div>`;
+            ${f.pdf_path?`<button onclick="oeffnePdfSigniert('${escHtml(f.pdf_path)}')" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</button>`:''}\\n          </div>`;
         });
         html += '</div>';
       });
@@ -2075,7 +2109,7 @@ function adminDetailAnzeigen(zuwId) {
       </div>
       <div style="font-size:.82rem;color:#6b7280;margin-bottom:14px">
         Frist: ${zuw.frist||'–'} | ${form.abgeschlossen?`Abgeschlossen: ${dateStr(form.abgeschlossenAm)}`:'Noch offen'}
-        ${form.pdfPath?`<br><a href="${form.pdfPath}" target="_blank" style="color:#0047cc">📄 PDF in Supabase öffnen</a>`:''}
+        ${form.pdfPath?`<br><button onclick="oeffnePdfSigniert('${form.pdfPath}')" style="color:#0047cc;background:none;border:none;cursor:pointer;font-size:.82rem;text-decoration:underline;padding:0">📄 PDF in Supabase öffnen</button>`:''}
       </div>
       ${feldHtml||'<div class="empty-state"><div class="icon">📝</div><p>Noch kein Formular ausgefüllt</p></div>'}
     </div>`;
@@ -2771,7 +2805,8 @@ async function vtSpeichern() {
         method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/pdf'}, body:vtPdfFile
       });
       if (!r.ok) throw new Error(await r.text());
-      pdf_url = `${SUPABASE_URL}/storage/v1/object/public/schulung-vorlagen/${pfad}`;
+      // Speichere Pfad statt public URL
+      pdf_url = `schulung-vorlagen/${pfad}`;
     } catch(e) { msgEl.textContent='PDF-Upload Fehler: '+e.message; msgEl.classList.add('show'); return; }
     // Unterschriftsfelder
     const sigFelder = [];
@@ -3901,7 +3936,7 @@ function oeffneFormular(zuwId) {
   oeffneFormularMitSprache(zuwId, 'de');
 }
 
-function oeffneFormularMitSprache(zuwId, sprache) {
+async function oeffneFormularMitSprache(zuwId, sprache) {
   activeZuwId = zuwId;
   if (sprache === 'de') { sigPads={}; uploadFiles={}; }
 
@@ -3950,14 +3985,23 @@ function oeffneFormularMitSprache(zuwId, sprache) {
   // PDF-Vorlage oder Felder anzeigen
   if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
     let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
-    // PDF einbetten
+    // Signierte URL generieren (5 Min gültig)
+    let pdfAnzeigeUrl = '';
+    try {
+      pdfAnzeigeUrl = await SB.signedUrl(vorlage.pdf_url, 300);
+    } catch(e) {
+      console.warn('Signed URL Fehler:', e.message);
+    }
+    const istAdmin = ['admin','firma','verantwortlicher'].includes(currentUser?.role);
     html += `
-      <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9">
+      <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9;user-select:none" oncontextmenu="return false">
         <div style="background:#1a3a5c;color:#fff;padding:8px 14px;font-size:.82rem;font-weight:600">📄 ${escHtml(vorlage.titel)}</div>
-        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(vorlage.pdf_url)}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}" id="pdf-iframe-main"></iframe>
+        <iframe src="${pdfAnzeigeUrl ? 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(pdfAnzeigeUrl) : ''}" style="width:100%;height:70vh;border:none;display:block;pointer-events:auto" title="${escHtml(vorlage.titel)}" id="pdf-iframe-main"></iframe>
         <div style="padding:6px 14px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px">
           📄 PDF wird nicht angezeigt?
-          <a href="${vorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+          ${istAdmin
+            ? `<a href="${pdfAnzeigeUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>`
+            : `<span style="color:#9ca3af">Bitte Seite neu laden.</span>`}
         </div>
         <div style="padding:8px 14px;background:#f8faff;font-size:.75rem;color:#6b7280">
           📄 ${escHtml(vorlage.titel)}
@@ -4277,9 +4321,10 @@ async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
       body: pdfBlob
     });
     if (!r.ok) throw new Error(await r.text());
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
-    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: publicUrl });
-    if (formulare[zuwId]) formulare[zuwId].pdfPath = publicUrl;
+    // Speichere Storage-Pfad statt public URL
+    const storagePath = `schulung-pdfs/${path}`;
+    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath });
+    if (formulare[zuwId]) formulare[zuwId].pdfPath = storagePath;
     showToast('🗄️ PDF gespeichert', '#0047cc');
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
@@ -4334,8 +4379,9 @@ async function syncMissingToDrive() {
 
     for (const form of missing) {
       try {
-        // PDF von Supabase Storage laden
-        const pdfResp = await fetch(form.pdf_path);
+        // PDF von Supabase Storage laden (signierte URL)
+        const signedPdfUrl = await SB.signedUrl(form.pdf_path, 120);
+        const pdfResp = await fetch(signedPdfUrl);
         if (!pdfResp.ok) throw new Error('PDF nicht ladbar');
         const pdfBlob   = await pdfResp.blob();
         const pdfBase64 = await blobToBase64(pdfBlob);
@@ -4792,7 +4838,7 @@ function gastFehler(msg) {
     </div>`;
 }
 
-function gastWeiter() {
+async function gastWeiter() {
   const name = document.getElementById('gast-name-input').value.trim();
   const msg  = document.getElementById('gast-name-msg');
   if (!name) { msg.textContent = '⚠️ Bitte Ihren Namen eingeben.'; return; }
@@ -4804,11 +4850,12 @@ function gastWeiter() {
   gastSigPads = {};
 
   if (gastVorlage.typ === 'pdf' && gastVorlage.pdf_url) {
-    html += `<div class="card">
-      <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(gastVorlage.pdf_url)}" style="width:100%;height:500px;border:none;border-radius:8px;display:block"></iframe>
+    let gastPdfUrl = '';
+    try { gastPdfUrl = await SB.signedUrl(gastVorlage.pdf_url, 300); } catch(e) {}
+    html += `<div class="card" oncontextmenu="return false" style="user-select:none">
+      <iframe src="${gastPdfUrl ? 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(gastPdfUrl) : ''}" style="width:100%;height:500px;border:none;border-radius:8px;display:block"></iframe>
       <div style="padding:6px 12px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px;border-top:1px solid #dde2e9">
-        📄 PDF wird nicht angezeigt?
-        <a href="${gastVorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+        📄 PDF wird nicht angezeigt? Bitte Seite neu laden.
       </div>
     </div>`;
   }
@@ -6258,7 +6305,7 @@ async function zeigeSchulungshistorie(userId) {
         </div>
         <!-- Footer mit PDF-Button -->
         ${f.pdf_path ? `<div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb">
-          <a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</a>
+          <button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>
         </div>` : ''}
       </div>`;
     }).join('');
@@ -8104,7 +8151,7 @@ async function firmaRenderHistorie() {
               <div style="font-size:.83rem;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(e.titel)}</div>
               <div style="font-size:.72rem;color:#6b7280">${e.datum ? new Date(e.datum).toLocaleDateString('de-DE') : '–'} ${e.extra ? '· '+escHtml(e.extra) : ''}</div>
             </div>
-            ${e.pdfUrl ? `<a href="${e.pdfUrl}" target="_blank" style="font-size:.72rem;padding:5px 10px;border:1px solid #3b82f6;border-radius:6px;color:#3b82f6;text-decoration:none;white-space:nowrap">📄 PDF</a>` : '<span style="font-size:.72rem;color:#9ca3af;white-space:nowrap">kein PDF</span>'}
+            ${e.pdfUrl ? `<button onclick="oeffnePdfSigniert('${e.pdfUrl}')" style="font-size:.72rem;padding:5px 10px;border:1px solid #3b82f6;border-radius:6px;color:#3b82f6;background:none;cursor:pointer;white-space:nowrap">📄 PDF</button>` : '<span style="font-size:.72rem;color:#9ca3af;white-space:nowrap">kein PDF</span>'}
           </div>`).join('')}
       </div>`).join('');
 
