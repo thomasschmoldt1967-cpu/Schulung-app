@@ -663,6 +663,19 @@ function zeigePwReset() {
   document.getElementById('pw-reset-email').value = document.getElementById('login-email').value || '';
   document.getElementById('pw-reset-msg').textContent = '';
 }
+
+// Passwort vergessen: erkennt ob Handynummer oder E-Mail eingegeben
+function zeigePasswortVergessenHilfe() {
+  const eingabe = document.getElementById('login-email').value.trim();
+  const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
+  if (istHandynummer) {
+    zeigeInfoModal('📱 Passwort vergessen?',
+      'Bitte wende dich an deinen Vorgesetzten (Bereichsleiter oder Verantwortlichen).<br><br>' +
+      'Er kann dir über die App ein neues Passwort vergeben und es dir per WhatsApp/SMS schicken.');
+  } else {
+    zeigePwReset();
+  }
+}
 function schliessePwReset() {
   document.getElementById('pw-reset-modal').style.display = 'none';
 }
@@ -790,6 +803,61 @@ async function pruefePasswordResetToken() {
   } catch(e) {
     zeigeInfoModal('❌ Fehler', 'Fehler beim Passwort-Reset: ' + e.message);
     return false;
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PASSWORT PFLICHT-ÄNDERN (erster Login)
+// ══════════════════════════════════════════════════════════════
+function zeigePwPflichtAendern() {
+  const overlay = document.createElement('div');
+  overlay.id = 'pw-pflicht-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:2rem">🔐</div>
+        <h3 style="margin:8px 0 4px;font-size:1.1rem;color:#1e3a5f">Passwort festlegen</h3>
+        <p style="font-size:.83rem;color:#6b7280;margin:0">Bitte lege jetzt dein eigenes Passwort fest.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="ppf-neu" type="password" placeholder="Neues Passwort (mind. 8 Zeichen)"
+          style="padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.92rem;width:100%;box-sizing:border-box">
+        <input id="ppf-neu2" type="password" placeholder="Passwort wiederholen"
+          style="padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.92rem;width:100%;box-sizing:border-box">
+      </div>
+      <div id="ppf-msg" style="font-size:.82rem;min-height:20px;margin:8px 0;color:#dc2626"></div>
+      <button id="ppf-btn" onclick="pwPflichtSpeichern()" class="btn-primary"
+        style="width:100%;padding:12px;font-size:.95rem;border-radius:9px;border:none;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;margin-top:4px">
+        💾 Passwort speichern
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function pwPflichtSpeichern() {
+  const neu  = document.getElementById('ppf-neu').value;
+  const neu2 = document.getElementById('ppf-neu2').value;
+  const msg  = document.getElementById('ppf-msg');
+  const btn  = document.getElementById('ppf-btn');
+  msg.textContent = '';
+  if (neu.length < 8) { msg.textContent = 'Mindestens 8 Zeichen.'; return; }
+  if (neu !== neu2)   { msg.textContent = 'Passwörter stimmen nicht überein.'; return; }
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const hash = await hashPasswort(neu);
+    await SB.patch('users', `id=eq.${currentUser.userId}`, { password_hash: hash, muss_pw_aendern: false });
+    await sbAudit('PW_PFLICHT_AENDERUNG', 'Erstes Passwort gesetzt');
+    currentUser.mussPasswortAendern = false;
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY)||'{}');
+    s.mussPasswortAendern = false;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    document.getElementById('pw-pflicht-overlay')?.remove();
+    showToast('✅ Passwort gespeichert!', '#0f5132');
+    routeAfterLogin();
+  } catch(e) {
+    msg.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '💾 Passwort speichern';
   }
 }
 
@@ -1371,7 +1439,8 @@ async function blMitarbeiterSpeichern(modalEl) {
       bereich_id: currentUser.bereichId || null,
       personalnummer: pnr || null,
       aktiv: true,
-      archiviert: false
+      archiviert: false,
+      muss_pw_aendern: true
     });
     if (res?.error) {
       const msg = res.error.message || '';
@@ -1393,26 +1462,38 @@ async function blMitarbeiterSpeichern(modalEl) {
 
 // ── LOGIN ────────────────────────────────────────────────────
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pw    = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-fehler');
+  const eingabe = document.getElementById('login-email').value.trim();
+  const pw      = document.getElementById('login-password').value;
+  const errEl   = document.getElementById('login-fehler');
   errEl.classList.remove('show');
-  if (!email || !pw) { errEl.textContent='Bitte E-Mail und Passwort eingeben.'; errEl.classList.add('show'); return; }
+  if (!eingabe || !pw) { errEl.textContent='Bitte Benutzername und Passwort eingeben.'; errEl.classList.add('show'); return; }
 
   const loginBtn = document.querySelector('#screen-login .btn-primary');
   loginBtn.textContent = '⏳ Anmelden…';
   loginBtn.disabled = true;
 
+  // Handynummer? → in Pseudo-E-Mail umwandeln
+  const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
+  let suchEmail;
+  if (istHandynummer) {
+    const nr = eingabe.replace(/\s+/g,'').replace(/^00/,'+').replace(/^0/,'+49');
+    suchEmail = nr + '@csc-hannover.de';
+  } else {
+    suchEmail = eingabe.toLowerCase();
+  }
+
   try {
-    const users = await SB.get('users', `email=eq.${encodeURIComponent(email)}`);
+    const users = await SB.get('users', `email=eq.${encodeURIComponent(suchEmail)}`);
     if (!users.length) {
-      errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
+      errEl.textContent = istHandynummer ? 'Handynummer oder Passwort falsch.' : 'E-Mail oder Passwort falsch.';
+      errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
     const user = users[0];
     const ok = await verifyPasswort(pw, user.password_hash);
     if (!ok) {
-      errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
+      errEl.textContent = istHandynummer ? 'Handynummer oder Passwort falsch.' : 'E-Mail oder Passwort falsch.';
+      errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
     // SHA-256 → bcrypt Auto-Migration (im Hintergrund)
@@ -1425,17 +1506,72 @@ async function doLogin() {
       bereichId: user.bereich_id || null,
       aktiv: user.aktiv !== false,
       archiviert: !!user.archiviert,
+      mussPasswortAendern: !!user.muss_pw_aendern,
       expires: Date.now() + SESSION_HOURS * 3600 * 1000
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     currentUser = session;
     startInactivityWatcher();
     await sbAudit('LOGIN','Benutzer angemeldet');
-    routeAfterLogin();
+    // Erstes Login? → Passwort-Ändern-Pflicht
+    if (session.mussPasswortAendern) {
+      zeigePwPflichtAendern();
+    } else {
+      routeAfterLogin();
+    }
   } catch(e) {
     errEl.textContent='Fehler: '+e.message; errEl.classList.add('show');
   }
   loginBtn.textContent='Anmelden'; loginBtn.disabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PW-RESET DURCH VORGESETZTEN
+// ══════════════════════════════════════════════════════════════
+async function vorgesetzterPwReset(userId, userName) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const neuesPw = genPasswort();
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">🔑 Neues Passwort für ${escHtml(userName)}</h3>
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:12px;margin-bottom:14px">
+        <div style="font-size:.8rem;color:#92400e;margin-bottom:6px">Generiertes Passwort:</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <code id="vpr-pw-anzeige" style="font-size:1rem;font-weight:700;color:#1e3a5f;flex:1;word-break:break-all">${neuesPw}</code>
+          <button onclick="navigator.clipboard.writeText('${neuesPw}').then(()=>showToast('📋 Kopiert!'))"
+            style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;cursor:pointer;font-size:.8rem">📋</button>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:#6b7280;margin-bottom:14px">
+        📱 Dieses Passwort per WhatsApp/SMS an den Mitarbeiter senden.<br>
+        Beim nächsten Login muss er es selbst ändern.
+      </div>
+      <div id="vpr-msg" style="font-size:.82rem;min-height:16px;color:#dc2626;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="this.closest('[style*=fixed]').remove()"
+          style="flex:1;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">Abbrechen</button>
+        <button id="vpr-btn" onclick="vorgesetzterPwSpeichern('${userId}','${escHtml(userName)}','${neuesPw}',this.closest('[style*=fixed]'))"
+          style="flex:2;padding:10px;border:none;border-radius:8px;background:#c2410c;color:#fff;font-weight:600;cursor:pointer">✅ Passwort setzen</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function vorgesetzterPwSpeichern(userId, userName, neuesPw, overlayEl) {
+  const btn = overlayEl.querySelector('#vpr-btn');
+  const msg = overlayEl.querySelector('#vpr-msg');
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const hash = await hashPasswort(neuesPw);
+    await SB.patch('users', `id=eq.${userId}`, { password_hash: hash, muss_pw_aendern: true });
+    await sbAudit('PW_RESET_VORGESETZTER', `Neues Passwort gesetzt für ${userName}`);
+    overlayEl.remove();
+    showToast(`✅ Neues Passwort für ${userName} gesetzt — bitte per WhatsApp/SMS senden`, '#0f5132');
+  } catch(e) {
+    msg.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Passwort setzen';
+  }
 }
 
 // ── AUDIT ────────────────────────────────────────────────────
@@ -3162,6 +3298,9 @@ async function renderMitarbeiterListe() {
       const btnHistorie = `<button onclick="event.stopPropagation();zeigeSchulungshistorie('${m.id}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Schulungshistorie anzeigen">📋 Historie</button>`;
+      const btnPwReset = !istArchiviert ? `<button onclick="event.stopPropagation();vorgesetzterPwReset('${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}')"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;white-space:nowrap;margin-top:3px"
+          title="Neues Passwort vergeben">🔑 Neues PW</button>` : '';
 
       // ── Lernpfad-Unterschrift-Status für diesen Mitarbeiter ──
       const lpUnt = lpUnterschriften[m.id];
@@ -3232,7 +3371,7 @@ async function renderMitarbeiterListe() {
           <div id="ma-detail-${m.id}" style="display:none;border-top:1px solid ${c.border}">
             <!-- Aktionsbuttons -->
             <div style="padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,.5)">
-              ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}
+              ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}${btnPwReset}
             </div>
             <!-- Schulungszeilen -->
             ${gesamtZuws > 0 && !istArchiviert ? `
@@ -4895,7 +5034,8 @@ async function mitarbeiterEinzelnSpeichern() {
       role: 'mitarbeiter',
       tenant_id: currentUser.tenantId,
       standort: standort || null,
-      bereich:  bereich  || null
+      bereich:  bereich  || null,
+      muss_pw_aendern: true
     });
 
     if (res && res.error) {
@@ -5095,7 +5235,8 @@ async function mitarbeiterImportStarten() {
         email:         r.email,
         password_hash: hash,
         role:          'mitarbeiter',
-        tenant_id:     currentUser.tenantId
+        tenant_id:     currentUser.tenantId,
+        muss_pw_aendern: true
       });
       if (res && res.error) {
         const errMsg = res.error.message || JSON.stringify(res.error);
