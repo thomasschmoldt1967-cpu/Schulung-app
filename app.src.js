@@ -24,6 +24,7 @@ const LERNPFAD_VORLAGE_ID = '__lernpfad__'; // Pseudo-ID für Lernpfad-Zuweisung
 let currentUser       = null;
 let APP_TENANTS       = [];
 let APP_USERS         = [];
+let APP_BEREICHE      = []; // Bereiche (bereichsleiter-System)
 let SCHULUNG_VORLAGEN = [];
 let zuweisungen       = [];
 let formulare         = {};   // { zuwId: { felder, gestartet, abgeschlossen, ... } }
@@ -937,14 +938,16 @@ async function initApp() {
   } catch(e) { /* nicht kritisch */ }
 
   try {
-    const [tenants, vorlagen, zuws, users] = await Promise.all([
+    const [tenants, vorlagen, zuws, users, bereiche] = await Promise.all([
       SB.get('tenants'),
       SB.get('vorlagen'),
       SB.get('zuweisungen'),
-      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert')
+      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert,bereich_id,personalnummer'),
+      SB.get('bereiche')
     ]);
     APP_TENANTS       = tenants;
     APP_USERS         = users; // Für ID→Name Auflösung (z.B. im PDF)
+    APP_BEREICHE      = bereiche || [];
     SCHULUNG_VORLAGEN = vorlagen.map(v => ({
       ...v, intervallMonate: v.intervall_monate,
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
@@ -953,7 +956,8 @@ async function initApp() {
       id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
       frist: z.frist, pflicht: z.pflicht,
       intervallMonate: z.intervall_monate || null,
-      zugewiesenAn: z.zugewiesen_an || null
+      zugewiesenAn: z.zugewiesen_an || null,
+      bereichId: z.bereich_id || null
     }));
 
     // Formulare laden
@@ -1040,6 +1044,7 @@ function doLogout() {
   // SICHERHEIT: Alle globalen Datenarrays leeren — kein Datenleck beim Benutzerwechsel
   APP_TENANTS       = [];
   APP_USERS         = [];
+  APP_BEREICHE      = [];
   SCHULUNG_VORLAGEN = [];
   zuweisungen       = [];
   formulare         = {};
@@ -1074,6 +1079,8 @@ function routeAfterLogin() {
   if (currentUser.role === 'admin') {
     renderAdminDashboard();
     showScreen('screen-admin');
+  } else if (currentUser.role === 'bereichsleiter') {
+    renderBereichsleiterDashboard();
   } else if (currentUser.role === 'firma') {
     // Firma-Admin: sieht alle Verantwortlichen und Mitarbeiter seines Tenants
     const tid = currentUser.tenantId;
@@ -1125,6 +1132,265 @@ function routeAfterLogin() {
   }
 }
 
+// ── Bereichsleiter-Screen rendern ────────────────────────────
+async function renderBereichsleiterDashboard() {
+  const tid = currentUser.tenantId;
+  // Mandantentrennung: nur eigener Tenant + eigener Bereich
+  APP_TENANTS  = APP_TENANTS.filter(t => t.id === tid);
+  APP_BEREICHE = APP_BEREICHE.filter(b => b.tenant_id === tid);
+  APP_USERS    = APP_USERS.filter(u => u.tenant_id === tid);
+
+  const meinBereich = APP_BEREICHE.find(b => b.id === currentUser.bereichId);
+  const bereichName = meinBereich ? meinBereich.name : 'Mein Bereich';
+
+  // Nur Zuweisungen für diesen Bereich / eigene Mitarbeiter
+  const meineMitarbeiter = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.bereich_id === currentUser.bereichId);
+  const maIds = new Set(meineMitarbeiter.map(u => u.id));
+  zuweisungen = zuweisungen.filter(z =>
+    z.tenantId === tid &&
+    (z.bereichId === currentUser.bereichId || maIds.has(z.zugewiesenAn))
+  );
+
+  const screen = document.getElementById('screen-bereichsleiter');
+  if (!screen) return;
+  document.getElementById('bl-username').textContent  = currentUser.name;
+  document.getElementById('bl-bereichname').textContent = bereichName;
+
+  // Statistik
+  const allMaZuws = zuweisungen.filter(z => maIds.has(z.zugewiesenAn));
+  let g=0,y=0,r=0;
+  meineMitarbeiter.forEach(ma => {
+    const zuws = allMaZuws.filter(z => z.zugewiesenAn === ma.id);
+    if (!zuws.length) { r++; return; }
+    const stati = zuws.map(z => berechneStatus(z));
+    if (stati.some(s=>s==='rot')) r++;
+    else if (stati.some(s=>s==='gelb')) y++;
+    else g++;
+  });
+  document.getElementById('bl-stats').innerHTML = `
+    <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">OK</div></div>
+    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
+    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>`;
+
+  // Mitarbeiterliste rendern
+  blRenderMitarbeiterListe();
+  showScreen('screen-bereichsleiter');
+}
+
+function blRenderMitarbeiterListe(filter='') {
+  const listEl = document.getElementById('bl-mitarbeiter-list');
+  if (!listEl) return;
+  const meineMitarbeiter = APP_USERS.filter(u =>
+    u.role === 'mitarbeiter' &&
+    u.bereich_id === currentUser.bereichId &&
+    !u.archiviert &&
+    (!filter || u.name.toLowerCase().includes(filter.toLowerCase()))
+  );
+  if (!meineMitarbeiter.length) {
+    listEl.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:24px;font-size:.85rem">Noch keine Mitarbeiter in diesem Bereich.<br><br>
+      <button class="btn-primary" onclick="blMitarbeiterAnlegenModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Mitarbeiter anlegen</button></div>`;
+    return;
+  }
+  // 🔴 zuerst sortieren
+  const sorted = [...meineMitarbeiter].sort((a,b) => {
+    const statusOrder = s => s==='rot'?0:s==='gelb'?1:s==='gruen'?2:3;
+    const aZuws = zuweisungen.filter(z=>z.zugewiesenAn===a.id);
+    const bZuws = zuweisungen.filter(z=>z.zugewiesenAn===b.id);
+    const aStatus = aZuws.length ? aZuws.map(z=>berechneStatus(z)).sort((x,y)=>statusOrder(x)-statusOrder(y))[0] : 'rot';
+    const bStatus = bZuws.length ? bZuws.map(z=>berechneStatus(z)).sort((x,y)=>statusOrder(x)-statusOrder(y))[0] : 'rot';
+    return statusOrder(aStatus) - statusOrder(bStatus);
+  });
+  listEl.innerHTML = sorted.map(ma => {
+    const zuws = zuweisungen.filter(z => z.zugewiesenAn === ma.id);
+    const stati = zuws.map(z => berechneStatus(z));
+    let ampel = '⚪', farbe = '#f9fafb', border = '#e5e7eb';
+    if (stati.some(s=>s==='rot'))        { ampel='🔴'; farbe='#fef2f2'; border='#fca5a5'; }
+    else if (stati.some(s==='gelb'))     { ampel='🟡'; farbe='#fffbeb'; border='#fde68a'; }
+    else if (stati.length && stati.every(s=>s==='gruen')) { ampel='🟢'; farbe='#f0fdf4'; border='#86efac'; }
+    const offeneCount = stati.filter(s=>s==='rot'||s==='gelb').length;
+    const pnr = ma.personalnummer ? `<span style="font-size:.7rem;color:#9ca3af">PNr: ${escHtml(ma.personalnummer)}</span>` : '';
+    return `<div onclick="blMitarbeiterDetail('${ma.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:6px;background:${farbe};border:1px solid ${border};border-radius:10px;cursor:pointer">
+      <span style="font-size:1.2rem">${ampel}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.88rem;font-weight:700;color:#1e3a5f">${escHtml(ma.name)}</div>
+        <div style="font-size:.72rem;color:#6b7280">${pnr}${pnr&&offeneCount?' · ':''}${offeneCount?`<span style="color:#dc2626">${offeneCount} offen</span>`:zuws.length?'✅ Alles ok':'Keine Schulungen'}</div>
+      </div>
+      <span style="color:#9ca3af;font-size:.9rem">›</span>
+    </div>`;
+  }).join('');
+}
+
+function blMitarbeiterDetail(userId) {
+  const ma = APP_USERS.find(u => u.id === userId);
+  if (!ma) return;
+  const maZuws = zuweisungen.filter(z => z.zugewiesenAn === userId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:460px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0;font-size:1rem;color:#1e3a5f">👤 ${escHtml(ma.name)}</h3>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    ${ma.personalnummer?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">Personalnr.: ${escHtml(ma.personalnummer)}</div>`:''}
+    ${ma.mobil?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">📱 ${escHtml(ma.mobil)}</div>`:ma.email&&!ma.email.includes('@csc-hannover.de')?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">✉️ ${escHtml(ma.email)}</div>`:''}
+    <div style="margin-bottom:14px">
+      ${maZuws.length ? maZuws.map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const s = berechneStatus(z);
+        const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
+          <span>${dot}</span>
+          <div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>
+          ${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}
+        </div>`;
+      }).join('') : '<div style="color:#9ca3af;font-size:.82rem;text-align:center;padding:12px">Keine Schulungen zugewiesen</div>'}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="blSchulungZuweisen('${userId}');this.closest('[style*=fixed]').remove()" class="btn-primary" style="flex:1;font-size:.85rem;padding:10px">📋 Schulung zuweisen</button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:10px;border-radius:9px;font-size:.85rem;cursor:pointer">Schließen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function blSchulungZuweisen(userId) {
+  // Nur Vorlagen anzeigen die vom Verantwortlichen für diesen Bereich freigegeben wurden
+  const verfuegbar = SCHULUNG_VORLAGEN.filter(v => {
+    return zuweisungen.some(z => z.vorlagenId === v.id && z.tenantId === currentUser.tenantId && !z.zugewiesenAn);
+  });
+  if (!verfuegbar.length) {
+    showToast('⚠️ Keine Schulungsvorlagen verfügbar. Bitte Verantwortlichen um Zuweisung.', '#d97706');
+    return;
+  }
+  // Vorlage auswählen
+  const ma = APP_USERS.find(u => u.id === userId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9600;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">📋 Schulung zuweisen — ${escHtml(ma?.name||'')}</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow-y:auto;margin-bottom:14px">
+      ${verfuegbar.map(v => `<label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer">
+        <input type="radio" name="bl-vorlage-sel" value="${v.id}" style="accent-color:#1e3a5f">
+        <span style="font-size:.85rem;color:#1e3a5f">${escHtml(v.titel)}</span>
+      </label>`).join('')}
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:.8rem;color:#374151;display:block;margin-bottom:4px">Frist:</label>
+      <input type="date" id="bl-zuw-frist" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem"
+        value="${new Date(Date.now()+90*86400000).toISOString().split('T')[0]}">
+    </div>
+    <div id="bl-zuw-fehler" style="color:#dc2626;font-size:.82rem;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="blZuweisungBestaetigen('${userId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;font-size:.9rem;padding:11px">✅ Zuweisen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function blZuweisungBestaetigen(userId, modalEl) {
+  const sel = modalEl.querySelector('input[name="bl-vorlage-sel"]:checked');
+  const frist = modalEl.querySelector('#bl-zuw-frist').value;
+  const fehEl = modalEl.querySelector('#bl-zuw-fehler');
+  if (!sel) { fehEl.textContent = 'Bitte Schulung auswählen.'; return; }
+  const vorlagenId = sel.value;
+  const ma = APP_USERS.find(u => u.id === userId);
+  try {
+    const id = 'zuw_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId, tenant_id: currentUser.tenantId,
+      frist: frist || null, pflicht: true,
+      zugewiesen_an: userId,
+      bereich_id: currentUser.bereichId || null
+    });
+    zuweisungen.push({ id, vorlagenId, tenantId: currentUser.tenantId, frist, pflicht: true, zugewiesenAn: userId, bereichId: currentUser.bereichId || null });
+    await sbAudit('BL_SCHULUNG_ZUGEWIESEN', `${SCHULUNG_VORLAGEN.find(v=>v.id===vorlagenId)?.titel} → ${ma?.name}`);
+    modalEl.remove();
+    showToast(`✅ Schulung zugewiesen an ${ma?.name}`, '#0f5132');
+    blRenderMitarbeiterListe();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+  }
+}
+
+// Bereichsleiter: neuen Mitarbeiter anlegen
+function blMitarbeiterAnlegenModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Mitarbeiter anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="bl-ma-name" type="text" placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-handynr" type="tel" placeholder="Handynummer (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-pnr" type="text" placeholder="Personalnummer (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="bl-ma-pw" type="text" placeholder="Passwort (leer = auto)" style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="document.getElementById('bl-ma-pw').value=genPasswort()" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="bl-ma-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="bl-ma-speichern-btn" onclick="blMitarbeiterSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;font-size:.9rem;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function genPasswort() {
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+  const arr = new Uint8Array(10);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => chars[b % chars.length]).join('');
+}
+
+async function blMitarbeiterSpeichern(modalEl) {
+  const name    = modalEl.querySelector('#bl-ma-name').value.trim();
+  const email   = modalEl.querySelector('#bl-ma-email').value.trim().toLowerCase();
+  const handynr = (modalEl.querySelector('#bl-ma-handynr')?.value || '').trim().replace(/\s+/g, '');
+  const pnr     = modalEl.querySelector('#bl-ma-pnr').value.trim();
+  let   pw      = modalEl.querySelector('#bl-ma-pw').value.trim();
+  const fehEl   = modalEl.querySelector('#bl-ma-fehler');
+  fehEl.textContent = '';
+  if (!name)  { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  if (!email || !email.includes('@')) { fehEl.textContent = 'Gültige E-Mail eingeben.'; return; }
+  if (!pw) pw = genPasswort();
+  const btn = modalEl.querySelector('#bl-ma-speichern-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird angelegt…';
+  try {
+    const id = 'user_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id, name,
+      email,
+      mobil: handynr || null,
+      password_hash: hash,
+      role: 'bereichsleiter',
+      tenant_id: currentUser.tenantId,
+      bereich_id: currentUser.bereichId || null,
+      personalnummer: pnr || null,
+      aktiv: true,
+      archiviert: false
+    });
+    if (res?.error) {
+      const msg = res.error.message || '';
+      fehEl.textContent = msg.includes('duplicate') ? 'E-Mail bereits registriert.' : 'Fehler: ' + msg;
+      btn.disabled = false; btn.textContent = '✅ Anlegen';
+      return;
+    }
+    APP_USERS.push({ id, name, email, mobil: handynr||null, tenant_id: currentUser.tenantId, role: 'bereichsleiter', bereich_id: currentUser.bereichId||null, personalnummer: pnr||null, aktiv: true, archiviert: false });
+    await sbAudit('BL_MITARBEITER_NEU', `${name} (${email}) angelegt von ${currentUser.name}`);
+    const emailOk = await sendLoginEmail({ an: email, name, rolle: 'bereichsleiter', passwort: pw, unternehmen: APP_BEREICHE.find(b=>b.id===currentUser.bereichId)?.name || currentUser.name });
+    modalEl.remove();
+    showToast(`✅ ${name} angelegt${emailOk ? ' — ✉️ Zugangsdaten gesendet' : ''}`, '#0f5132');
+    blRenderMitarbeiterListe();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Anlegen';
+  }
+}
+
 // ── LOGIN ────────────────────────────────────────────────────
 async function doLogin() {
   const email = document.getElementById('login-email').value.trim().toLowerCase();
@@ -1156,8 +1422,9 @@ async function doLogin() {
     const session = {
       userId: user.id, name: user.name, email: user.email,
       role: user.role, tenantId: user.tenant_id,
-      aktiv: user.aktiv !== false,        // passiv-Schutz
-      archiviert: !!user.archiviert,      // archiviert-Schutz
+      bereichId: user.bereich_id || null,
+      aktiv: user.aktiv !== false,
+      archiviert: !!user.archiviert,
       expires: Date.now() + SESSION_HOURS * 3600 * 1000
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
@@ -3000,6 +3267,235 @@ function maNDetailToggle(userId) {
   if (pfeil) pfeil.textContent = offen ? '▲' : '▼';
 }
 
+// Bereiche-Modal öffnen
+function verantwBereicheModal() {
+  const modal = document.getElementById('verw-bereiche-modal');
+  if (!modal) return;
+  modal.style.display = 'block';
+  verantwBereicheRendern();
+}
+
+// Bereichsleiter: Schulungsfreigaben anzeigen
+function blSchulungsFreigabenAnzeigen() {
+  // Zeigt welche Schulungen der Verantwortliche für diesen Bereich freigegeben hat
+  const bereichZuws = zuweisungen.filter(z =>
+    z.tenantId === currentUser.tenantId &&
+    z.bereichId === currentUser.bereichId &&
+    !z.zugewiesenAn
+  );
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  const items = bereichZuws.length
+    ? bereichZuws.map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        return `<div style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;font-size:.85rem;color:#1e3a5f">📋 ${escHtml(v?.titel||z.vorlagenId)}</div>`;
+      }).join('')
+    : '<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:16px">Keine Schulungen freigegeben.<br>Bitte Verantwortlichen kontaktieren.</div>';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0;font-size:1rem;color:#1e3a5f">📋 Freigegebene Schulungen</h3>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    ${items}
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function verantwBereicheRendern() {
+  const cont = document.getElementById('verw-bereiche-list');
+  if (!cont) return;
+  const bereiche = APP_BEREICHE.filter(b => b.tenant_id === currentUser.tenantId);
+  if (!bereiche.length) {
+    cont.innerHTML = `<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:16px">Noch keine Bereiche angelegt.<br><br>
+      <button class="btn-primary" onclick="verantwBereichNeuModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Bereich anlegen</button></div>`;
+    return;
+  }
+  cont.innerHTML = bereiche.map(b => {
+    const blListe = APP_USERS.filter(u => u.role === 'bereichsleiter' && u.bereich_id === b.id);
+    const maAnzahl = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.bereich_id === b.id && !u.archiviert).length;
+    // Ampelstatus des Bereichs
+    const maIds = APP_USERS.filter(u=>u.role==='mitarbeiter'&&u.bereich_id===b.id&&!u.archiviert).map(u=>u.id);
+    const bereichZuws = zuweisungen.filter(z => maIds.includes(z.zugewiesenAn));
+    const stati = bereichZuws.map(z=>berechneStatus(z));
+    let ampel='⚪';
+    if (stati.some(s=>s==='rot')) ampel='🔴';
+    else if (stati.some(s=>s==='gelb')) ampel='🟡';
+    else if (stati.length) ampel='🟢';
+    return `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:.9rem;font-weight:700;color:#1e3a5f">${ampel} ${escHtml(b.name)}</div>
+          ${b.ort||b.objekt ? `<div style="font-size:.75rem;color:#6b7280">${[b.ort,b.objekt].filter(Boolean).map(escHtml).join(' — ')}</div>` : ''}
+          <div style="font-size:.75rem;color:#6b7280;margin-top:4px">
+            👤 ${blListe.length ? escHtml(blListe.map(u=>u.name).join(', ')) : '<span style="color:#dc2626">Kein Bereichsleiter</span>'}
+            &nbsp;·&nbsp; 👥 ${maAnzahl} Mitarbeiter
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
+          <button onclick="verantwBereichsleiterAnlegenModal('${b.id}')" class="btn-primary" style="font-size:.75rem;padding:6px 10px">➕ BL</button>
+          <button onclick="verantwBereichLoeschen('${b.id}','${escHtml(b.name)}')" style="background:#fee2e2;border:none;border-radius:7px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:#dc2626">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verantwBereichNeuModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">🏗 Neuen Bereich anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="nb-name" type="text" placeholder="Bereichsname * (z.B. Unterhaltsreinigung)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="nb-ort" type="text" placeholder="Ort / Standort (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="nb-objekt" type="text" placeholder="Objekt / Gebäude (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+    </div>
+    <div id="nb-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.querySelector('#nb-name')?.focus(), 100);
+}
+
+async function verantwBereichSpeichern(modalEl) {
+  const name   = modalEl.querySelector('#nb-name').value.trim();
+  const ort    = modalEl.querySelector('#nb-ort').value.trim();
+  const objekt = modalEl.querySelector('#nb-objekt').value.trim();
+  const fehEl  = modalEl.querySelector('#nb-fehler');
+  if (!name) { fehEl.textContent = 'Bereichsname ist Pflichtfeld.'; return; }
+  try {
+    const id = 'bereich_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+    await SB.post('bereiche', {
+      id, name, tenant_id: currentUser.tenantId,
+      ort: ort || null, objekt: objekt || null
+    });
+    APP_BEREICHE.push({ id, name, tenant_id: currentUser.tenantId, ort: ort||null, objekt: objekt||null });
+    await sbAudit('BEREICH_NEU', `${name} angelegt`);
+    modalEl.remove();
+    showToast(`✅ Bereich „${name}" angelegt`, '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) { fehEl.textContent = 'Fehler: ' + e.message; }
+}
+
+async function verantwBereichLoeschen(bereichId, name) {
+  const blAnzahl = APP_USERS.filter(u=>u.bereich_id===bereichId).length;
+  if (blAnzahl > 0) {
+    showToast(`⚠️ Bereich hat noch ${blAnzahl} zugeordnete Benutzer. Bitte zuerst Benutzer entfernen.`, '#d97706');
+    return;
+  }
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:380px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 10px;font-size:1rem;color:#dc2626">🗑 Bereich löschen</h3>
+    <p style="font-size:.88rem;color:#374151">„${escHtml(name)}" wirklich löschen?</p>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichLoeschenBestaetigen('${bereichId}');this.closest('[style*=fixed]').remove()" style="flex:2;background:#dc2626;color:#fff;border:none;padding:11px;border-radius:9px;font-weight:700;cursor:pointer">🗑 Löschen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function verantwBereichLoeschenBestaetigen(bereichId) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/bereiche?id=eq.${bereichId}`, { method:'DELETE', headers:SB.h });
+    APP_BEREICHE = APP_BEREICHE.filter(b=>b.id!==bereichId);
+    await sbAudit('BEREICH_GELOESCHT', bereichId);
+    showToast('✅ Bereich gelöscht', '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+// Bereichsleiter anlegen (durch Verantwortlichen)
+function verantwBereichsleiterAnlegenModal(bereichId) {
+  const bereich = APP_BEREICHE.find(b=>b.id===bereichId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Bereichsleiter anlegen — ${escHtml(bereich?.name||'')}</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="vbl-name"  type="text"  placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="vbl-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="vbl-pw" type="text" placeholder="Passwort (leer = auto)" style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="document.getElementById('vbl-pw').value=genPasswort()" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="vbl-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichsleiterSpeichern('${bereichId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.querySelector('#vbl-name')?.focus(), 100);
+}
+
+async function verantwBereichsleiterSpeichern(bereichId, modalEl) {
+  const name  = modalEl.querySelector('#vbl-name').value.trim();
+  const email = modalEl.querySelector('#vbl-email').value.trim().toLowerCase();
+  let   pw    = modalEl.querySelector('#vbl-pw').value.trim();
+  const fehEl = modalEl.querySelector('#vbl-fehler');
+  fehEl.textContent = '';
+  if (!name) { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  if (!email || !email.includes('@')) { fehEl.textContent = 'Gültige E-Mail eingeben.'; return; }
+  if (!pw) pw = genPasswort();
+  const btn = modalEl.querySelector('button.btn-primary:last-child');
+  btn.disabled = true; btn.textContent = '⏳ Wird angelegt…';
+  try {
+    const id = 'user_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id, name, email,
+      password_hash: hash,
+      role: 'bereichsleiter',
+      tenant_id: currentUser.tenantId,
+      bereich_id: bereichId,
+      aktiv: true, archiviert: false
+    });
+    if (res?.error) {
+      const msg = res.error.message || '';
+      fehEl.textContent = msg.includes('duplicate') ? 'E-Mail bereits registriert.' : 'Fehler: ' + msg;
+      btn.disabled = false; btn.textContent = '✅ Anlegen';
+      return;
+    }
+    APP_USERS.push({ id, name, email, tenant_id: currentUser.tenantId, role: 'bereichsleiter', bereich_id: bereichId, aktiv: true, archiviert: false });
+    await sbAudit('BL_ANGELEGT', `${name} (${email}) als Bereichsleiter für ${APP_BEREICHE.find(b=>b.id===bereichId)?.name}`);
+    const tenantObj = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
+    const emailOk = await sendLoginEmail({ an: email, name, rolle: 'bereichsleiter', passwort: pw, unternehmen: tenantObj?.name||'' });
+    modalEl.remove();
+    showToast(`✅ ${name} als Bereichsleiter angelegt${emailOk?' — ✉️ Zugangsdaten gesendet':' — ⚠️ E-Mail fehlgeschlagen'}`, '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Anlegen';
+  }
+}
+
+// Schulung an Bereich weitergeben (Verantwortlicher → Bereichsleiter)
+async function verantwSchulungAnBereichWeitergeben(vorlagenId, bereichId) {
+  const vorlage = SCHULUNG_VORLAGEN.find(v=>v.id===vorlagenId);
+  const bereich = APP_BEREICHE.find(b=>b.id===bereichId);
+  // Prüfen ob schon zugewiesen
+  const exists = zuweisungen.some(z=>z.vorlagenId===vorlagenId&&z.tenantId===currentUser.tenantId&&z.bereichId===bereichId&&!z.zugewiesenAn);
+  if (exists) { showToast('ℹ️ Schulung ist für diesen Bereich bereits freigegeben.', '#1e3a5f'); return; }
+  try {
+    const id = 'zuw_vb_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId, tenant_id: currentUser.tenantId,
+      frist: null, pflicht: false,
+      bereich_id: bereichId
+    });
+    zuweisungen.push({ id, vorlagenId, tenantId: currentUser.tenantId, frist: null, pflicht: false, bereichId });
+    await sbAudit('SCHULUNG_AN_BEREICH', `${vorlage?.titel} → Bereich ${bereich?.name}`);
+    showToast(`✅ „${vorlage?.titel}" für Bereich „${bereich?.name}" freigegeben`, '#0f5132');
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+// ── Mitarbeiterkarte aufklappen/zuklappen (original) ─────────
 // ── Intervall einer Zuweisung ändern (Verantwortlicher) ──────
 async function zuwIntervallAendern(zuwId, wert) {
   const intervall = wert ? parseInt(wert) : null;
@@ -3157,7 +3653,10 @@ function renderSubDashboard() {
   const maBtns = document.getElementById('sub-ma-buttons');
   const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
+  const bereicheBtn = document.getElementById('sub-bereiche-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
+  // Bereiche-Button nur für Verantwortliche
+  if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma und admin sichtbar
   const kannImportieren = currentUser.role === 'firma' || currentUser.role === 'admin';
   if (maImport) maImport.style.display = kannImportieren ? '' : 'none';
@@ -3495,7 +3994,11 @@ async function doAbschluss(felder) {
   }
 }
 
-function backFromFormular() { if(currentUser.role==='admin') showScreen('screen-admin'); else showScreen('screen-sub'); }
+function backFromFormular() {
+  if(currentUser.role==='admin') showScreen('screen-admin');
+  else if(currentUser.role==='bereichsleiter') showScreen('screen-bereichsleiter');
+  else showScreen('screen-sub');
+}
 function closeModal() { document.getElementById('modal-abschluss').classList.remove('active'); }
 function abschlussBestaetigt() { if(abschlussCallback) abschlussCallback(); abschlussCallback=null; }
 
@@ -4349,7 +4852,8 @@ function mitarbeiterEinzelnGenerierePasswort() {
 
 async function mitarbeiterEinzelnSpeichern() {
   const name     = document.getElementById('einzel-name').value.trim();
-  const email    = document.getElementById('einzel-email').value.trim().toLowerCase();
+  const handynr  = document.getElementById('einzel-email').value.trim().replace(/\s+/g, '');
+  const email    = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
   const standort = document.getElementById('einzel-standort').value.trim();
   const bereich  = document.getElementById('einzel-bereich').value.trim();
   let   pw       = document.getElementById('einzel-passwort').value.trim();
@@ -4363,8 +4867,8 @@ async function mitarbeiterEinzelnSpeichern() {
     fehlerEl.style.display = 'block';
     return;
   }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    fehlerEl.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if (!handynr) {
+    fehlerEl.textContent = 'Bitte eine Handynummer eingeben.';
     fehlerEl.style.display = 'block';
     return;
   }
@@ -4407,26 +4911,20 @@ async function mitarbeiterEinzelnSpeichern() {
       return;
     }
 
-    sbAudit('MITARBEITER_EINZEL', { name, email, tenantId: currentUser.tenantId });
-
-    // E-Mail mit Zugangsdaten versenden
-    const tenantObjMA = APP_TENANTS.find(t => t.id === currentUser.tenantId);
-    const mailOkMA = await sendLoginEmail({ an: email, name, rolle: 'mitarbeiter', passwort: pw, unternehmen: tenantObjMA?.name || '' });
-
-    // Mitarbeiterliste aktualisieren
-    renderMitarbeiterListe();
+    sbAudit('MITARBEITER_EINZEL', { name, handynr, tenantId: currentUser.tenantId });
 
     // Ergebnis anzeigen
     document.getElementById('einzel-formular').style.display = 'none';
     document.getElementById('einzel-ergebnis-daten').innerHTML =
       `<div style="margin-bottom:6px"><strong>Name:</strong> ${name}</div>` +
-      `<div style="margin-bottom:6px"><strong>E-Mail:</strong> ${email}</div>` +
+      `<div style="margin-bottom:6px"><strong>Handynummer:</strong> ${escHtml(handynr)}</div>` +
       (standort ? `<div style="margin-bottom:6px"><strong>Standort:</strong> ${escHtml(standort)}</div>` : '') +
       (bereich  ? `<div style="margin-bottom:6px"><strong>Bereich:</strong> ${escHtml(bereich)}</div>` : '') +
+      `<div style="margin-bottom:6px"><strong>Login:</strong> <code style="background:#f0f9ff;padding:2px 6px;border-radius:4px;font-size:.9rem">${escHtml(email)}</code></div>` +
       `<div style="margin-bottom:6px"><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>` +
-      (mailOkMA ? `<div style="color:#16a34a;margin-top:8px">✉️ Zugangsdaten wurden per E-Mail gesendet.</div>`
-                : `<div style="color:#f59e0b;margin-top:8px">⚠️ E-Mail konnte nicht gesendet werden – Passwort bitte notieren!</div>`);
+      `<div style="color:#0369a1;margin-top:8px">📱 Zugangsdaten bitte per WhatsApp/SMS an ${escHtml(handynr)} senden.</div>`;
     document.getElementById('einzel-ergebnis').style.display = 'block';
+    renderMitarbeiterListe();
 
   } catch(e) {
     fehlerEl.textContent = 'Fehler: ' + e.message;
@@ -4494,10 +4992,11 @@ function mitarbeiterImportDateiLesen(input) {
       const datenZeilen = rows.slice(1).filter(r => r[0] || r[1]); // mind. Name oder E-Mail vorhanden
 
       importDaten = datenZeilen.map((r, idx) => {
-        const name  = String(r[0] || '').trim();
-        const email = String(r[1] || '').trim().toLowerCase();
-        const pw    = String(r[2] || '').trim();
-        return { idx: idx + 2, name, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
+        const name    = String(r[0] || '').trim();
+        const handynr = String(r[1] || '').trim().replace(/\s+/g, '');
+        const email   = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
+        const pw      = String(r[2] || '').trim();
+        return { idx: idx + 2, name, handynr, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
       });
 
       document.getElementById('import-lade-msg').style.display = 'none';
@@ -4524,22 +5023,20 @@ function mitarbeiterImportZeigeVorschau() {
 
   // Validierung
   const fehler = [];
-  const emailSet = new Set();
+  const handynrSet = new Set();
   importDaten.forEach(r => {
     if (!r.name) fehler.push(`Zeile ${r.idx}: Name fehlt`);
-    if (!r.email) {
-      fehler.push(`Zeile ${r.idx}: E-Mail fehlt`);
-    } else if (!/^[^@]+@[^@]+\.[^@]+$/.test(r.email)) {
-      fehler.push(`Zeile ${r.idx}: Ungültige E-Mail „${escHtml(r.email)}"`);
-    } else if (emailSet.has(r.email)) {
-      fehler.push(`Zeile ${r.idx}: E-Mail „${escHtml(r.email)}" doppelt`);
+    if (!r.handynr) {
+      fehler.push(`Zeile ${r.idx}: Handynummer fehlt`);
+    } else if (handynrSet.has(r.handynr)) {
+      fehler.push(`Zeile ${r.idx}: Handynummer „${escHtml(r.handynr)}" doppelt`);
     }
-    emailSet.add(r.email);
+    handynrSet.add(r.handynr);
   });
 
   // Gültige Zeilen
   const gueltig = importDaten.filter(r =>
-    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+    r.name && r.handynr
   );
 
   document.getElementById('import-anzahl').textContent = gueltig.length;
@@ -4553,7 +5050,7 @@ function mitarbeiterImportZeigeVorschau() {
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f3f4f6">
         <div>
           <div style="font-weight:600">${escHtml(r.name)}</div>
-          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.email)}</div>
+          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.handynr)}</div>
         </div>
         <div style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:6px;font-family:monospace">${escHtml(r.pw)}</div>
       </div>`
@@ -4582,7 +5079,7 @@ async function mitarbeiterImportStarten() {
   btn.textContent = '⏳ Wird importiert …';
 
   const gueltig = importDaten.filter(r =>
-    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+    r.name && r.handynr
   );
 
   let erfolg = 0, fehler = 0;
@@ -4603,18 +5100,18 @@ async function mitarbeiterImportStarten() {
       if (res && res.error) {
         const errMsg = res.error.message || JSON.stringify(res.error);
         if (errMsg.includes('duplicate') || errMsg.includes('unique')) {
-          details.push({ name: r.name, email: r.email, status: 'skip', msg: 'Bereits vorhanden' });
+          details.push({ name: r.name, handynr: r.handynr, status: 'skip', msg: 'Bereits vorhanden' });
         } else {
-          details.push({ name: r.name, email: r.email, status: 'err', msg: errMsg });
+          details.push({ name: r.name, handynr: r.handynr, status: 'err', msg: errMsg });
           fehler++;
         }
       } else {
-        await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.email}) importiert`);
-        details.push({ name: r.name, email: r.email, status: 'ok', pw: r.pw });
+        await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.handynr}) importiert`);
+        details.push({ name: r.name, handynr: r.handynr, status: 'ok', pw: r.pw });
         erfolg++;
       }
     } catch(e) {
-      details.push({ name: r.name, email: r.email, status: 'err', msg: e.message });
+      details.push({ name: r.name, handynr: r.handynr, status: 'err', msg: e.message });
       fehler++;
     }
     // Kleine Pause um Rate-Limiting zu vermeiden
@@ -4640,9 +5137,9 @@ async function mitarbeiterImportStarten() {
 
   const detailEl = document.getElementById('import-ergebnis-details');
   detailEl.innerHTML = details.map(d => {
-    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
-    if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
-    return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
+    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
+    if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
+    return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
   }).join('');
 }
 
@@ -5176,20 +5673,23 @@ async function pruefeQrLogin() {
 
 // Hilfsfunktion: Daten laden ohne vollen initApp()-Flow
 async function initApp_loadData() {
-  const [tenants, vorlagen, zuws, users] = await Promise.all([
+  const [tenants, vorlagen, zuws, users, bereiche] = await Promise.all([
     SB.get('tenants'),
     SB.get('vorlagen'),
     SB.get('zuweisungen'),
-    SB.get('users', 'select=id,name,email,tenant_id,role,aktiv,archiviert')
+    SB.get('users', 'select=id,name,email,tenant_id,role,aktiv,archiviert,bereich_id,personalnummer'),
+    SB.get('bereiche')
   ]);
-  APP_TENANTS = tenants;
-  APP_USERS = users;
+  APP_TENANTS  = tenants;
+  APP_USERS    = users;
+  APP_BEREICHE = bereiche || [];
   SCHULUNG_VORLAGEN = vorlagen.map(v => ({
     ...v, intervallMonate: v.intervall_monate,
     abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
   }));
   zuweisungen = zuws.map(z => ({
-    id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht
+    id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht,
+    zugewiesenAn: z.zugewiesen_an || null, bereichId: z.bereich_id || null
   }));
   const forms = await SB.get('formulare');
   formulare = {};
