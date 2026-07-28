@@ -2420,6 +2420,11 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   'Unterschriften':               { en:'Signatures',               tr:'İmzalar',                ar:'التوقيعات',                 es:'Firmas',                     ru:'Подписи' },
   'Allgemeine Angaben':           { en:'General Information',      tr:'Genel Bilgiler',         ar:'المعلومات العامة',          es:'Datos generales',            ru:'Общие сведения' },
   'Inhalte':                      { en:'Contents',                 tr:'İçerikler',              ar:'المحتويات',                 es:'Contenidos',                 ru:'Содержание' },
+  // ── DPD Depot ──
+  'Betriebsgelände & Zugang':     { en:'Premises & Access',        tr:'Tesis & Erişim',         ar:'المنشأة والوصول',           es:'Recinto y acceso',           ru:'Территория и доступ' },
+  'Persönliche Schutzausrüstung (PSA) im Depot':
+                                  { en:'Personal Protective Equipment (PPE) in the Depot', tr:'Depoda Kişisel Koruyucu Donanım (KKD)', ar:'معدات الحماية الشخصية (PPE) في المستودع', es:'Equipo de Protección Individual (EPI) en el Depósito', ru:'Средства индивидуальной защиты (СИЗ) на складе' },
+  'Verhaltensregeln im Depot':    { en:'Behavioural Rules in the Depot', tr:'Depoda Davranış Kuralları', ar:'قواعد السلوك في المستودع', es:'Normas de conducta en el Depósito', ru:'Правила поведения на складе' },
 };
 
 // ── FELD-ÜBERSETZUNGEN ────────────────────────────────────────
@@ -2541,6 +2546,29 @@ const FELD_UEBERSETZUNGEN = {
     { en:'Observe customer requirements',        tr:'Müşteri gereksinimlerine uyun',   ar:'الالتزام بمتطلبات العميل',       es:'Cumplir con los requisitos del cliente', ru:'Соблюдать требования клиента' },
   'Verbesserungsvorschläge weitergeben':
     { en:'Pass on improvement suggestions',      tr:'İyileştirme önerilerini iletin',  ar:'أرسل اقتراحات التحسين',          es:'Transmitir sugerencias de mejora', ru:'Передавать предложения по улучшению' },
+  // ── Betriebsgelände & Zugang (DPD) ──
+  'Zutritt nur zu zugewiesenen Bereichen — andere Bereiche dürfen nicht betreten werden':
+    { en:'Access only to assigned areas — other areas must not be entered', tr:'Yalnızca atanan alanlara giriş — diğer alanlara girilmemelidir', ar:'الدخول فقط إلى المناطق المخصصة — يُحظر دخول المناطق الأخرى', es:'Acceso solo a áreas asignadas — no se deben entrar otras áreas', ru:'Доступ только в назначенные зоны — входить в другие зоны запрещено' },
+  'Anweisungen des DPD-Personals sind zu befolgen':
+    { en:'Instructions of DPD staff must be followed', tr:'DPD personelinin talimatlarına uyulmalıdır', ar:'يجب اتباع تعليمات موظفي DPD', es:'Se deben seguir las instrucciones del personal de DPD', ru:'Необходимо следовать указаниям сотрудников DPD' },
+  'Fahrzeuge nur auf ausgewiesenen Flächen parken':
+    { en:'Vehicles must only be parked in designated areas', tr:'Araçlar yalnızca belirtilen alanlara park edilmelidir', ar:'يجب وقف المركبات في المناطق المخصصة فقط', es:'Los vehículos solo deben aparcarse en las zonas designadas', ru:'Транспортные средства разрешается парковать только в отведённых местах' },
+  // ── PSA im Depot (DPD) ──
+  'Sicherheitsschuhe S1/S2/S3 sind in den Frachthallen verpflichtend zu tragen':
+    { en:'Safety shoes S1/S2/S3 are mandatory in freight halls', tr:'Kargo salonlarında S1/S2/S3 güvenlik ayakkabısı zorunludur', ar:'أحذية السلامة S1/S2/S3 إلزامية في قاعات الشحن', es:'El calzado de seguridad S1/S2/S3 es obligatorio en las naves de carga', ru:'Защитная обувь S1/S2/S3 обязательна в грузовых залах' },
+  'Warnweste ist während des gesamten Aufenthalts auf dem Gelände zu tragen':
+    { en:'High-visibility vest must be worn throughout the entire stay on the premises', tr:'Yüksek görünürlüklü yelek, tesis içindeki tüm süre boyunca giyilmelidir', ar:'يجب ارتداء السترة العاكسة طوال فترة التواجد في المنشأة', es:'El chaleco de alta visibilidad debe llevarse durante toda la estancia en el recinto', ru:'Сигнальный жилет необходимо носить всё время нахождения на территории' },
+  'Kopfschutz ist beim Aufenthalt in Hallenbereichen mit Hubstaplerbetrieb zu tragen':
+    { en:'Head protection must be worn in hall areas with forklift operation', tr:'Forklift çalışması olan salon alanlarında kafa koruyucu takılmalıdır', ar:'يجب ارتداء واقي الرأس في مناطق القاعة التي تعمل فيها الرافعات الشوكية', es:'La protección de cabeza es obligatoria en zonas de nave con operación de carretillas elevadoras', ru:'Защитная каска обязательна в зонах складских залов с работой вилочных погрузчиков' },
+  // ── Verhaltensregeln im Depot (DPD) ──
+  'Fotoverbot: Foto- und Videoaufnahmen sind auf dem gesamten Betriebsgelände streng verboten':
+    { en:'Photo ban: Photography and video recording are strictly prohibited throughout the entire premises', tr:'Fotoğraf yasağı: Tüm tesis genelinde fotoğraf ve video çekimi kesinlikle yasaktır', ar:'حظر التصوير: التصوير الفوتوغرافي والفيديو محظور تمامًا في جميع أنحاء المنشأة', es:'Prohibición de fotos: Las fotografías y grabaciones de vídeo están estrictamente prohibidas en todo el recinto', ru:'Запрет на фото: фотосъёмка и видеозапись строго запрещены на всей территории предприятия' },
+  'Handyverbot: Nutzung von Mobiltelefonen in den Frachthallen ist untersagt (Ablenkung, Unfallgefahr)':
+    { en:'Phone ban: Use of mobile phones in freight halls is prohibited (distraction, accident risk)', tr:'Telefon yasağı: Kargo salonlarında cep telefonu kullanımı yasaktır (dikkat dağıtma, kaza riski)', ar:'حظر الهاتف: يُحظر استخدام الهواتف المحمولة في قاعات الشحن (التشتت، خطر الحوادث)', es:'Prohibición de móviles: El uso de teléfonos móviles en las naves de carga está prohibido (distracción, riesgo de accidente)', ru:'Запрет телефонов: использование мобильных телефонов в грузовых залах запрещено (отвлечение внимания, риск аварии)' },
+  'Wege für Flurförderzeuge (Hubstapler, Ameisen) sind freizuhalten — Sicherheitsabstand einhalten':
+    { en:'Paths for industrial trucks (forklifts, pallet jacks) must be kept clear — maintain safety distance', tr:'Endüstriyel araçlar (forklift, transpalet) için yollar açık tutulmalıdır — güvenli mesafe korunmalıdır', ar:'يجب إبقاء المسارات خالية لمركبات النقل الداخلي (رافعات شوكية، عربات النقل) — الحفاظ على مسافة الأمان', es:'Las vías para vehículos industriales (carretillas elevadoras, transpaletas) deben mantenerse despejadas — mantener distancia de seguridad', ru:'Пути для напольного транспорта (погрузчики, электрокары) должны быть свободны — соблюдать дистанцию безопасности' },
+  'Laufwege sind zu nutzen — nicht zwischen Fahrzeugen oder Paletten laufen':
+    { en:'Pedestrian walkways must be used — do not walk between vehicles or pallets', tr:'Yaya yolları kullanılmalıdır — araçların veya paletlerin arasında yürümeyiniz', ar:'يجب استخدام ممرات المشاة — لا تمشِ بين المركبات أو البالتات', es:'Se deben utilizar los pasillos peatonales — no caminar entre vehículos o palets', ru:'Необходимо использовать пешеходные дорожки — не ходить между транспортными средствами или поддонами' },
   // ── Bestätigung ──
   'Unterweisung vollständig durchgeführt':
     { en:'Instruction fully completed',          tr:'Eğitim eksiksiz tamamlandı',      ar:'تم تنفيذ التعليمات بالكامل',     es:'Instrucción completamente realizada', ru:'Инструктаж проведён в полном объёме' },
