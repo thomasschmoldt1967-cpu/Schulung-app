@@ -76,6 +76,10 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_27', nr:27, saeule:'D', titel:'🔵 Blau — Standardzone: Allgemeine Oberflächen',                 rechtsgrundlage:'DGUV V1, allgemeine Hygiene' },
   { id:'kap_28', nr:28, saeule:'D', titel:'Das Schloss-Prinzip, pH-Codierung & Mischverbote',              rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
   { id:'kap_29', nr:29, saeule:'D', titel:'Wechseltuch-Methode, 16-Seiten-Falttechnik & Waschprotokoll',   rechtsgrundlage:'RKI-Richtlinien, HACCP' },
+  // ── Säule E: Arbeitsrecht & Gesundheit ────────────────────────
+  { id:'kap_30', nr:30, saeule:'E', titel:'Ergonomie — Rückengerechtes Arbeiten & Heben',            rechtsgrundlage:'§ 12 ArbSchG, DGUV R 109-001' },
+  { id:'kap_31', nr:31, saeule:'E', titel:'Sicherer Umgang mit Leitern',                              rechtsgrundlage:'§ 12 ArbSchG, BetrSichV, DGUV R 100-500' },
+  { id:'kap_32', nr:32, saeule:'E', titel:'Krankmeldung — Pflichten & Fristen',                       rechtsgrundlage:'§ 5 EntgFG, § 275 SGB V' },
 ];
 
 // ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
@@ -491,6 +495,33 @@ const LERNPFAD_TEXTE = {
     pl: "Zasada zamka: Czerwona ściereczka → Czerwona nakrętka (chemia kwaśna) → Czerwone wiadro. Kolor ściereczki i kolor butelki muszą się zgadzać. Kodowanie pH: czerwony (kwasowy) przeciw kamieniowi. Zielony (neutralny) do codziennego sprzątania. Niebieski (zasadowy) przeciw tłuszczom. UWAGA: kwaśnych i zasadowych środków NIGDY nie mieszaj — niebezpieczne dla życia!",
     en: "The lock principle: red cloth → red cap (acidic chemical) → red bucket. The colour of the cloth and bottle must match. pH coding: red (acidic) against limescale. Green (neutral) for daily cleaning. Blue (alkaline) against grease. WARNING: NEVER mix acidic (red) and alkaline (blue) cleaners — life-threatening!",
     ar: "مبدأ القفل: قماشة حمراء ← غطاء أحمر ← دلو أحمر. يجب تطابق اللون مع الزجاجة. ترميز pH: أحمر ضد الكلس، أخضر للتنظيف اليومي، أزرق ضد الدهون. تحذير: لا تخلط أبداً المنظفات الحمضية مع القلوية — خطر على الحياة!"
+  },
+  kap_30: {
+    de: "Rücken- und Gelenkschmerzen sind häufige Berufserkrankungen. Richtig heben: Stelle dich nah an die Last, gehe in die Hocke, halte den Rücken gerade und hebe mit den Beinen. Trage schwere Lasten nah am Körper. Wechsle regelmäßig die Körperhaltung und mache Pausen. Nutze Hilfsmittel wie Rollwagen wann immer möglich — dein Rücken dankt es dir.",
+    tr: "Sırt ve eklem ağrıları sık görülen meslek hastalıklarıdır. Doğru kaldırma: Yüke yakın dur, çömel, sırtını dik tut ve bacaklarınla kaldır. Ağır yükleri vücuduna yakın taşı. Düzenli olarak duruş değiştir ve mola ver. Mümkün olduğunda yük arabası gibi yardımcı araçlar kullan — belini koru.",
+    ro: "Durerile de spate și articulații sunt boli profesionale frecvente. Ridicare corectă: Stai aproape de greutate, ghemuiește-te, ține spatele drept și ridică cu picioarele. Poartă greutățile aproape de corp. Schimbă regulat poziția corpului și fă pauze. Folosește cărucioare ori de câte ori e posibil — spatele tău îți va mulțumi.",
+    sr: "Bolovi u leđima i zglobovima česte su profesionalne bolesti. Pravilno dizanje: Stani blizu tereta, čučni, drži leđa ravno i diži nogama. Nosite teške terete blizu tijela. Redovno mijenjaj položaj tijela i pravi pauze. Koristite kolica kada je to moguće — čuvajte leđa.",
+    pl: "Bóle pleców i stawów to częste choroby zawodowe. Prawidłowe podnoszenie: Stań blisko ładunku, kucnij, trzymaj plecy prosto i unoś nogami. Noś ciężkie ładunki blisko ciała. Regularnie zmieniaj postawę i rób przerwy. Używaj wózków kiedy tylko możliwe — twoje plecy ci podziękują.",
+    en: "Back and joint pain are common occupational diseases. Correct lifting: Stand close to the load, crouch down, keep your back straight and lift with your legs. Carry heavy loads close to your body. Change your posture regularly and take breaks. Use trolleys whenever possible — your back will thank you.",
+    ar: "آلام الظهر والمفاصل أمراض مهنية شائعة. الرفع الصحيح: قف قريباً من الحمل، انحن للأسفل، أبقِ ظهرك مستقيماً وارفع بساقيك. احمل الأحمال الثقيلة قريباً من جسمك. غيّر وضعيتك بانتظام وخذ فترات راحة. استخدم العربات كلما أمكن ذلك — ظهرك سيشكرك."
+  },
+  kap_31: {
+    de: "Leitern sind gefährlich wenn sie falsch genutzt werden. Prüfe vor jeder Nutzung: Keine Risse, keine losen Sprossen, rutschfeste Füße. Anleigeleitern immer im Winkel 70° aufstellen (1 m Abstand pro 4 m Höhe). Nie seitlich über die Leiter herauslehnen — immer mit dem Gesicht zur Leiter auf- und absteigen. Aluminium-Leitern nicht in der Nähe von Strom verwenden!",
+    tr: "Merdivenler yanlış kullanıldığında tehlikelidir. Her kullanımdan önce kontrol et: Çatlak yok, gevşek basamak yok, kaymaz ayaklar var. Dayama merdivenleri her zaman 70° açıyla kur (4 m yükseklik için 1 m mesafe). Merdivenden yana doğru çıkma — her zaman merdivene dönük şekilde çık ve in. Alüminyum merdivenleri elektrik yakınında kullanma!",
+    ro: "Scările sunt periculoase dacă sunt folosite greșit. Verifică înainte de fiecare utilizare: Fără crăpături, fără trepte slabe, picioare antiderapante. Scările rezemate se montează întotdeauna la 70° (1 m distanță per 4 m înălțime). Nu te apleca lateral — urcă și coboară întotdeauna cu fața spre scară. Nu folosi scări din aluminiu lângă curent electric!",
+    sr: "Ljestve su opasne ako se pogrešno koriste. Provjeri prije svake upotrebe: Nema pukotina, nema labavnih prečki, klizave noge. Naslonske ljestve uvijek postavi pod uglom 70° (1 m razmaka na 4 m visine). Nikada se ne naginjaj bočno — uvijek se penjuj i silazi okrenuta licem prema ljestvama. Aluminijske ljestve ne koristiti u blizini struje!",
+    pl: "Drabiny są niebezpieczne gdy są używane nieprawidłowo. Sprawdź przed każdym użyciem: Brak pęknięć, brak luźnych szczebli, antypoślizgowe stopy. Drabiny opierane zawsze ustawiaj pod kątem 70° (1 m odległości na 4 m wysokości). Nigdy nie wychylaj się na bok — zawsze wchodź i schodź twarzą do drabiny. Nie używaj drabiny aluminiowej w pobliżu prądu!",
+    en: "Ladders are dangerous when used incorrectly. Check before each use: No cracks, no loose rungs, non-slip feet. Lean-to ladders must always be set up at 70° (1 m clearance per 4 m height). Never lean sideways — always climb and descend facing the ladder. Do not use aluminium ladders near electricity!",
+    ar: "السلالم خطيرة عند استخدامها بطريقة غير صحيحة. تحقق قبل كل استخدام: لا تشققات، لا درجات مفككة، أقدام مانعة للانزلاق. تُنصب سلالم الاستناد دائماً بزاوية 70° (مسافة 1 م لكل 4 م ارتفاع). لا تميل أبداً جانبياً — تسلق وانزل دائماً مع توجيه وجهك نحو السلم. لا تستخدم السلالم الألومنيوم بالقرب من الكهرباء!"
+  },
+  kap_32: {
+    de: "Wenn du krank bist und nicht arbeiten kannst, musst du deinen Vorgesetzten sofort informieren — bevor deine Arbeitszeit beginnt. Geh noch am ersten Krankheitstag zum Arzt und reiche die Krankmeldung (AU) noch am selben Tag ein. Bleibt die Krankheit länger, informiere sofort und reiche eine Folgebescheinigung ein. Deine Diagnose bleibt vertraulich — dein Chef darf nur wissen wie lange du fehlst.",
+    tr: "Hasta olduğunda ve çalışamadığında, mesai başlamadan önce amirini hemen bilgilendirmelisin. Hastalığının ilk gününde doktora git ve hastalık iznini (AU) aynı gün teslim et. Hastalık uzarsa hemen bildir ve devam raporu sun. Teşhisin gizli kalır — amirin sadece ne kadar süre devamsızlık yaptığını öğrenebilir.",
+    ro: "Când ești bolnav și nu poți munci, trebuie să informezi imediat șeful tău — înainte de începerea programului. Mergi la medic chiar în prima zi de boală și predă concediul medical (AU) în aceeași zi. Dacă boala durează mai mult, informează imediat și depune un certificat de continuare. Diagnosticul tău rămâne confidențial — șeful poate afla doar cât timp lipsești.",
+    sr: "Kada si bolestan/na i ne možeš raditi, morate odmah obavijestiti nadređenog — prije početka radnog vremena. Idi kod doktora prvog dana bolesti i predaj potvrdu o bolovanju (AU) isti dan. Ako bolest traje duže, odmah obavijesti i podnesi nastavnu potvrdu. Dijagnoza ostaje povjerljiva — šef smije znati samo koliko dugo izostas.",
+    pl: "Kiedy jesteś chory i nie możesz pracować, musisz natychmiast poinformować przełożonego — przed rozpoczęciem czasu pracy. Idź do lekarza już pierwszego dnia choroby i złóż zwolnienie lekarskie (AU) tego samego dnia. Jeśli choroba trwa dłużej, natychmiast poinformuj i złóż kontynuację. Twoja diagnoza pozostaje poufna — szef może wiedzieć tylko jak długo jesteś nieobecny.",
+    en: "When you are sick and cannot work, you must inform your supervisor immediately — before your working hours begin. Visit a doctor on the very first day of illness and hand in your sick note (AU) the same day. If the illness lasts longer, inform immediately and submit a follow-up certificate. Your diagnosis remains confidential — your manager may only know how long you are absent.",
+    ar: "عندما تكون مريضاً ولا تستطيع العمل، يجب عليك إخطار مشرفك فوراً — قبل بدء ساعات العمل. اذهب إلى الطبيب في اليوم الأول من المرض وسلّم شهادة المرض (AU) في نفس اليوم. إذا استمر المرض أطول، أخبر فوراً وقدّم شهادة متابعة. تشخيصك يبقى سرياً — مديرك لا يحق له معرفة سوى مدة غيابك."
   },
   kap_29: {
     de: "Die Wechseltuch-Methode: Ein Tuch = Ein Sanitärobjekt — danach sofort in die Wäsche, kein Zurücktauchen in die Lösung. Pflicht in Kliniken, Pflegeeinrichtungen und Sanitäranlagen (RKI-Richtlinien). Die 16-Seiten-Falttechnik: Tuch zweimal falten ergibt 16 saubere Flächen. Für jede neue Oberfläche eine frische Seite — spart Wasser und maximiert Keimfreiheit. Waschprotokoll: 🔴🟢 bei 95 °C, 🟡🔵 bei 60 °C. NIEMALS Weichspüler — er verklebt die Mikrofasern! Trockner empfohlen — die Hitze ist ein zusätzlicher Hygieneschritt.",
@@ -1975,7 +2006,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (29 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -2050,7 +2081,7 @@ function adminZeigeTenant(tenantId) {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
           <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
@@ -2098,7 +2129,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
       <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
@@ -2425,6 +2456,8 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   'Persönliche Schutzausrüstung (PSA) im Depot':
                                   { en:'Personal Protective Equipment (PPE) in the Depot', tr:'Depoda Kişisel Koruyucu Donanım (KKD)', ar:'معدات الحماية الشخصية (PPE) في المستودع', es:'Equipo de Protección Individual (EPI) en el Depósito', ru:'Средства индивидуальной защиты (СИЗ) на складе' },
   'Verhaltensregeln im Depot':    { en:'Behavioural Rules in the Depot', tr:'Depoda Davranış Kuralları', ar:'قواعد السلوك في المستودع', es:'Normas de conducta en el Depósito', ru:'Правила поведения на складе' },
+  'Ergonomie im Depot':           { en:'Ergonomics in the Depot',  tr:'Depoda Ergonomi',        ar:'الإرغونوميا في المستودع',   es:'Ergonomía en el Depósito',   ru:'Эргономика на складе' },
+  'Krankmeldung & Fehlzeiten':    { en:'Sick Leave & Absences',    tr:'Hastalık İzni & Devamsızlık', ar:'إشعار المرض والغيابات', es:'Baja laboral y ausencias',   ru:'Больничный и отсутствие' },
 };
 
 // ── FELD-ÜBERSETZUNGEN ────────────────────────────────────────
@@ -2569,6 +2602,18 @@ const FELD_UEBERSETZUNGEN = {
     { en:'Paths for industrial trucks (forklifts, pallet jacks) must be kept clear — maintain safety distance', tr:'Endüstriyel araçlar (forklift, transpalet) için yollar açık tutulmalıdır — güvenli mesafe korunmalıdır', ar:'يجب إبقاء المسارات خالية لمركبات النقل الداخلي (رافعات شوكية، عربات النقل) — الحفاظ على مسافة الأمان', es:'Las vías para vehículos industriales (carretillas elevadoras, transpaletas) deben mantenerse despejadas — mantener distancia de seguridad', ru:'Пути для напольного транспорта (погрузчики, электрокары) должны быть свободны — соблюдать дистанцию безопасности' },
   'Laufwege sind zu nutzen — nicht zwischen Fahrzeugen oder Paletten laufen':
     { en:'Pedestrian walkways must be used — do not walk between vehicles or pallets', tr:'Yaya yolları kullanılmalıdır — araçların veya paletlerin arasında yürümeyiniz', ar:'يجب استخدام ممرات المشاة — لا تمشِ بين المركبات أو البالتات', es:'Se deben utilizar los pasillos peatonales — no caminar entre vehículos o palets', ru:'Необходимо использовать пешеходные дорожки — не ходить между транспортными средствами или поддонами' },
+  // ── Ergonomie im Depot (DPD) ──
+  'Rückengerechtes Heben und Tragen — Beine nutzen, Rücken gerade halten':
+    { en:'Back-friendly lifting and carrying — use legs, keep back straight', tr:'Sırtı koruyarak kaldırma ve taşıma — bacakları kullan, sırtı dik tut', ar:'الرفع والحمل بطريقة آمنة للظهر — استخدم الساقين، أبقِ الظهر مستقيماً', es:'Levantamiento y transporte ergonómico — usar piernas, mantener espalda recta', ru:'Эргономичный подъём и переноска — использовать ноги, держать спину прямо' },
+  'Schwere Lasten mit Hilfsmitteln transportieren (Hubwagen, Rollwagen)':
+    { en:'Transport heavy loads using aids (pallet jack, trolley)', tr:'Ağır yükleri yardımcı ekipmanlarla taşı (transpalet, tekerlekli araba)', ar:'نقل الأحمال الثقيلة باستخدام الأدوات المساعدة (عربة النقل)', es:'Transportar cargas pesadas con medios auxiliares (transpaleta, carretilla)', ru:'Перевозить тяжёлые грузы с помощью вспомогательных средств (рохля, тележка)' },
+  'Regelmäßige Positionswechsel und Pausen einhalten':
+    { en:'Maintain regular position changes and breaks', tr:'Düzenli pozisyon değişiklikleri ve molalar yapın', ar:'الحفاظ على تغييرات الوضع والاستراحات المنتظمة', es:'Mantener cambios de posición regulares y pausas', ru:'Соблюдать регулярную смену поз и перерывы' },
+  // ── Krankmeldung & Fehlzeiten (DPD) ──
+  'Krankmeldung vor Arbeitsbeginn an Vorgesetzten (telefonisch oder WhatsApp)':
+    { en:'Report sick leave to supervisor before work starts (by phone or WhatsApp)', tr:'İşe başlamadan önce amire hastalık bildirimi yapın (telefon veya WhatsApp)', ar:'إخطار المشرف بالمرض قبل بدء العمل (هاتف أو واتساب)', es:'Comunicar baja médica al responsable antes del inicio del trabajo (teléfono o WhatsApp)', ru:'Сообщить о болезни руководителю до начала работы (по телефону или WhatsApp)' },
+  'Ärztliche Bescheinigung (AU) am ersten Krankheitstag beim Arbeitgeber einreichen':
+    { en:'Submit sick note (AU) to employer on the first day of illness', tr:'Hastalığın ilk günü işverene hastalık raporu (AU) teslim edilmelidir', ar:'تقديم شهادة المرض (AU) لصاحب العمل في اليوم الأول من المرض', es:'Presentar el parte médico (AU) al empleador el primer día de baja', ru:'Предоставить больничный лист (AU) работодателю в первый день болезни' },
   // ── Bestätigung ──
   'Unterweisung vollständig durchgeführt':
     { en:'Instruction fully completed',          tr:'Eğitim eksiksiz tamamlandı',      ar:'تم تنفيذ التعليمات بالكامل',     es:'Instrucción completamente realizada', ru:'Инструктаж проведён в полном объёме' },
@@ -2963,7 +3008,7 @@ function renderAdminZuweisungen() {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
-    const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
     const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
     return `<div class="schulung-item">
       <div>
@@ -3029,10 +3074,10 @@ function azVorlagenListeRendern(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.76rem;color:#7c3aed;margin-top:2px">
         Säulen A–D &nbsp;·&nbsp; Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System &nbsp;·&nbsp; inkl. Unterschrift
       </div>
@@ -3095,7 +3140,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (29 Kapitel)' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -3277,7 +3322,7 @@ async function renderMitarbeiterListe() {
         const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
         const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-        const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? v.titel : z.vorlagenId);
+        const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? v.titel : z.vorlagenId);
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
@@ -3890,7 +3935,7 @@ function renderSubDashboard() {
         meineZuws.map(z => {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
@@ -6350,7 +6395,7 @@ async function zeigeSchulungshistorie(userId) {
       lpUntHistorieBlock = `
         <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
           <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
-            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (29 Kapitel) — Unterschriften</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (32 Kapitel) — Unterschriften</div>
             <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
               ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
             </div>
@@ -6506,10 +6551,10 @@ function bereichsVorlagenSuche(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.75rem;color:#7c3aed;margin-top:2px">Säulen A–D · Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System · inkl. Unterschrift</div>
     </div>` : '';
 
@@ -6634,7 +6679,7 @@ function kalenderEintragDetail(zuwId) {
   const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
   const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
-  const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v?.titel || z.vorlagenId);
+  const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v?.titel || z.vorlagenId);
   const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
@@ -8120,7 +8165,7 @@ async function firmaRenderHistorie() {
       const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
         typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
@@ -8442,7 +8487,7 @@ async function generiereSchulungsnachweisPDF(userId) {
 
     // Lernpfad-Block
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('📚 Lernpfad (29 Kapitel)', margin, y); y += 8;
+    doc.text('📚 Lernpfad (32 Kapitel)', margin, y); y += 8;
     if (lpUnt && lpUnt.unterzeichnet_am) {
       const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
       doc.setFillColor(240, 253, 244);
@@ -8641,10 +8686,10 @@ function hilfeInhaltVerantwortlicher() {
         <li><strong>✅ Abschließen & PDF</strong> → Unterschriften einholen → PDF wird automatisch gespeichert</li>
       </ul>
 
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (29 Kapitel)</h3>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (32 Kapitel)</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Button <strong>📚 Lernpfad — 29 Kapitel</strong> → aufklappen</li>
-        <li>Mitarbeiter absolviert 29 Kapitel selbstständig am eigenen Gerät</li>
+        <li>Button <strong>📚 Lernpfad — 32 Kapitel</strong> → aufklappen</li>
+        <li>Mitarbeiter absolviert 32 Kapitel selbstständig am eigenen Gerät</li>
         <li>Nach Abschluss aller Kapitel: Mitarbeiter unterschreibt digital → Sie gegenzeichnen</li>
         <li>Neuer Durchgang starten: Mitarbeiterkarte → <strong>🔄 Neu starten</strong></li>
       </ul>
