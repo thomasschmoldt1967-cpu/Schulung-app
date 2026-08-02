@@ -2076,6 +2076,10 @@ function renderAdminTenantTable() {
 function adminZeigeTenant(tenantId) {
   const tenant = APP_TENANTS.find(t=>t.id===tenantId);
   const zuws   = zuweisungen.filter(z=>z.tenantId===tenantId);
+  const hasPsaga = zuws.some(z => z.vorlagenId === '__psaga__');
+  const hasLP    = zuws.some(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
+  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID);
+
   const html = `<div class="card"><div class="card-title">🏢 ${escHtml(tenant.name)}</div>
     ${zuws.map(z => {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
@@ -2092,10 +2096,106 @@ function adminZeigeTenant(tenantId) {
       </div>`;
     }).join('')}
     ${!zuws.length?'<div class="empty-state"><div class="icon">📭</div><p>Keine Zuweisungen</p></div>':''}
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📊 Teilnehmer-Übersicht</div>
+    <div id="tenant-statistik-${tenantId}" style="font-size:.84rem;color:#6b7280">⏳ Wird geladen…</div>
   </div>`;
+
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-user-info').textContent = currentUser.name;
+  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuws });
   showScreen('screen-admin-detail');
+}
+
+async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuws }) {
+  const el = document.getElementById(`tenant-statistik-${tenantId}`);
+  if (!el) return;
+  try {
+    const heute = new Date().toISOString().slice(0,10);
+    let html = '';
+
+    // ── PSAgA ──────────────────────────────────────────
+    if (hasPsaga) {
+      const daten = await SB.get('psaga_bescheinigungen',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,datum,ablauf`
+      );
+      // Deduplizieren: pro User nur neueste
+      const maMap = new Map();
+      (daten||[]).forEach(d => {
+        if (!maMap.has(d.user_id) || d.datum > maMap.get(d.user_id).datum) maMap.set(d.user_id, d);
+      });
+      const unique     = [...maMap.values()];
+      const aktiv      = unique.filter(d => d.ablauf >= heute).length;
+      const abgelaufen = unique.filter(d => d.ablauf <  heute).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🪝 PSAgA-Schulung</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(unique.length, 'Gesamt absolviert', '#eff6ff','#1d4ed8')}
+            ${_statKachel(aktiv,         'Bescheinigung aktiv', '#f0fdf4','#16a34a')}
+            ${_statKachel(abgelaufen,    'Abgelaufen / fällig', '#fef9c3','#a16207')}
+          </div>
+          ${aktiv > 0 ? `<div style="margin-top:8px;font-size:.77rem;color:#6b7280">💡 Abrechnung: <strong>${aktiv} aktive Teilnehmer</strong> × Preis/Teilnehmer</div>` : ''}
+        </div>`;
+    }
+
+    // ── Lernpfad ───────────────────────────────────────
+    if (hasLP) {
+      const lpDaten = await SB.get('lernpfad_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am,verantwortlicher_am`
+      );
+      const abgeschlossen  = (lpDaten||[]).filter(d => d.unterzeichnet_am).length;
+      const gegengezeichnet = (lpDaten||[]).filter(d => d.verantwortlicher_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (32 Kapitel)</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen,   'Unterzeichnet', '#faf5ff','#6b21a8')}
+            ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
+          </div>
+        </div>`;
+    }
+
+    // ── Unterweisungsvorlagen ──────────────────────────
+    if (vorlagenZuws.length) {
+      html += `<div style="margin-bottom:8px"><div style="font-weight:700;font-size:.88rem;color:#1e3a5f;margin-bottom:8px">📋 Unterweisungen</div>`;
+      for (const z of vorlagenZuws) {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const titel = v ? v.titel : z.vorlagenId;
+        // Formulare für diese Zuweisung aus lokalem Cache
+        const tenantUsers = APP_USERS.filter(u => u.tenant_id === tenantId && u.role === 'mitarbeiter' && u.aktiv !== false);
+        const formsDieserZuw = Object.values(formulare).filter(f => f.zuwId === z.id || f.id === z.id);
+        const abgeschlossen = formsDieserZuw.filter(f => f.abgeschlossen).length;
+        const gesamt = tenantUsers.length || '–';
+        html += `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;gap:6px">
+            <span style="font-size:.84rem;color:#374151">${escHtml(titel)}</span>
+            <div style="display:flex;gap:8px">
+              ${_statKachel(abgeschlossen, 'abgeschlossen', '#f0fdf4','#16a34a', true)}
+              <span style="font-size:.75rem;color:#6b7280;align-self:center">von ${gesamt} MA</span>
+            </div>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+
+    if (!html) html = '<p style="color:#6b7280;font-size:.85rem">Noch keine Schulungsaktivität vorhanden.</p>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<p style="color:#dc2626">⚠️ Fehler: ${e.message}</p>`;
+  }
+}
+
+function _statKachel(zahl, label, bg, farbe, klein=false) {
+  if (klein) return `<div style="background:${bg};border-radius:6px;padding:4px 10px;text-align:center">
+    <span style="font-size:1rem;font-weight:800;color:${farbe}">${zahl}</span>
+    <span style="font-size:.72rem;color:${farbe};margin-left:4px">${label}</span>
+  </div>`;
+  return `<div style="background:${bg};border-radius:8px;padding:8px 16px;text-align:center;min-width:70px">
+    <div style="font-size:1.5rem;font-weight:800;color:${farbe}">${zahl}</div>
+    <div style="font-size:.72rem;color:${farbe}">${label}</div>
+  </div>`;
 }
 function adminDetailAnzeigen(zuwId) {
   activeDetailZuwId = zuwId;
