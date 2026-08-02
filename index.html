@@ -359,43 +359,50 @@
     <!-- Tab: Unternehmen verwalten -->
     <div id="tab-unternehmen" class="tab-content" style="display:none">
 
-      <!-- Neues Unternehmen anlegen (immer offen) -->
+      <!-- Neuer Lizenznehmer anlegen -->
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">➕ Neues Unternehmen anlegen</div>
+        <div class="card-title">➕ Neuer Lizenznehmer anlegen</div>
+        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Schulungsinhalte werden nach dem Anlegen im Tab <strong>Zuweisungen</strong> durch CSC freigeschaltet.</p>
         <div>
-          <div class="form-group">
-            <label>Firmenname *</label>
-            <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group" style="margin:0">
+              <label>Firmenname *</label>
+              <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Ansprechpartner *</label>
+              <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>E-Mail (Login) *</label>
+              <input type="email" id="nu-email" placeholder="chef@unternehmen.de">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Telefon (optional)</label>
+              <input type="tel" id="nu-telefon" placeholder="z.B. 0511 123456">
+            </div>
           </div>
-          <div class="form-group">
-            <label>E-Mail (Unternehmens-Login) *</label>
-            <input type="email" id="nu-email" placeholder="verantwortlicher@unternehmen.de">
-          </div>
-          <div class="form-group">
-            <label>Ansprechpartner Name *</label>
-            <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
-          </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:12px">
             <label>Passwort *</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="text" id="nu-passwort" placeholder="Passwort eingeben" style="flex:1">
               <button class="btn btn-outline btn-sm" onclick="nuGenerierePasswort()">🎲 Generieren</button>
             </div>
           </div>
-          <div style="margin-top:14px;display:flex;gap:10px">
-            <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Unternehmen anlegen</button>
+          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Lizenznehmer anlegen</button>
           </div>
-          <div id="nu-msg" class="error-msg" style="margin-top:8px"></div>
+          <div id="nu-msg" style="margin-top:10px;font-size:.88rem;font-weight:500"></div>
         </div>
       </div>
 
-      <!-- Bestehende Unternehmen mit Toggle + Filter -->
+      <!-- Bestehende Lizenznehmer -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="nuListeToggle()">
-          <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
+          <div class="card-title" style="margin:0">📋 Bestehende Lizenznehmer</div>
           <span id="nu-liste-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
         </div>
-          <div id="nu-liste-bereich" style="display:none;margin-top:12px">
+        <div id="nu-liste-bereich" style="display:none;margin-top:12px">
           <input type="search" id="nu-filter" placeholder="🔍 Unternehmen suchen…" oninput="nuRenderListe()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;box-sizing:border-box;margin-bottom:10px">
           <div id="nu-liste"></div>
         </div>

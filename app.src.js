@@ -3083,16 +3083,8 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  const psagaMatch = !s || 'psaga'.includes(s) || 'absturz'.includes(s) || 'höhe'.includes(s) || 'psa'.includes(s) || 'schulung'.includes(s) || '22 modul'.includes(s);
-  const psagaHtml = psagaMatch ? `
-    <div onclick="azVorlageWaehlen('__psaga__','🪝 PSAgA-Schulung (22 Module)')"
-      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f0fdf4"
-      onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
-      <div style="font-weight:600;font-size:.88rem;color:#166534">🪝 PSAgA-Schulung (22 Module)</div>
-      <div style="font-size:.76rem;color:#16a34a;margin-top:2px">
-        Kapitel 00–21 &nbsp;·&nbsp; Audio + Quiz &nbsp;·&nbsp; DGUV 112-198 &nbsp;·&nbsp; Teilnahmebescheinigung nach Abschluss
-      </div>
-    </div>` : '';
+  const psagaMatch = false; // PSAgA ist CSC-intern — nicht für Lizenznehmer verfügbar
+  const psagaHtml = '';
 
   if (!gefiltert.length && !lernpfadMatch && !psagaMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
@@ -4554,6 +4546,8 @@ function nuGenerierePasswort() {
   document.getElementById('nu-passwort').value = pw;
 }
 
+// Vorlagen-Checkboxen im Anlegen-Formular befüllen — entfernt (Option B: Freigabe separat über Tab Zuweisungen)
+
 async function nuAnlegen() {
   const msgEl = document.getElementById('nu-msg');
   msgEl.textContent = '';
@@ -4562,10 +4556,11 @@ async function nuAnlegen() {
   const name     = document.getElementById('nu-name').value.trim();
   const email    = document.getElementById('nu-email').value.trim().toLowerCase();
   const kontakt  = document.getElementById('nu-kontakt').value.trim();
+  const telefon  = document.getElementById('nu-telefon')?.value.trim() || '';
   const passwort = document.getElementById('nu-passwort').value.trim();
 
   if (!name || !email || !kontakt || !passwort) {
-    msgEl.textContent = '⚠️ Bitte alle Felder ausfüllen.'; return;
+    msgEl.textContent = '⚠️ Bitte alle Pflichtfelder ausfüllen.'; return;
   }
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
     msgEl.textContent = '⚠️ Ungültige E-Mail-Adresse.'; return;
@@ -4607,7 +4602,7 @@ async function nuAnlegen() {
 
     // 3. User (Unternehmens-Account mit firma-Rolle) anlegen
     const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-    const uRes = await SB.post('users', {
+    const uPayload = {
       id: userId,
       name: kontakt,
       email,
@@ -4615,8 +4610,11 @@ async function nuAnlegen() {
       role: 'firma',
       tenant_id: tenantId,
       aktiv: true,
-      archiviert: false
-    });
+      archiviert: false,
+      muss_pw_aendern: true
+    };
+    if (telefon) uPayload.telefon = telefon;
+    const uRes = await SB.post('users', uPayload);
     if (uRes && uRes.error) {
       // Rollback: Tenant wieder löschen damit keine Geisterfirma entsteht
       try { await SB.delete('tenants', `id=eq.${tenantId}`); } catch(re) { console.warn('Rollback Fehler:', re.message); }
@@ -4625,21 +4623,22 @@ async function nuAnlegen() {
 
     // 4. App-State aktualisieren
     APP_TENANTS.push({ id: tenantId, name });
-    try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
+    try { await sbAudit('UNTERNEHMEN_NEU', `Lizenznehmer „${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
 
     msgEl.style.color = '#16a34a';
     msgEl.textContent = `✅ „${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
+    msgEl.textContent += ` — Schulungen jetzt im Tab „Zuweisungen" freischalten.`;
 
     // E-Mail mit Zugangsdaten versenden
-    const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name });
+    const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name, telefon });
     if (emailOk) {
       msgEl.textContent += ` — ✉️ Zugangsdaten per E-Mail gesendet`;
     } else {
-      msgEl.textContent += ` — ⚠️ E-Mail konnte nicht gesendet werden (Passwort oben notieren!)`;
+      msgEl.textContent += ` — ⚠️ E-Mail konnte nicht gesendet werden (Passwort notieren!)`;
     }
 
     // Felder leeren
-    ['nu-name','nu-email','nu-kontakt','nu-passwort'].forEach(id => document.getElementById(id).value = '');
+    ['nu-name','nu-email','nu-kontakt','nu-passwort','nu-telefon'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 
     // Listen aktualisieren
     renderAdminTenantTable();
@@ -4659,7 +4658,7 @@ function nuRenderListe() {
   if (!el) return;
   const suche = (document.getElementById('nu-filter')?.value || '').toLowerCase().trim();
   if (!APP_TENANTS.length) {
-    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Unternehmen angelegt.</p>';
+    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Lizenznehmer angelegt.</p>';
     return;
   }
   const gefiltert = suche ? APP_TENANTS.filter(t => t.name.toLowerCase().includes(suche)) : APP_TENANTS;
@@ -4668,18 +4667,61 @@ function nuRenderListe() {
     return;
   }
   el.innerHTML = gefiltert.map(t => {
-    const zuws = zuweisungen.filter(z => z.tenantId === t.id);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6">
-      <div>
-        <strong>${escHtml(t.name)}</strong>
-        <span style="font-size:.78rem;color:#6b7280;margin-left:8px">${zuws.length} Zuweisung(en)</span>
+    const zuws   = zuweisungen.filter(z => z.tenantId === t.id);
+    const firmaU = APP_USERS.find(u => u.tenant_id === t.id && u.role === 'firma');
+    const aktiv  = firmaU ? firmaU.aktiv !== false : true;
+    const lpZuw  = zuws.find(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
+    return `<div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:${aktiv?'#fff':'#f9fafb'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700;font-size:.95rem;color:#1e3a5f">${escHtml(t.name)}</div>
+          ${firmaU ? `<div style="font-size:.78rem;color:#6b7280;margin-top:2px">👤 ${escHtml(firmaU.name||'–')} · 📧 ${escHtml(firmaU.email||'–')}${firmaU.telefon?` · 📞 ${escHtml(firmaU.telefon)}`:''}</div>` : '<div style="font-size:.78rem;color:#dc2626">⚠️ Kein Login-User gefunden</div>'}
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+            <span style="font-size:.74rem;background:${aktiv?'#dcfce7':'#fee2e2'};color:${aktiv?'#166534':'#991b1b'};border-radius:20px;padding:2px 8px">${aktiv?'✅ Aktiv':'⛔ Deaktiviert'}</span>
+            <span style="font-size:.74rem;background:#f0f9ff;color:#0369a1;border-radius:20px;padding:2px 8px">📋 ${zuws.length} Schulung(en)</span>
+            ${lpZuw ? '<span style="font-size:.74rem;background:#f0fdf4;color:#166534;border-radius:20px;padding:2px 8px">📚 Lernpfad</span>' : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">🔍 Details</button>
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuZugangsdatenSenden('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')">✉️ Zugangsdaten</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuPwZuruecksetzen('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')" title="Neues Passwort setzen und senden">🔑 PW reset</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" style="color:${aktiv?'#dc2626':'#16a34a'}" onclick="nuToggleAktiv('${firmaU.id}','${t.id}',${aktiv})">${aktiv?'⛔ Deaktiv.':'✅ Aktivieren'}</button>` : ''}
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button>
     </div>`;
   }).join('');
 }
 
-// Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
+async function nuZugangsdatenSenden(userId, email, name, unternehmen) {
+  if (!email) { showToast('Keine E-Mail bekannt', '#dc2626'); return; }
+  showToast('⏳ Sende Zugangsdaten …', '#1e3a5f');
+  const ok = await sendLoginEmail({ an: email, name, rolle: 'firma', passwort: '(Ihr bisheriges Passwort)', unternehmen });
+  showToast(ok ? '✉️ Zugangsdaten erfolgreich gesendet!' : '⚠️ E-Mail-Versand fehlgeschlagen', ok ? '#0f5132' : '#dc2626');
+}
+
+async function nuPwZuruecksetzen(userId, email, name, unternehmen) {
+  const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!#';
+  let pw = '';
+  for (let i = 0; i < 10; i++) pw += zeichen[Math.floor(Math.random() * zeichen.length)];
+  try {
+    const hash = await hashPasswort(pw);
+    await SB.patch('users', `id=eq.${userId}`, { password_hash: hash, muss_pw_aendern: true });
+    const ok = await sendLoginEmail({ an: email, name, rolle: 'firma', passwort: pw, unternehmen });
+    showToast(ok ? `🔑 Neues PW: ${pw} — ✉️ gesendet` : `🔑 Neues PW: ${pw} (E-Mail fehlgeschlagen — notieren!)`, ok ? '#0f5132' : '#b45309');
+  } catch(e) { showToast('❌ PW-Reset fehlgeschlagen: ' + e.message, '#dc2626'); }
+}
+
+async function nuToggleAktiv(userId, tenantId, istAktiv) {
+  try {
+    await SB.patch('users', `id=eq.${userId}`, { aktiv: !istAktiv });
+    const u = APP_USERS.find(u => u.id === userId);
+    if (u) u.aktiv = !istAktiv;
+    await sbAudit(istAktiv ? 'LIZENZNEHMER_DEAKTIVIERT' : 'LIZENZNEHMER_AKTIVIERT', `User ${userId}, Tenant ${tenantId}`);
+    nuRenderListe();
+    showToast(istAktiv ? '⛔ Lizenznehmer deaktiviert' : '✅ Lizenznehmer wieder aktiviert', istAktiv ? '#b45309' : '#0f5132');
+  } catch(e) { showToast('❌ Fehler: ' + e.message, '#dc2626'); }
+}
 
 function zuwListeToggle() {
   const b = document.getElementById('zuw-liste-bereich');
