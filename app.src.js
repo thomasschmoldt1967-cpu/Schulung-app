@@ -3083,8 +3083,16 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  const psagaMatch = false; // PSAgA ist CSC-intern — nicht für Lizenznehmer verfügbar
-  const psagaHtml = '';
+  const psagaMatch = !s || 'psaga'.includes(s) || 'absturz'.includes(s) || 'höhe'.includes(s) || 'psa'.includes(s) || 'schulung'.includes(s) || '22 modul'.includes(s);
+  const psagaHtml = psagaMatch ? `
+    <div onclick="azVorlageWaehlen('__psaga__','🪝 PSAgA-Schulung (22 Module)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f0fdf4"
+      onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#f0fdf4'">
+      <div style="font-weight:600;font-size:.88rem;color:#166534">🪝 PSAgA-Schulung (22 Module)</div>
+      <div style="font-size:.76rem;color:#16a34a;margin-top:2px">
+        Kapitel 00–21 &nbsp;·&nbsp; Audio + Quiz &nbsp;·&nbsp; DGUV 112-198 &nbsp;·&nbsp; Teilnahmebescheinigung nach Abschluss
+      </div>
+    </div>` : '';
 
   if (!gefiltert.length && !lernpfadMatch && !psagaMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
