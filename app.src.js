@@ -2136,16 +2136,24 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuw
     // ── PSAgA ──────────────────────────────────────────
     if (hasPsaga) {
       const daten = await SB.get('psaga_bescheinigungen',
-        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,datum,ablauf`
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,ausstellungsdatum,pdf_url`
       );
       // Deduplizieren: pro User nur neueste
       const maMap = new Map();
       (daten||[]).forEach(d => {
-        if (!maMap.has(d.user_id) || d.datum > maMap.get(d.user_id).datum) maMap.set(d.user_id, d);
+        const datum = d.ausstellungsdatum || '';
+        if (!maMap.has(d.user_id) || datum > (maMap.get(d.user_id).ausstellungsdatum||'')) maMap.set(d.user_id, d);
       });
+      const heute = new Date().toISOString().slice(0,10);
       const unique     = [...maMap.values()];
-      const aktiv      = unique.filter(d => d.ablauf >= heute).length;
-      const abgelaufen = unique.filter(d => d.ablauf <  heute).length;
+      // Ablauf = 1 Jahr nach Ausstellungsdatum
+      const aktiv      = unique.filter(d => {
+        if (!d.ausstellungsdatum) return false;
+        const ablauf = new Date(d.ausstellungsdatum);
+        ablauf.setFullYear(ablauf.getFullYear() + 1);
+        return ablauf.toISOString().slice(0,10) >= heute;
+      }).length;
+      const abgelaufen = unique.length - aktiv;
       html += `
         <div style="margin-bottom:16px">
           <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🪝 PSAgA-Schulung</div>
