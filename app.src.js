@@ -2256,6 +2256,52 @@ function adminDetailAnzeigen(zuwId) {
     });
   }
   const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+
+  // ── PSAgA: Mitarbeiter-Übersicht aus Bescheinigungen laden ──
+  let psagaMaHtml = '';
+  if (isPsaga && tenant) {
+    // Asynchron laden und nachrüsten
+    SB.get('psaga_bescheinigungen', `tenant_id=eq.${encodeURIComponent(zuw.tenantId)}&select=user_id,user_name,ausstellungsdatum`)
+      .then(bescheinigungen => {
+        const heute = new Date().toISOString().slice(0,10);
+        const tenantMA = APP_USERS.filter(u => u.tenant_id === zuw.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+        // Pro User neueste Bescheinigung
+        const beschMap = new Map();
+        (bescheinigungen||[]).forEach(b => {
+          if (!beschMap.has(b.user_id) || (b.ausstellungsdatum||'') > (beschMap.get(b.user_id).ausstellungsdatum||'')) beschMap.set(b.user_id, b);
+        });
+        const mitBesch = [...beschMap.values()].filter(b => {
+          if (!b.ausstellungsdatum) return false;
+          const ablauf = new Date(b.ausstellungsdatum);
+          ablauf.setFullYear(ablauf.getFullYear() + 1);
+          return ablauf.toISOString().slice(0,10) >= heute;
+        });
+        const mitBeschIds = new Set(mitBesch.map(b => b.user_id));
+        const ohneBesch = tenantMA.filter(m => !mitBeschIds.has(m.id));
+
+        const maEl = document.getElementById('psaga-ma-detail');
+        if (!maEl) return;
+        if (tenantMA.length === 0) {
+          maEl.innerHTML = `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:10px 14px;font-size:.82rem;font-weight:700;color:#92400e">⚠️ Zuweisung an Mitarbeiter nicht erfolgt!</div>`;
+        } else {
+          maEl.innerHTML = `
+            <div style="margin-top:12px">
+              ${ohneBesch.length > 0 ? `
+                <div style="font-size:.8rem;font-weight:700;color:#dc2626;margin-bottom:6px">⚠️ Noch keine gültige Bescheinigung (${ohneBesch.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+                  ${ohneBesch.map(m=>`<span style="background:#fef2f2;border:1px solid #fca5a5;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#991b1b">${escHtml(m.name)}</span>`).join('')}
+                </div>` : ''}
+              ${mitBesch.length > 0 ? `
+                <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:6px">✅ Gültige Bescheinigung (${mitBesch.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${mitBesch.map(b=>`<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#15803d">${escHtml(b.user_name||b.user_id)}</span>`).join('')}
+                </div>` : ''}
+            </div>`;
+        }
+      }).catch(() => {});
+    psagaMaHtml = `<div id="psaga-ma-detail"><div style="color:#9ca3af;font-size:.8rem;font-style:italic">Lade Teilnehmer…</div></div>`;
+  }
+
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
       <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
@@ -2269,8 +2315,12 @@ function adminDetailAnzeigen(zuwId) {
         ${form.pdfPath?`<br><button onclick="oeffnePdfSigniert('${form.pdfPath}')" style="color:#0047cc;background:none;border:none;cursor:pointer;font-size:.82rem;text-decoration:underline;padding:0">📄 PDF in Supabase öffnen</button>`:''}
       </div>
       ${feldHtml||'<div class="empty-state"><div class="icon">📝</div><p>Noch kein Formular ausgefüllt</p></div>'}
+      ${psagaMaHtml}
     </div>`;
   document.getElementById('detail-user-info').textContent = currentUser.name;
+  // PDF-Button nur anzeigen wenn Formular abgeschlossen ist
+  const pdfBtnArea = document.getElementById('detail-pdf-btn-area');
+  if (pdfBtnArea) pdfBtnArea.style.display = form.abgeschlossen ? '' : 'none';
   showScreen('screen-admin-detail');
 }
 function exportDetailPdf() { if(activeDetailZuwId) generatePdf(activeDetailZuwId, true); }
