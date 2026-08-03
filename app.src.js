@@ -80,6 +80,8 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_30', nr:30, saeule:'E', titel:'Ergonomie — Rückengerechtes Arbeiten & Heben',            rechtsgrundlage:'§ 12 ArbSchG, DGUV R 109-001' },
   { id:'kap_31', nr:31, saeule:'E', titel:'Sicherer Umgang mit Leitern',                              rechtsgrundlage:'§ 12 ArbSchG, BetrSichV, DGUV R 100-500' },
   { id:'kap_32', nr:32, saeule:'E', titel:'Krankmeldung — Pflichten & Fristen',                       rechtsgrundlage:'§ 5 EntgFG, § 275 SGB V' },
+  { id:'kap_33', nr:33, saeule:'F', titel:'Hygieneplan Kindertagesstätten (§ 36 IfSG)',               rechtsgrundlage:'§ 36 IfSG, TRBA 400, RKI-Richtlinien' },
+  { id:'kap_34', nr:34, saeule:'F', titel:'Sicherheitsunterweisung DPD-Depot',                        rechtsgrundlage:'§ 12 ArbSchG, DGUV V1 § 4, ASR A1.8' },
 ];
 
 // ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
@@ -522,6 +524,24 @@ const LERNPFAD_TEXTE = {
     pl: "Kiedy jesteś chory i nie możesz pracować, musisz natychmiast poinformować przełożonego — przed rozpoczęciem czasu pracy. Idź do lekarza już pierwszego dnia choroby i złóż zwolnienie lekarskie (AU) tego samego dnia. Jeśli choroba trwa dłużej, natychmiast poinformuj i złóż kontynuację. Twoja diagnoza pozostaje poufna — szef może wiedzieć tylko jak długo jesteś nieobecny.",
     en: "When you are sick and cannot work, you must inform your supervisor immediately — before your working hours begin. Visit a doctor on the very first day of illness and hand in your sick note (AU) the same day. If the illness lasts longer, inform immediately and submit a follow-up certificate. Your diagnosis remains confidential — your manager may only know how long you are absent.",
     ar: "عندما تكون مريضاً ولا تستطيع العمل، يجب عليك إخطار مشرفك فوراً — قبل بدء ساعات العمل. اذهب إلى الطبيب في اليوم الأول من المرض وسلّم شهادة المرض (AU) في نفس اليوم. إذا استمر المرض أطول، أخبر فوراً وقدّم شهادة متابعة. تشخيصك يبقى سرياً — مديرك لا يحق له معرفة سوى مدة غيابك."
+  },
+  kap_33: {
+    de: "Hygieneplan für Kindertagesstätten (§ 36 IfSG): Trage immer Schutzhandschuhe — bei Bedarf auch Einmalschürze und Mundschutz. Hände vor Arbeitsbeginn, nach Sanitärreinigung und nach Ausziehen der Handschuhe desinfizieren oder gründlich waschen. Kein Schmuck an Händen und Unterarmen während der Arbeit. Masernimpfnachweis ist Pflicht. Tägliche Reinigung: Türgriffe, Lichtschalter, Handläufe, Armaturen, WCs, Waschbecken, Böden feucht wischen. 3-Farben-System: 🔴 Rot = WC, 🟡 Gelb = Sanitär, 🔵 Blau = Möbel/Türen. Täglich frische Reinigungstücher — kein Wiederverwenden! Desinfektionsmittel nur nach freigegebener Produktpalette und Dosierplan. Bei Infektionshäufungen (z. B. Norovirus) erweiterte Desinfektion mit VAH/RKI-gelisteten Mitteln (viruzid).",
+    tr: "Kreşler için Hijyen Planı (§ 36 IfSG): Çalışırken daima koruyucu eldiven giy — gerektiğinde tek kullanımlık önlük ve maske. Çalışmaya başlamadan önce, tuvalet temizliğinden sonra ve eldivenleri çıkardıktan sonra elleri dezenfekte et veya iyice yıka. Çalışma sırasında ellerde ve kolllarda takı takma. Kızamık aşısı zorunludur. Günlük temizlik: kapı kolları, ışık anahtarları, tutamaklar, armatürler, tuvaletler, lavabolar, ıslak paspas. 3-renk sistemi: 🔴 Kırmızı = Tuvalet, 🟡 Sarı = Banyo, 🔵 Mavi = Mobilya/Kapılar. Her gün temiz bez — yeniden kullanma! Dezenfektanlar yalnızca onaylı ürün listesine ve dozaj planına göre kullanılır.",
+    ro: "Plan de igienă pentru grădinițe (§ 36 IfSG): Poartă întotdeauna mănuși de protecție — dacă este necesar șorț de unică folosință și mască. Dezinfectează sau spală bine mâinile înainte de lucru, după curățarea toaletelor și după scoaterea mănușilor. Fără bijuterii pe mâini și antebrațe în timpul lucrului. Dovada vaccinării împotriva rujeolei este obligatorie. Curățare zilnică: mânere, întrerupătoare, balustrade, robinete, toalete, chiuvete, podele șterse umed. Sistem 3 culori: 🔴 Roșu = Toaletă, 🟡 Galben = Baie, 🔵 Albastru = Mobilier/Uși. Cârpe proaspete zilnic — fără reutilizare! Dezinfectanți doar conform listei aprobate și planului de dozare.",
+    sr: "Plan higijene za vrtiće (§ 36 IfSG): Uvijek nosi zaštitne rukavice — po potrebi jednokratnu pregaču i masku. Dezinficiraj ili temeljito operi ruke prije rada, nakon čišćenja toaleta i nakon skidanja rukavica. Bez nakita na rukama i podlakticama za vrijeme rada. Dokaz o cijepljenju protiv ospica je obavezan. Svakodnevno čišćenje: kvake, prekidači, rukohvati, armature, WC-i, umivaonici, podovi mokrim brisanjem. Sustav 3 boje: 🔴 Crvena = WC, 🟡 Žuta = Sanitarije, 🔵 Plava = Namještaj/Vrata. Svaki dan svježe krpe — bez ponovne upotrebe! Dezinficijensi samo prema odobrenoj listi i planu doziranja.",
+    pl: "Plan higieny dla żłobków i przedszkoli (§ 36 IfSG): Zawsze noś rękawice ochronne — w razie potrzeby jednorazowy fartuch i maskę. Dezynfekuj lub dokładnie myj ręce przed pracą, po czyszczeniu toalet i po zdjęciu rękawic. Bez biżuterii na dłoniach i przedramionach podczas pracy. Obowiązkowy dowód szczepienia przeciwko odrze. Codzienne sprzątanie: klamki, włączniki, poręcze, armatura, toalety, umywalki, podłogi na mokro. System 3 kolorów: 🔴 Czerwony = WC, 🟡 Żółty = Sanitariaty, 🔵 Niebieski = Meble/Drzwi. Codziennie świeże ściereczki — bez ponownego użycia! Środki dezynfekcyjne tylko według zatwierdzonej listy i planu dozowania.",
+    en: "Hygiene plan for daycare centres (§ 36 IfSG): Always wear protective gloves — disposable apron and mask if needed. Disinfect or thoroughly wash hands before work, after cleaning toilets and after removing gloves. No jewellery on hands and forearms during work. Proof of measles vaccination is mandatory. Daily cleaning: door handles, light switches, handrails, fittings, toilets, washbasins, floors wet-mopped. 3-colour system: 🔴 Red = Toilet, 🟡 Yellow = Sanitary, 🔵 Blue = Furniture/Doors. Fresh cloths daily — no reuse! Disinfectants only per approved product list and dosing plan. In case of infection outbreaks (e.g. norovirus): enhanced disinfection with VAH/RKI-listed virucidal agents.",
+    ar: "خطة النظافة لدور الحضانة (§ 36 IfSG): ارتدِ دائماً قفازات واقية — ارتدِ مريلة يمكن التخلص منها وقناعاً عند الحاجة. عقّم أو اغسل يديك جيداً قبل العمل وبعد تنظيف المراحيض وبعد خلع القفازات. لا مجوهرات على اليدين والساعدين أثناء العمل. إثبات التطعيم ضد الحصبة إلزامي. التنظيف اليومي: مقابض الأبواب، مفاتيح الإضاءة، الدرابزين، الحنفيات، المراحيض، أحواض الغسيل، الأرضيات بالمسح الرطب. نظام 3 ألوان: 🔴 أحمر = مرحاض، 🟡 أصفر = صحي، 🔵 أزرق = أثاث/أبواب. قطع قماش طازجة يومياً — لا إعادة استخدام! المطهّرات فقط وفق قائمة المنتجات المعتمدة وخطة الجرعات."
+  },
+  kap_34: {
+    de: "Sicherheitsunterweisung DPD-Depot (§ 12 ArbSchG, DGUV V1): PSA-Pflicht — Warnweste (EN ISO 20471) und Sicherheitsschuhe (S1P/S3) sind auf dem gesamten Depot- und Hofgelände zu tragen. Eng anliegende Arbeitskleidung, kein Schmuck, langes Haar sichern (Einzugsgefahr). Innerbetrieblicher Verkehr: Nur gelb markierte Fußwege nutzen! Vor Überqueren von Fahrbahnen immer Blickkontakt mit Fahrern herstellen. Flurförderzeuge haben Vorrang — max. Schrittgeschwindigkeit. Förderbänder: Niemals in laufende Bänder greifen oder übersteigen! Paketstaus nur durch befugtes Personal beseitigen. Vor Eingriffen: Anlage abschalten (Lockout). Laderampen: Lkw erst befahren nach Arretierung (Radkeile, Feststellbremse). Hallentore bei nicht angedockten Fahrzeugen geschlossen halten. Notfall: Standorte der Not-Aus-Taster, Fluchtwege und Sammelstelle kennen.",
+    tr: "DPD Depot Güvenlik Talimatı (§ 12 ArbSchG, DGUV V1): KKD Zorunluluğu — Tüm depo ve avlu alanında ikaz yeleği (EN ISO 20471) ve güvenlik ayakkabısı (S1P/S3) giyilmelidir. Dar iş kıyafeti, takı yok, uzun saçları sabitle (sıkışma tehlikesi). İç trafik: Yalnızca sarı işaretli yaya yollarını kullan! Yolu geçmeden önce sürücülerle daima göz teması kur. Forkliftlerin önceliği var — maksimum yürüyüş hızı. Bantlar: Çalışan bantlara asla dokunma veya üstünden geçme! Paket sıkışmalarını yalnızca yetkili personel giderir. Müdahaleden önce: Tesisi kapat (kilitleme). Yükleme rampaları: Takozlama ve el freni sonrası TIR'a gir. Yangın kapıları araç yokken kapalı tutulmalıdır. Acil: Acil durdurma düğmelerinin, kaçış yollarının ve toplanma noktasının yerlerini bil.",
+    ro: "Instrucțiuni de securitate DPD Depot (§ 12 ArbSchG, DGUV V1): Obligația EIP — vestă de avertizare (EN ISO 20471) și pantofi de protecție (S1P/S3) obligatorii pe tot terenul depozitului. Îmbrăcăminte de lucru strânsă, fără bijuterii, fixează părul lung (pericol de prindere). Trafic intern: folosește exclusiv căile pietonale marcate cu galben! Înainte de traversarea căilor de circulație stabilește întotdeauna contact vizual cu șoferii. Vehiculele de transport au prioritate — viteză maximă de mers pe jos. Benzi transportoare: Nu introduce niciodată mâna în benzi în funcțiune și nu trece peste ele! Blocajele de pachete se remediază numai de personal autorizat. Înainte de intervenții: oprește instalația (blocare). Rampe de încărcare: urcă pe camion doar după blocare (pene de roată, frână de mână). Uși hală ținute închise fără vehicul andocat. Urgență: cunoaște locațiile butoanelor de oprire de urgență, căile de evacuare și punctul de adunare.",
+    sr: "Sigurnosne upute DPD depoa (§ 12 ArbSchG, DGUV V1): Obveza LZO — upozoravajući prsluk (EN ISO 20471) i zaštitne cipele (S1P/S3) obvezni su na cijelom prostoru depoa. Uska radna odjeća, bez nakita, osiguraj dugu kosu (opasnost od uvlačenja). Unutarnji promet: koristiti isključivo žuto označene pješačke staze! Prije prelaska prometnica uspostavi kontakt očima s vozačima. Viličari imaju prednost — maksimalna brzina hoda. Transportne trake: nikad ne posezati u pokretne trake ili prelaziti preko njih! Zagušenje paketa uklanja samo ovlašteno osoblje. Prije zahvata: isključi postrojenje (zaključavanje). Utovarni mostovi: na kamion tek nakon blokiranja (klin za kotač, ručna kočnica). Halna vrata držati zatvorena bez privezan vozila. Hitni slučaj: znati lokacije tipki za hitno zaustavljanje, putove bijega i zbirno mjesto.",
+    pl: "Instrukcja bezpieczeństwa DPD Depot (§ 12 ArbSchG, DGUV V1): Obowiązek ŚOI — kamizelka ostrzegawcza (EN ISO 20471) i buty ochronne (S1P/S3) obowiązkowe na całym terenie magazynu. Obcisła odzież robocza, bez biżuterii, zabezpiecz długie włosy (niebezpieczeństwo wciągnięcia). Ruch wewnętrzny: korzystaj wyłącznie z żółto oznakowanych ścieżek! Przed przekroczeniem dróg nawiąż kontakt wzrokowy z kierowcami. Wózki mają pierwszeństwo — maksymalna prędkość kroku. Taśmy: nigdy nie wkładaj rąk w ruchome taśmy i nie przekraczaj ich! Zatory paczek usuwa tylko upoważniony personel. Przed ingerencją: wyłącz urządzenie (blokada). Rampy załadunkowe: wejście na ciężarówkę dopiero po zablokowaniu (kliny, hamulec ręczny). Bramy hali zamknięte przy braku zadokowanego pojazdu. Nagły wypadek: znaj lokalizacje wyłączników awaryjnych, dróg ewakuacyjnych i miejsca zbiórki.",
+    en: "DPD Depot Safety Briefing (§ 12 ArbSchG, DGUV V1): PPE mandatory — high-visibility vest (EN ISO 20471) and safety shoes (S1P/S3) must be worn across the entire depot and yard. Close-fitting work clothing, no jewellery, secure long hair (entrapment hazard). Internal traffic: use only yellow-marked pedestrian walkways! Always make eye contact with drivers before crossing any lane. Forklifts have right of way — walking pace maximum. Conveyor belts: never reach into or step over moving belts! Package jams to be cleared by authorised personnel only. Before any intervention: switch off the system (lockout). Loading ramps: board lorry only after securing (wheel chocks, handbrake). Hall doors kept closed when no vehicle is docked. Emergency: know the locations of emergency-stop buttons, escape routes and assembly point.",
+    ar: "تعليمات السلامة لمستودع DPD (§ 12 ArbSchG, DGUV V1): إلزامية معدات الحماية الشخصية — سترة التحذير (EN ISO 20471) وأحذية السلامة (S1P/S3) إلزامية في جميع أنحاء المستودع. ملابس عمل ضيقة، لا مجوهرات، اربط الشعر الطويل (خطر الانجراف). حركة المرور الداخلية: استخدم فقط المسارات المخصصة للمشاة والمحددة باللون الأصفر! قبل عبور المسارات تواصل دائماً بصرياً مع السائقين. الرافعات الشوكية لها الأولوية — السرعة القصوى خطوة المشي. الأحزمة الناقلة: لا تدخل يدك أبداً في الأحزمة المتحركة ولا تتجاوزها! يُزيل انسداد الطرود الموظفون المعتمدون فقط. قبل أي تدخل: أوقف المنشأة (القفل). منصات التحميل: اصعد على الشاحنة فقط بعد التثبيت (أوتاد العجلات، الفرامل اليدوية). أبواب القاعة مغلقة عند عدم رسو مركبة. الطوارئ: اعرف مواقع مفاتيح الإيقاف الطارئ، ومسارات الإخلاء، ونقطة التجمع."
   },
   kap_29: {
     de: "Die Wechseltuch-Methode: Ein Tuch = Ein Sanitärobjekt — danach sofort in die Wäsche, kein Zurücktauchen in die Lösung. Pflicht in Kliniken, Pflegeeinrichtungen und Sanitäranlagen (RKI-Richtlinien). Die 16-Seiten-Falttechnik: Tuch zweimal falten ergibt 16 saubere Flächen. Für jede neue Oberfläche eine frische Seite — spart Wasser und maximiert Keimfreiheit. Waschprotokoll: 🔴🟢 bei 95 °C, 🟡🔵 bei 60 °C. NIEMALS Weichspüler — er verklebt die Mikrofasern! Trockner empfohlen — die Hitze ist ein zusätzlicher Hygieneschritt.",
@@ -2006,7 +2026,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (34 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -2085,7 +2105,7 @@ function adminZeigeTenant(tenantId) {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
           <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
@@ -2149,7 +2169,7 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuw
       const gegengezeichnet = (lpDaten||[]).filter(d => d.verantwortlicher_am).length;
       html += `
         <div style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (32 Kapitel)</div>
+          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (34 Kapitel)</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             ${_statKachel(abgeschlossen,   'Unterzeichnet', '#faf5ff','#6b21a8')}
             ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
@@ -2229,7 +2249,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
       <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
@@ -3108,7 +3128,7 @@ function renderAdminZuweisungen() {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
-    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
     const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
     return `<div class="schulung-item">
       <div>
@@ -3174,10 +3194,10 @@ function azVorlagenListeRendern(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
+    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (34 Kapitel)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
+      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (34 Kapitel)</div>
       <div style="font-size:.76rem;color:#7c3aed;margin-top:2px">
         Säulen A–D &nbsp;·&nbsp; Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System &nbsp;·&nbsp; inkl. Unterschrift
       </div>
@@ -3240,7 +3260,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (34 Kapitel)' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -3422,7 +3442,7 @@ async function renderMitarbeiterListe() {
         const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
         const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-        const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? v.titel : z.vorlagenId);
+        const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v ? v.titel : z.vorlagenId);
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
@@ -4035,7 +4055,7 @@ function renderSubDashboard() {
         meineZuws.map(z => {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
@@ -6545,7 +6565,7 @@ async function zeigeSchulungshistorie(userId) {
       lpUntHistorieBlock = `
         <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
           <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
-            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (32 Kapitel) — Unterschriften</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (34 Kapitel) — Unterschriften</div>
             <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
               ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
             </div>
@@ -6701,10 +6721,10 @@ function bereichsVorlagenSuche(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
+    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (34 Kapitel)')"
       style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
+      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (34 Kapitel)</div>
       <div style="font-size:.75rem;color:#7c3aed;margin-top:2px">Säulen A–D · Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System · inkl. Unterschrift</div>
     </div>` : '';
 
@@ -6829,7 +6849,7 @@ function kalenderEintragDetail(zuwId) {
   const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
   const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
-  const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v?.titel || z.vorlagenId);
+  const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v?.titel || z.vorlagenId);
   const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
@@ -7158,8 +7178,8 @@ let lernpfadAktuellerDurchgang = 1; // aktuell aktiver Durchgang (der laufende o
 let lernpfadTenantKapitel = []; // { id, titel, beschreibung, reihenfolge } — von Tenant hinzugefügte Kapitel
 
 const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.userId || 'anon'}_d${lernpfadAktuellerDurchgang}`;
-const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309', D: '#6b21a8' };
-const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO', D: '🎨 Säule D — Das 4-Farben-System' };
+const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309', D: '#6b21a8', E: '#0f766e', F: '#b91c1c' };
+const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO', D: '🎨 Säule D — Das 4-Farben-System', E: '💪 Säule E — Arbeitsrecht & Gesundheit', F: '🏭 Säule F — Objekt- & Subunternehmer-Unterweisungen' };
 
 // ── LERNPFAD-SPRACHE ─────────────────────────────────────────
 const LP_SPRACHEN = [
@@ -7830,7 +7850,7 @@ function renderLernpfad() {
     </div>`;
 
   // Pro Säule gruppiert
-  ['A','B','C','D'].forEach(saeule => {
+  ['A','B','C','D','E','F'].forEach(saeule => {
     const kapitel = LERNPFAD_KAPITEL.filter(k => k.saeule === saeule);
     const absolviert = kapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
     const farbe = SAEULE_FARBEN[saeule];
@@ -8315,7 +8335,7 @@ async function firmaRenderHistorie() {
       const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
         typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
@@ -8637,7 +8657,7 @@ async function generiereSchulungsnachweisPDF(userId) {
 
     // Lernpfad-Block
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('📚 Lernpfad (32 Kapitel)', margin, y); y += 8;
+    doc.text('📚 Lernpfad (34 Kapitel)', margin, y); y += 8;
     if (lpUnt && lpUnt.unterzeichnet_am) {
       const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
       doc.setFillColor(240, 253, 244);
@@ -8836,10 +8856,10 @@ function hilfeInhaltVerantwortlicher() {
         <li><strong>✅ Abschließen & PDF</strong> → Unterschriften einholen → PDF wird automatisch gespeichert</li>
       </ul>
 
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (32 Kapitel)</h3>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (34 Kapitel)</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Button <strong>📚 Lernpfad — 32 Kapitel</strong> → aufklappen</li>
-        <li>Mitarbeiter absolviert 32 Kapitel selbstständig am eigenen Gerät</li>
+        <li>Button <strong>📚 Lernpfad — 34 Kapitel</strong> → aufklappen</li>
+        <li>Mitarbeiter absolviert 34 Kapitel selbstständig am eigenen Gerät</li>
         <li>Nach Abschluss aller Kapitel: Mitarbeiter unterschreibt digital → Sie gegenzeichnen</li>
         <li>Neuer Durchgang starten: Mitarbeiterkarte → <strong>🔄 Neu starten</strong></li>
       </ul>
