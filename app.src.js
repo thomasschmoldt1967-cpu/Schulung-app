@@ -3424,15 +3424,59 @@ function renderAdminZuweisungen() {
     const isPsaga = z.vorlagenId === '__psaga__';
     const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
     const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
-    return `<div class="schulung-item">
-      <div>
-        <div class="titel" style="${titelStyle}">${titel}</div>
-        <div class="meta">${t?escHtml(t.name):z.tenantId} • Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
+
+    // Mitarbeiter dieses Tenants
+    const tenantMitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+
+    // Wer hat die Schulung abgeschlossen?
+    let abgeschlossenIds = new Set();
+    if (isPsaga) {
+      // PSAgA: aus psaga_bescheinigungen (bereits in PSAGA_BESCHEINIGUNGEN geladen falls vorhanden)
+      // Fallback: aus formulare-Cache
+    } else {
+      Object.values(formulare).forEach(f => {
+        if ((f.zuwId === z.id || f.id === z.id) && f.abgeschlossen && f.userId) abgeschlossenIds.add(f.userId);
+      });
+    }
+
+    // Mitarbeiter aufteilen
+    const ausstehend = tenantMitarbeiter.filter(m => !abgeschlossenIds.has(m.id));
+    const abgeschlossen = tenantMitarbeiter.filter(m => abgeschlossenIds.has(m.id));
+
+    // Mitarbeiter-Liste nur bei rot/gelb und wenn MA vorhanden
+    let maListeHtml = '';
+    if ((s === 'rot' || s === 'gelb') && tenantMitarbeiter.length > 0 && !isPsaga && !isLP) {
+      maListeHtml = `
+        <div style="margin-top:10px;border-top:1px solid #f0f2f5;padding-top:8px">
+          ${ausstehend.length > 0 ? `
+            <div style="font-size:.76rem;font-weight:700;color:${s==='rot'?'#dc2626':'#92400e'};margin-bottom:5px">
+              ${s==='rot'?'⚠️':'⏳'} Noch nicht abgeschlossen (${ausstehend.length}):
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+              ${ausstehend.map(m=>`<span style="background:${s==='rot'?'#fef2f2':'#fffbeb'};border:1px solid ${s==='rot'?'#fca5a5':'#fde68a'};border-radius:20px;padding:2px 10px;font-size:.76rem;color:${s==='rot'?'#991b1b':'#92400e'}">${escHtml(m.name)}</span>`).join('')}
+            </div>` : ''}
+          ${abgeschlossen.length > 0 ? `
+            <div style="font-size:.76rem;font-weight:700;color:#15803d;margin-bottom:5px">✅ Abgeschlossen (${abgeschlossen.length}):</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              ${abgeschlossen.map(m=>`<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:2px 10px;font-size:.76rem;color:#15803d">${escHtml(m.name)}</span>`).join('')}
+            </div>` : ''}
+        </div>`;
+    } else if ((s === 'rot' || s === 'gelb') && tenantMitarbeiter.length === 0 && !isPsaga && !isLP) {
+      maListeHtml = `<div style="margin-top:8px;font-size:.76rem;color:#9ca3af;font-style:italic">Keine aktiven Mitarbeiter in diesem Unternehmen.</div>`;
+    }
+
+    return `<div class="schulung-item" style="display:block">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div class="titel" style="${titelStyle}">${titel}</div>
+          <div class="meta">${t?escHtml(t.name):z.tenantId} • Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+          ${statusBadgeHtml(s)}
+          <button class="btn btn-danger btn-sm" onclick="deleteZuweisung('${z.id}')">🗑</button>
+        </div>
       </div>
-      <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        ${statusBadgeHtml(s)}
-        <button class="btn btn-danger btn-sm" onclick="deleteZuweisung('${z.id}')">🗑</button>
-      </div>
+      ${maListeHtml}
     </div>`;
   }).join('') || '<div class="empty-state"><div class="icon">📭</div><p>Keine Zuweisungen</p></div>';
   document.getElementById('admin-zuw-list').innerHTML = rows;
@@ -8417,8 +8461,7 @@ async function lernpfadZertifikatGenerieren() {
         tenant_id: currentUser.tenantId || '',
         user_id: currentUser.userId,
         user_name: currentUser.name,
-        datum: new Date().toISOString().slice(0,10),
-        ablauf: new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().slice(0,10),
+        ausstellungsdatum: new Date().toISOString().slice(0,10),
         bescheinigungs_nr: beschNr,
         pdf_url: pdfUrl,
         erstellt_am: new Date().toISOString()
@@ -10417,8 +10460,7 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
           user_id: userId,
           user_name: userName,
           tenant_id: tenantId || null,
-          datum: datum.toISOString().slice(0,10),
-          ablauf: ablauf.toISOString().slice(0,10),
+          ausstellungsdatum: datum.toISOString().slice(0,10),
           bescheinigungs_nr: zertNr,
           pdf_url: publicUrl,
           erstellt_am: new Date().toISOString()
