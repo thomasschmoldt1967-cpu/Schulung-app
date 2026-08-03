@@ -3462,7 +3462,10 @@ function renderAdminZuweisungen() {
             </div>` : ''}
         </div>`;
     } else if ((s === 'rot' || s === 'gelb') && tenantMitarbeiter.length === 0 && !isPsaga && !isLP) {
-      maListeHtml = `<div style="margin-top:8px;font-size:.76rem;color:#9ca3af;font-style:italic">Keine aktiven Mitarbeiter in diesem Unternehmen.</div>`;
+      maListeHtml = `<div style="margin-top:8px;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:1rem">⚠️</span>
+        <span style="font-size:.78rem;font-weight:700;color:#92400e">Zuweisung an Mitarbeiter nicht erfolgt!</span>
+      </div>`;
     }
 
     return `<div class="schulung-item" style="display:block">
