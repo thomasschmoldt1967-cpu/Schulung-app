@@ -2232,17 +2232,38 @@ function adminDetailAnzeigen(zuwId) {
 
   let feldHtml='';
   if (isLP) {
-    // Lernpfad-Detail: Status aus Cache anzeigen
-    const lpUnt = window._lpUntCache && zuw.zugewiesenAn ? window._lpUntCache[zuw.zugewiesenAn] : null;
-    feldHtml = lpUnt && lpUnt.unterzeichnet_am
-      ? `<div style="background:#f0fdf4;border-radius:8px;padding:12px 14px">
-           <div style="font-weight:700;color:#15803d;margin-bottom:4px">✅ Lernpfad unterzeichnet</div>
-           <div style="font-size:.82rem;color:#374151">
-             👤 <b>${escHtml(lpUnt.vollname||'–')}</b> · ${new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE')}
-             ${lpUnt.verantwortlicher_am ? `<br>🧑‍💼 Gegengezeichnet: <b>${escHtml(lpUnt.verantwortlicher_name||'–')}</b> · ${new Date(lpUnt.verantwortlicher_am).toLocaleDateString('de-DE')}` : '<br>⏳ Gegenzeichnung ausstehend'}
-           </div>
-         </div>`
-      : `<div class="empty-state"><div class="icon">📚</div><p>Noch nicht unterzeichnet</p></div>`;
+    // Lernpfad-Detail: alle MA des Tenants mit Unterzeichnungs-Status anzeigen
+    const tenantMA = APP_USERS.filter(u => u.tenant_id === zuw.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+    const lpCache = window._lpUntCache || {};
+
+    if (tenantMA.length === 0) {
+      feldHtml = `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:10px 14px;font-size:.82rem;font-weight:700;color:#92400e">⚠️ Zuweisung an Mitarbeiter nicht erfolgt!</div>`;
+    } else {
+      const unterzeichnet = tenantMA.filter(m => lpCache[m.id] && lpCache[m.id].unterzeichnet_am);
+      const ausstehend    = tenantMA.filter(m => !lpCache[m.id] || !lpCache[m.id].unterzeichnet_am);
+
+      feldHtml = `<div style="margin-top:4px">`;
+      if (ausstehend.length > 0) {
+        feldHtml += `
+          <div style="font-size:.8rem;font-weight:700;color:#dc2626;margin-bottom:6px">⚠️ Noch nicht unterzeichnet (${ausstehend.length}):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            ${ausstehend.map(m => `<span style="background:#fef2f2;border:1px solid #fca5a5;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#991b1b">${escHtml(m.name)}</span>`).join('')}
+          </div>`;
+      }
+      if (unterzeichnet.length > 0) {
+        feldHtml += `
+          <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:6px">✅ Unterzeichnet (${unterzeichnet.length}):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${unterzeichnet.map(m => {
+              const u = lpCache[m.id];
+              const datum = u.unterzeichnet_am ? new Date(u.unterzeichnet_am).toLocaleDateString('de-DE') : '';
+              const gegenz = u.verantwortlicher_am ? ` · ✓ Gegengezeichnet` : ' · ⏳ Gegenzeichnung ausstehend';
+              return `<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#15803d" title="${datum}${gegenz}">${escHtml(m.name)} ${datum ? '· '+datum : ''}</span>`;
+            }).join('')}
+          </div>`;
+      }
+      feldHtml += `</div>`;
+    }
   } else if (form.felder && vorlage) {
     vorlage.abschnitte.forEach(ab => {
       feldHtml += `<div class="form-section-title">${escHtml(ab.titel)}</div>`;
