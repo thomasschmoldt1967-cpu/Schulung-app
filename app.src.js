@@ -80,8 +80,6 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_30', nr:30, saeule:'E', titel:'Ergonomie — Rückengerechtes Arbeiten & Heben',            rechtsgrundlage:'§ 12 ArbSchG, DGUV R 109-001' },
   { id:'kap_31', nr:31, saeule:'E', titel:'Sicherer Umgang mit Leitern',                              rechtsgrundlage:'§ 12 ArbSchG, BetrSichV, DGUV R 100-500' },
   { id:'kap_32', nr:32, saeule:'E', titel:'Krankmeldung — Pflichten & Fristen',                       rechtsgrundlage:'§ 5 EntgFG, § 275 SGB V' },
-  { id:'kap_33', nr:33, saeule:'F', titel:'Hygieneplan Kindertagesstätten (§ 36 IfSG)',               rechtsgrundlage:'§ 36 IfSG, TRBA 400, RKI-Richtlinien' },
-  { id:'kap_34', nr:34, saeule:'F', titel:'Sicherheitsunterweisung DPD-Depot',                        rechtsgrundlage:'§ 12 ArbSchG, DGUV V1 § 4, ASR A1.8' },
 ];
 
 // ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
@@ -2026,7 +2024,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (34 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -2105,7 +2103,7 @@ function adminZeigeTenant(tenantId) {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
           <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
@@ -2169,7 +2167,7 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuw
       const gegengezeichnet = (lpDaten||[]).filter(d => d.verantwortlicher_am).length;
       html += `
         <div style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (34 Kapitel)</div>
+          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (32 Kapitel)</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             ${_statKachel(abgeschlossen,   'Unterzeichnet', '#faf5ff','#6b21a8')}
             ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
@@ -2249,7 +2247,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
       <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
@@ -3128,7 +3126,7 @@ function renderAdminZuweisungen() {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
-    const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
     const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
     return `<div class="schulung-item">
       <div>
@@ -3194,10 +3192,10 @@ function azVorlagenListeRendern(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (34 Kapitel)')"
+    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (34 Kapitel)</div>
+      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.76rem;color:#7c3aed;margin-top:2px">
         Säulen A–D &nbsp;·&nbsp; Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System &nbsp;·&nbsp; inkl. Unterschrift
       </div>
@@ -3260,7 +3258,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (34 Kapitel)' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -3442,7 +3440,7 @@ async function renderMitarbeiterListe() {
         const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
         const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-        const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v ? v.titel : z.vorlagenId);
+        const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? v.titel : z.vorlagenId);
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
@@ -4055,7 +4053,7 @@ function renderSubDashboard() {
         meineZuws.map(z => {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
@@ -6565,7 +6563,7 @@ async function zeigeSchulungshistorie(userId) {
       lpUntHistorieBlock = `
         <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
           <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
-            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (34 Kapitel) — Unterschriften</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (32 Kapitel) — Unterschriften</div>
             <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
               ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
             </div>
@@ -6721,10 +6719,10 @@ function bereichsVorlagenSuche(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (34 Kapitel)')"
+    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (34 Kapitel)</div>
+      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.75rem;color:#7c3aed;margin-top:2px">Säulen A–D · Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System · inkl. Unterschrift</div>
     </div>` : '';
 
@@ -6849,7 +6847,7 @@ function kalenderEintragDetail(zuwId) {
   const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
   const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
-  const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : (v?.titel || z.vorlagenId);
+  const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v?.titel || z.vorlagenId);
   const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
@@ -7850,7 +7848,7 @@ function renderLernpfad() {
     </div>`;
 
   // Pro Säule gruppiert
-  ['A','B','C','D','E','F'].forEach(saeule => {
+  ['A','B','C','D','E'].forEach(saeule => {
     const kapitel = LERNPFAD_KAPITEL.filter(k => k.saeule === saeule);
     const absolviert = kapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
     const farbe = SAEULE_FARBEN[saeule];
@@ -8335,7 +8333,7 @@ async function firmaRenderHistorie() {
       const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (34 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
         typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
@@ -8657,7 +8655,7 @@ async function generiereSchulungsnachweisPDF(userId) {
 
     // Lernpfad-Block
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('📚 Lernpfad (34 Kapitel)', margin, y); y += 8;
+    doc.text('📚 Lernpfad (32 Kapitel)', margin, y); y += 8;
     if (lpUnt && lpUnt.unterzeichnet_am) {
       const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
       doc.setFillColor(240, 253, 244);
@@ -8856,10 +8854,10 @@ function hilfeInhaltVerantwortlicher() {
         <li><strong>✅ Abschließen & PDF</strong> → Unterschriften einholen → PDF wird automatisch gespeichert</li>
       </ul>
 
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (34 Kapitel)</h3>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (32 Kapitel)</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Button <strong>📚 Lernpfad — 34 Kapitel</strong> → aufklappen</li>
-        <li>Mitarbeiter absolviert 34 Kapitel selbstständig am eigenen Gerät</li>
+        <li>Button <strong>📚 Lernpfad — 32 Kapitel</strong> → aufklappen</li>
+        <li>Mitarbeiter absolviert 32 Kapitel selbstständig am eigenen Gerät</li>
         <li>Nach Abschluss aller Kapitel: Mitarbeiter unterschreibt digital → Sie gegenzeichnen</li>
         <li>Neuer Durchgang starten: Mitarbeiterkarte → <strong>🔄 Neu starten</strong></li>
       </ul>
