@@ -2576,6 +2576,18 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   'Verhaltensregeln im Depot':    { en:'Behavioural Rules in the Depot', tr:'Depoda Davranış Kuralları', ar:'قواعد السلوك في المستودع', es:'Normas de conducta en el Depósito', ru:'Правила поведения на складе' },
   'Ergonomie im Depot':           { en:'Ergonomics in the Depot',  tr:'Depoda Ergonomi',        ar:'الإرغونوميا في المستودع',   es:'Ergonomía en el Depósito',   ru:'Эргономика на складе' },
   'Krankmeldung & Fehlzeiten':    { en:'Sick Leave & Absences',    tr:'Hastalık İzni & Devamsızlık', ar:'إشعار المرض والغيابات', es:'Baja laboral y ausencias',   ru:'Больничный и отсутствие' },
+  // ── Hygieneplan KiTa ──
+  '1. Allgemeine Hygiene-Grundsätze':  { en:'1. General Hygiene Principles',  tr:'1. Genel Hijyen İlkeleri',     ar:'1. مبادئ النظافة العامة',          es:'1. Principios generales de higiene',  ru:'1. Общие принципы гигиены' },
+  '2. Reinigungsfrequenzen & 3-Farben-System':  { en:'2. Cleaning Frequencies & 3-Colour System', tr:'2. Temizlik Sıklığı & 3-Renk Sistemi', ar:'2. ترددات التنظيف ونظام الألوان الثلاثة', es:'2. Frecuencias de limpieza y sistema de 3 colores', ru:'2. Частота уборки и система 3 цветов' },
+  '3. Chemikalien & Desinfektionsmittel':  { en:'3. Chemicals & Disinfectants',  tr:'3. Kimyasallar & Dezenfektanlar', ar:'3. المواد الكيميائية والمطهرات', es:'3. Productos químicos y desinfectantes', ru:'3. Химикаты и дезинфицирующие средства' },
+  '4. Besondere Infektionsfälle (Ausbruchsmanagement)':  { en:'4. Special Infection Cases (Outbreak Management)', tr:'4. Özel Enfeksiyon Durumları (Salgın Yönetimi)', ar:'4. حالات العدوى الخاصة (إدارة الأوبئة)', es:'4. Casos especiales de infección (gestión de brotes)', ru:'4. Особые случаи инфекции (управление вспышками)' },
+  '5. Bestätigung':               { en:'5. Confirmation',           tr:'5. Onay',                  ar:'5. التأكيد',                  es:'5. Confirmación',             ru:'5. Подтверждение' },
+  // ── DPD Sicherheitsunterweisung ──
+  'A. PSA & Allgemeine Regeln':   { en:'A. PPE & General Rules',   tr:'A. KKD & Genel Kurallar', ar:'أ. معدات الحماية والقواعد العامة', es:'A. EPI y normas generales',  ru:'А. СИЗ и общие правила' },
+  'B. Innerbetrieblicher Verkehr & Staplerwege':  { en:'B. Internal Traffic & Forklift Routes', tr:'B. İç Trafik & Forklift Yolları', ar:'ب. حركة المرور الداخلية ومسارات الرافعات', es:'B. Tráfico interno y vías de carretillas', ru:'Б. Внутреннее движение и пути погрузчиков' },
+  'C. Förderband- & Sortieranlagen':  { en:'C. Conveyor & Sorting Systems', tr:'C. Konveyör & Sıralama Sistemleri', ar:'ج. أنظمة الأحزمة الناقلة والفرز', es:'C. Cintas transportadoras y sistemas de clasificación', ru:'В. Конвейеры и сортировочные системы' },
+  'D. Laderampen & Wechselbrücken':  { en:'D. Loading Ramps & Swap Bodies', tr:'D. Yükleme Rampaları & Değiştirilebilir Kasalar', ar:'د. منصات التحميل والجسور المتبادلة', es:'D. Rampas de carga y semirremolques intercambiables', ru:'Г. Погрузочные рампы и съёмные кузова' },
+  'E. Verhalten im Notfall':      { en:'E. Emergency Procedures',  tr:'E. Acil Durum Prosedürleri', ar:'هـ. إجراءات الطوارئ',          es:'E. Procedimientos de emergencia', ru:'Д. Действия при чрезвычайной ситуации' },
 };
 
 // ── FELD-ÜBERSETZUNGEN ────────────────────────────────────────
@@ -2739,6 +2751,214 @@ const FELD_UEBERSETZUNGEN = {
     { en:'Contents understood',                  tr:'İçerikler anlaşılmıştır',         ar:'تم فهم المحتويات',               es:'Contenidos comprendidos',        ru:'Содержание усвоено' },
   'Fragen wurden beantwortet':
     { en:'Questions were answered',              tr:'Sorular yanıtlandı',              ar:'تمت الإجابة على الأسئلة',        es:'Preguntas respondidas',          ru:'Вопросы были отвечены' },
+
+  // ── Hygieneplan KiTa — Felder ──
+  'Schutzhandschuhe werden getragen (bei Bedarf Einmalschürze und Mundschutz)':
+    { en:'Protective gloves are worn (disposable apron and mask if required)',
+      tr:'Koruyucu eldiven giyilmektedir (gerektiğinde tek kullanımlık önlük ve maske)',
+      ar:'يتم ارتداء القفازات الواقية (مريلة يمكن التخلص منها وقناع عند الحاجة)',
+      es:'Se usan guantes protectores (delantal desechable y mascarilla si es necesario)',
+      ru:'Защитные перчатки надеты (при необходимости одноразовый фартук и маска)' },
+  'Händedesinfektion / Händewaschen: vor Arbeitsbeginn, nach Sanitärreinigung und nach Ausziehen der Handschuhe':
+    { en:'Hand disinfection / washing: before work, after cleaning sanitary areas and after removing gloves',
+      tr:'El dezenfeksiyonu / yıkama: işe başlamadan önce, sanitasyon temizliğinden sonra ve eldiven çıkardıktan sonra',
+      ar:'تعقيم / غسل اليدين: قبل العمل وبعد تنظيف المرافق الصحية وبعد خلع القفازات',
+      es:'Desinfección / lavado de manos: antes del trabajo, tras limpiar zonas sanitarias y tras quitarse los guantes',
+      ru:'Дезинфекция / мытьё рук: перед работой, после уборки санузлов и после снятия перчаток' },
+  'Kein Schmuck an Händen und Unterarmen während der Arbeit':
+    { en:'No jewellery on hands and forearms during work',
+      tr:'Çalışma sırasında ellerde ve kolllarda takı takılmamalıdır',
+      ar:'لا مجوهرات على اليدين والساعدين أثناء العمل',
+      es:'Sin joyas en manos y antebrazos durante el trabajo',
+      ru:'Никаких украшений на руках и предплечьях во время работы' },
+  'Masernimpfnachweis vorhanden (Pflicht gemäß § 20 IfSG)':
+    { en:'Proof of measles vaccination available (mandatory under § 20 IfSG)',
+      tr:'Kızamık aşısı kanıtı mevcut (§ 20 IfSG kapsamında zorunlu)',
+      ar:'إثبات التطعيم ضد الحصبة متوفر (إلزامي بموجب § 20 IfSG)',
+      es:'Prueba de vacunación contra el sarampión disponible (obligatoria según § 20 IfSG)',
+      ru:'Подтверждение прививки от кори имеется (обязательно по § 20 IfSG)' },
+  'Tägliche Reinigung: Türgriffe, Lichtschalter, Handläufe, Armaturen (Kontaktflächen)':
+    { en:'Daily cleaning: door handles, light switches, handrails, fittings (contact surfaces)',
+      tr:'Günlük temizlik: kapı kolları, ışık anahtarları, tutamaklar, armatürler (temas yüzeyleri)',
+      ar:'التنظيف اليومي: مقابض الأبواب ومفاتيح الإضاءة والدرابزين والحنفيات (أسطح التلامس)',
+      es:'Limpieza diaria: manillas, interruptores, pasamanos, grifería (superficies de contacto)',
+      ru:'Ежедневная уборка: дверные ручки, выключатели, перила, арматура (контактные поверхности)' },
+  'Sanitärbereiche täglich: WCs, Waschbecken, Böden (feucht wischen)':
+    { en:'Sanitary areas daily: toilets, washbasins, floors (wet wipe)',
+      tr:'Sanitasyon alanları günlük: tuvaletler, lavabolar, zemin (nemli silme)',
+      ar:'المناطق الصحية يومياً: المراحيض وأحواض الغسيل والأرضيات (مسح رطب)',
+      es:'Zonas sanitarias diariamente: WC, lavabos, suelos (limpieza húmeda)',
+      ru:'Санитарные зоны ежедневно: туалеты, раковины, полы (влажная протирка)' },
+  'Wickelbereiche: desinfizierende Reinigung der Wickelauflagen gemäß Dosier- und Einwirkplan':
+    { en:'Changing areas: disinfecting cleaning of changing mats per dosing and exposure plan',
+      tr:'Bez değiştirme alanları: doz ve bekleme planına göre paspas dezenfeksiyonu',
+      ar:'مناطق تغيير الحفاضات: تنظيف معقّم لحصائر التغيير وفقاً لخطة الجرعة والتأثير',
+      es:'Zonas de cambio: limpieza desinfectante de los cambiadores según el plan de dosificación y exposición',
+      ru:'Пеленальные зоны: дезинфицирующая уборка пеленальных матов по плану дозировки' },
+  '3-Farben-System einhalten: 🔴 Rot = WC | 🟡 Gelb = Sanitär | 🔵 Blau = Möbel/Türen':
+    { en:'Follow 3-colour system: 🔴 Red = Toilet | 🟡 Yellow = Sanitary | 🔵 Blue = Furniture/Doors',
+      tr:'3-renk sistemine uy: 🔴 Kırmızı = Tuvalet | 🟡 Sarı = Sanitasyon | 🔵 Mavi = Mobilya/Kapılar',
+      ar:'اتبع نظام 3 ألوان: 🔴 أحمر = مرحاض | 🟡 أصفر = صحي | 🔵 أزرق = أثاث/أبواب',
+      es:'Seguir el sistema de 3 colores: 🔴 Rojo = WC | 🟡 Amarillo = Sanitario | 🔵 Azul = Muebles/Puertas',
+      ru:'Соблюдать систему 3 цветов: 🔴 Красный = Туалет | 🟡 Жёлтый = Санузел | 🔵 Синий = Мебель/Двери' },
+  'Täglich frische Reinigungstücher — kein Wiederverwenden':
+    { en:'Fresh cleaning cloths daily — no reuse',
+      tr:'Her gün temiz bez — yeniden kullanmayın',
+      ar:'قطع قماش طازجة يومياً — لا إعادة استخدام',
+      es:'Paños de limpieza frescos diariamente — sin reutilizar',
+      ru:'Свежие уборочные тряпки ежедневно — не повторять использование' },
+  'Ausschließlich freigegebene Mittel der CSC GmbH werden verwendet':
+    { en:'Only CSC GmbH approved products are used',
+      tr:'Yalnızca CSC GmbH tarafından onaylanan ürünler kullanılmaktadır',
+      ar:'يتم استخدام المنتجات المعتمدة من CSC GmbH حصراً',
+      es:'Solo se utilizan productos autorizados por CSC GmbH',
+      ru:'Используются только одобренные CSC GmbH средства' },
+  'Dosierungsanweisungen des Herstellers werden strikt eingehalten':
+    { en:'Manufacturer dosage instructions are strictly followed',
+      tr:'Üretici dozaj talimatlarına kesinlikle uyulmaktadır',
+      ar:'يتم الالتزام الصارم بتعليمات جرعة الشركة المصنعة',
+      es:'Se siguen estrictamente las instrucciones de dosificación del fabricante',
+      ru:'Инструкции производителя по дозировке строго соблюдаются' },
+  'Sicherheitsdatenblätter und Betriebsanweisungen sind bekannt (verfügbar in CSC GmbH APP)':
+    { en:'Safety data sheets and operating instructions are known (available in CSC GmbH APP)',
+      tr:'Güvenlik veri sayfaları ve işletme talimatları bilinmektedir (CSC GmbH APP\'de mevcut)',
+      ar:'صحائف بيانات السلامة وتعليمات التشغيل معروفة (متوفرة في تطبيق CSC GmbH)',
+      es:'Las fichas de datos de seguridad e instrucciones de uso son conocidas (disponibles en la APP CSC GmbH)',
+      ru:'Паспорта безопасности и рабочие инструкции известны (доступны в приложении CSC GmbH)' },
+  'Bei gemeldeten Infektionshäufungen (z.B. Norovirus): erweiterte Desinfektion nach Anweisung CSC GmbH':
+    { en:'For reported infection outbreaks (e.g. Norovirus): extended disinfection per CSC GmbH instructions',
+      tr:'Bildirilen enfeksiyon salgınlarında (örn. Norovirus): CSC GmbH talimatına göre genişletilmiş dezenfeksiyon',
+      ar:'عند الإبلاغ عن تفشيات العدوى (مثل الفيروس العجلي): تعقيم موسّع وفق تعليمات CSC GmbH',
+      es:'En caso de brotes de infección notificados (p.ej. Norovirus): desinfección ampliada según instrucciones CSC GmbH',
+      ru:'При зарегистрированных вспышках инфекций (напр. Норовирус): расширенная дезинфекция по инструкции CSC GmbH' },
+  'Verwendung VAH/RKI-gelisteter Präparate mit viruzider Wirkung bei Ausbruch bekannt':
+    { en:'Use of VAH/RKI-listed preparations with virucidal activity in outbreaks is known',
+      tr:'Salgın durumunda virusidal etkiye sahip VAH/RKI listeli preparatların kullanımı bilinmektedir',
+      ar:'معروف استخدام المستحضرات المدرجة في قائمة VAH/RKI ذات التأثير الفيروسي عند تفشي الأوبئة',
+      es:'Se conoce el uso de preparados listados en VAH/RKI con efecto viricida en brotes',
+      ru:'Известно применение препаратов из списка VAH/RKI с вирулицидным действием при вспышках' },
+  'Ich habe den Hygieneplan gelesen, verstanden und verpflichte mich zur Einhaltung':
+    { en:'I have read and understood the hygiene plan and commit to complying with it',
+      tr:'Hijyen planını okudum, anladım ve uyacağımı taahhüt ediyorum',
+      ar:'لقد قرأت خطة النظافة وفهمتها وأتعهد بالامتثال لها',
+      es:'He leído y comprendido el plan de higiene y me comprometo a cumplirlo',
+      ru:'Я прочитал и понял план гигиены и обязуюсь его соблюдать' },
+
+  // ── DPD Sicherheitsunterweisung — Felder ──
+  'Warnwestenpflicht (EN ISO 20471) auf gesamtem Depot- und Hofgelände':
+    { en:'High-visibility vest mandatory (EN ISO 20471) across the entire depot and yard',
+      tr:'Tüm depo ve avlu alanında ikaz yeleği zorunludur (EN ISO 20471)',
+      ar:'سترة التحذير إلزامية (EN ISO 20471) في جميع أنحاء المستودع والفناء',
+      es:'Chaleco de alta visibilidad obligatorio (EN ISO 20471) en todo el recinto del depósito',
+      ru:'Светоотражающий жилет обязателен (EN ISO 20471) на всей территории склада' },
+  'Sicherheitsschuhe (mind. S1P/S3) im Sortier- und Umschlagbereich':
+    { en:'Safety shoes (min. S1P/S3) in the sorting and handling area',
+      tr:'Sıralama ve elleçleme alanında güvenlik ayakkabısı (en az S1P/S3)',
+      ar:'أحذية السلامة (على الأقل S1P/S3) في منطقة الفرز والمناولة',
+      es:'Calzado de seguridad (mín. S1P/S3) en la zona de clasificación y manipulación',
+      ru:'Защитная обувь (мин. S1P/S3) в зоне сортировки и погрузки' },
+  'Eng anliegende Arbeitskleidung — kein Schmuck, langes Haar sichern (Einzugsgefahr)':
+    { en:'Close-fitting work clothing — no jewellery, secure long hair (entrapment hazard)',
+      tr:'Dar iş kıyafeti — takı yok, uzun saçları sabitle (sıkışma tehlikesi)',
+      ar:'ملابس عمل ضيقة — لا مجوهرات، اربط الشعر الطويل (خطر الانجراف)',
+      es:'Ropa de trabajo ajustada — sin joyas, asegurar el pelo largo (peligro de atrapamiento)',
+      ru:'Облегающая рабочая одежда — без украшений, длинные волосы закрепить (опасность затягивания)' },
+  'Ordnung & Sauberkeit: Stolperfallen (Bänder, Folien, beschädigte Paletten) beseitigen':
+    { en:'Order & cleanliness: remove trip hazards (straps, foils, damaged pallets)',
+      tr:'Düzen & temizlik: takılma tehlikelerini giderin (bantlar, folyolar, hasarlı paletler)',
+      ar:'النظام والنظافة: إزالة مخاطر التعثر (الأشرطة والرقائق والمنصات التالفة)',
+      es:'Orden y limpieza: eliminar peligros de tropiezo (cintas, films, palés dañados)',
+      ru:'Порядок и чистота: убрать источники спотыкания (ленты, плёнки, повреждённые поддоны)' },
+  'Fußgänger nutzen ausschließlich gelb markierte Fußwege':
+    { en:'Pedestrians use only yellow-marked walkways',
+      tr:'Yayalar yalnızca sarı işaretli yaya yollarını kullanır',
+      ar:'يستخدم المشاة ممرات المشاة المحددة باللون الأصفر فقط',
+      es:'Los peatones usan exclusivamente los pasillos marcados en amarillo',
+      ru:'Пешеходы используют только дорожки, отмеченные жёлтым' },
+  'Vor Überqueren von Fahrbahnen: immer Blickkontakt mit Fahrern herstellen':
+    { en:'Before crossing lanes: always make eye contact with drivers',
+      tr:'Yolları geçmeden önce: sürücülerle daima göz teması kurun',
+      ar:'قبل عبور المسارات: تواصل دائماً بصرياً مع السائقين',
+      es:'Antes de cruzar las vías: siempre hacer contacto visual con los conductores',
+      ru:'Перед пересечением проездов: всегда устанавливать зрительный контакт с водителями' },
+  'Flurförderzeuge haben Vorrang — Schrittgeschwindigkeit (max. 6–10 km/h) einhalten':
+    { en:'Industrial trucks have right of way — maintain walking pace (max. 6–10 km/h)',
+      tr:'Forkliftlerin önceliği var — yürüyüş hızını koruyun (maks. 6–10 km/s)',
+      ar:'للرافعات الشوكية الأولوية — حافظ على سرعة المشي (بحد أقصى 6-10 كم/س)',
+      es:'Las carretillas industriales tienen prioridad — mantener velocidad de paso (máx. 6–10 km/h)',
+      ru:'Погрузчики имеют приоритет — соблюдать скорость шага (макс. 6–10 км/ч)' },
+  'Abgestellte Geräte: Gabeln absenken, Schlüssel abziehen, Fluchtwege freihalten':
+    { en:'Parked equipment: lower forks, remove key, keep escape routes clear',
+      tr:'Park edilmiş araçlar: çatalları indirin, anahtarı çekin, kaçış yollarını açık tutun',
+      ar:'المعدات المتوقفة: اخفض الأشواك، انزع المفتاح، أبقِ مسارات الإخلاء خالية',
+      es:'Equipos aparcados: bajar horquillas, retirar llave, mantener despejadas las vías de escape',
+      ru:'Припаркованная техника: опустить вилы, вынуть ключ, держать пути эвакуации свободными' },
+  'Niemals in laufende Bänder/Umlenkrollen greifen oder Bänder übersteigen/betreten':
+    { en:'Never reach into moving belts/rollers or step over/onto belts',
+      tr:'Çalışan bantlara/yönlendirme silindirlerine asla dokunmayın veya üstünden geçmeyin',
+      ar:'لا تدخل يدك أبداً في الأحزمة/البكرات المتحركة ولا تتجاوزها أو تطأها',
+      es:'Nunca introducir las manos en cintas/rodillos en movimiento ni pisarlas o cruzarlas',
+      ru:'Никогда не тянуться к движущимся лентам/роликам и не переступать через них' },
+  'Paketstaus nur durch befugtes/eingewiesenes Personal beseitigen':
+    { en:'Package jams to be cleared by authorised/trained personnel only',
+      tr:'Paket sıkışmaları yalnızca yetkili/eğitimli personel tarafından giderilir',
+      ar:'يُزيل انسداد الطرود الموظفون المعتمدون/المدرَّبون فقط',
+      es:'Los atascos de paquetes solo deben eliminarlos personal autorizado/formado',
+      ru:'Заторы пакетов устраняются только уполномоченным/обученным персоналом' },
+  'Vor Eingriffen: Anlage abschalten / Lockout-Verfahren anwenden':
+    { en:'Before interventions: switch off system / apply lockout procedure',
+      tr:'Müdahaleden önce: sistemi kapatın / kilitleme prosedürünü uygulayın',
+      ar:'قبل أي تدخل: أوقف النظام / طبّق إجراء القفل',
+      es:'Antes de intervenir: apagar el sistema / aplicar procedimiento de bloqueo',
+      ru:'Перед вмешательством: выключить систему / применить процедуру блокировки' },
+  'Schutzgitter und Verkleidungen dürfen nicht entfernt oder überbrückt werden':
+    { en:'Safety guards and covers must not be removed or bypassed',
+      tr:'Koruyucu ızgaralar ve kaplamalar kaldırılamaz veya köprülenemez',
+      ar:'لا يجوز إزالة الشبكات الواقية والأغطية أو تجاوزها',
+      es:'Las rejillas de protección y cubiertas no deben retirarse ni puentearse',
+      ru:'Защитные решётки и кожухи нельзя снимать или обходить' },
+  'Ladebrücken erst befahren nach Arretierung des Lkw (Radkeile + Feststellbremse)':
+    { en:'Loading ramps only to be driven onto after securing the lorry (wheel chocks + handbrake)',
+      tr:'Yükleme köprüleri yalnızca kamyon sabitlenmesinin ardından kullanılır (takozlar + el freni)',
+      ar:'يُسمح بالوصول إلى منصات التحميل فقط بعد تثبيت الشاحنة (أوتاد العجلات + الفرامل اليدوية)',
+      es:'Acceder a las rampas de carga solo tras asegurar el camión (cuñas + freno de mano)',
+      ru:'Въезд на погрузочные пандусы только после закрепления грузовика (колёсные упоры + ручной тормоз)' },
+  'Hallentore bei nicht angedockten Fahrzeugen geschlossen halten (Absturzgefahr)':
+    { en:'Keep hall doors closed when no vehicle is docked (fall hazard)',
+      tr:'Araç bulunmadığında hol kapıları kapalı tutulmalıdır (düşme tehlikesi)',
+      ar:'إبقاء أبواب القاعة مغلقة عند عدم رسو مركبة (خطر السقوط)',
+      es:'Mantener las puertas del hall cerradas cuando no hay vehículo acoplado (peligro de caída)',
+      ru:'Держать ворота цеха закрытыми при отсутствии пристыкованного транспортного средства (опасность падения)' },
+  'Kein Aufenthalt im unmittelbaren Rangierbereich von Lkw und Wechselbrücken':
+    { en:'No lingering in the immediate manoeuvring area of lorries and swap bodies',
+      tr:'Kamyon ve değiştirilebilir kasaların doğrudan manevra alanında durmayın',
+      ar:'لا تتواجد في منطقة المناورة المباشرة للشاحنات والجسور المتبادلة',
+      es:'No permanecer en la zona de maniobra inmediata de camiones y semirremolques intercambiables',
+      ru:'Не находиться в непосредственной зоне манёвра грузовиков и съёмных кузовов' },
+  'Standorte der Not-Aus-Taster an den Förderbändern sind bekannt':
+    { en:'Locations of emergency-stop buttons on conveyor belts are known',
+      tr:'Konveyör bantlarındaki acil durdurma düğmelerinin konumları bilinmektedir',
+      ar:'مواقع أزرار الإيقاف الطارئ على الأحزمة الناقلة معروفة',
+      es:'Se conocen las ubicaciones de los botones de paro de emergencia en las cintas transportadoras',
+      ru:'Местонахождение кнопок аварийного отключения на конвейерах известно' },
+  'Flucht- und Rettungswege sowie Sammelstelle sind bekannt':
+    { en:'Escape and rescue routes as well as the assembly point are known',
+      tr:'Kaçış ve kurtarma yolları ile toplanma noktası bilinmektedir',
+      ar:'مسارات الهروب والإنقاذ ونقطة التجمع معروفة',
+      es:'Se conocen las vías de escape y rescate así como el punto de reunión',
+      ru:'Пути эвакуации и спасения, а также место сбора известны' },
+  'Ersthelfer und Standort des Verbandkastens sind bekannt':
+    { en:'First aiders and location of the first-aid kit are known',
+      tr:'İlk yardımcılar ve ilk yardım kutusunun konumu bilinmektedir',
+      ar:'المسعفون الأوائل وموقع صندوق الإسعافات الأولية معروفان',
+      es:'Se conocen los auxiliadores y la ubicación del botiquín',
+      ru:'Первые помощники и местонахождение аптечки известны' },
+  'Ich bestätige, dass ich über die genannten Gefahren und Schutzmaßnahmen unterwiesen wurde und die Sicherheitsvorschriften einhalte':
+    { en:'I confirm that I have been instructed on the stated hazards and protective measures and will comply with the safety regulations',
+      tr:'Belirtilen tehlikeler ve koruyucu tedbirler hakkında eğitim aldığımı ve güvenlik düzenlemelerine uyacağımı teyit ediyorum',
+      ar:'أؤكد أنني تلقيت التعليمات حول المخاطر والتدابير الوقائية المذكورة وسألتزم بلوائح السلامة',
+      es:'Confirmo que he sido instruido sobre los peligros y medidas de protección indicados y cumpliré las normas de seguridad',
+      ru:'Подтверждаю, что прошёл инструктаж по указанным опасностям и защитным мерам и буду соблюдать правила безопасности' },
 };
 
 function uebersetzeFeldLabel(label, sprache) {
