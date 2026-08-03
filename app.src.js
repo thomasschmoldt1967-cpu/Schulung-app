@@ -2294,6 +2294,7 @@ function renderAdminVorlagen() {
           <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
           <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
           <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
         </div>
@@ -2340,6 +2341,73 @@ function vtVorlagenListeToggle() {
 // Suchfunktion
 function vtVorlagenSuche(wert) {
   renderAdminVorlagen();
+}
+
+// ── Admin-Vorschau: Formular vollständig als read-only Modal ──
+function vtVorschau(vorlagenId) {
+  const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === vorlagenId);
+  if (!vorlage) { showToast('Vorlage nicht gefunden', '#ef4444'); return; }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+
+  // Abschnitte mit Feldern rendern
+  const abschnitteHtml = (vorlage.abschnitte || []).map(a => `
+    <div style="margin-bottom:20px;background:#f8fafc;border-radius:10px;padding:14px;border:1px solid #e5e7eb">
+      <div style="font-weight:700;color:#1a3a5c;font-size:.95rem;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e7eb">
+        📋 ${escHtml(a.titel)}
+      </div>
+      ${(a.felder || []).map(f => {
+        if (f.typ === 'checkbox') return `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="width:18px;height:18px;border:2px solid #9ca3af;border-radius:4px;flex-shrink:0;margin-top:1px;background:#fff"></div>
+            <span style="font-size:.87rem;color:#374151">${escHtml(f.label)}</span>
+          </div>`;
+        if (f.typ === 'text') return `
+          <div style="padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="font-size:.8rem;color:#6b7280;margin-bottom:4px">${escHtml(f.label)}</div>
+            <div style="background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px;min-height:36px;font-size:.85rem;color:#9ca3af;font-style:italic">Texteingabe…</div>
+          </div>`;
+        if (f.typ === 'unterschrift') return `
+          <div style="padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="font-size:.8rem;color:#6b7280;margin-bottom:4px">✍️ ${escHtml(f.label || 'Unterschrift')}</div>
+            <div style="background:#fff;border:2px dashed #d1d5db;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:.8rem">Unterschrift-Feld</div>
+          </div>`;
+        return `<div style="padding:6px 0;font-size:.85rem;color:#374151">${escHtml(f.label || '')}</div>`;
+      }).join('')}
+    </div>`).join('');
+
+  const abschnittCount = (vorlage.abschnitte || []).length;
+  const feldCount = (vorlage.abschnitte || []).reduce((s, a) => s + (a.felder || []).length, 0);
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:0;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;margin:auto">
+      <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div style="color:#fff;font-weight:700;font-size:1.05rem">👁 Formular-Vorschau</div>
+          <div style="color:#bfdbfe;font-size:.85rem;margin-top:3px">${escHtml(vorlage.titel)}</div>
+        </div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;padding:6px 10px;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <div style="padding:16px 20px;background:#f0f4fa;display:flex;gap:16px;flex-wrap:wrap">
+        <span style="font-size:.8rem;color:#374151">📑 <strong>${abschnittCount}</strong> Abschnitte</span>
+        <span style="font-size:.8rem;color:#374151">🔢 <strong>${feldCount}</strong> Felder</span>
+        ${vorlage.intervallMonate || vorlage.intervall_monate ? `<span style="font-size:.8rem;color:#374151">🔁 Alle <strong>${vorlage.intervallMonate || vorlage.intervall_monate}</strong> Monate</span>` : ''}
+        <span style="font-size:.78rem;color:#6b7280;font-style:italic">Nur-Ansicht — kein Speichern</span>
+      </div>
+      <div style="padding:16px 20px;max-height:65vh;overflow-y:auto">
+        ${abschnittCount === 0
+          ? `<div style="text-align:center;padding:30px;color:#6b7280">Diese Vorlage hat noch keine Abschnitte.</div>`
+          : abschnitteHtml}
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px 22px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem">Schließen</button>
+      </div>
+    </div>`;
+
+  // Schließen bei Klick auf Overlay (außerhalb des Modals)
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
 }
 
 // ── Lernpfad-Kernkapitel im Admin anzeigen ──
