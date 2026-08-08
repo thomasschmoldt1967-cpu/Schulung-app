@@ -1090,6 +1090,22 @@ async function initApp() {
       ...v, intervallMonate: v.intervall_monate,
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
     }));
+
+    // ── Hubarbeitsbühnen DGUV 308-008 — eingebaute Vorlage ──
+    if (!SCHULUNG_VORLAGEN.some(v => v.id === HUB_VORLAGE_ID)) {
+      SCHULUNG_VORLAGEN.unshift({
+        id:              HUB_VORLAGE_ID,
+        titel:           'Hubarbeitsbühnen — DGUV 308-008',
+        beschreibung:    '14 Kapitel · 4 Module · 10 Quizfragen · Teilnahmebescheinigung',
+        typ:             'hub',
+        intervall_monate: 12,
+        intervallMonate:  12,
+        pflicht:         true,
+        abschnitte:      [],
+        _eingebaut:      true
+      });
+    }
+
     zuweisungen = zuws.map(z => ({
       id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
       frist: z.frist, pflicht: z.pflicht,
@@ -2378,20 +2394,26 @@ function renderAdminVorlagen() {
     : liste;
 
   document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
-    <div class="card" style="margin-bottom:12px">
+    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #7c2d12' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
-          <div class="card-title" style="margin-bottom:4px">📄 ${escHtml(v.titel)}</div>
+          <div class="card-title" style="margin-bottom:4px">${v._eingebaut ? '🏗️' : '📄'} ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
-          <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
+          ${v._eingebaut
+            ? `<div style="font-size:.78rem;color:#7c2d12;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
+            : `<div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>`
+          }
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
-          <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
-          <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
+          ${v._eingebaut
+            ? `<button class="btn btn-outline btn-sm" onclick="hubSchulungToggle();showToast('🏗️ Hub-Modul im Mitarbeiter-Dashboard ansehen','#7c2d12')">👁 Ansehen</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
+               <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
+          }
         </div>
       </div>
-      <details style="margin-top:10px">
+      ${!v._eingebaut ? `<details style="margin-top:10px">
         <summary style="font-size:.8rem;color:#6b7280;cursor:pointer;user-select:none">📑 Abschnitte anzeigen</summary>
         <div style="margin-top:8px;border-top:1px solid #f0f2f5;padding-top:8px">
           ${(v.abschnitte||[]).map(a=>`
@@ -2400,7 +2422,7 @@ function renderAdminVorlagen() {
               <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.map(f=>escHtml(f.label)).join(', ')}</span>
             </div>`).join('')}
         </div>
-      </details>
+      </details>` : ''}
     </div>`).join('')
     || `<div class="empty-state"><div class="icon">${suche ? '🔍' : '📭'}</div><p>${suche ? `Keine Vorlage für „${escHtml(suche)}" gefunden` : 'Noch keine Vorlagen vorhanden'}</p></div>`;
 
@@ -2677,6 +2699,7 @@ function vtBearbeitenAbbrechen() {
 
 async function vtLoeschen(id) {
   const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
+  if (v?._eingebaut) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#7c2d12'); return; }
   // Prüfen ob abgeschlossene Formulare existieren
   const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
   const abgeschlosseneAnzahl = zuws.filter(z => formulare[z.id]?.abgeschlossen).length;
