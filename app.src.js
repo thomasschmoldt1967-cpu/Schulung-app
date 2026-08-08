@@ -2729,6 +2729,12 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   '3. Chemikalien & Desinfektionsmittel':  { en:'3. Chemicals & Disinfectants',  tr:'3. Kimyasallar & Dezenfektanlar', ar:'3. المواد الكيميائية والمطهرات', es:'3. Productos químicos y desinfectantes', ru:'3. Химикаты и дезинфицирующие средства' },
   '4. Besondere Infektionsfälle (Ausbruchsmanagement)':  { en:'4. Special Infection Cases (Outbreak Management)', tr:'4. Özel Enfeksiyon Durumları (Salgın Yönetimi)', ar:'4. حالات العدوى الخاصة (إدارة الأوبئة)', es:'4. Casos especiales de infección (gestión de brotes)', ru:'4. Особые случаи инфекции (управление вспышками)' },
   '5. Bestätigung':               { en:'5. Confirmation',           tr:'5. Onay',                  ar:'5. التأكيد',                  es:'5. Confirmación',             ru:'5. Подтверждение' },
+  // ── Hubarbeitsbühnen GFU ──
+  '1. Organisation und Planung':  { en:'1. Organisation and Planning',    tr:'1. Organizasyon ve Planlama',    ar:'1. التنظيم والتخطيط',               es:'1. Organización y planificación',    ru:'1. Организация и планирование' },
+  '2. Ausbildung und Instruktion':{ en:'2. Training and Instruction',     tr:'2. Eğitim ve Talimat',           ar:'2. التدريب والتعليمات',             es:'2. Formación e instrucción',         ru:'2. Обучение и инструктаж' },
+  '3. Dokumentation und Wartung': { en:'3. Documentation and Maintenance',tr:'3. Dokümantasyon ve Bakım',      ar:'3. التوثيق والصيانة',               es:'3. Documentación y mantenimiento',   ru:'3. Документация и обслуживание' },
+  '4. Maßnahmen bei Mängeln':     { en:'4. Measures for Defects',         tr:'4. Eksiklikler İçin Önlemler',   ar:'4. التدابير عند وجود عيوب',         es:'4. Medidas ante deficiencias',       ru:'4. Меры при выявлении недостатков' },
+
   // ── DPD Sicherheitsunterweisung ──
   'A. PSA & Allgemeine Regeln':   { en:'A. PPE & General Rules',   tr:'A. KKD & Genel Kurallar', ar:'أ. معدات الحماية والقواعد العامة', es:'A. EPI y normas generales',  ru:'А. СИЗ и общие правила' },
   'B. Innerbetrieblicher Verkehr & Staplerwege':  { en:'B. Internal Traffic & Forklift Routes', tr:'B. İç Trafik & Forklift Yolları', ar:'ب. حركة المرور الداخلية ومسارات الرافعات', es:'B. Tráfico interno y vías de carretillas', ru:'Б. Внутреннее движение и пути погрузчиков' },
@@ -2750,6 +2756,40 @@ const FELD_UEBERSETZUNGEN = {
   'Position / Tätigkeit':         { en:'Position / Role',          tr:'Pozisyon / Görev',       ar:'المنصب / الوظيفة',          es:'Cargo / Actividad',          ru:'Должность / Деятельность' },
   // ── Unterschriften ──
   'Unterschrift Mitarbeiter':     { en:'Employee signature',       tr:'Çalışan imzası',         ar:'توقيع الموظف',              es:'Firma del empleado',         ru:'Подпись сотрудника' },
+  'Unterschrift Einsatzleiter':   { en:'Site manager signature',   tr:'Saha yöneticisi imzası', ar:'توقيع مشرف الموقع',         es:'Firma del responsable',      ru:'Подпись руководителя объекта' },
+  'Unterschrift Hilfsperson':     { en:'Assistant signature',      tr:'Yardımcı kişi imzası',   ar:'توقيع الشخص المساعد',       es:'Firma del auxiliar',         ru:'Подпись помощника' },
+  // ── Hubarbeitsbühnen GFU Felder ──
+  'Objekt / Einsatzort':          { en:'Object / Site',            tr:'Nesne / Einsatzort',     ar:'الموقع / منطقة العمل',      es:'Objeto / Lugar de trabajo',  ru:'Объект / место работы' },
+  'Name Bediener':                { en:'Operator name',            tr:'Operatör adı',           ar:'اسم المشغّل',               es:'Nombre del operador',        ru:'Имя оператора' },
+  'Typ der Hubarbeitsbühne':      { en:'Type of aerial platform',  tr:'Yükseltici platform tipi',ar:'نوع منصة الرفع',           es:'Tipo de plataforma elevadora',ru:'Тип подъёмной платформы' },
+  'Festgestellte Mängel / Bemerkungen': { en:'Identified defects / remarks', tr:'Tespit edilen eksiklikler / notlar', ar:'العيوب المكتشفة / ملاحظات', es:'Deficiencias detectadas / observaciones', ru:'Выявленные недостатки / примечания' },
+  'Geplante Maßnahmen':           { en:'Planned measures',         tr:'Planlanan önlemler',      ar:'التدابير المخططة',          es:'Medidas planificadas',       ru:'Запланированные меры' },
+  'Verantwortlich / Frist':       { en:'Responsible / Deadline',   tr:'Sorumlu / Son tarih',     ar:'المسؤول / الموعد النهائي',  es:'Responsable / Plazo',        ru:'Ответственный / Срок' },
+  // ── Hubarbeitsbühnen GFU Checkboxen ──
+  'Ist die Hubarbeitsbühne für den geplanten Einsatz geeignet?':
+    { en:'Is the aerial work platform suitable for the planned use?', tr:'Yükseltici platform planlanan kullanım için uygun mu?', ar:'هل منصة العمل الجوية مناسبة للاستخدام المخطط؟', es:'¿Es la plataforma elevadora adecuada para el uso previsto?', ru:'Подходит ли подъёмная платформа для запланированного применения?' },
+  'Werden Gefahren am Einsatzort ermittelt und Schutzmaßnahmen getroffen?':
+    { en:'Are hazards at the site identified and protective measures taken?', tr:'İş sahasındaki tehlikeler belirlendi ve koruma önlemleri alındı mı?', ar:'هل تم تحديد المخاطر في موقع العمل واتخاذ تدابير الحماية؟', es:'¿Se identifican los peligros en el lugar de trabajo y se toman medidas de protección?', ru:'Выявлены ли опасности на объекте и приняты ли защитные меры?' },
+  'Ist für den Notfall eine Hilfsperson instruiert?':
+    { en:'Has an assistant been instructed for emergencies?', tr:'Acil durum için bir yardımcı kişi talimatlandırıldı mı?', ar:'هل تم تعليم شخص مساعد للتعامل مع حالات الطوارئ؟', es:'¿Se ha instruido a una persona auxiliar para emergencias?', ru:'Проинструктировано ли вспомогательное лицо на случай чрезвычайной ситуации?' },
+  'Steht PSAgA (Persönliche Schutzausrüstung gegen Absturz) zur Verfügung?':
+    { en:'Is PPE against falls (PSAgA) available?', tr:'Düşmeye karşı KKD (PSAgA) mevcut mu?', ar:'هل معدات الحماية من السقوط (PSAgA) متاحة؟', es:'¿Está disponible el EPI contra caídas (PSAgA)?', ru:'Имеются ли средства защиты от падения (PSAgA)?' },
+  'Wird bei Bedarf ein Einweiser mitgebracht?':
+    { en:'Is a spotter brought if required?', tr:'Gerektiğinde bir yönlendirici getirildi mi?', ar:'هل يُحضر موجّه عند الحاجة؟', es:'¿Se lleva un señalizador si es necesario?', ru:'Привлекается ли сигнальщик при необходимости?' },
+  'Ist der Bediener geeignet? (Mindestalter 18 J., gesundheitliche Eignung)':
+    { en:'Is the operator suitable? (min. age 18, health fitness)', tr:'Operatör uygun mu? (min. yaş 18, sağlık uygunluğu)', ar:'هل المشغّل مؤهل؟ (الحد الأدنى للسن 18 عامًا، اللياقة الصحية)', es:'¿Es apto el operador? (edad mín. 18 años, aptitud médica)', ru:'Пригоден ли оператор? (мин. возраст 18 лет, состояние здоровья)' },
+  'Ist der Bediener ausreichend ausgebildet? (PAL-Ausweis oder gleichwertig)':
+    { en:'Is the operator sufficiently trained? (PAL licence or equivalent)', tr:'Operatör yeterince eğitildi mi? (PAL belgesi veya eşdeğeri)', ar:'هل المشغّل مُدرَّب بما يكفي؟ (رخصة PAL أو ما يعادلها)', es:'¿Está suficientemente formado el operador? (licencia PAL o equivalente)', ru:'Имеет ли оператор достаточную подготовку? (PAL или эквивалент)' },
+  'Hat der Bediener eine spezifische Instruktion für diese Hubarbeitsbühne erhalten?':
+    { en:'Has the operator received specific instruction for this aerial platform?', tr:'Operatör bu yükseltici platform için özel talimat aldı mı?', ar:'هل تلقى المشغّل تعليمات خاصة بمنصة الرفع هذه؟', es:'¿Ha recibido el operador instrucciones específicas para esta plataforma?', ru:'Прошёл ли оператор специальный инструктаж для данной платформы?' },
+  'Ist die Betriebsanleitung in der Landessprache vorhanden und zugänglich?':
+    { en:'Is the operating manual available in the local language?', tr:'Kullanım kılavuzu yerel dilde mevcut ve erişilebilir mi?', ar:'هل دليل التشغيل متاح باللغة المحلية ويمكن الوصول إليه؟', es:'¿Está disponible el manual de instrucciones en el idioma local?', ru:'Доступно ли руководство по эксплуатации на местном языке?' },
+  'Ist die Konformitätserklärung (CE) vorhanden?':
+    { en:'Is the declaration of conformity (CE) available?', tr:'Uygunluk beyanı (CE) mevcut mu?', ar:'هل إعلان المطابقة (CE) متاح؟', es:'¿Está disponible la declaración de conformidad (CE)?', ru:'Имеется ли декларация о соответствии (CE)?' },
+  'Ist die Instandhaltung sichergestellt? (aktuelle Prüfung, kein Defekt erkennbar)':
+    { en:'Is maintenance ensured? (current inspection, no visible defect)', tr:'Bakım sağlandı mı? (güncel kontrol, görünür arıza yok)', ar:'هل تم ضمان الصيانة؟ (الفحص الحالي، لا عيوب ظاهرة)', es:'¿Se garantiza el mantenimiento? (inspección vigente, sin defecto visible)', ru:'Обеспечено ли техническое обслуживание? (актуальная проверка, без видимых дефектов)' },
+  'Alle Punkte wurden geprüft. Der Einsatz der Hubarbeitsbühne ist aus Sicht des Einsatzleiters sicher.':
+    { en:"All points have been checked. The use of the aerial platform is safe from the site manager's perspective.", tr:'Tüm noktalar kontrol edildi. Yükseltici platformun kullanımı saha yöneticisi açısından güvenlidir.', ar:'تم التحقق من جميع النقاط. استخدام منصة الرفع آمن من وجهة نظر مشرف الموقع.', es:'Se han verificado todos los puntos. El uso de la plataforma elevadora es seguro desde la perspectiva del responsable.', ru:'Все пункты проверены. Использование подъёмной платформы безопасно с точки зрения руководителя объекта.' },
   'Unterschrift Trainer':         { en:'Trainer signature',        tr:'Eğitmen imzası',         ar:'توقيع المدرب',              es:'Firma del formador',         ru:'Подпись тренера' },
   'Unterschrift Vorgesetzter':    { en:'Supervisor signature',     tr:'Amir imzası',            ar:'توقيع المشرف',              es:'Firma del supervisor',       ru:'Подпись руководителя' },
   'Unterschrift Unterweisender':  { en:'Instructor signature',     tr:'Eğitici imzası',         ar:'توقيع المعلم',              es:'Firma del instructor',       ru:'Подпись инструктора' },
