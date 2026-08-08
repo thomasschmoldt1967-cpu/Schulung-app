@@ -19,6 +19,7 @@ const SESSION_KEY        = 'schulung_session';
 const SESSION_HOURS      = 8;    // Session-Timeout: 8h Inaktivität
 const INACTIVITY_MINUTES = 8 * 60; // Minuten bis Auto-Logout
 const LERNPFAD_VORLAGE_ID = '__lernpfad__'; // Pseudo-ID für Lernpfad-Zuweisung
+const HUB_VORLAGE_ID      = '__hub__';      // Pseudo-ID für Hubarbeitsbühnen DGUV 308-008
 
 // ── GLOBALER APP-ZUSTAND ─────────────────────────────────────
 let currentUser       = null;
@@ -2024,7 +2025,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : z.vorlagenId === HUB_VORLAGE_ID ? '<span style="color:#7c2d12">🏗️ Hubarbeitsbühnen DGUV 308-008</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -2095,18 +2096,20 @@ function adminZeigeTenant(tenantId) {
   const tenant = APP_TENANTS.find(t=>t.id===tenantId);
   const zuws   = zuweisungen.filter(z=>z.tenantId===tenantId);
   const hasPsaga = zuws.some(z => z.vorlagenId === '__psaga__');
+  const hasHub   = zuws.some(z => z.vorlagenId === HUB_VORLAGE_ID);
   const hasLP    = zuws.some(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
-  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID);
+  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID && z.vorlagenId !== HUB_VORLAGE_ID);
 
   const html = `<div class="card"><div class="card-title">🏢 ${escHtml(tenant.name)}</div>
     ${zuws.map(z => {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#7c2d12;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -2122,11 +2125,11 @@ function adminZeigeTenant(tenantId) {
 
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-user-info').textContent = currentUser.name;
-  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuws });
+  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vorlagenZuws });
   showScreen('screen-admin-detail');
 }
 
-async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuws }) {
+async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vorlagenZuws }) {
   const el = document.getElementById(`tenant-statistik-${tenantId}`);
   if (!el) return;
   try {
@@ -2183,6 +2186,23 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, vorlagenZuw
         </div>`;
     }
 
+    // ── Hubarbeitsbühnen ────────────────────────────────
+    if (hasHub) {
+      const hubDaten = await SB.get('hub_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am,verantwortlicher_am`
+      );
+      const abgeschlossen  = (hubDaten||[]).filter(d => d.unterzeichnet_am).length;
+      const gegengezeichnet = (hubDaten||[]).filter(d => d.verantwortlicher_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#7c2d12;margin-bottom:8px">🏗️ Hubarbeitsbühnen DGUV 308-008</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen,   'Quiz bestanden + Bescheinigung', '#fff7ed','#c2410c')}
+            ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
+          </div>
+        </div>`;
+    }
+
     // ── Unterweisungsvorlagen ──────────────────────────
     if (vorlagenZuws.length) {
       html += `<div style="margin-bottom:8px"><div style="font-weight:700;font-size:.88rem;color:#1e3a5f;margin-bottom:8px">📋 Unterweisungen</div>`;
@@ -2229,6 +2249,7 @@ function adminDetailAnzeigen(zuwId) {
   const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId), form=formulare[zuwId]||{}, status=berechneStatus(zuw);
   const isLP = zuw.vorlagenId === LERNPFAD_VORLAGE_ID;
   const isPsaga = zuw.vorlagenId === '__psaga__';
+  const isHub = zuw.vorlagenId === HUB_VORLAGE_ID;
 
   let feldHtml='';
   if (isLP) {
@@ -2276,7 +2297,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
 
   // ── PSAgA: Mitarbeiter-Übersicht aus Bescheinigungen laden ──
   let psagaMaHtml = '';
@@ -2325,7 +2346,7 @@ function adminDetailAnzeigen(zuwId) {
 
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-      <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
+    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#7c2d12':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -3538,8 +3559,9 @@ function renderAdminZuweisungen() {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
-    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
-    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
+    const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#7c2d12;font-weight:700' : '';
 
     // Mitarbeiter dieses Tenants
     const tenantMitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
@@ -3671,12 +3693,23 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  if (!gefiltert.length && !lernpfadMatch && !psagaMatch) {
+  const hubMatch = !s || 'hub'.includes(s) || 'hubarbeit'.includes(s) || 'arbeitsbühne'.includes(s) || 'hebebühne'.includes(s) || '308'.includes(s) || '14 kapitel'.includes(s);
+  const hubHtml = hubMatch ? `
+    <div onclick="azVorlageWaehlen('${HUB_VORLAGE_ID}','🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#fff7ed"
+      onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#fff7ed'">
+      <div style="font-weight:600;font-size:.88rem;color:#7c2d12">🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)</div>
+      <div style="font-size:.76rem;color:#c2410c;margin-top:2px">
+        Module 1–4 &nbsp;·&nbsp; 10 Quizfragen · mind. 70&thinsp;% zum Bestehen &nbsp;·&nbsp; Teilnahmebescheinigung
+      </div>
+    </div>` : '';
+
+  if (!gefiltert.length && !lernpfadMatch && !psagaMatch && !hubMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
     return;
   }
 
-  el.innerHTML = lernpfadHtml + psagaHtml + gefiltert.map((v, i) => `
+  el.innerHTML = lernpfadHtml + psagaHtml + hubHtml + gefiltert.map((v, i) => `
     <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
@@ -3717,7 +3750,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -4500,6 +4533,8 @@ function renderSubDashboard() {
   lernpfadInitialisieren();
   // PSAgA Schulungsmodule anzeigen
   psagaSchulungenInit();
+  // Hubarbeitsbühnen Schulung anzeigen
+  hubSchulungInit();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
 
@@ -4512,13 +4547,14 @@ function renderSubDashboard() {
         meineZuws.map(z => {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
           const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
           const fristText = z.frist ? `Frist: ${datumStr(z.frist)}` : 'Kein Termin';
-          return `<div onclick="${isLP ? 'lernpfadToggle()' : `oeffneFormular('${z.id}')`}"
+          return `<div onclick="${isLP ? 'lernpfadToggle()' : isHub ? 'hubSchulungToggle()' : `oeffneFormular('${z.id}')`}"
             style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
                    background:${farbe};border:1px solid ${border};border-radius:9px;cursor:pointer">
             <span style="font-size:1.1rem;flex-shrink:0">${dot}</span>
@@ -8792,10 +8828,11 @@ async function firmaRenderHistorie() {
       const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const isHub = zuw?.vorlagenId === HUB_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
-        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
+        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : isHub ? 'hub' : 'schulung',
         titel,
         datum: f.abgeschlossen_am,
         pdfUrl: f.pdf_path || null,
@@ -10601,5 +10638,962 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
   } catch(e) {
     console.error('Zertifikat-Fehler:', e);
     showToast('⚠️ Zertifikat konnte nicht erstellt werden: ' + e.message, '#7f1d1d');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// ── HUBARBEITSBÜHNEN SCHULUNG — DGUV 308-008 ─────────────────
+// ── 14 Kapitel (4 Module) + 10-Fragen-Quiz + Bescheinigung ──
+// ══════════════════════════════════════════════════════════════
+
+const HUB_KAPITEL = [
+  // ── Modul 1: Recht & Verantwortung ──
+  {
+    id: 'hub-01', modul: 1, nr: 1,
+    titel: 'Rechtliche Grundlagen & Pflichten',
+    icon: '⚖️',
+    inhalt: `<p>Der Betrieb von Hubarbeitsbühnen unterliegt strengen gesetzlichen Anforderungen:</p>
+    <ul>
+      <li><strong>§ 12 ArbSchG</strong> — Pflicht zur Unterweisung aller Mitarbeiter</li>
+      <li><strong>BetrSichV</strong> — Nur geeignete, geschulte Personen dürfen Arbeitsmittel bedienen</li>
+      <li><strong>DGUV Regel 100-500</strong> (Kap. 2.10) — Betreiben von Hebebühnen</li>
+      <li><strong>DGUV Grundsatz 308-008</strong> — Regelt Ausbildung & Beauftragung der Bediener</li>
+    </ul>
+    <p>Ein amtlicher Führerschein ist <strong>nicht</strong> erforderlich — aber der Bediener braucht drei Dinge:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">📚</div>
+        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Ausbildung</div>
+        <div style="font-size:.72rem;color:#9a3412">Theorie + Praxis bestanden</div>
+      </div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">🏥</div>
+        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Eignung</div>
+        <div style="font-size:.72rem;color:#9a3412">Arbeitsmedizinische Vorsorge</div>
+      </div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">✍️</div>
+        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Fahrauftrag</div>
+        <div style="font-size:.72rem;color:#9a3412">Schriftliche Beauftragung</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-02', modul: 1, nr: 2,
+    titel: 'Verantwortung & Haftung',
+    icon: '🏛️',
+    inhalt: `<p>Bei einem Unfall haften zwei Ebenen:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Unternehmer / Vorgesetzter</div>
+        <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Trägt die <strong>Organisationsverantwortung</strong>: Auswahl geeigneter Personen, Bereitstellung sicherer Geräte, Sicherstellung der Schulung und Beauftragung.</div>
+      </div>
+      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Bediener (Sie!)</div>
+        <div style="font-size:.8rem;color:#78350f;margin-top:4px">Trägt die <strong>Durchführungsverantwortung</strong>: Persönliche Haftung bei grober Fahrlässigkeit, Missachtung von Verboten oder Alkohol am Arbeitsplatz.</div>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ Der schriftliche Fahrauftrag durch den Arbeitgeber ist <strong>zwingend erforderlich</strong> — die Schulung allein reicht nicht aus!</p>`
+  },
+  // ── Modul 2: Gerätekunde & Technik ──
+  {
+    id: 'hub-03', modul: 2, nr: 3,
+    titel: 'Bühnentypen & Kategorien',
+    icon: '🏗️',
+    inhalt: `<p>Hubarbeitsbühnen werden nach der Art ihrer Bewegung kategorisiert:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Gruppe A — Senkrechthub</div>
+        <div style="font-size:.8rem;color:#075985;margin-top:4px">Gewichtsschwerpunkt bleibt immer <strong>innerhalb</strong> der Kippkanten.<br>Beispiele: Scherenbühnen, Personenlifte</div>
+      </div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Gruppe B — Boom-Lifts (Auslegerbühnen)</div>
+        <div style="font-size:.8rem;color:#9a3412;margin-top:4px">Arbeitskorb kann <strong>außerhalb</strong> der Kippkanten bewegt werden.<br>Beispiele: Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Bühnen<br><strong>⚠️ PSAgA-Pflicht!</strong></div>
+      </div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem">
+      <strong>Fahrtypen:</strong><br>
+      • <strong>Typ 1</strong> — Fahren nur in Transportstellung (Bühne unten)<br>
+      • <strong>Typ 3</strong> — Fahren mit angehobener Bühne vom Korb aus
+    </div>`
+  },
+  {
+    id: 'hub-04', modul: 2, nr: 4,
+    titel: 'Sicherheitseinrichtungen',
+    icon: '🛡️',
+    inhalt: `<p>Diese Sicherheitseinrichtungen müssen vor jeder Fahrt geprüft werden:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">🔴</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#14532d">Not-Aus-Schalter</div>
+        <div style="font-size:.78rem;color:#166534">Sofortige Unterbrechung aller Funktionen — am Boden UND im Korb. Beide testen!</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">📐</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#713f12">Neigungswächter</div>
+        <div style="font-size:.78rem;color:#854d0e">Akustischer/optischer Alarm oder Abschaltung, wenn Bühne zu schräg steht.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">⚖️</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Überlastanzeige</div>
+        <div style="font-size:.78rem;color:#1d4ed8">Blockiert Hubfunktion, wenn zulässiges Gewicht im Korb überschritten wird.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">🖐️</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#581c87">Totmannschalter / Fußschalter</div>
+        <div style="font-size:.78rem;color:#6b21a8">Steuerung reagiert nur wenn aktiv gedrückt — bei Loslassen sofortiger Stopp.</div></div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-05', modul: 2, nr: 5,
+    titel: 'PSAgA — Persönliche Schutzausrüstung gegen Absturz',
+    icon: '🦺',
+    inhalt: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ PFLICHT bei Gruppe B (Boom-Lifts)!</div>
+      <div style="font-size:.8rem;opacity:.9">Auffanggurt + kurzes Höhensicherungsgerät — immer anlegen!</div>
+    </div>
+    <p><strong>Warum PSAgA in Hubarbeitsbühnen?</strong></p>
+    <p style="font-size:.85rem">Der sogenannte <strong>„Peitscheneffekt"</strong> (Katapult-Effekt): Bei Teleskop- und Gelenkbühnen können Erschütterungen durch Bodenunebenheiten den langen Ausleger in Schwingung versetzen und den Bediener aus dem Korb katapultieren.</p>
+    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Wichtige Regeln:</div>
+      <div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px">
+        <div>✅ Anschlagen <strong>nur</strong> an den vorgesehenen, gekennzeichneten Haltepunkten im Korb</div>
+        <div>✅ Kurzes Rückhaltesystem — kein langer Falldämpfer im Korb</div>
+        <div>✅ Gurt anlegen <strong>bevor</strong> die Bühne bewegt wird</div>
+        <div>✅ Bei Scherenbühnen (Gruppe A) situationsabhängig — Herstellerangaben beachten</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-06', modul: 2, nr: 6,
+    titel: 'Das Lastdiagramm verstehen',
+    icon: '📊',
+    inhalt: `<p>Das Lastdiagramm zeigt: <strong>Je weiter der Arm ausgefahren ist, desto geringer ist die Traglast!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem">
+      <div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Aufbau des Diagramms:</div>
+      <div style="display:flex;flex-direction:column;gap:4px;color:#475569">
+        <div>📏 <strong>Y-Achse (senkrecht)</strong> — Arbeitshöhe in Metern</div>
+        <div>📐 <strong>X-Achse (waagerecht)</strong> — Seitliche Reichweite (Ausladung) in Metern</div>
+        <div>〰️ <strong>Kurvenlinien</strong> — Grenzen der Gewichtszonen:<br>
+          &nbsp;&nbsp;&nbsp;Zone 1 = 300 kg (nah am Gerät) | Zone 3 = 100 kg (max. Reichweite)</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem">
+      <div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Niemals:</div>
+      <div style="color:#7f1d1d">• Tragfähigkeit überschreiten (Person + Werkzeug + Material = Gesamtgewicht!)<br>
+      • In der Höhe schwere Bauteile von außen (z. B. vom Dach) nachladen<br>
+      • Auf automatische Sicherung verlassen — immer selber planen!</div>
+    </div>`
+  },
+  // ── Modul 3: Standsicherheit & Gefahren ──
+  {
+    id: 'hub-07', modul: 3, nr: 7,
+    titel: 'Untergrund & Standsicherheit',
+    icon: '🏔️',
+    inhalt: `<p>Der Untergrund ist das Fundament der Sicherheit — falsche Aufstellung führt direkt zum Umkippen!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Gefahrenquellen:</div>
+        <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Schachtdeckel · Frisch aufgeschütteter Boden · Unterwaschungen · Tiefgaragendecken · Kellerabgänge</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px">
+        <div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Schutzmaßnahmen:</div>
+        <div style="font-size:.8rem;color:#166534;margin-top:4px">
+          • <strong>Unterlegplatten</strong> zur Lastverteilung immer verwenden<br>
+          • Neigungsgrenzen des Herstellers strikt einhalten<br>
+          • Stützen vollständig ausfahren + Bühne waagerecht ausnivellieren<br>
+          • Grüne Kontrollleuchte = sicher · Rote Leuchte = Fahrt verboten!
+        </div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-08', modul: 3, nr: 8,
+    titel: 'Windgefahren',
+    icon: '💨',
+    inhalt: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">💨 Max. Windgeschwindigkeit: 12,5 m/s (Windstärke 6)</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">Bei Überschreitung: Arbeit SOFORT einstellen und Bühne absenken!</div>
+    </div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">
+        ⚠️ <strong>Wind in der Höhe</strong> ist deutlich stärker als am Boden — immer am Windmesser orientieren, nicht am eigenen Empfinden!
+      </div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">
+        ❌ <strong>Segeleffekt-Verbot:</strong> Keine Planen, Werbeschilder oder Platten in den Korb stellen — erhöht die Kippgefahr massiv!
+      </div>
+      <div style="padding:8px 12px;background:#fffbeb;border-radius:7px">
+        📋 <strong>Herstellerangaben</strong> im Handbuch haben immer Vorrang vor dem Standardwert 12,5 m/s!
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-09', modul: 3, nr: 9,
+    titel: 'Sicherheitsabstände zu Freileitungen',
+    icon: '⚡',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center">
+      <div style="font-size:1.5rem">⚡</div>
+      <div style="font-weight:700;font-size:.95rem">LEBENSGEFAHR durch Stromschlag und Lichtbögen!</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px">
+        <div>Bis <strong>1.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px">
+        <div>Über 1.000 bis <strong>110.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px">
+        <div>Über 110.000 bis <strong>220.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff">
+        <div><strong>⚠️ Unbekannte Spannung</strong></div>
+        <div style="font-weight:700;font-size:1rem">≥ 5,0 m</div>
+      </div>
+    </div>`
+  },
+  // ── Modul 4: Praxis & Notfall ──
+  {
+    id: 'hub-10', modul: 4, nr: 10,
+    titel: 'Tägliche Sicht- und Funktionsprüfung',
+    icon: '🔍',
+    inhalt: `<p>Vor jedem Arbeitsbeginn <strong>zwingend</strong> durchführen — laut DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hydraulikschläuche und Zylinder auf Leckagen', 'Reifen auf Beschädigung, Fremdkörper und Luftdruck', 'Allgemeinzustand: Risse im Stahl, Verformungen, lose Bolzen', 'Geländer und Korbverriegelung intakt?', 'Not-Aus am Boden UND im Korb testen', 'Notablass-Einrichtung auf Funktion prüfen', 'Warneinrichtungen: Hupe, Blinkleuchte, Rückfahrwarner', 'Totmannschalter: reagiert beim Loslassen?', 'PSAgA-Anschlagpunkte im Korb unbeschädigt?', 'UVV-Prüfplakette auf Gültigkeit prüfen', 'Windgeschwindigkeit unter Herstellerlimit?', 'Unterlegplatten vorhanden und einsatzbereit?'].map(p => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px">
+          <span style="color:#059669;flex-shrink:0">✓</span>
+          <span>${p}</span>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-11', modul: 4, nr: 11,
+    titel: 'Sicheres Aufstellen der Bühne',
+    icon: '📐',
+    inhalt: `<p>Das korrekte Aufstellen ist entscheidend für die Standsicherheit:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[
+        ['Umfeld prüfen', 'Absperrungen aufstellen, Untergrund auf Tragfähigkeit beurteilen (Schächte, Hohlräume, Neigungen)'],
+        ['Unterlegplatten auslegen', 'Immer großflächige Unterlegplatten unter die Stützen legen — verteilt die Punktlast!'],
+        ['Stützen ausfahren', 'Alle 4 Stützen vollständig ausfahren — nie auf halber Strecke stoppen'],
+        ['Ausnivellieren', 'Bühne exakt waagerecht ausrichten bis grüne Kontrollleuchte leuchtet'],
+        ['Freigabe prüfen', 'Nur bei grüner Anzeige und sicherem Stand mit dem Heben beginnen']
+      ].map(([t, d]) => `
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px">
+          <span style="font-size:1rem;flex-shrink:0">✅</span>
+          <div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-12', modul: 4, nr: 12,
+    titel: 'Verbote im Betrieb',
+    icon: '🚫',
+    inhalt: `<p>Diese Handlungen führen zu sofortigem Unfallrisiko und sind <strong>absolut verboten</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[
+        'Überschreiten der maximalen Traglast (Person + Werkzeug + Material!)',
+        'Verlassen oder Besteigen des Korbes in angehobener Stellung (kein Umsteigen auf Dächer/Gerüste)',
+        'Erhöhen der Standposition durch Leitern, Kisten oder Stehen auf dem Geländer',
+        'Anbringen von Planen, Schildern oder Platten (Segeleffekt → Kippgefahr!)',
+        'Überbrücken oder Manipulieren von Sicherheitseinrichtungen (Not-Aus, Neigungssensoren)',
+        'Einfahren der Stützen bei angehobenem Korb',
+        'Betrieb bei überschrittener Windgeschwindigkeit',
+        'Unterschreiten der Mindestabstände zu Freileitungen',
+        'Betrieb ohne gültige UVV-Prüfplakette'
+      ].map(v => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px">
+          <span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span>
+          <span style="color:#7f1d1d">${v}</span>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-13', modul: 4, nr: 13,
+    titel: 'Notablass — Wenn nichts mehr geht',
+    icon: '🚨',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">🚨 NOTFALL: Bediener im Korb bewusstlos!</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">Nur die Bodensteuerung kann noch helfen!</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px">
+        <div style="font-weight:700;color:#713f12">📋 Pflicht: Zweite eingewiesene Person am Boden!</div>
+        <div style="color:#854d0e;margin-top:4px">Bei jeder Arbeit mit Hubarbeitsbühnen muss immer eine zweite Person vor Ort sein, die in den Notablass eingewiesen ist.</div>
+      </div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px">
+        <div style="font-weight:700;color:#14532d">✅ Ablauf Notablass:</div>
+        <div style="color:#166534;margin-top:4px">
+          1. Ruhe bewahren — keinen Aufzug nutzen<br>
+          2. Notablass-Ventil / Bodensteuerpult an der Maschinenbasis öffnen<br>
+          3. Korb langsam und kontrolliert absenken<br>
+          4. Nach Absenken: Notruf 112 absetzen und Erste Hilfe leisten
+        </div>
+      </div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px">
+        <div style="font-weight:700;color:#1e3a8a">💡 Notruf: 📞 112</div>
+        <div style="color:#1d4ed8;margin-top:2px">WO — WAS — WIE VIELE — WER</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-14', modul: 4, nr: 14,
+    titel: 'Prüfung & Fahrauftrag — Zusammenfassung',
+    icon: '📋',
+    inhalt: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">✅ Bereit für das Quiz?</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">10 Fragen · Mindestens 70 % richtig zum Bestehen (7/10 Punkte)</div>
+    </div>
+    <p style="font-size:.85rem"><strong>Gültigkeitsdauer des Bedienerausweises:</strong><br>Der Bedienerausweis ist lebenslang gültig — setzt aber eine <strong>jährliche Unterweisung</strong> im Betrieb voraus!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem">
+      <div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Checkliste vor dem Quiz:</div>
+      <div style="display:flex;flex-direction:column;gap:3px;color:#166534">
+        <div>☑ Alle 3 Säulen der Erlaubnis kennen (Ausbildung, Eignung, Fahrauftrag)</div>
+        <div>☑ Unterschied Gruppe A / Gruppe B verstanden</div>
+        <div>☑ PSAgA-Pflicht bei Gruppe B bekannt</div>
+        <div>☑ Windlimit 12,5 m/s gemerkt</div>
+        <div>☑ Mindestabstände Freileitungen kennen</div>
+        <div>☑ Notablass-Ablauf verstanden</div>
+      </div>
+    </div>`
+  }
+];
+
+const HUB_QUIZ = [
+  {
+    frage: 'Welche drei Voraussetzungen muss ein Bediener von Hubarbeitsbühnen erfüllen?',
+    antworten: [
+      'Amtlicher Führerschein, Mindestalter 21 Jahre, Vereinsmitgliedschaft',
+      'Ausbildung (Theorie + Praxis), arbeitsmedizinische Eignung und schriftlicher Fahrauftrag des Arbeitgebers',
+      'Nur die Schulung reicht aus — alles andere ist freiwillig',
+      'Berufserfahrung von mind. 2 Jahren und ein behördliches Zertifikat'
+    ],
+    richtig: 1,
+    erklaerung: 'Nach DGUV 308-008 sind alle drei Säulen zwingend: erfolgreiche Ausbildung, gesundheitliche Eignung (Höhentauglichkeit) und der schriftliche Fahrauftrag des Arbeitgebers.'
+  },
+  {
+    frage: 'Was unterscheidet Gruppe A von Gruppe B bei Hubarbeitsbühnen?',
+    antworten: [
+      'Gruppe A ist schwerer als Gruppe B',
+      'Bei Gruppe B (Boom-Lifts) kann der Korb außerhalb der Kippkanten bewegt werden — daher PSAgA-Pflicht',
+      'Gruppe A ist nur für den Innenbereich, Gruppe B für den Außenbereich',
+      'Der Unterschied liegt ausschließlich in der Farbgebung der Maschine'
+    ],
+    richtig: 1,
+    erklaerung: 'Gruppe A (Scherenbühnen) bleibt stets innerhalb der Kippkanten. Bei Gruppe B (Teleskop-, Gelenk-, Lkw-Bühnen) kann der Ausleger so weit herausfahren, dass der Schwerpunkt außerhalb liegt — daher höhere Kippgefahr und PSAgA-Pflicht.'
+  },
+  {
+    frage: 'Ab welcher Windgeschwindigkeit muss der Betrieb einer Hubarbeitsbühne im Freien eingestellt werden?',
+    antworten: [
+      'Erst bei sichtbaren Sturmschäden an Gebäuden — das Gerät ist robust genug',
+      '20 m/s — das ist der gesetzliche Grenzwert',
+      '12,5 m/s (Windstärke 6) bzw. nach genauer Herstellerangabe',
+      'Der Bediener entscheidet das selbst nach eigenem Ermessen'
+    ],
+    richtig: 2,
+    erklaerung: 'Standard-Richtwert: 12,5 m/s (Windstärke 6). Herstellerangaben im Handbuch können abweichen und gehen immer vor. Bei Überschreitung: Arbeit sofort einstellen und Bühne absenken!'
+  },
+  {
+    frage: 'Warum muss eine zweite eingewiesene Person am Boden anwesend sein?',
+    antworten: [
+      'Als Assistent, um Werkzeug zu reichen',
+      'Das ist nicht vorgeschrieben — nur empfohlen',
+      'Damit sie den Bediener beobachtet und Fotos macht',
+      'Um bei technischem Defekt oder Bewusstlosigkeit des Bedieners die Bühne über den Notablass sicher von unten absenken zu können'
+    ],
+    richtig: 3,
+    erklaerung: 'Die zweite Person ist Pflicht und muss in die Notablass-Bedienung eingewiesen sein. Ohne "Bodenmann" ist eine Rettung aus der Höhe im Ernstfall lebensgefährlich und zeitkritisch.'
+  },
+  {
+    frage: 'Welchen Mindestabstand müssen Sie zu einer Freileitung mit unbekannter Spannung einhalten?',
+    antworten: [
+      '1,0 Meter — das reicht sicherlich aus',
+      '2,0 Meter bei langsamer Fahrt',
+      '5,0 Meter — da Spannung unbekannt immer maximalen Sicherheitsabstand wählen',
+      'Es gibt keinen gesetzlichen Mindestabstand'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei unbekannter Spannung immer mind. 5 Meter Abstand. Lichtbögen können über mehrere Meter springen — der Abstand rettet Leben!'
+  },
+  {
+    frage: 'Was passiert, wenn die Überlastsicherung der Hubarbeitsbühne auslöst?',
+    antworten: [
+      'Die Bühne gibt nur ein Tonsignal — Bewegungen können fortgesetzt werden',
+      'Die Hubfunktion wird blockiert und muss durch Entlasten des Korbes wieder freigegeben werden',
+      'Die Bühne fährt automatisch zurück zur Ausgangsposition',
+      'Die Sicherung kann durch Drücken des Not-Aus-Knopfs deaktiviert werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Die Überlastsicherung blockiert alle Hubbewegungen. Der Korb muss entlastet werden (Material oder Personen entfernen), bevor die Funktion wieder freigegeben wird. Nie überbrücken!'
+  },
+  {
+    frage: 'Warum ist das Anbringen von Planen oder Schildern am Arbeitskorb verboten?',
+    antworten: [
+      'Es ist nicht verboten — nur unästhetisch',
+      'Es wird als Werbung gewertet und ist damit genehmigungspflichtig',
+      'Der Segeleffekt erhöht die Windlast massiv und kann zum Umkippen der Bühne führen',
+      'Planen verdecken die Sicht des Bedieners auf die Steuerung'
+    ],
+    richtig: 2,
+    erklaerung: 'Planen und Schilder wirken wie ein Segel und multiplizieren die Windkraft auf die Bühne. Dies erhöht das Kippmoment dramatisch — selbst bei moderaten Windgeschwindigkeiten!'
+  },
+  {
+    frage: 'Wann dürfen die Stützen (Abstützung) einer Hubarbeitsbühne eingefahren werden?',
+    antworten: [
+      'Während des Betriebs, um Hindernissen seitlich auszuweichen',
+      'Wenn der Arbeitskorb sich vollständig in der untersten Transportstellung befindet',
+      'Das entscheidet der Bediener je nach Platzverhältnissen',
+      'Bei Windstärke unter 5 — dann ist das Einfahren sicher'
+    ],
+    richtig: 1,
+    erklaerung: 'Stützen dürfen ausschließlich in vollständig abgesenkter Transportstellung ein- oder ausgefahren werden. Nie bei angehobenem Korb!'
+  },
+  {
+    frage: 'Was gehört zur täglichen Sicht- und Funktionsprüfung vor Arbeitsbeginn?',
+    antworten: [
+      'Nur der Tankstand prüfen — alles andere ist Aufgabe des Herstellers',
+      'Die Prüfung ist freiwillig und nur bei sichtbaren Schäden nötig',
+      'Reifen, Hydraulik auf Dichtigkeit, Not-Aus-Funktion am Boden und im Korb, Notablass und UVV-Prüfplakette',
+      'Lediglich ein kurzer Probefahrt-Test reicht aus'
+    ],
+    richtig: 2,
+    erklaerung: 'Die tägliche Prüfung ist gesetzlich vorgeschrieben (DGUV 308-008) und umfasst: Hydraulik, Reifen, beide Not-Aus-Schalter, Notablass, Warneinrichtungen, PSAgA-Anschlagpunkte und die UVV-Plakette.'
+  },
+  {
+    frage: 'Wann ist das Tragen von PSAgA (Auffanggurt) beim Betrieb einer Hubarbeitsbühne zwingend vorgeschrieben?',
+    antworten: [
+      'Nur bei Windgeschwindigkeiten über 10 m/s',
+      'Nur wenn man höher als 20 Meter arbeitet',
+      'Grundsätzlich bei allen Arbeitsbühnen der Gruppe B (Auslegerbühnen) wegen des Peitscheneffekts',
+      'PSAgA ist in Hubarbeitsbühnen generell nicht erforderlich — der Korb bietet ausreichend Schutz'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei Gruppe B (Teleskop-, Gelenk- und Lkw-Bühnen) ist PSAgA Pflicht — unabhängig von Höhe oder Windstärke. Der Peitscheneffekt des langen Auslegers kann den Bediener auch aus geringer Höhe herauskatapultieren.'
+  }
+];
+
+// ── Zustand ──
+let hubFortschritt = {};       // { 'hub-01': true, ... }
+let hubQuizAktiv   = false;
+let hubQuizFragen  = [];
+let hubQuizIndex   = 0;
+let hubQuizPunkte  = 0;
+
+function hubSchulungInit() {
+  const wrap = document.getElementById('hub-schulung-btn-wrap');
+  if (!wrap) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser?.tenantId);
+  const hatHub = meineZuws.some(z => z.vorlagenId === HUB_VORLAGE_ID);
+  if (!hatHub) return;
+  wrap.style.display = '';
+  _hubFortschrittLaden();
+  _hubSubtitelAktualisieren();
+}
+
+function _hubFortschrittLaden() {
+  try {
+    const key = `hub_fortschritt_${currentUser?.userId || 'anon'}`;
+    const stored = localStorage.getItem(key);
+    if (stored) hubFortschritt = JSON.parse(stored);
+  } catch(e) {}
+}
+
+function _hubFortschrittSpeichern() {
+  try {
+    const key = `hub_fortschritt_${currentUser?.userId || 'anon'}`;
+    localStorage.setItem(key, JSON.stringify(hubFortschritt));
+  } catch(e) {}
+}
+
+function _hubSubtitelAktualisieren() {
+  const bestanden = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
+  const sub = document.getElementById('btn-hub-sub');
+  if (!sub) return;
+  const quizBestanden = !!localStorage.getItem(`hub_quiz_bestanden_${currentUser?.userId || 'anon'}`);
+  if (quizBestanden) {
+    sub.textContent = '✅ Quiz bestanden · Bescheinigung verfügbar';
+  } else {
+    sub.textContent = `${bestanden}/${HUB_KAPITEL.length} Kapitel · ${bestanden === HUB_KAPITEL.length ? 'Quiz verfügbar!' : 'Tippen zum Starten'}`;
+  }
+}
+
+function hubSchulungToggle() {
+  const cont  = document.getElementById('hub-schulung-container');
+  const pfeil = document.getElementById('btn-hub-pfeil');
+  if (!cont) return;
+  const open = cont.style.display === 'block';
+  cont.style.display = open ? 'none' : 'block';
+  if (pfeil) pfeil.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) hubSchulungRender();
+}
+
+function hubSchulungRender() {
+  const cont = document.getElementById('hub-schulung-container');
+  if (!cont) return;
+  const userId = currentUser?.userId || 'anon';
+  const quizBestanden = !!localStorage.getItem(`hub_quiz_bestanden_${userId}`);
+  const bestandenAnzahl = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
+  const alleGelesen = bestandenAnzahl === HUB_KAPITEL.length;
+
+  // Modul-Gruppen
+  const module = [1,2,3,4];
+  const modulTitel = {
+    1: 'Modul 1 — Recht & Verantwortung',
+    2: 'Modul 2 — Gerätekunde & Technik',
+    3: 'Modul 3 — Standsicherheit & Gefahren',
+    4: 'Modul 4 — Praxis & Notfallmanagement'
+  };
+  const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
+
+  let html = `<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+    <div style="padding:12px 14px;background:#7c2d12;color:#fff">
+      <div style="font-weight:700;font-size:.9rem">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
+      <div style="font-size:.72rem;opacity:.8;margin-top:2px">${bestandenAnzahl} von ${HUB_KAPITEL.length} Kapiteln gelesen</div>
+      <div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">
+        <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round(bestandenAnzahl/HUB_KAPITEL.length*100)}%;transition:width .4s"></div>
+      </div>
+    </div>`;
+
+  module.forEach(mod => {
+    const kapitelDesModuls = HUB_KAPITEL.filter(k => k.modul === mod);
+    html += `<div style="padding:8px 14px 2px;border-bottom:1px solid #f0f2f5">
+      <div style="font-size:.75rem;font-weight:700;color:${modulColor[mod]};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${modulTitel[mod]}</div>
+    </div>`;
+    kapitelDesModuls.forEach(k => {
+      const gelesen = !!hubFortschritt[k.id];
+      html += `
+        <div onclick="hubKapitelOeffnen('${k.id}')"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:${gelesen?'#f0fdf4':'#fff'};transition:background .15s"
+          onmouseover="this.style.background='${gelesen?'#dcfce7':'#fef7ee'}'"
+          onmouseout="this.style.background='${gelesen?'#f0fdf4':'#fff'}'">
+          <span style="font-size:1.5rem;flex-shrink:0">${gelesen ? '✅' : k.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.85rem;color:${gelesen?'#166534':'#1a3a5c'}">
+              ${k.nr}. ${escHtml(k.titel)}
+            </div>
+          </div>
+          <span style="font-size:1rem;color:${gelesen?'#16a34a':'#d1d5db'}">${gelesen?'✓':'›'}</span>
+        </div>`;
+    });
+  });
+
+  // Quiz-Button
+  html += `<div style="padding:12px 14px">`;
+  if (quizBestanden) {
+    html += `
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:center">
+        <div style="font-size:1.5rem">🏆</div>
+        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">Quiz bestanden!</div>
+        <div style="font-size:.78rem;color:#166534;margin-top:2px">Ergebnis: ${localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–'}</div>
+      </div>
+      <button onclick="hubBescheinigungErstellen()"
+        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35)">
+        📄 Teilnahmebescheinigung herunterladen
+      </button>`;
+  } else if (alleGelesen) {
+    html += `
+      <button onclick="hubQuizStarten()"
+        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35)">
+        🎯 Quiz starten — 10 Fragen (mind. 70 % zum Bestehen)
+      </button>`;
+  } else {
+    html += `
+      <div style="text-align:center;color:#9ca3af;font-size:.8rem;padding:6px">
+        📖 Bitte alle ${HUB_KAPITEL.length} Kapitel lesen um das Quiz freizuschalten<br>
+        <span style="font-size:.75rem">(noch ${HUB_KAPITEL.length - bestandenAnzahl} offen)</span>
+      </div>`;
+  }
+  html += `</div></div>`;
+  cont.innerHTML = html;
+}
+
+function hubKapitelOeffnen(kapitelId) {
+  const k = HUB_KAPITEL.find(k => k.id === kapitelId);
+  if (!k) return;
+
+  const modal = document.getElementById('hub-kapitel-modal');
+  if (modal) {
+    document.getElementById('hub-modal-titel').textContent = `${k.nr}. ${k.titel}`;
+    document.getElementById('hub-modal-modul').textContent = `Modul ${k.modul} — DGUV 308-008`;
+    document.getElementById('hub-modal-body').innerHTML = k.inhalt;
+    const btnWeiter = document.getElementById('hub-modal-weiter');
+    if (btnWeiter) btnWeiter.onclick = () => hubKapitelAbschliessen(kapitelId);
+    modal.style.display = 'flex';
+    return;
+  }
+
+  // Fallback: inline im Container
+  hubFortschritt[kapitelId] = true;
+  _hubFortschrittSpeichern();
+  _hubSubtitelAktualisieren();
+  hubSchulungRender();
+}
+
+function hubKapitelAbschliessen(kapitelId) {
+  hubFortschritt[kapitelId] = true;
+  _hubFortschrittSpeichern();
+  _hubSubtitelAktualisieren();
+  document.getElementById('hub-kapitel-modal').style.display = 'none';
+  hubSchulungRender();
+
+  // Supabase speichern (best-effort)
+  if (currentUser?.userId) {
+    const id = `${currentUser.userId}_${kapitelId}`;
+    SB.upsert('hub_fortschritt', {
+      id,
+      user_id: currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      kapitel_id: kapitelId,
+      abgehakt: true,
+      abgehakt_am: new Date().toISOString()
+    }).catch(() => {});
+  }
+}
+
+function hubKapitelModalSchliessen() {
+  const modal = document.getElementById('hub-kapitel-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── Quiz ──────────────────────────────────────────────────────
+
+function hubQuizStarten() {
+  hubQuizFragen = [...HUB_QUIZ].sort(() => Math.random() - 0.5);
+  hubQuizIndex  = 0;
+  hubQuizPunkte = 0;
+  hubQuizAktiv  = true;
+  hubQuizFrageZeigen();
+}
+
+function hubQuizFrageZeigen() {
+  const cont = document.getElementById('hub-schulung-container');
+  if (!cont) return;
+  const q = hubQuizFragen[hubQuizIndex];
+  const nr = hubQuizIndex + 1;
+  const gesamt = hubQuizFragen.length;
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
+      <div style="padding:12px 14px;background:#7c2d12;color:#fff">
+        <div style="font-weight:700;font-size:.88rem">🎯 Quiz — Frage ${nr} von ${gesamt}</div>
+        <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round((nr-1)/gesamt*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:14px;line-height:1.45">${escHtml(q.frage)}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${q.antworten.map((a, i) => `
+            <button onclick="hubQuizAntwort(${i})"
+              style="text-align:left;padding:11px 14px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.84rem;color:#1e293b;cursor:pointer;transition:all .15s;line-height:1.4"
+              onmouseover="this.style.background='#fff7ed';this.style.borderColor='#f97316'"
+              onmouseout="this.style.background='#f9fafb';this.style.borderColor='#e5e7eb'"
+              id="hub-quiz-btn-${i}">
+              <span style="font-weight:700;color:#7c2d12;margin-right:8px">${String.fromCharCode(65+i)}.</span>
+              ${escHtml(a)}
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function hubQuizAntwort(gewaehlt) {
+  const q = hubQuizFragen[hubQuizIndex];
+  const richtig = gewaehlt === q.richtig;
+  if (richtig) hubQuizPunkte++;
+
+  // Buttons einfärben
+  for (let i = 0; i < q.antworten.length; i++) {
+    const btn = document.getElementById(`hub-quiz-btn-${i}`);
+    if (!btn) continue;
+    btn.disabled = true;
+    if (i === q.richtig) {
+      btn.style.background = '#f0fdf4';
+      btn.style.borderColor = '#22c55e';
+      btn.style.color = '#14532d';
+    } else if (i === gewaehlt && !richtig) {
+      btn.style.background = '#fef2f2';
+      btn.style.borderColor = '#ef4444';
+      btn.style.color = '#991b1b';
+    } else {
+      btn.style.opacity = '0.5';
+    }
+  }
+
+  // Erklärung + Weiter-Button
+  const cont = document.getElementById('hub-schulung-container');
+  const quizBox = cont.querySelector('div[style*="overflow:hidden"]');
+  const erklaerungDiv = document.createElement('div');
+  erklaerungDiv.style.cssText = 'padding:0 16px 16px';
+  erklaerungDiv.innerHTML = `
+    <div style="background:${richtig?'#f0fdf4':'#fef2f2'};border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.82rem">
+      <div style="font-weight:700;color:${richtig?'#14532d':'#991b1b'};margin-bottom:4px">${richtig?'✅ Richtig!':'❌ Leider falsch'}</div>
+      <div style="color:${richtig?'#166534':'#7f1d1d'}">${escHtml(q.erklaerung)}</div>
+    </div>
+    <button onclick="hubQuizWeiter()"
+      style="width:100%;margin-top:10px;padding:11px;background:#7c2d12;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.88rem;cursor:pointer">
+      ${hubQuizIndex < hubQuizFragen.length - 1 ? 'Nächste Frage →' : 'Ergebnis anzeigen'}
+    </button>`;
+  quizBox.appendChild(erklaerungDiv);
+}
+
+function hubQuizWeiter() {
+  hubQuizIndex++;
+  if (hubQuizIndex < hubQuizFragen.length) {
+    hubQuizFrageZeigen();
+  } else {
+    hubQuizErgebnis();
+  }
+}
+
+function hubQuizErgebnis() {
+  const userId  = currentUser?.userId || 'anon';
+  const prozent = Math.round(hubQuizPunkte / hubQuizFragen.length * 100);
+  const bestanden = prozent >= 70;
+
+  if (bestanden) {
+    localStorage.setItem(`hub_quiz_bestanden_${userId}`, '1');
+    localStorage.setItem(`hub_quiz_ergebnis_${userId}`, `${hubQuizPunkte}/${hubQuizFragen.length} (${prozent} %)`);
+    // Supabase
+    if (currentUser?.userId) {
+      SB.upsert('hub_unterschriften', {
+        id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
+        user_id: currentUser.userId,
+        tenant_id: currentUser.tenantId || '',
+        vollname: currentUser.name || '',
+        quiz_punkte: hubQuizPunkte,
+        quiz_gesamt: hubQuizFragen.length,
+        unterzeichnet_am: new Date().toISOString()
+      }).catch(() => {});
+    }
+  }
+
+  const cont = document.getElementById('hub-schulung-container');
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
+      <div style="padding:16px 14px;background:${bestanden?'#14532d':'#7f1d1d'};color:#fff;text-align:center">
+        <div style="font-size:2.5rem">${bestanden?'🏆':'📚'}</div>
+        <div style="font-weight:700;font-size:1.1rem;margin-top:8px">${bestanden?'Quiz bestanden!':'Nicht bestanden'}</div>
+        <div style="font-size:.82rem;opacity:.9;margin-top:4px">${hubQuizPunkte} von ${hubQuizFragen.length} Fragen richtig (${prozent} %)</div>
+        <div style="font-size:.78rem;opacity:.8;margin-top:2px">Mindestpunktzahl: 70 % (${Math.ceil(hubQuizFragen.length*0.7)}/${hubQuizFragen.length})</div>
+      </div>
+      <div style="padding:16px">
+        ${bestanden ? `
+          <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
+            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Ergebnis gespeichert</div>
+            <div style="font-size:.78rem;color:#166534;margin-top:4px">Ihre Teilnahmebescheinigung ist jetzt verfügbar.</div>
+          </div>
+          <button onclick="hubBescheinigungErstellen()"
+            style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(124,45,18,.35)">
+            📄 Teilnahmebescheinigung herunterladen
+          </button>` : `
+          <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
+            <div style="font-size:.85rem;color:#991b1b;font-weight:700">❌ ${prozent} % — Mindestpunktzahl nicht erreicht</div>
+            <div style="font-size:.78rem;color:#7f1d1d;margin-top:4px">Bitte Kapitel wiederholen und erneut versuchen.</div>
+          </div>
+          <button onclick="hubQuizStarten()"
+            style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px">
+            🔄 Quiz wiederholen
+          </button>`}
+        <button onclick="hubSchulungRender()"
+          style="width:100%;padding:11px;background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer">
+          ← Zurück zur Übersicht
+        </button>
+      </div>
+    </div>`;
+
+  _hubSubtitelAktualisieren();
+}
+
+// ── Teilnahmebescheinigung (PDF) ─────────────────────────────
+
+async function hubBescheinigungErstellen() {
+  const userId   = currentUser?.userId || 'anon';
+  const userName = currentUser?.name   || 'Teilnehmer';
+  const tenantId = currentUser?.tenantId || '';
+  const ergebnis = localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–';
+  const datum    = new Date();
+
+  showToast('⏳ Bescheinigung wird erstellt…', '#7c2d12');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+    const ML=14, MT=14, PW=182, PH=267;
+    const DUNKELROT  = [124,45,18];
+    const ORANGE     = [249,115,22];
+    const HELLROT    = [255,237,213];
+    const DUNKELBLAU = [30,58,95];
+    const GRAU_TEXT  = [71,85,105];
+    const GRAU_LINIE = [226,232,240];
+    const WEISS      = [255,255,255];
+    const GRUEN      = [22,163,74];
+
+    const fmtDat = d => new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const CW = PW;
+    let y = MT;
+
+    // ── Header-Band ──────────────────────────────────────────
+    doc.setFillColor(...DUNKELROT);
+    doc.rect(0,0,210,32,'F');
+    doc.setFillColor(...ORANGE);
+    doc.rect(0,28,210,4,'F');
+
+    // Logo-Bereich (links)
+    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH', ML, 14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
+
+    // Titel (rechts)
+    doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('TEILNAHMEBESCHEINIGUNG', 210-ML, 13, {align:'right'});
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text('Hubarbeitsbühnen | DGUV Grundsatz 308-008', 210-ML, 19, {align:'right'});
+
+    y = 38;
+
+    // ── Personenbox ──────────────────────────────────────────
+    doc.setFillColor(...HELLROT);
+    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+    doc.setFillColor(...DUNKELROT); doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
+
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('TEILNEHMER / IN', ML+8, y+7);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELROT);
+    doc.text(userName, ML+8, y+15);
+
+    const nr = `HUB-${datum.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(`Bescheinigung Nr. ${nr}`, 210-ML, y+7, {align:'right'});
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(`Ausgestellt: ${fmtDat(datum)}`, 210-ML, y+15, {align:'right'});
+    y += 28;
+
+    // ── Haupttext ────────────────────────────────────────────
+    doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung', ML, y, {maxWidth: CW});
+    y += 5.5;
+    doc.text('zum Bediener von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y, {maxWidth: CW});
+    y += 5.5;
+    doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELROT);
+    doc.text('DGUV-Grundsatzes 308-008', ML, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y);
+    y += 5.5;
+    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`, ML, y);
+    y += 12;
+
+    // ── Schulungsinhalte ─────────────────────────────────────
+    doc.setFillColor(...ORANGE); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('Schulungsinhalte', ML+7, y+5.5);
+    y += 11;
+
+    const kapitelListe = [
+      '1.  Rechtliche Grundlagen & Pflichten (ArbSchG, BetrSichV, DGUV)',
+      '2.  Verantwortung & Haftung (Organisations- und Durchführungsverantwortung)',
+      '3.  Bühnentypen: Gruppe A (Senkrechthub) und Gruppe B (Auslegerbühnen)',
+      '4.  Sicherheitseinrichtungen (Not-Aus, Neigungswächter, Totmannschalter)',
+      '5.  PSAgA-Pflicht bei Boom-Lifts — Peitscheneffekt und Anschlagpunkte',
+      '6.  Lastdiagramm — Tragfähigkeit in Abhängigkeit von Ausladung und Höhe',
+      '7.  Untergrund & Standsicherheit (Stützen, Unterlegplatten, Nivellierung)',
+      '8.  Windgefahren — Maximalwert 12,5 m/s und Segeleffekt-Verbot',
+      '9.  Sicherheitsabstände zu elektrischen Freileitungen',
+      '10. Tägliche Sicht- und Funktionsprüfung vor Arbeitsbeginn',
+      '11. Sicheres Aufstellen — Bodenvorbereitung und Aufstellablauf',
+      '12. Verbote im Betrieb (Überlast, Umsteigen, Freileitungen, Manipulation)',
+      '13. Notablass — Manuelles Absenken bei technischem Defekt oder Notfall',
+      '14. Fahrauftrag, Prüfungsablauf & Gültigkeit des Bedienerausweises'
+    ];
+
+    const tcw = (CW-6)/2, th = 6.5;
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    kapitelListe.forEach((k, ti) => {
+      const col = ti%2, row = Math.floor(ti/2);
+      const tx = ML + col*(tcw+6), ty2 = y + row*th;
+      doc.setFillColor(250,245,240);
+      doc.roundedRect(tx, ty2-1.5, tcw, th-0.5, 1, 1, 'F');
+      doc.setFillColor(...ORANGE); doc.rect(tx, ty2-1.5, 2.5, th-0.5, 'F');
+      doc.setTextColor(...GRAU_TEXT);
+      doc.text(k, tx+5, ty2+2.5, {maxWidth: tcw-7});
+    });
+    y += Math.ceil(kapitelListe.length/2)*th + 10;
+
+    // ── Trennlinie ───────────────────────────────────────────
+    doc.setFillColor(...GRAU_LINIE); doc.rect(ML, y, CW, 0.8, 'F');
+    y += 7;
+
+    // ── Hinweis & Unterschrift ────────────────────────────────
+    doc.setFontSize(8); doc.setFont('helvetica','italic'); doc.setTextColor(120,120,120);
+    doc.text('Diese Bescheinigung gilt ausschließlich für den theoretischen Teil der Ausbildung. Die praktische Fahrprüfung sowie', ML, y, {maxWidth: CW});
+    y += 4.5;
+    doc.text('der schriftliche Fahrauftrag des Arbeitgebers sind für den vollständigen Bedienerausweis nach DGUV 308-008 zusätzlich erforderlich.', ML, y, {maxWidth: CW});
+    y += 10;
+
+    const sigH = 30, halfW = (CW-4)/2;
+    doc.setFillColor(250,245,240);
+    doc.roundedRect(ML, y, halfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...DUNKELROT); doc.roundedRect(ML, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Ausbildungsverantwortlicher', ML+8, y+7);
+    doc.setDrawColor(...DUNKELROT); doc.setLineWidth(0.5);
+    doc.line(ML+8, y+16, ML+halfW-4, y+16);
+    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...DUNKELROT);
+    doc.text('gez. Thomas Schmoldt', ML+8, y+24);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text('CSC GmbH · ' + fmtDat(datum), ML+8, y+29);
+
+    const rx = ML+halfW+4;
+    doc.setFillColor(240,253,244);
+    doc.roundedRect(rx, y, halfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(GRUEN[0],GRUEN[1],GRUEN[2]);
+    doc.text('Quiz bestanden', rx+halfW/2, y+12, {align:'center'});
+    doc.setFontSize(20); doc.setFont('helvetica','bold');
+    doc.text(ergebnis.split('(')[1]?.replace(')','') || '≥ 70 %', rx+halfW/2, y+22, {align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
+    doc.text(`Min. 70 % · ${fmtDat(datum)}`, rx+halfW/2, y+29, {align:'center'});
+
+    // ── Footer ───────────────────────────────────────────────
+    doc.setFillColor(...DUNKELROT); doc.rect(0, 287, 210, 10, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH · Petermax-Müller-Straße 3 · 30880 Laatzen · Tel. 05102-9319730', 105, 293, {align:'center'});
+
+    // ── Speichern / Öffnen ───────────────────────────────────
+    const pdfBlob = doc.output('blob');
+    const pdfUrl  = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    showToast('✅ Teilnahmebescheinigung erstellt!', '#14532d');
+
+    // Supabase-Upload (best-effort)
+    try {
+      const pdfBytes = doc.output('arraybuffer');
+      const fn = `hub/${tenantId}/${userId}_${datum.getTime()}.pdf`;
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/psaga-bescheinigungen/${fn}`, {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/pdf', 'x-upsert': 'true' },
+        body: pdfBytes
+      });
+      if (uploadRes.ok) {
+        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/psaga-bescheinigungen/${fn}`;
+        await SB.upsert('hub_unterschriften', {
+          id: `${userId}_${tenantId}`,
+          user_id: userId, user_name: userName, tenant_id: tenantId || null,
+          ausstellungsdatum: datum.toISOString().slice(0,10), pdf_url: publicUrl,
+          erstellt_am: new Date().toISOString()
+        });
+        showToast('🗄️ Bescheinigung gespeichert', '#0f5132');
+      }
+    } catch(uploadErr) {
+      console.warn('Hub-Bescheinigung-Upload:', uploadErr.message);
+    }
+  } catch(e) {
+    console.error('Hub-Zertifikat-Fehler:', e);
+    showToast('⚠️ Fehler: ' + e.message, '#7f1d1d');
   }
 }
