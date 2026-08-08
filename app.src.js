@@ -2457,7 +2457,7 @@ function vtVorschau(vorlagenId) {
   const feldCount = (vorlage.abschnitte || []).reduce((s, a) => s + (a.felder || []).length, 0);
 
   overlay.innerHTML = `
-    <div style="background:#fff;border-radius:14px;padding:0;max-width:520px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;margin:auto">
+    <div style="background:#fff;border-radius:14px;padding:0;max-width:620px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;margin:auto">
       <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div>
           <div style="color:#fff;font-weight:700;font-size:1.05rem">👁 Formular-Vorschau</div>
