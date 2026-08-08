@@ -4701,6 +4701,7 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
 
 function renderFeld(feld, val, readOnly) {
   const pfl = feld.pflicht ? `<span class="pflicht-mark">*</span>` : '';
+  if (feld.typ==='info') return `<div class="form-group form-info-block">${feld.svg||''}${feld.label?`<div class="form-info-label">${escHtml(feld.label)}</div>`:''}${feld.text?`<div class="form-info-text">${escHtml(feld.text)}</div>`:''}</div>`;
   if (feld.typ==='text')     return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><input type="text" id="feld_${feld.id}" value="${escHtml(val)}" placeholder="${escHtml(feld.placeholder||'')}" ${readOnly?'readonly':''}></div>`;
   if (feld.typ==='textarea') return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><textarea id="feld_${feld.id}" ${readOnly?'readonly':''}>${escHtml(val)}</textarea></div>`;
   if (feld.typ==='select') {
