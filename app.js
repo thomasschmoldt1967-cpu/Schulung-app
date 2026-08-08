@@ -2444,6 +2444,11 @@ function vtVorschau(vorlagenId) {
             <div style="font-size:.8rem;color:#6b7280;margin-bottom:4px">✍️ ${escHtml(f.label || 'Unterschrift')}</div>
             <div style="background:#fff;border:2px dashed #d1d5db;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:.8rem">Unterschrift-Feld</div>
           </div>`;
+        if (f.typ === 'info') return `
+          <div style="display:flex;align-items:flex-start;gap:12px;background:#f0f6ff;border:1.5px solid #c7d9f8;border-radius:10px;padding:10px 14px;margin:8px 0">
+            ${f.svg||''}
+            <div><div style="font-size:.82rem;font-weight:700;color:#1e3a5f;margin-bottom:2px">${escHtml(f.label||'')}</div>${f.text?`<div style="font-size:.78rem;color:#4b6080;line-height:1.4">${escHtml(f.text)}</div>`:''}</div>
+          </div>`;
         return `<div style="padding:6px 0;font-size:.85rem;color:#374151">${escHtml(f.label || '')}</div>`;
       }).join('')}
     </div>`).join('');
