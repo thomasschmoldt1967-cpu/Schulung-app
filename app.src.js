@@ -2406,7 +2406,7 @@ function renderAdminVorlagen() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           ${v._eingebaut
-            ? `<button class="btn btn-outline btn-sm" onclick="hubSchulungToggle();showToast('🏗️ Hub-Modul im Mitarbeiter-Dashboard ansehen','#7c2d12')">👁 Ansehen</button>`
+            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
@@ -2695,6 +2695,137 @@ function vtBearbeitenAbbrechen() {
   document.getElementById('vt-speichern-btn').textContent = '💾 Vorlage speichern';
   document.getElementById('vt-abbrechen-btn').style.display = 'none';
   document.getElementById('vt-msg').classList.remove('show');
+}
+
+// ── Admin-Vorschau: Hubarbeitsbühnen DGUV 308-008 ─────────────
+function hubAdminVorschau() {
+  // Overlay aufbauen
+  const overlay = document.createElement('div');
+  overlay.id = 'hub-admin-vorschau-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto';
+
+  const modulTitel = {
+    1: 'Modul 1 — Recht & Verantwortung',
+    2: 'Modul 2 — Gerätekunde & Technik',
+    3: 'Modul 3 — Standsicherheit & Gefahren',
+    4: 'Modul 4 — Praxis & Notfallmanagement'
+  };
+  const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
+
+  let kapitelHtml = '';
+  let aktuellerMod = 0;
+  HUB_KAPITEL.forEach(k => {
+    if (k.modul !== aktuellerMod) {
+      aktuellerMod = k.modul;
+      kapitelHtml += `
+        <div style="padding:10px 0 4px;margin-top:${k.modul>1?'16px':'0'}">
+          <div style="font-size:.72rem;font-weight:700;color:${modulColor[k.modul]};text-transform:uppercase;letter-spacing:.06em">${modulTitel[k.modul]}</div>
+        </div>`;
+    }
+    kapitelHtml += `
+      <details style="margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <summary style="padding:11px 14px;cursor:pointer;background:#f9fafb;font-weight:600;font-size:.88rem;color:#1e293b;list-style:none;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">${k.icon}</span>
+          <span style="flex:1">${k.nr}. ${escHtml(k.titel)}</span>
+          <span style="font-size:.75rem;color:#9ca3af">▼ aufklappen</span>
+        </summary>
+        <div style="padding:14px 16px;background:#fff;font-size:.85rem;color:#374151;line-height:1.6;border-top:1px solid #f0f2f5">
+          ${k.inhalt}
+        </div>
+      </details>`;
+  });
+
+  // Quiz-Vorschau (erste 3 Fragen)
+  let quizVorschau = '';
+  HUB_QUIZ.slice(0, 3).forEach((q, qi) => {
+    quizVorschau += `
+      <div style="margin-bottom:14px;padding:12px 14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">
+        <div style="font-weight:700;font-size:.85rem;color:#1e293b;margin-bottom:8px">Frage ${qi+1}: ${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, ai) => `
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:.82rem;color:${ai===q.richtig?'#14532d':'#6b7280'}">
+            <span style="font-weight:700;flex-shrink:0;color:${ai===q.richtig?'#16a34a':'#d1d5db'}">${ai===q.richtig?'✅':'○'}</span>
+            <span>${escHtml(a)}</span>
+          </div>`).join('')}
+        <div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-size:.78rem;color:#166534">
+          💡 ${escHtml(q.erklaerung)}
+        </div>
+      </div>`;
+  });
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:600px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
+
+      <!-- Header -->
+      <div style="background:#7c2d12;color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1">
+        <div style="font-size:.7rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Admin-Vorschau</div>
+        <div style="font-weight:700;font-size:1rem">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
+        <div style="font-size:.75rem;opacity:.85;margin-top:2px">14 Kapitel · 10 Quiz-Fragen · Teilnahmebescheinigung</div>
+        <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
+          style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:1.2rem;width:32px;height:32px;border-radius:50%;cursor:pointer;-webkit-appearance:none">✕</button>
+      </div>
+
+      <div style="padding:18px">
+
+        <!-- Info-Banner -->
+        <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#92400e">
+          <strong>🔍 Admin-Vorschau</strong> — Du siehst hier alle Inhalte wie ein Mitarbeiter. Kapitel aufklappen zum Lesen, Quiz-Antworten sind markiert.
+        </div>
+
+        <!-- Fortschrittsübersicht -->
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:18px">
+          <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">📊 Kursübersicht</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem">
+            <div style="background:#fff7ed;border-radius:7px;padding:6px 12px;color:#7c2d12;font-weight:700">🏗️ 14 Kapitel</div>
+            <div style="background:#f0f9ff;border-radius:7px;padding:6px 12px;color:#0369a1;font-weight:700">📚 4 Module</div>
+            <div style="background:#f0fdf4;border-radius:7px;padding:6px 12px;color:#15803d;font-weight:700">🎯 10 Quiz-Fragen</div>
+            <div style="background:#faf5ff;border-radius:7px;padding:6px 12px;color:#7e22ce;font-weight:700">📄 Teilnahmebescheinigung</div>
+            <div style="background:#fef9c3;border-radius:7px;padding:6px 12px;color:#854d0e;font-weight:700">✅ 70% zum Bestehen</div>
+            <div style="background:#f1f5f9;border-radius:7px;padding:6px 12px;color:#475569;font-weight:700">🔁 12 Monate Intervall</div>
+          </div>
+        </div>
+
+        <!-- Alle Kapitel -->
+        <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:10px">📖 Alle 14 Kapitel</div>
+        ${kapitelHtml}
+
+        <!-- Quiz-Vorschau -->
+        <div style="margin-top:20px;padding-top:16px;border-top:2px solid #f0f2f5">
+          <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:4px">🎯 Quiz — Vorschau (3 von 10 Fragen)</div>
+          <div style="font-size:.78rem;color:#6b7280;margin-bottom:12px">Richtige Antworten sind grün markiert — im echten Quiz sieht der Mitarbeiter dies erst nach seiner Auswahl.</div>
+          ${quizVorschau}
+          <div style="text-align:center;padding:10px;background:#f9fafb;border-radius:8px;font-size:.8rem;color:#9ca3af">
+            … + 7 weitere Fragen im echten Quiz (zufällig gemischt)
+          </div>
+        </div>
+
+        <!-- Bescheinigung Vorschau -->
+        <div style="margin-top:20px;padding-top:16px;border-top:2px solid #f0f2f5">
+          <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:10px">📄 Teilnahmebescheinigung — Vorschau</div>
+          <div style="background:#7c2d12;border-radius:10px;padding:14px 16px;color:#fff;margin-bottom:8px">
+            <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">TEILNAHMEBESCHEINIGUNG</div>
+            <div style="font-weight:700;font-size:.95rem;margin-top:4px">CSC GmbH · Hubarbeitsbühnen | DGUV 308-008</div>
+          </div>
+          <div style="background:#fff7ed;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#7c2d12">
+            <strong>Hiermit wird bestätigt,</strong> dass [Name Mitarbeiter] die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Quiz mit mindestens 70 % bestanden hat.<br><br>
+            <span style="color:#9a3412">Ausgestellt: [Datum] · gez. Thomas Schmoldt · CSC GmbH</span>
+          </div>
+          <div style="font-size:.75rem;color:#9ca3af;margin-top:6px;text-align:center">Die echte Bescheinigung wird als professionelles A4-PDF mit allen Schulungsinhalten generiert.</div>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top:20px;text-align:center">
+          <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
+            style="padding:12px 32px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            ✕ Vorschau schließen
+          </button>
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  // Schließen bei Klick außen
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
 }
 
 async function vtLoeschen(id) {
