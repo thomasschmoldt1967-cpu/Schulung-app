@@ -4064,6 +4064,16 @@ async function renderMitarbeiterListe() {
       }
     } catch(e) { /* ignorieren, kein Datenverlust */ }
 
+    // Hub-Unterschriften aller Mitarbeiter dieses Tenants laden (Batch)
+    try {
+      const hubRows = await SB.select('hub_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}`);
+      if (hubRows && hubRows.length) {
+        window._hubUntCache = {};
+        hubRows.forEach(r => { window._hubUntCache[r.user_id] = r; });
+      }
+    } catch(e) { window._hubUntCache = {}; }
+
     // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
@@ -4252,6 +4262,66 @@ async function renderMitarbeiterListe() {
             </div>` : ''}
             <!-- Lernpfad-Block -->
             ${lpUntBlock ? `<div style="padding:0 14px 10px">${lpUntBlock}</div>` : ''}
+            <!-- Hub-Fahrauftrag-Block -->
+            ${(() => {
+              const hubZuw = zuweisungen.find(z => z.tenantId === m.tenant_id && z.vorlagenId === HUB_VORLAGE_ID);
+              if (!hubZuw) return '';
+              // Supabase-Daten aus _hubUntCache (wird beim Laden befüllt)
+              const hubUnt = (window._hubUntCache || {})[m.id];
+              if (!hubUnt || !hubUnt.unterzeichnet_am) {
+                // Quiz noch nicht bestanden
+                return `<div style="padding:0 14px 10px">
+                  <div style="padding:8px 10px;background:#fff7ed;border:1.5px solid #f97316;border-radius:7px;font-size:.72rem;color:#92400e">
+                    🏗️ Hubarbeitsbühnen DGUV 308-008 — Quiz noch ausstehend
+                  </div>
+                </div>`;
+              }
+              if (!hubUnt.verantwortlicher_am) {
+                // Quiz bestanden, Fahrauftrag unterzeichnet, Gegenzeichnung fehlt
+                const maDatum = new Date(hubUnt.unterzeichnet_am).toLocaleDateString('de-DE');
+                const typen = [hubUnt.buehnentyp_a && 'Gruppe A', hubUnt.buehnentyp_b && 'Gruppe B'].filter(Boolean).join(' + ') || '–';
+                return `<div style="padding:0 14px 10px">
+                  <div style="padding:8px 10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px">
+                    <div style="font-size:.72rem;font-weight:700;color:#92400e;margin-bottom:4px">⚠️ Hubarbeitsbühnen: Fahrauftrag unterzeichnet — Ihre Gegenzeichnung fehlt</div>
+                    <div style="font-size:.7rem;color:#374151;margin-bottom:6px">
+                      👤 <b>${escHtml(hubUnt.vollname || m.name)}</b> · ${maDatum} · ${escHtml(typen)}<br>
+                      📅 Gültig bis: <b>${hubUnt.fahrauftrag_bis || '–'}</b>
+                    </div>
+                    <button onclick="event.stopPropagation();hubGegenzeichnenOeffnen('${m.id}')"
+                      style="font-size:.75rem;padding:5px 12px;border-radius:6px;border:none;background:#7c2d12;color:#fff;cursor:pointer;font-weight:700;width:100%">
+                      ✍️ Fahrauftrag gegenzeichnen
+                    </button>
+                  </div>
+                </div>`;
+              }
+              // Vollständig gegengezeichnet
+              const maDatum = new Date(hubUnt.unterzeichnet_am).toLocaleDateString('de-DE');
+              const vDatum  = new Date(hubUnt.verantwortlicher_am).toLocaleDateString('de-DE');
+              const typen = [hubUnt.buehnentyp_a && 'Gruppe A', hubUnt.buehnentyp_b && 'Gruppe B'].filter(Boolean).join(' + ') || '–';
+              // Ampel: Gültigkeit prüfen
+              const bisD = hubUnt.fahrauftrag_bis ? new Date(hubUnt.fahrauftrag_bis) : null;
+              const heute2 = new Date(); heute2.setHours(0,0,0,0);
+              const restTage = bisD ? Math.round((bisD-heute2)/(86400000)) : null;
+              const ampelBg = restTage === null ? '#f0fdf4' : restTage <= 0 ? '#fef2f2' : restTage <= 30 ? '#fffbeb' : '#f0fdf4';
+              const ampelBorder = restTage === null ? '#86efac' : restTage <= 0 ? '#fca5a5' : restTage <= 30 ? '#fde68a' : '#86efac';
+              const ampelText = restTage === null ? '#0f5132' : restTage <= 0 ? '#991b1b' : restTage <= 30 ? '#92400e' : '#0f5132';
+              const ampelLabel = restTage === null ? '' : restTage <= 0 ? '🔴 Abgelaufen!' : restTage <= 30 ? `🟡 Läuft ab in ${restTage} Tagen` : `🟢 Gültig bis ${hubUnt.fahrauftrag_bis}`;
+              return `<div style="padding:0 14px 10px">
+                <div style="padding:8px 10px;background:${ampelBg};border:1.5px solid ${ampelBorder};border-radius:7px">
+                  <div style="font-size:.72rem;font-weight:700;color:${ampelText};margin-bottom:4px">✅ Hubarbeitsbühnen DGUV 308-008 — Fahrauftrag vollständig</div>
+                  <div style="font-size:.7rem;color:#374151;line-height:1.6">
+                    👤 <b>${escHtml(hubUnt.vollname || m.name)}</b> · ${maDatum} · ${escHtml(typen)}<br>
+                    🧑‍💼 Gegengezeichnet: <b>${escHtml(hubUnt.verantwortlicher_name || '')}</b> · ${vDatum}<br>
+                    ${ampelLabel ? `📅 ${ampelLabel}` : ''}
+                  </div>
+                  ${hubUnt.fahrauftrag_pdf_url ? `
+                  <a href="${escHtml(hubUnt.fahrauftrag_pdf_url)}" target="_blank" onclick="event.stopPropagation()"
+                    style="display:block;margin-top:6px;font-size:.72rem;text-align:center;background:#7c2d12;color:#fff;padding:5px;border-radius:6px;text-decoration:none;font-weight:700">
+                    📄 PDF herunterladen
+                  </a>` : ''}
+                </div>
+              </div>`;
+            })()}
           </div>
         </div>
       `;
@@ -11113,6 +11183,68 @@ const HUB_KAPITEL = [
         <div>☑ Notablass-Ablauf verstanden</div>
       </div>
     </div>`
+  },
+  {
+    id: 'hub-15', modul: 4, nr: 15,
+    titel: 'Betriebsanweisung — Sicherer Betrieb von Hubarbeitsbühnen',
+    icon: '⚠️',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.4rem">⚠️</span>
+      <div><div style="font-weight:700;font-size:.92rem">Betriebsanweisung</div>
+      <div style="font-size:.75rem;opacity:.9">gem. § 9 BetrSichV · DGUV Regel 100-500 Kap. 2.10</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Gefahren für Mensch und Umwelt</div>
+        <div style="color:#7f1d1d;display:flex;flex-direction:column;gap:2px">
+          <div>• Absturz aus dem Korb (Peitscheneffekt bei Boom-Lifts)</div>
+          <div>• Umkippen durch unzureichende Tragfähigkeit oder Wind</div>
+          <div>• Quetschen im Schwenkbereich oder an Deckenkonstruktionen</div>
+          <div>• Lebensgefährlicher Stromschlag durch Freileitungen</div>
+          <div>• Herabfallende Gegenstände aus dem Korb</div>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Schutzmaßnahmen und Verhaltensregeln</div>
+        <div style="color:#166534;display:flex;flex-direction:column;gap:2px">
+          <div>✅ Nur Personen mit Bedienerausweis (DGUV 308-008) + schriftl. Fahrauftrag</div>
+          <div>✅ PSAgA (Auffanggurt) bei allen Boom-Lifts (Gruppe B) anlegen</div>
+          <div>✅ Tägliche Sicht- und Funktionsprüfung vor Arbeitsbeginn</div>
+          <div>✅ Stützen vollständig ausfahren + Unterlegplatten + Nivellieren</div>
+          <div>✅ Max. Windgeschwindigkeit beachten (Standard 12,5 m/s)</div>
+          <div>✅ Mindestabstand 5 m zu Freileitungen (unbekannte Spannung)</div>
+          <div>✅ Gefahrenbereich unter der Bühne absperren</div>
+        </div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Verbote</div>
+        <div style="color:#7f1d1d;display:flex;flex-direction:column;gap:2px">
+          <div>❌ Traglast überschreiten (Person + Werkzeug + Material)</div>
+          <div>❌ Korb in angehobener Stellung verlassen / auf Dach umsteigen</div>
+          <div>❌ Standerhöhung durch Leitern oder Kisten im Korb</div>
+          <div>❌ Planen/Schilder am Korb (Segeleffekt → Kippgefahr)</div>
+          <div>❌ Sicherheitseinrichtungen überbrücken oder manipulieren</div>
+          <div>❌ Stützen bei angehobenem Korb einfahren</div>
+        </div>
+      </div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Verhalten bei Störungen und Notfall</div>
+        <div style="color:#78350f;display:flex;flex-direction:column;gap:2px">
+          <div>⚠️ Fehlfunktion → Not-Aus drücken, Gerät sichern, Vorgesetzten informieren</div>
+          <div>🚨 Korb-Steuerung ausgefallen → Bodenmann: Notablass betätigen!</div>
+          <div>📞 Notruf: 112 (WO – WAS – WIE VIELE – WER)</div>
+          <div>🩹 Erste Hilfe unter Eigensicherung, Verbandbuch eintragen</div>
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border-left:4px solid #0ea5e9;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#0c4a6e;margin-bottom:4px">5. Instandhaltung</div>
+        <div style="color:#075985;display:flex;flex-direction:column;gap:2px">
+          <div>🔧 Wartung nur durch qualifiziertes Fachpersonal (Motor aus, Hydraulik drucklos)</div>
+          <div>📋 UVV-Prüfung (Sachkundigprüfung) jährlich — Plakette kontrollieren</div>
+          <div>🛢️ Hydrauliköl-Leckage: sofort mit Bindemittel aufnehmen, Sondermüll</div>
+        </div>
+      </div>
+    </div>`
   }
 ];
 
@@ -11337,16 +11469,26 @@ function hubSchulungRender() {
   // Quiz-Button
   html += `<div style="padding:12px 14px">`;
   if (quizBestanden) {
+    const fahrauftragUnterzeichnet = !!localStorage.getItem(`hub_fahrauftrag_${userId}`);
+    const gegenzUnterzeichnet = !!localStorage.getItem(`hub_gegenz_${userId}`);
     html += `
       <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:center">
-        <div style="font-size:1.5rem">🏆</div>
-        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">Quiz bestanden!</div>
+        <div style="font-size:1.5rem">${gegenzUnterzeichnet ? '🏆' : fahrauftragUnterzeichnet ? '✍️' : '✅'}</div>
+        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">
+          ${gegenzUnterzeichnet ? 'Fahrauftrag vollständig gegengezeichnet!' : fahrauftragUnterzeichnet ? 'Fahrauftrag unterzeichnet — Gegenzeichnung ausstehend' : 'Quiz bestanden!'}
+        </div>
         <div style="font-size:.78rem;color:#166534;margin-top:2px">Ergebnis: ${localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–'}</div>
+        ${fahrauftragUnterzeichnet ? `<div style="font-size:.72rem;color:#16a34a;margin-top:4px">Gültig bis: ${localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '–'}</div>` : ''}
       </div>
+      ${!fahrauftragUnterzeichnet ? `
+      <button onclick="hubFahrauftragOeffnen()"
+        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35);margin-bottom:8px">
+        ✍️ Schritt 2: Fahrauftrag unterzeichnen →
+      </button>` : `
       <button onclick="hubBescheinigungErstellen()"
-        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35)">
-        📄 Teilnahmebescheinigung herunterladen
-      </button>`;
+        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35);margin-bottom:8px">
+        📄 Kombiniertes PDF herunterladen
+      </button>`}`;
   } else if (alleGelesen) {
     html += `
       <button onclick="hubQuizStarten()"
@@ -11508,7 +11650,7 @@ function hubQuizErgebnis() {
   const prozent = Math.round(hubQuizPunkte / hubQuizFragen.length * 100);
   const bestanden = prozent >= 70;
 
-  if (bestanden) {
+    if (bestanden) {
     localStorage.setItem(`hub_quiz_bestanden_${userId}`, '1');
     localStorage.setItem(`hub_quiz_ergebnis_${userId}`, `${hubQuizPunkte}/${hubQuizFragen.length} (${prozent} %)`);
     // Supabase
@@ -11537,12 +11679,12 @@ function hubQuizErgebnis() {
       <div style="padding:16px">
         ${bestanden ? `
           <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
-            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Ergebnis gespeichert</div>
-            <div style="font-size:.78rem;color:#166534;margin-top:4px">Ihre Teilnahmebescheinigung ist jetzt verfügbar.</div>
+            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Quiz bestanden — Ergebnis gespeichert</div>
+            <div style="font-size:.78rem;color:#166534;margin-top:4px">Jetzt Schritt 2: Fahrauftrag unterzeichnen</div>
           </div>
-          <button onclick="hubBescheinigungErstellen()"
+          <button onclick="hubFahrauftragOeffnen()"
             style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(124,45,18,.35)">
-            📄 Teilnahmebescheinigung herunterladen
+            ✍️ Schritt 2: Fahrauftrag unterzeichnen →
           </button>` : `
           <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
             <div style="font-size:.85rem;color:#991b1b;font-weight:700">❌ ${prozent} % — Mindestpunktzahl nicht erreicht</div>
@@ -11570,85 +11712,83 @@ async function hubBescheinigungErstellen() {
   const tenantId = currentUser?.tenantId || '';
   const ergebnis = localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–';
   const datum    = new Date();
+  const tenant   = APP_TENANTS?.find(t => t.id === tenantId);
+  const firmaName = tenant?.name || 'CSC GmbH';
 
-  showToast('⏳ Bescheinigung wird erstellt…', '#7c2d12');
+  // Fahrauftrag-Daten aus localStorage
+  const typA     = !!localStorage.getItem(`hub_fahrauftrag_typa_${userId}`);
+  const typB     = !!localStorage.getItem(`hub_fahrauftrag_typb_${userId}`);
+  const faBis    = localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '';
+
+  showToast('⏳ Kombiniertes PDF wird erstellt…', '#7c2d12');
 
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
 
-    const ML=14, MT=14, PW=182, PH=267;
-    const DUNKELROT  = [124,45,18];
-    const ORANGE     = [249,115,22];
-    const HELLROT    = [255,237,213];
-    const DUNKELBLAU = [30,58,95];
-    const GRAU_TEXT  = [71,85,105];
-    const GRAU_LINIE = [226,232,240];
-    const WEISS      = [255,255,255];
-    const GRUEN      = [22,163,74];
+    const ML=14, CW=182;
+    const ROT    = [124,45,18];
+    const ORANGE = [249,115,22];
+    const HELLROT= [255,237,213];
+    const BLAU   = [30,58,95];
+    const GRAU   = [71,85,105];
+    const LINIE  = [226,232,240];
+    const WEISS  = [255,255,255];
+    const GRUEN  = [22,163,74];
+    const HELLGR = [240,253,244];
 
-    const fmtDat = d => new Date(d).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
-    const CW = PW;
-    let y = MT;
+    const fmtDat = d => (d instanceof Date ? d : new Date(d)).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const heute  = fmtDat(datum);
+    const nr     = `HUB-${datum.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
 
-    // ── Header-Band ──────────────────────────────────────────
-    doc.setFillColor(...DUNKELROT);
-    doc.rect(0,0,210,32,'F');
-    doc.setFillColor(...ORANGE);
-    doc.rect(0,28,210,4,'F');
+    // ══════════════════════════════════════════════════════════
+    // SEITE 1 — TEILNAHMEBESCHEINIGUNG
+    // ══════════════════════════════════════════════════════════
+    let y = 14;
 
-    // Logo-Bereich (links)
+    // Header
+    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
     doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
     doc.text('CSC GmbH', ML, 14);
     doc.setFontSize(8); doc.setFont('helvetica','normal');
     doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
-
-    // Titel (rechts)
     doc.setFontSize(9); doc.setFont('helvetica','bold');
     doc.text('TEILNAHMEBESCHEINIGUNG', 210-ML, 13, {align:'right'});
     doc.setFontSize(7.5); doc.setFont('helvetica','normal');
     doc.text('Hubarbeitsbühnen | DGUV Grundsatz 308-008', 210-ML, 19, {align:'right'});
-
     y = 38;
 
-    // ── Personenbox ──────────────────────────────────────────
-    doc.setFillColor(...HELLROT);
-    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
-    doc.setFillColor(...DUNKELROT); doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
-
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    // Personenbox
+    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,22,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,22,2,2,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
     doc.text('TEILNEHMER / IN', ML+8, y+7);
-    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELROT);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
     doc.text(userName, ML+8, y+15);
-
-    const nr = `HUB-${datum.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
     doc.text(`Bescheinigung Nr. ${nr}`, 210-ML, y+7, {align:'right'});
-    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
-    doc.text(`Ausgestellt: ${fmtDat(datum)}`, 210-ML, y+15, {align:'right'});
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text(`Ausgestellt: ${heute}`, 210-ML, y+15, {align:'right'});
     y += 28;
 
-    // ── Haupttext ────────────────────────────────────────────
-    doc.setFontSize(9.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
-    doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung', ML, y, {maxWidth: CW});
-    y += 5.5;
-    doc.text('zum Bediener von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y, {maxWidth: CW});
-    y += 5.5;
-    doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELROT);
+    // Unternehmen + Haupttext
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text(`Unternehmen: ${firmaName}`, ML, y); y += 7;
+    doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung zum Bediener', ML, y, {maxWidth:CW}); y += 5.5;
+    doc.text('von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y); y += 5.5;
+    doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
     doc.text('DGUV-Grundsatzes 308-008', ML, y);
-    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
-    doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y);
-    y += 5.5;
-    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`, ML, y);
-    y += 12;
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y); y += 5.5;
+    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`, ML, y); y += 12;
 
-    // ── Schulungsinhalte ─────────────────────────────────────
-    doc.setFillColor(...ORANGE); doc.rect(ML, y, 4, 7, 'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
-    doc.text('Schulungsinhalte', ML+7, y+5.5);
-    y += 11;
+    // Schulungsinhalte
+    doc.setFillColor(...ORANGE); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('Schulungsinhalte (15 Kapitel)', ML+7, y+5.5); y += 11;
 
-    const kapitelListe = [
+    const kapitel = [
       '1.  Rechtliche Grundlagen & Pflichten (ArbSchG, BetrSichV, DGUV)',
       '2.  Verantwortung & Haftung (Organisations- und Durchführungsverantwortung)',
       '3.  Bühnentypen: Gruppe A (Senkrechthub) und Gruppe B (Auslegerbühnen)',
@@ -11662,92 +11802,556 @@ async function hubBescheinigungErstellen() {
       '11. Sicheres Aufstellen — Bodenvorbereitung und Aufstellablauf',
       '12. Verbote im Betrieb (Überlast, Umsteigen, Freileitungen, Manipulation)',
       '13. Notablass — Manuelles Absenken bei technischem Defekt oder Notfall',
-      '14. Fahrauftrag, Prüfungsablauf & Gültigkeit des Bedienerausweises'
+      '14. Fahrauftrag, Prüfungsablauf & Gültigkeitsdauer des Bedienerausweises',
+      '15. Betriebsanweisung gem. § 9 BetrSichV / DGUV Regel 100-500 Kap. 2.10'
     ];
-
-    const tcw = (CW-6)/2, th = 6.5;
+    const tcw=(CW-6)/2, th=6.5;
     doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    kapitelListe.forEach((k, ti) => {
-      const col = ti%2, row = Math.floor(ti/2);
-      const tx = ML + col*(tcw+6), ty2 = y + row*th;
-      doc.setFillColor(250,245,240);
-      doc.roundedRect(tx, ty2-1.5, tcw, th-0.5, 1, 1, 'F');
-      doc.setFillColor(...ORANGE); doc.rect(tx, ty2-1.5, 2.5, th-0.5, 'F');
-      doc.setTextColor(...GRAU_TEXT);
-      doc.text(k, tx+5, ty2+2.5, {maxWidth: tcw-7});
+    kapitel.forEach((k,ti) => {
+      const col=ti%2, row=Math.floor(ti/2), tx=ML+col*(tcw+6), ty2=y+row*th;
+      doc.setFillColor(250,245,240); doc.roundedRect(tx,ty2-1.5,tcw,th-0.5,1,1,'F');
+      doc.setFillColor(...ORANGE); doc.rect(tx,ty2-1.5,2.5,th-0.5,'F');
+      doc.setTextColor(...GRAU); doc.text(k,tx+5,ty2+2.5,{maxWidth:tcw-7});
     });
-    y += Math.ceil(kapitelListe.length/2)*th + 10;
+    y += Math.ceil(kapitel.length/2)*th + 8;
 
-    // ── Trennlinie ───────────────────────────────────────────
-    doc.setFillColor(...GRAU_LINIE); doc.rect(ML, y, CW, 0.8, 'F');
-    y += 7;
+    // Trennlinie
+    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
 
-    // ── Hinweis & Unterschrift ────────────────────────────────
-    doc.setFontSize(8); doc.setFont('helvetica','italic'); doc.setTextColor(120,120,120);
-    doc.text('Diese Bescheinigung gilt ausschließlich für den theoretischen Teil der Ausbildung. Die praktische Fahrprüfung sowie', ML, y, {maxWidth: CW});
-    y += 4.5;
-    doc.text('der schriftliche Fahrauftrag des Arbeitgebers sind für den vollständigen Bedienerausweis nach DGUV 308-008 zusätzlich erforderlich.', ML, y, {maxWidth: CW});
-    y += 10;
+    // Hinweis
+    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
+    doc.text('Diese Bescheinigung gilt für den theoretischen Teil. Praktische Fahrprüfung und schriftlicher Fahrauftrag sind zusätzlich erforderlich (DGUV 308-008). Siehe Seite 2.', ML, y, {maxWidth:CW}); y += 9;
 
-    const sigH = 30, halfW = (CW-4)/2;
-    doc.setFillColor(250,245,240);
-    doc.roundedRect(ML, y, halfW, sigH, 3, 3, 'F');
-    doc.setFillColor(...DUNKELROT); doc.roundedRect(ML, y, 4, sigH, 2, 2, 'F');
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    // Unterschrift-Block
+    const sigH=30, halfW=(CW-4)/2;
+    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,halfW,sigH,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,sigH,2,2,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
     doc.text('Ausbildungsverantwortlicher', ML+8, y+7);
-    doc.setDrawColor(...DUNKELROT); doc.setLineWidth(0.5);
-    doc.line(ML+8, y+16, ML+halfW-4, y+16);
-    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...DUNKELROT);
+    doc.setDrawColor(...ROT); doc.setLineWidth(0.5);
+    doc.line(ML+8,y+16,ML+halfW-4,y+16);
+    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
     doc.text('gez. Thomas Schmoldt', ML+8, y+24);
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-    doc.text('CSC GmbH · ' + fmtDat(datum), ML+8, y+29);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(`CSC GmbH · ${heute}`, ML+8, y+29);
 
-    const rx = ML+halfW+4;
-    doc.setFillColor(240,253,244);
-    doc.roundedRect(rx, y, halfW, sigH, 3, 3, 'F');
-    doc.setFillColor(...GRUEN); doc.roundedRect(rx, y, 4, sigH, 2, 2, 'F');
-    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(GRUEN[0],GRUEN[1],GRUEN[2]);
-    doc.text('Quiz bestanden', rx+halfW/2, y+12, {align:'center'});
-    doc.setFontSize(20); doc.setFont('helvetica','bold');
-    doc.text(ergebnis.split('(')[1]?.replace(')','') || '≥ 70 %', rx+halfW/2, y+22, {align:'center'});
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-    doc.text(`Min. 70 % · ${fmtDat(datum)}`, rx+halfW/2, y+29, {align:'center'});
+    const rx=ML+halfW+4;
+    doc.setFillColor(...HELLGR); doc.roundedRect(rx,y,halfW,sigH,3,3,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx,y,4,sigH,2,2,'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
+    doc.text('Quiz bestanden', rx+halfW/2, y+10, {align:'center'});
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text(ergebnis.split('(')[1]?.replace(')','') || '≥70%', rx+halfW/2, y+22, {align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(`Min. 70 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
 
-    // ── Footer ───────────────────────────────────────────────
-    doc.setFillColor(...DUNKELROT); doc.rect(0, 287, 210, 10, 'F');
+    // Footer Seite 1
+    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
-    doc.text('CSC GmbH · Petermax-Müller-Straße 3 · 30880 Laatzen · Tel. 05102-9319730', 105, 293, {align:'center'});
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 1 von 2', 105, 293, {align:'center'});
 
-    // ── Speichern / Öffnen ───────────────────────────────────
-    const pdfBlob = doc.output('blob');
-    const pdfUrl  = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
-    showToast('✅ Teilnahmebescheinigung erstellt!', '#14532d');
+    // ══════════════════════════════════════════════════════════
+    // SEITE 2 — SCHRIFTLICHE BEAUFTRAGUNG (FAHRAUFTRAG)
+    // ══════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 14;
 
-    // Supabase-Upload (best-effort)
+    // Header Seite 2
+    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
+    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH', ML, 14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
+    doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('SCHRIFTLICHE BEAUFTRAGUNG', 210-ML, 13, {align:'right'});
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text('Fahrauftrag nach DGUV Regel 100-500 Kap. 2.10', 210-ML, 19, {align:'right'});
+    y = 38;
+
+    // Rechtlicher Hinweis-Banner
+    doc.setFillColor(255,247,237); doc.roundedRect(ML,y,CW,10,2,2,'F');
+    doc.setFillColor(...ORANGE); doc.rect(ML,y,3,10,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(124,45,18);
+    doc.text('Rechtliche Grundlage: § 12 ArbSchG · BetrSichV · DGUV Grundsatz 308-008 · DGUV Regel 100-500 Kap. 2.10', ML+6, y+6.5, {maxWidth:CW-8});
+    y += 14;
+
+    // Bediener-Box
+    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,24,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,24,2,2,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('BEAUFTRAGTER BEDIENER', ML+8, y+7);
+    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text(userName, ML+8, y+14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text(`Unternehmen: ${firmaName}`, ML+8, y+21);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...BLAU);
+    doc.text(`Ausgestellt: ${heute}  |  Bescheinigungs-Nr.: ${nr}`, 210-ML, y+14, {align:'right'});
+    y += 28;
+
+    // Abschnitt 1: Umfang
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('1. Umfang der Beauftragung', ML+7, y+5.5); y += 11;
+
+    const typen = [];
+    if (typA) typen.push({ label:'Gruppe A — Senkrechthub', sub:'Scherenbühnen, Personenlifte (Schwerpunkt bleibt innerhalb der Kippkanten)' });
+    if (typB) typen.push({ label:'Gruppe B — Auslegerbühnen (Boom-Lifts)', sub:'Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Arbeitsbühnen — PSAgA-Pflicht!' });
+    if (!typA && !typB) typen.push({ label:'Alle im Betrieb vorhandenen Hubarbeitsbühnen', sub:'nach erfolgter gerätespezifischer Einweisung' });
+
+    typen.forEach(t => {
+      doc.setFillColor(250,245,240); doc.roundedRect(ML,y,CW,12,2,2,'F');
+      doc.setFillColor(...ORANGE); doc.rect(ML,y,3,12,'F');
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+      doc.text('☑  '+t.label, ML+6, y+5);
+      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+      doc.text(t.sub, ML+10, y+10);
+      y += 14;
+    });
+    y += 2;
+
+    // Abschnitt 2: Voraussetzungen
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('2. Voraussetzungen des Bedieners (alle erfüllt)', ML+7, y+5.5); y += 11;
+
+    const vorraus = [
+      '✓ Mindestalter 18 Jahre vollendet',
+      `✓ Ausbildung nach DGUV 308-008 erfolgreich abgeschlossen am ${heute}`,
+      '✓ Körperliche und geistige Eignung (Höhentauglichkeit) liegt vor',
+      '✓ Gerätespezifische Einweisung für das jeweilige Einsatzgerät wird durchgeführt'
+    ];
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    vorraus.forEach(v => { doc.text(v, ML+2, y); y += 5.5; });
+    y += 4;
+
+    // Abschnitt 3: Gültigkeitszeitraum
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('3. Gültigkeitszeitraum', ML+7, y+5.5); y += 11;
+
+    const bisDate = new Date(datum); bisDate.setDate(bisDate.getDate()+364);
+    const hw=(CW-4)/2;
+    doc.setFillColor(...HELLGR); doc.roundedRect(ML,y,hw,14,2,2,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(ML,y,3,14,1,1,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('GÜLTIG AB', ML+6, y+5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(heute, ML+6, y+11);
+
+    doc.setFillColor(...HELLGR); doc.roundedRect(ML+hw+4,y,hw,14,2,2,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(ML+hw+4,y,3,14,1,1,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('GÜLTIG BIS', ML+hw+8, y+5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(faBis || fmtDat(bisDate), ML+hw+8, y+11);
+    y += 18;
+
+    doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
+    doc.text('Hinweis: Jährliche betriebliche Unterweisung bleibt Pflicht. Der Fahrauftrag kann jederzeit widerrufen werden.', ML, y); y += 8;
+
+    // Abschnitt 4: Pflichten
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('4. Pflichten des Bedieners', ML+7, y+5.5); y += 10;
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    const pflichten = 'Der Bediener verpflichtet sich zur Einhaltung der Betriebssicherheitsverordnung, der DGUV-Unfallverhütungsvorschriften und der Herstellerbetriebsanleitungen. Vor jeder Inbetriebnahme ist die vorgeschriebene Sicht- und Funktionsprüfung durchzuführen. Festgestellte Mängel sind sofort dem Vorgesetzten zu melden. Das Tragen der PSAgA (Auffanggurt) ist Pflicht bei Gruppe B (Boom-Lifts).';
+    const plLines = doc.splitTextToSize(pflichten, CW);
+    doc.text(plLines, ML, y); y += plLines.length*4.5+6;
+
+    // Unterschriften
+    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('5. Unterschriften', ML, y); y += 8;
+
+    const uh=38, uw=(CW-4)/2;
+
+    // MA-Unterschrift (links)
+    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,uw,uh,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,uh,2,2,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('Bediener / Beauftragter', ML+8, y+6);
+    // Unterschrift-Bild aus Canvas wenn vorhanden
     try {
-      const pdfBytes = doc.output('arraybuffer');
-      const fn = `hub/${tenantId}/${userId}_${datum.getTime()}.pdf`;
+      const untCanvas = document.getElementById('hub-fa-canvas');
+      if (untCanvas && _hubFaHatStriche) {
+        doc.addImage(untCanvas.toDataURL('image/png'), 'PNG', ML+5, y+8, uw-10, 20);
+      }
+    } catch(e) {}
+    doc.setDrawColor(...ROT); doc.setLineWidth(0.4);
+    doc.line(ML+8, y+28, ML+uw-4, y+28);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text(userName, ML+8, y+34);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(heute, ML+8, y+uh-3);
+
+    // Verantwortlichen-Unterschrift (rechts)
+    const rx2=ML+uw+4;
+    doc.setFillColor(240,253,244); doc.roundedRect(rx2,y,uw,uh,3,3,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx2,y,4,uh,2,2,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('Verantwortlicher / Vorgesetzter', rx2+8, y+6);
+    doc.setDrawColor(...GRUEN); doc.setLineWidth(0.4);
+    doc.line(rx2+8, y+28, rx2+uw-4, y+28);
+    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
+    doc.text('Gegenzeichnung ausstehend', rx2+8, y+34);
+    doc.setFontSize(7); doc.setFont('helvetica','normal');
+    doc.text('Datum: ___________', rx2+8, y+uh-3);
+
+    // Footer Seite 2
+    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 2 von 2', 105, 293, {align:'center'});
+
+    // ── PDF öffnen ───────────────────────────────────────────
+    const pdfBlob   = doc.output('blob');
+    const pdfUrl    = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    showToast('✅ PDF erstellt (Bescheinigung + Fahrauftrag)', '#14532d');
+
+    // ── Backup: Supabase Storage ─────────────────────────────
+    const pdfBytes  = doc.output('arraybuffer');
+    const fn        = `hub/${tenantId}/${userId}_${datum.getTime()}.pdf`;
+    let   pdfStored = false;
+    let   publicUrl = '';
+
+    try {
       const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/psaga-bescheinigungen/${fn}`, {
         method: 'POST',
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY, 'Content-Type': 'application/pdf', 'x-upsert': 'true' },
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/pdf',
+          'x-upsert': 'true'
+        },
         body: pdfBytes
       });
       if (uploadRes.ok) {
-        const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/psaga-bescheinigungen/${fn}`;
-        await SB.upsert('hub_unterschriften', {
-          id: `${userId}_${tenantId}`,
-          user_id: userId, user_name: userName, tenant_id: tenantId || null,
-          ausstellungsdatum: datum.toISOString().slice(0,10), pdf_url: publicUrl,
-          erstellt_am: new Date().toISOString()
-        });
-        showToast('🗄️ Bescheinigung gespeichert', '#0f5132');
+        publicUrl = `${SUPABASE_URL}/storage/v1/object/public/psaga-bescheinigungen/${fn}`;
+        pdfStored = true;
+        showToast('🗄️ PDF in Supabase gespeichert', '#0f5132');
+      } else {
+        console.warn('Supabase Upload:', uploadRes.status, await uploadRes.text());
       }
     } catch(uploadErr) {
-      console.warn('Hub-Bescheinigung-Upload:', uploadErr.message);
+      console.warn('Supabase Storage Upload fehlgeschlagen:', uploadErr.message);
     }
+
+    // ── Backup: Supabase-Datenbank (immer, auch ohne Storage) ─
+    try {
+      await SB.upsert('hub_unterschriften', {
+        id:               `${userId}_${tenantId}`,
+        user_id:          userId,
+        user_name:        userName,
+        tenant_id:        tenantId || null,
+        vollname:         userName,
+        ausstellungsdatum: datum.toISOString().slice(0,10),
+        fahrauftrag_von:  datum.toISOString().slice(0,10),
+        fahrauftrag_bis:  faBis || new Date(datum.getTime()+364*86400000).toISOString().slice(0,10),
+        buehnentyp_a:     typA,
+        buehnentyp_b:     typB,
+        pdf_url:          publicUrl || null,
+        fahrauftrag_pdf_url: publicUrl || null,
+        aktualisiert_am:  new Date().toISOString()
+      });
+      if (!pdfStored) showToast('🗄️ Metadaten in Datenbank gespeichert (PDF lokal)', '#2563eb');
+    } catch(dbErr) {
+      console.warn('Supabase DB Backup fehlgeschlagen:', dbErr.message);
+      // Letzter Ausweg: Audit-Log
+      await sbAudit('HUB_BESCHEINIGUNG', JSON.stringify({
+        user_id: userId, user_name: userName, tenant_id: tenantId,
+        datum: datum.toISOString().slice(0,10), nr, typA, typB
+      })).catch(()=>{});
+      showToast('⚠️ Metadaten im Audit-Log gesichert', '#b45309');
+    }
+
   } catch(e) {
-    console.error('Hub-Zertifikat-Fehler:', e);
+    console.error('Hub-PDF-Fehler:', e);
     showToast('⚠️ Fehler: ' + e.message, '#7f1d1d');
   }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ── HUB FAHRAUFTRAG — Schriftliche Beauftragung nach DGUV 100-500
+// ══════════════════════════════════════════════════════════════
+
+let _hubFaCanvas = null, _hubFaCtx = null, _hubFaHatStriche = false;
+let _hubFaGegenzCanvas = null, _hubFaGegenzCtx = null, _hubFaGegenzHatStriche = false;
+let _hubFaGegenzUserId = null; // Für Gegenzeichnung durch Verantwortlichen
+
+function hubFahrauftragOeffnen() {
+  const userId = currentUser?.userId || 'anon';
+  const heute = new Date();
+  const bis = new Date(heute); bis.setDate(bis.getDate() + 364);
+  const fmtDat = d => d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // Tenant-Name ermitteln
+  const tenant = APP_TENANTS?.find(t => t.id === currentUser?.tenantId);
+  const firmaName = tenant?.name || 'CSC GmbH';
+
+  // Modal befüllen
+  document.getElementById('hub-fa-name').textContent = currentUser?.name || '';
+  document.getElementById('hub-fa-firma').textContent = firmaName;
+  document.getElementById('hub-fa-datum-schulung').textContent = fmtDat(heute);
+  document.getElementById('hub-fa-von').textContent = fmtDat(heute);
+  document.getElementById('hub-fa-bis').textContent = fmtDat(bis);
+
+  // Checkboxen zurücksetzen
+  document.getElementById('hub-fa-typ-a').checked = false;
+  document.getElementById('hub-fa-typ-b').checked = false;
+  document.getElementById('hub-fa-typ-fehler').style.display = 'none';
+  document.getElementById('hub-fa-label-a').style.borderColor = '#e5e7eb';
+  document.getElementById('hub-fa-label-b').style.borderColor = '#e5e7eb';
+
+  // Bestätige-Button sperren
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  btn.disabled = true;
+  btn.style.background = '#d1d5db';
+  btn.style.color = '#9ca3af';
+  btn.style.cursor = 'not-allowed';
+
+  document.getElementById('hub-fahrauftrag-modal').style.display = 'flex';
+
+  // Canvas initialisieren
+  requestAnimationFrame(() => {
+    _hubFaCanvas = document.getElementById('hub-fa-canvas');
+    _hubFaCtx = _hubFaCanvas.getContext('2d');
+    _hubFaHatStriche = false;
+    _hubFaCanvasInit();
+    _hubFaCanvasBindEvents();
+  });
+}
+
+function hubFahrauftragSchliessen() {
+  document.getElementById('hub-fahrauftrag-modal').style.display = 'none';
+  _hubFaCanvasUnbindEvents();
+  _hubFaCanvas = null; _hubFaCtx = null;
+}
+
+function hubFaTypChanged() {
+  const a = document.getElementById('hub-fa-typ-a').checked;
+  const b = document.getElementById('hub-fa-typ-b').checked;
+  document.getElementById('hub-fa-label-a').style.borderColor = a ? '#7c2d12' : '#e5e7eb';
+  document.getElementById('hub-fa-label-b').style.borderColor = b ? '#7c2d12' : '#e5e7eb';
+  document.getElementById('hub-fa-typ-fehler').style.display = 'none';
+  _hubFaPruefenObBereit();
+}
+
+function _hubFaPruefenObBereit() {
+  const typOk = document.getElementById('hub-fa-typ-a').checked || document.getElementById('hub-fa-typ-b').checked;
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  const bereit = typOk && _hubFaHatStriche;
+  btn.disabled = !bereit;
+  btn.style.background = bereit ? '#7c2d12' : '#d1d5db';
+  btn.style.color = bereit ? '#fff' : '#9ca3af';
+  btn.style.cursor = bereit ? 'pointer' : 'not-allowed';
+}
+
+function _hubFaCanvasInit() {
+  if (!_hubFaCtx || !_hubFaCanvas) return;
+  _hubFaCtx.clearRect(0,0,_hubFaCanvas.width,_hubFaCanvas.height);
+  _hubFaCtx.fillStyle = '#f9fafb';
+  _hubFaCtx.fillRect(0,0,_hubFaCanvas.width,_hubFaCanvas.height);
+  _hubFaCtx.strokeStyle = '#d1d5db';
+  _hubFaCtx.lineWidth = 1;
+  _hubFaCtx.setLineDash([6,4]);
+  _hubFaCtx.beginPath();
+  _hubFaCtx.moveTo(20, _hubFaCanvas.height-24);
+  _hubFaCtx.lineTo(_hubFaCanvas.width-20, _hubFaCanvas.height-24);
+  _hubFaCtx.stroke();
+  _hubFaCtx.setLineDash([]);
+  _hubFaCtx.font = '11px sans-serif';
+  _hubFaCtx.fillStyle = '#d1d5db';
+  _hubFaCtx.textAlign = 'center';
+  _hubFaCtx.fillText('Hier unterschreiben', _hubFaCanvas.width/2, _hubFaCanvas.height-8);
+  _hubFaCtx.textAlign = 'left';
+}
+
+function hubFaCanvasLeeren() {
+  _hubFaHatStriche = false;
+  _hubFaCanvasInit();
+  document.getElementById('hub-fa-canvas-status').textContent = 'Bitte mit dem Finger unterzeichnen';
+  document.getElementById('hub-fa-canvas-status').style.color = '#9ca3af';
+  _hubFaPruefenObBereit();
+}
+
+let _hubFaZeichnet = false;
+function _hubFaGetPos(e) {
+  const rect = _hubFaCanvas.getBoundingClientRect();
+  const sx = _hubFaCanvas.width / rect.width;
+  const sy = _hubFaCanvas.height / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - rect.left)*sx, y: (src.clientY - rect.top)*sy };
+}
+function _hubFaStart(e) { e.preventDefault(); _hubFaZeichnet = true; const p = _hubFaGetPos(e); _hubFaCtx.beginPath(); _hubFaCtx.moveTo(p.x,p.y); }
+function _hubFaMove(e) {
+  if (!_hubFaZeichnet) return; e.preventDefault();
+  const p = _hubFaGetPos(e);
+  _hubFaCtx.lineWidth = 2.5; _hubFaCtx.strokeStyle = '#1e293b'; _hubFaCtx.lineCap = 'round';
+  _hubFaCtx.setLineDash([]);
+  _hubFaCtx.lineTo(p.x,p.y); _hubFaCtx.stroke(); _hubFaCtx.beginPath(); _hubFaCtx.moveTo(p.x,p.y);
+  if (!_hubFaHatStriche) {
+    _hubFaHatStriche = true;
+    document.getElementById('hub-fa-canvas-status').textContent = '✅ Unterschrift erfasst';
+    document.getElementById('hub-fa-canvas-status').style.color = '#16a34a';
+    _hubFaPruefenObBereit();
+  }
+}
+function _hubFaEnd() { _hubFaZeichnet = false; }
+function _hubFaCanvasBindEvents() {
+  if (!_hubFaCanvas) return;
+  _hubFaCanvas.addEventListener('mousedown', _hubFaStart); _hubFaCanvas.addEventListener('mousemove', _hubFaMove); _hubFaCanvas.addEventListener('mouseup', _hubFaEnd);
+  _hubFaCanvas.addEventListener('touchstart', _hubFaStart, {passive:false}); _hubFaCanvas.addEventListener('touchmove', _hubFaMove, {passive:false}); _hubFaCanvas.addEventListener('touchend', _hubFaEnd);
+}
+function _hubFaCanvasUnbindEvents() {
+  if (!_hubFaCanvas) return;
+  _hubFaCanvas.removeEventListener('mousedown', _hubFaStart); _hubFaCanvas.removeEventListener('mousemove', _hubFaMove); _hubFaCanvas.removeEventListener('mouseup', _hubFaEnd);
+  _hubFaCanvas.removeEventListener('touchstart', _hubFaStart); _hubFaCanvas.removeEventListener('touchmove', _hubFaMove); _hubFaCanvas.removeEventListener('touchend', _hubFaEnd);
+}
+
+async function hubFahrauftragBestaetigen() {
+  const typA = document.getElementById('hub-fa-typ-a').checked;
+  const typB = document.getElementById('hub-fa-typ-b').checked;
+  if (!typA && !typB) { document.getElementById('hub-fa-typ-fehler').style.display = ''; return; }
+  if (!_hubFaHatStriche) { showToast('⚠️ Bitte erst unterzeichnen', '#92400e'); return; }
+
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+
+  const userId   = currentUser?.userId || 'anon';
+  const heute    = new Date();
+  const bis      = new Date(heute); bis.setDate(bis.getDate() + 364);
+  const fmtISO   = d => d.toISOString().slice(0,10);
+  const fmtDat   = d => d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const untDataUrl = _hubFaCanvas.toDataURL('image/png');
+
+  // Lokal speichern
+  localStorage.setItem(`hub_fahrauftrag_${userId}`, '1');
+  localStorage.setItem(`hub_fahrauftrag_bis_${userId}`, fmtDat(bis));
+  localStorage.setItem(`hub_fahrauftrag_typa_${userId}`, typA ? '1' : '');
+  localStorage.setItem(`hub_fahrauftrag_typb_${userId}`, typB ? '1' : '');
+
+  // Supabase (best-effort)
+  if (currentUser?.userId) {
+    SB.upsert('hub_unterschriften', {
+      id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
+      user_id: currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      vollname: currentUser.name || '',
+      buehnentyp_a: typA,
+      buehnentyp_b: typB,
+      fahrauftrag_von: fmtISO(heute),
+      fahrauftrag_bis: fmtISO(bis),
+      unt_ma_data_url: untDataUrl
+    }).catch(() => {});
+  }
+
+  hubFahrauftragSchliessen();
+  showToast('✅ Fahrauftrag unterzeichnet!', '#14532d');
+
+  // Direkt PDF erstellen
+  await hubBescheinigungErstellen();
+
+  hubSchulungRender();
+  _hubSubtitelAktualisieren();
+}
+
+// ── Gegenzeichnung durch Verantwortlichen ─────────────────────
+
+let _hubGegenzZeichnet = false;
+function _hubGegenzGetPos(e) {
+  const rect = _hubFaGegenzCanvas.getBoundingClientRect();
+  const sx = _hubFaGegenzCanvas.width / rect.width;
+  const sy = _hubFaGegenzCanvas.height / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - rect.left)*sx, y: (src.clientY - rect.top)*sy };
+}
+function _hubGegenzStart(e) { e.preventDefault(); _hubGegenzZeichnet = true; const p = _hubGegenzGetPos(e); _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(p.x,p.y); }
+function _hubGegenzMove(e) {
+  if (!_hubGegenzZeichnet) return; e.preventDefault();
+  const p = _hubGegenzGetPos(e);
+  _hubFaGegenzCtx.lineWidth=2.5; _hubFaGegenzCtx.strokeStyle='#1e293b'; _hubFaGegenzCtx.lineCap='round'; _hubFaGegenzCtx.setLineDash([]);
+  _hubFaGegenzCtx.lineTo(p.x,p.y); _hubFaGegenzCtx.stroke(); _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(p.x,p.y);
+  if (!_hubFaGegenzHatStriche) {
+    _hubFaGegenzHatStriche = true;
+    document.getElementById('hub-gegenz-status').textContent = '✅ Unterschrift erfasst';
+    document.getElementById('hub-gegenz-status').style.color = '#16a34a';
+    const btn = document.getElementById('hub-gegenz-btn');
+    btn.disabled = false; btn.style.background = '#7c2d12'; btn.style.color = '#fff'; btn.style.cursor = 'pointer';
+  }
+}
+function _hubGegenzEnd() { _hubGegenzZeichnet = false; }
+
+function hubGegenzeichnenOeffnen(userId) {
+  _hubFaGegenzUserId = userId;
+  const ma = APP_USERS.find(u => u.id === userId);
+  document.getElementById('hub-gegenz-hinweis').textContent =
+    `Verantwortlicher: ${currentUser.name}\nFür Mitarbeiter: ${ma ? ma.name : userId}`;
+
+  _hubFaGegenzHatStriche = false;
+  const status = document.getElementById('hub-gegenz-status');
+  status.textContent = 'Noch keine Unterschrift'; status.style.color = '#9ca3af';
+  const btn = document.getElementById('hub-gegenz-btn');
+  btn.disabled = true; btn.style.background = '#d1d5db'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed';
+
+  document.getElementById('hub-gegenz-modal').style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    _hubFaGegenzCanvas = document.getElementById('hub-gegenz-canvas');
+    _hubFaGegenzCtx = _hubFaGegenzCanvas.getContext('2d');
+    hubGegenzCanvasLeeren();
+    _hubFaGegenzCanvas.addEventListener('mousedown', _hubGegenzStart);
+    _hubFaGegenzCanvas.addEventListener('mousemove', _hubGegenzMove);
+    _hubFaGegenzCanvas.addEventListener('mouseup', _hubGegenzEnd);
+    _hubFaGegenzCanvas.addEventListener('touchstart', _hubGegenzStart, {passive:false});
+    _hubFaGegenzCanvas.addEventListener('touchmove', _hubGegenzMove, {passive:false});
+    _hubFaGegenzCanvas.addEventListener('touchend', _hubGegenzEnd);
+  });
+}
+
+function hubGegenzCanvasLeeren() {
+  if (!_hubFaGegenzCtx || !_hubFaGegenzCanvas) return;
+  _hubFaGegenzCtx.clearRect(0,0,_hubFaGegenzCanvas.width,_hubFaGegenzCanvas.height);
+  _hubFaGegenzCtx.fillStyle = '#f9fafb'; _hubFaGegenzCtx.fillRect(0,0,_hubFaGegenzCanvas.width,_hubFaGegenzCanvas.height);
+  _hubFaGegenzCtx.strokeStyle = '#d1d5db'; _hubFaGegenzCtx.lineWidth = 1; _hubFaGegenzCtx.setLineDash([6,4]);
+  _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(20,_hubFaGegenzCanvas.height-24); _hubFaGegenzCtx.lineTo(_hubFaGegenzCanvas.width-20,_hubFaGegenzCanvas.height-24); _hubFaGegenzCtx.stroke();
+  _hubFaGegenzCtx.setLineDash([]);
+  _hubFaGegenzHatStriche = false;
+  document.getElementById('hub-gegenz-status').textContent = 'Noch keine Unterschrift';
+  document.getElementById('hub-gegenz-status').style.color = '#9ca3af';
+  const btn = document.getElementById('hub-gegenz-btn');
+  if (btn) { btn.disabled = true; btn.style.background = '#d1d5db'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed'; }
+}
+
+async function hubGegenzBestaetigen() {
+  if (!_hubFaGegenzHatStriche) { showToast('⚠️ Bitte erst unterzeichnen', '#92400e'); return; }
+  const btn = document.getElementById('hub-gegenz-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+
+  const userId   = _hubFaGegenzUserId;
+  const ma       = APP_USERS.find(u => u.id === userId);
+  const tenantId = ma?.tenant_id || currentUser?.tenantId || '';
+  const dataUrl  = _hubFaGegenzCanvas.toDataURL('image/png');
+
+  // Supabase (best-effort)
+  try {
+    await SB.upsert('hub_unterschriften', {
+      id: `${userId}_${tenantId}`,
+      user_id: userId,
+      tenant_id: tenantId,
+      verantwortlicher_id:   currentUser.userId,
+      verantwortlicher_name: currentUser.name,
+      verantwortlicher_am:   new Date().toISOString(),
+      unt_vera_data_url:     dataUrl
+    });
+    // localStorage für diesen MA setzen
+    localStorage.setItem(`hub_gegenz_${userId}`, '1');
+  } catch(e) {
+    console.warn('Hub Gegenzeichnung Fehler:', e);
+  }
+
+  document.getElementById('hub-gegenz-modal').style.display = 'none';
+  showToast('✅ Fahrauftrag gegengezeichnet!', '#14532d');
+  renderMitarbeiterListe();
 }
