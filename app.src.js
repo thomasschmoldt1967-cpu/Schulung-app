@@ -11779,377 +11779,447 @@ function hubQuizErgebnis() {
 // ── Teilnahmebescheinigung (PDF) ─────────────────────────────
 
 async function hubBescheinigungErstellen() {
-  const userId   = currentUser?.userId || 'anon';
-  const userName = currentUser?.name   || 'Teilnehmer';
-  const tenantId = currentUser?.tenantId || '';
-  const ergebnis = localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–';
-  const datum    = new Date();
-  const tenant   = APP_TENANTS?.find(t => t.id === tenantId);
+  const userId    = currentUser?.userId || 'anon';
+  const userName  = _hubPreviewMode ? (currentUser?.name || 'Vorschau Teilnehmer') : (currentUser?.name || 'Teilnehmer');
+  const tenantId  = currentUser?.tenantId || '';
+  const ergebnis  = _hubPreviewMode
+    ? `${hubQuizPunkte}/${hubQuizFragen.length} (${Math.round(hubQuizPunkte/Math.max(hubQuizFragen.length,1)*100)} %)`
+    : (localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–');
+  const datum     = new Date();
+  const tenant    = APP_TENANTS?.find(t => t.id === tenantId);
   const firmaName = tenant?.name || 'CSC GmbH';
 
-  // Fahrauftrag-Daten aus localStorage
-  const typA     = !!localStorage.getItem(`hub_fahrauftrag_typa_${userId}`);
-  const typB     = !!localStorage.getItem(`hub_fahrauftrag_typb_${userId}`);
-  const faBis    = localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '';
+  // Fahrauftrag-Daten
+  const typA  = _hubPreviewMode
+    ? !!document.getElementById('hub-fa-typ-a')?.checked
+    : !!localStorage.getItem(`hub_fahrauftrag_typa_${userId}`);
+  const typB  = _hubPreviewMode
+    ? !!document.getElementById('hub-fa-typ-b')?.checked
+    : !!localStorage.getItem(`hub_fahrauftrag_typb_${userId}`);
+  const faBis = _hubPreviewMode
+    ? (() => { const d = new Date(); d.setDate(d.getDate()+364); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); })()
+    : (localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '');
 
-  showToast('⏳ Kombiniertes PDF wird erstellt…', '#7c2d12');
+  showToast('⏳ PDF wird erstellt…', '#1a2d4e');
 
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+    const W=210, ML=12, MR=12, CW=W-ML-MR;
 
-    const ML=14, CW=182;
-    const ROT    = [124,45,18];
-    const ORANGE = [249,115,22];
-    const HELLROT= [255,237,213];
-    const BLAU   = [30,58,95];
-    const GRAU   = [71,85,105];
-    const LINIE  = [226,232,240];
-    const WEISS  = [255,255,255];
-    const GRUEN  = [22,163,74];
-    const HELLGR = [240,253,244];
+    // ── PSAgA-Farbpalette ──────────────────────────────────────────
+    const DUNKELBLAU = [26, 45, 78];
+    const BLAU       = [46, 122, 191];
+    const CYAN       = [0, 162, 189];       // Akzent statt Orange
+    const GOLD       = [220, 160, 0];
+    const GRUEN      = [30, 160, 80];
+    const WEISS      = [255, 255, 255];
+    const HELLBLAU   = [235, 244, 255];
+    const HELLGRUEN  = [230, 248, 238];
+    const HELLGOLD   = [255, 248, 220];
+    const GRAU_TEXT  = [70, 80, 100];
+    const GRAU_LEICHT= [245, 247, 251];
+    const GRAU_LINIE = [200, 210, 225];
 
-    const fmtDat = d => (d instanceof Date ? d : new Date(d)).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const fmtDat = d => (d instanceof Date ? d : new Date(d))
+      .toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
     const heute  = fmtDat(datum);
     const nr     = `HUB-${datum.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
 
-    // ══════════════════════════════════════════════════════════
+    // Prozent robust extrahieren
+    const prozentMatch = ergebnis.match(/(\d+)\s*%/);
+    const prozentZahl  = prozentMatch ? parseInt(prozentMatch[1]) : 0;
+    const prozentStr   = prozentMatch ? prozentMatch[1] + ' %' : '≥70 %';
+
+    // ══════════════════════════════════════════════════════════════
     // SEITE 1 — TEILNAHMEBESCHEINIGUNG
-    // ══════════════════════════════════════════════════════════
-    let y = 14;
+    // ══════════════════════════════════════════════════════════════
 
-    // Header
-    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
-    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
-    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
-    doc.text('CSC GmbH', ML, 14);
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
-    doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('TEILNAHMEBESCHEINIGUNG', 210-ML, 13, {align:'right'});
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    doc.text('Hubarbeitsbühnen | DGUV Grundsatz 308-008', 210-ML, 19, {align:'right'});
-    y = 38;
+    // ── Header (gleich wie PSAgA) ──────────────────────────────
+    const HH = 48;
+    for (let i = 0; i < HH; i++) {
+      const v = Math.round(248 - i / HH * 12);
+      doc.setFillColor(v, v, Math.min(255, v+8));
+      doc.rect(0, i*(HH/HH), W, 1.05, 'F');
+    }
+    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 0, 6, HH, 'F');
+    doc.setFillColor(...CYAN);       doc.rect(6, 0, 2, HH, 'F');
+    doc.setFillColor(...BLAU);       doc.rect(0, HH-1, W, 1, 'F');
 
-    // Personenbox
-    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,22,3,3,'F');
-    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,22,2,2,'F');
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('TEILNEHMER / IN', ML+8, y+7);
-    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
-    doc.text(userName, ML+8, y+15);
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text(`Bescheinigung Nr. ${nr}`, 210-ML, y+7, {align:'right'});
-    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
-    doc.text(`Ausgestellt: ${heute}`, 210-ML, y+15, {align:'right'});
+    // Titel
+    doc.setTextColor(...DUNKELBLAU);
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text('TEILNAHMEBESCHEINIGUNG', 12, 17);
+    doc.setFillColor(...BLAU); doc.rect(12, 20, 120, 0.8, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Hubarbeitsbühnen  ·  DGUV Grundsatz 308-008  ·  BetrSichV', 12, 27);
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('CSC GmbH — Gebäudereinigung · Höhentechnologie · Sicherheit', 12, 35);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(`Nr.: ${nr}  ·  Ausgestellt: ${heute}`, 12, 42);
+
+    let y = HH + 8;
+
+    // ── Teilnehmer-Box ─────────────────────────────────────────
+    doc.setFillColor(...HELLBLAU);
+    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+    doc.setFillColor(...DUNKELBLAU); doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('TEILNEHMER / IN', ML+8, y+6);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(userName, ML+8, y+14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(firmaName, ML+8, y+20);
+    // Grüner Haken
+    doc.setFillColor(...GRUEN); doc.circle(ML+CW-10, y+11, 5, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
+    doc.text('✓', ML+CW-10, y+13.5, {align:'center'});
     y += 28;
 
-    // Unternehmen + Haupttext
-    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text(`Unternehmen: ${firmaName}`, ML, y); y += 7;
-    doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung zum Bediener', ML, y, {maxWidth:CW}); y += 5.5;
-    doc.text('von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y); y += 5.5;
-    doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
-    doc.text('DGUV-Grundsatzes 308-008', ML, y);
-    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y); y += 5.5;
-    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`, ML, y); y += 12;
+    // ── Bestätigungstext ──────────────────────────────────────
+    doc.setFontSize(8.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    const bestaetText = `Hiermit wird bestätigt, dass ${userName} die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Wissenstest mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`;
+    const bestaetLines = doc.splitTextToSize(bestaetText, CW);
+    doc.text(bestaetLines, ML, y);
+    y += bestaetLines.length * 5 + 4;
 
-    // Schulungsinhalte
-    doc.setFillColor(...ORANGE); doc.rect(ML,y,4,7,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
-    doc.text('Schulungsinhalte (15 Kapitel)', ML+7, y+5.5); y += 11;
+    // ── Schulungsdatum + Ergebnis-Zeile ───────────────────────
+    const colW2 = (CW - 4) / 2;
+    // Schulungsdatum
+    doc.setFillColor(...HELLBLAU); doc.roundedRect(ML, y, colW2, 15, 3, 3, 'F');
+    doc.setFillColor(...BLAU);     doc.roundedRect(ML, y, 4, 15, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('SCHULUNGSDATUM', ML+8, y+6);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(heute, ML+8, y+12.5);
+    // Quiz-Ergebnis
+    doc.setFillColor(...HELLGRUEN); doc.roundedRect(ML+colW2+4, y, colW2, 15, 3, 3, 'F');
+    doc.setFillColor(...GRUEN);     doc.roundedRect(ML+colW2+4, y, 4, 15, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
+    doc.text('QUIZ-ERGEBNIS', ML+colW2+12, y+6);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(`${prozentStr} bestanden`, ML+colW2+12, y+12.5);
+    y += 20;
+
+    // ── Schulungsinhalte ───────────────────────────────────────
+    doc.setFillColor(...DUNKELBLAU); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('Schulungsinhalte (15 Kapitel in 4 Modulen)', ML+7, y+5.5);
+    y += 11;
 
     const kapitel = [
-      '1.  Rechtliche Grundlagen & Pflichten (ArbSchG, BetrSichV, DGUV)',
-      '2.  Verantwortung & Haftung (Organisations- und Durchführungsverantwortung)',
-      '3.  Bühnentypen: Gruppe A (Senkrechthub) und Gruppe B (Auslegerbühnen)',
-      '4.  Sicherheitseinrichtungen (Not-Aus, Neigungswächter, Totmannschalter)',
-      '5.  PSAgA-Pflicht bei Boom-Lifts — Peitscheneffekt und Anschlagpunkte',
-      '6.  Lastdiagramm — Tragfähigkeit in Abhängigkeit von Ausladung und Höhe',
-      '7.  Untergrund & Standsicherheit (Stützen, Unterlegplatten, Nivellierung)',
-      '8.  Windgefahren — Maximalwert 12,5 m/s und Segeleffekt-Verbot',
-      '9.  Sicherheitsabstände zu elektrischen Freileitungen',
-      '10. Tägliche Sicht- und Funktionsprüfung vor Arbeitsbeginn',
-      '11. Sicheres Aufstellen — Bodenvorbereitung und Aufstellablauf',
-      '12. Verbote im Betrieb (Überlast, Umsteigen, Freileitungen, Manipulation)',
-      '13. Notablass — Manuelles Absenken bei technischem Defekt oder Notfall',
-      '14. Fahrauftrag, Prüfungsablauf & Gültigkeitsdauer des Bedienerausweises',
-      '15. Betriebsanweisung gem. § 9 BetrSichV / DGUV Regel 100-500 Kap. 2.10'
+      ['Modul 1 — Recht & Verantwortung', [
+        '1. Rechtliche Grundlagen & Pflichten',
+        '2. Verantwortung & Haftung',
+        '3. Der schriftliche Fahrauftrag',
+      ]],
+      ['Modul 2 — Gerätekunde & Technik', [
+        '4. Bühnentypen: Gruppe A & B',
+        '5. Sicherheitseinrichtungen',
+        '6. PSAgA-Pflicht & Peitscheneffekt',
+        '7. Lastdiagramm & Tragfähigkeit',
+      ]],
+      ['Modul 3 — Standsicherheit & Gefahren', [
+        '8. Untergrund & Standsicherheit',
+        '9. Windgefahren & max. 12,5 m/s',
+        '10. Sicherheitsabstände Freileitungen',
+        '11. Sicheres Aufstellen',
+        '12. Verbote im Betrieb',
+      ]],
+      ['Modul 4 — Praxis & Notfall', [
+        '13. Tägliche Sicht- und Funktionsprüfung',
+        '14. Notablass & Prüfungsablauf',
+        '15. Betriebsanweisung gem. § 9 BetrSichV',
+      ]],
     ];
-    const tcw=(CW-6)/2, th=6.5;
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    kapitel.forEach((k,ti) => {
-      const col=ti%2, row=Math.floor(ti/2), tx=ML+col*(tcw+6), ty2=y+row*th;
-      doc.setFillColor(250,245,240); doc.roundedRect(tx,ty2-1.5,tcw,th-0.5,1,1,'F');
-      doc.setFillColor(...ORANGE); doc.rect(tx,ty2-1.5,2.5,th-0.5,'F');
-      doc.setTextColor(...GRAU); doc.text(k,tx+5,ty2+2.5,{maxWidth:tcw-7});
+
+    const colColors = [BLAU, CYAN, DUNKELBLAU, GOLD];
+    const modW = (CW - 6) / 2;
+    const modPositions = [
+      [ML,          y],
+      [ML+modW+6,   y],
+      [ML,          y + 42],    // wird dynamisch gesetzt
+      [ML+modW+6,   y + 42],
+    ];
+
+    // Zuerst Höhe der oberen Zeile bestimmen
+    let maxH1 = 0;
+    kapitel.slice(0,2).forEach(([mtit, items]) => {
+      const h = 8 + items.length * 6 + 4;
+      if (h > maxH1) maxH1 = h;
     });
-    y += Math.ceil(kapitel.length/2)*th + 8;
 
-    // Trennlinie
-    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
+    kapitel.forEach(([mtit, items], mi) => {
+      const col = mi % 2;
+      const row = Math.floor(mi / 2);
+      const bx = col === 0 ? ML : ML + modW + 6;
+      const by = row === 0 ? y : y + maxH1 + 4;
+      const bh = 8 + items.length * 6 + 2;
+      const cc = colColors[mi];
 
-    // Hinweis
-    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
-    doc.text('Diese Bescheinigung gilt für den theoretischen Teil. Praktische Fahrprüfung und schriftlicher Fahrauftrag sind zusätzlich erforderlich (DGUV 308-008). Siehe Seite 2.', ML, y, {maxWidth:CW}); y += 9;
+      doc.setFillColor(...GRAU_LEICHT); doc.roundedRect(bx, by, modW, bh, 2, 2, 'F');
+      doc.setFillColor(...cc);          doc.roundedRect(bx, by, 4, bh, 2, 2, 'F');
+      doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...cc);
+      doc.text(mtit, bx+7, by+6, {maxWidth: modW-10});
+      doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+      items.forEach((item, ii) => {
+        doc.text('• ' + item, bx+7, by+12+ii*6, {maxWidth: modW-10});
+      });
+    });
 
-    // Unterschrift-Block
-    const sigH=30, halfW=(CW-4)/2;
-    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,halfW,sigH,3,3,'F');
-    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,sigH,2,2,'F');
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('Ausbildungsverantwortlicher', ML+8, y+7);
-    doc.setDrawColor(...ROT); doc.setLineWidth(0.5);
-    doc.line(ML+8,y+16,ML+halfW-4,y+16);
-    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
+    // Zweite Reihe Starty
+    const maxH2 = Math.max(...kapitel.slice(2).map(([,it])=>8+it.length*6+2));
+    y += maxH1 + 4 + maxH2 + 6;
+
+    // ── Trennlinie ─────────────────────────────────────────────
+    doc.setFillColor(...GRAU_LINIE); doc.rect(ML, y, CW, 0.6, 'F'); y += 5;
+
+    // ── Hinweis-Text ───────────────────────────────────────────
+    doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(140,150,165);
+    doc.text('Diese Bescheinigung gilt für den theoretischen Teil. Die praktische Fahrprüfung und der schriftliche Fahrauftrag (Seite 2) sind nach DGUV 308-008 zusätzlich erforderlich.', ML, y, {maxWidth:CW});
+    y += 8;
+
+    // ── Unterschriften-Block ───────────────────────────────────
+    const sigW = (CW - 4) / 2;
+    const sigH = 34;
+
+    // Links: Ausbildungsverantwortlicher
+    doc.setFillColor(...HELLBLAU); doc.roundedRect(ML, y, sigW, sigH, 3, 3, 'F');
+    doc.setFillColor(...DUNKELBLAU); doc.roundedRect(ML, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Ausbildungsverantwortlicher', ML+8, y+6);
+    // Unterschriftslinie
+    doc.setDrawColor(...GRAU_LINIE); doc.setLineWidth(0.4);
+    doc.line(ML+8, y+18, ML+sigW-4, y+18);
+    // Name unter der Linie
+    doc.setFontSize(9); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...DUNKELBLAU);
     doc.text('gez. Thomas Schmoldt', ML+8, y+24);
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
-    doc.text(`CSC GmbH · ${heute}`, ML+8, y+29);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(`CSC GmbH  ·  ${heute}`, ML+8, y+30);
 
-    const rx=ML+halfW+4;
-    doc.setFillColor(...HELLGR); doc.roundedRect(rx,y,halfW,sigH,3,3,'F');
-    doc.setFillColor(...GRUEN); doc.roundedRect(rx,y,4,sigH,2,2,'F');
-    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
-    doc.text('Quiz bestanden', rx+halfW/2, y+10, {align:'center'});
-    // Prozentanzeige robust extrahieren: "8/10 (80 %)" → "80 %" oder direkt "≥70%"
-    const prozentMatch = ergebnis.match(/(\d+)\s*%/);
-    const prozentAnzeige = prozentMatch ? prozentMatch[1] + ' %' : '≥70%';
-    doc.setFontSize(18); doc.setFont('helvetica','bold');
-    doc.text(prozentAnzeige, rx+halfW/2, y+22, {align:'center'});
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
-    doc.text(`Min. 70 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
+    // Rechts: Quiz-Badge
+    doc.setFillColor(...HELLGRUEN); doc.roundedRect(ML+sigW+4, y, sigW, sigH, 3, 3, 'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(ML+sigW+4, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
+    doc.text('WISSENSTEST BESTANDEN', ML+sigW+4+sigW/2, y+8, {align:'center'});
+    doc.setFontSize(22); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(prozentStr, ML+sigW+4+sigW/2, y+22, {align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(`Mindestpunktzahl: 70 %  ·  ${heute}`, ML+sigW+4+sigW/2, y+30, {align:'center'});
 
-    // Footer Seite 1
-    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
+    // ── Footer ─────────────────────────────────────────────────
+    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 287, W, 10, 'F');
+    doc.setFillColor(...CYAN);       doc.rect(0, 286, W, 1, 'F');
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
-    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 1 von 2', 105, 293, {align:'center'});
+    doc.text('CSC GmbH  ·  Petermax-Müller-Str. 3  ·  30880 Laatzen  ·  Tel. 05102-9319730  ·  Seite 1 von 2', W/2, 293, {align:'center'});
 
-    // ══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
     // SEITE 2 — SCHRIFTLICHE BEAUFTRAGUNG (FAHRAUFTRAG)
-    // ══════════════════════════════════════════════════════════
+    // ══════════════════════════════════════════════════════════════
     doc.addPage();
-    y = 14;
 
-    // Header Seite 2
-    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
-    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
-    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
-    doc.text('CSC GmbH', ML, 14);
-    doc.setFontSize(8); doc.setFont('helvetica','normal');
-    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
-    doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.text('SCHRIFTLICHE BEAUFTRAGUNG', 210-ML, 13, {align:'right'});
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
-    doc.text('Fahrauftrag nach DGUV Regel 100-500 Kap. 2.10', 210-ML, 19, {align:'right'});
-    y = 38;
+    // Header S.2
+    for (let i = 0; i < HH; i++) {
+      const v = Math.round(248 - i / HH * 12);
+      doc.setFillColor(v, v, Math.min(255, v+8));
+      doc.rect(0, i*(HH/HH), W, 1.05, 'F');
+    }
+    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 0, 6, HH, 'F');
+    doc.setFillColor(...GOLD);       doc.rect(6, 0, 2, HH, 'F');  // Gold für S.2
+    doc.setFillColor(...BLAU);       doc.rect(0, HH-1, W, 1, 'F');
 
-    // Rechtlicher Hinweis-Banner
-    doc.setFillColor(255,247,237); doc.roundedRect(ML,y,CW,10,2,2,'F');
-    doc.setFillColor(...ORANGE); doc.rect(ML,y,3,10,'F');
-    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(124,45,18);
-    doc.text('Rechtliche Grundlage: § 12 ArbSchG · BetrSichV · DGUV Grundsatz 308-008 · DGUV Regel 100-500 Kap. 2.10', ML+6, y+6.5, {maxWidth:CW-8});
-    y += 14;
+    doc.setTextColor(...DUNKELBLAU);
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text('SCHRIFTLICHE BEAUFTRAGUNG', 12, 17);
+    doc.setFillColor(...GOLD); doc.rect(12, 20, 110, 0.8, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Fahrauftrag nach DGUV Regel 100-500 Kap. 2.10  ·  § 12 ArbSchG  ·  BetrSichV', 12, 27);
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('CSC GmbH — Gebäudereinigung · Höhentechnologie · Sicherheit', 12, 35);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(`Bezug: Teilnahmebescheinigung Nr. ${nr}  ·  Ausgestellt: ${heute}`, 12, 42);
+
+    y = HH + 8;
 
     // Bediener-Box
-    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,24,3,3,'F');
-    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,24,2,2,'F');
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('BEAUFTRAGTER BEDIENER', ML+8, y+7);
-    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.setFillColor(...HELLBLAU); doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+    doc.setFillColor(...DUNKELBLAU); doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('BEAUFTRAGTER BEDIENER', ML+8, y+6);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text(userName, ML+8, y+14);
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text(`Unternehmen: ${firmaName}`, ML+8, y+21);
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...BLAU);
-    doc.text(`Ausgestellt: ${heute}  |  Bescheinigungs-Nr.: ${nr}`, 210-ML, y+14, {align:'right'});
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(firmaName, ML+8, y+20);
     y += 28;
 
-    // Abschnitt 1: Umfang
-    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    // 1. Umfang
+    doc.setFillColor(...DUNKELBLAU); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text('1. Umfang der Beauftragung', ML+7, y+5.5); y += 11;
 
     const typen = [];
-    if (typA) typen.push({ label:'Gruppe A — Senkrechthub', sub:'Scherenbühnen, Personenlifte (Schwerpunkt bleibt innerhalb der Kippkanten)' });
-    if (typB) typen.push({ label:'Gruppe B — Auslegerbühnen (Boom-Lifts)', sub:'Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Arbeitsbühnen — PSAgA-Pflicht!' });
-    if (!typA && !typB) typen.push({ label:'Alle im Betrieb vorhandenen Hubarbeitsbühnen', sub:'nach erfolgter gerätespezifischer Einweisung' });
+    if (typA) typen.push({ label:'Gruppe A — Senkrechthub', sub:'Scherenbühnen, Personenlifte', col: BLAU });
+    if (typB) typen.push({ label:'Gruppe B — Auslegerbühnen (Boom-Lifts)', sub:'Teleskop-, Gelenk-Bühnen, Lkw-Arbeitsbühnen — PSAgA-Pflicht!', col: GOLD });
+    if (!typA && !typB) typen.push({ label:'Alle im Betrieb vorhandenen Hubarbeitsbühnen', sub:'nach erfolgter gerätespezifischer Einweisung', col: DUNKELBLAU });
 
     typen.forEach(t => {
-      doc.setFillColor(250,245,240); doc.roundedRect(ML,y,CW,12,2,2,'F');
-      doc.setFillColor(...ORANGE); doc.rect(ML,y,3,12,'F');
-      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
-      doc.text('☑  '+t.label, ML+6, y+5);
-      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-      doc.text(t.sub, ML+10, y+10);
-      y += 14;
+      doc.setFillColor(...GRAU_LEICHT); doc.roundedRect(ML, y, CW, 13, 2, 2, 'F');
+      doc.setFillColor(...t.col);       doc.roundedRect(ML, y, 4, 13, 2, 2, 'F');
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+      doc.text('☑  ' + t.label, ML+8, y+5.5);
+      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+      doc.text(t.sub, ML+12, y+10.5);
+      y += 16;
     });
     y += 2;
 
-    // Abschnitt 2: Voraussetzungen
-    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
-    doc.text('2. Voraussetzungen des Bedieners (alle erfüllt)', ML+7, y+5.5); y += 11;
+    // 2. Voraussetzungen
+    doc.setFillColor(...DUNKELBLAU); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('2. Voraussetzungen (alle erfüllt)', ML+7, y+5.5); y += 10;
 
     const vorraus = [
-      '✓ Mindestalter 18 Jahre vollendet',
-      `✓ Ausbildung nach DGUV 308-008 erfolgreich abgeschlossen am ${heute}`,
-      '✓ Körperliche und geistige Eignung (Höhentauglichkeit) liegt vor',
-      '✓ Gerätespezifische Einweisung für das jeweilige Einsatzgerät wird durchgeführt'
+      '✓  Mindestalter 18 Jahre vollendet',
+      `✓  Ausbildung nach DGUV 308-008 erfolgreich abgeschlossen am ${heute}`,
+      '✓  Körperliche und geistige Eignung (Höhentauglichkeit) liegt vor',
+      '✓  Gerätespezifische Einweisung für das jeweilige Einsatzgerät wird durchgeführt',
     ];
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
     vorraus.forEach(v => { doc.text(v, ML+2, y); y += 5.5; });
     y += 4;
 
-    // Abschnitt 3: Gültigkeitszeitraum
-    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    // 3. Gültigkeitszeitraum
+    doc.setFillColor(...DUNKELBLAU); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text('3. Gültigkeitszeitraum', ML+7, y+5.5); y += 11;
 
     const bisDate = new Date(datum); bisDate.setDate(bisDate.getDate()+364);
-    const hw=(CW-4)/2;
-    doc.setFillColor(...HELLGR); doc.roundedRect(ML,y,hw,14,2,2,'F');
-    doc.setFillColor(...GRUEN); doc.roundedRect(ML,y,3,14,1,1,'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('GÜLTIG AB', ML+6, y+5);
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
-    doc.text(heute, ML+6, y+11);
+    const hw = (CW-4)/2;
+    doc.setFillColor(...HELLBLAU); doc.roundedRect(ML, y, hw, 14, 2, 2, 'F');
+    doc.setFillColor(...BLAU);     doc.roundedRect(ML, y, 4, 14, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('GÜLTIG AB', ML+8, y+5.5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(heute, ML+8, y+11.5);
 
-    doc.setFillColor(...HELLGR); doc.roundedRect(ML+hw+4,y,hw,14,2,2,'F');
-    doc.setFillColor(...GRUEN); doc.roundedRect(ML+hw+4,y,3,14,1,1,'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('GÜLTIG BIS', ML+hw+8, y+5);
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
-    doc.text(faBis || fmtDat(bisDate), ML+hw+8, y+11);
+    doc.setFillColor(...HELLGOLD); doc.roundedRect(ML+hw+4, y, hw, 14, 2, 2, 'F');
+    doc.setFillColor(...GOLD);     doc.roundedRect(ML+hw+4, y, 4, 14, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
+    doc.text('GÜLTIG BIS (364 Tage)', ML+hw+8, y+5.5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(faBis || fmtDat(bisDate), ML+hw+8, y+11.5);
     y += 18;
 
-    doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
-    doc.text('Hinweis: Jährliche betriebliche Unterweisung bleibt Pflicht. Der Fahrauftrag kann jederzeit widerrufen werden.', ML, y); y += 8;
+    doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(140,150,165);
+    doc.text('Hinweis: Jährliche betriebliche Unterweisung bleibt nach DGUV 100-500 Pflicht. Fahrauftrag kann jederzeit widerrufen werden.', ML, y, {maxWidth:CW});
+    y += 8;
 
-    // Abschnitt 4: Pflichten
-    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    // 4. Pflichten
+    doc.setFillColor(...DUNKELBLAU); doc.rect(ML, y, 4, 7, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text('4. Pflichten des Bedieners', ML+7, y+5.5); y += 10;
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    const pflichten = 'Der Bediener verpflichtet sich zur Einhaltung der Betriebssicherheitsverordnung, der DGUV-Unfallverhütungsvorschriften und der Herstellerbetriebsanleitungen. Vor jeder Inbetriebnahme ist die vorgeschriebene Sicht- und Funktionsprüfung durchzuführen. Festgestellte Mängel sind sofort dem Vorgesetzten zu melden. Das Tragen der PSAgA (Auffanggurt) ist Pflicht bei Gruppe B (Boom-Lifts).';
-    const plLines = doc.splitTextToSize(pflichten, CW);
-    doc.text(plLines, ML, y); y += plLines.length*4.5+6;
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    const pflText = 'Der Bediener verpflichtet sich zur Einhaltung der BetrSichV, der DGUV-Unfallverhütungsvorschriften und der Herstellerbetriebsanleitungen. Vor jeder Inbetriebnahme ist die Sicht- und Funktionsprüfung durchzuführen. Festgestellte Mängel sind dem Vorgesetzten sofort zu melden. PSAgA (Auffanggurt) ist bei Gruppe B (Boom-Lifts) Pflicht.';
+    const pflLines = doc.splitTextToSize(pflText, CW);
+    doc.text(pflLines, ML, y); y += pflLines.length * 4.5 + 6;
 
-    // Unterschriften
-    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    // 5. Unterschriften
+    doc.setFillColor(...GRAU_LINIE); doc.rect(ML, y, CW, 0.6, 'F'); y += 6;
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text('5. Unterschriften', ML, y); y += 8;
 
-    const uh=38, uw=(CW-4)/2;
+    const uW = (CW - 6) / 2;
+    const uH = 40;
 
     // MA-Unterschrift (links)
-    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,uw,uh,3,3,'F');
-    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,uh,2,2,'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.setFillColor(...HELLBLAU); doc.roundedRect(ML, y, uW, uH, 3, 3, 'F');
+    doc.setFillColor(...DUNKELBLAU); doc.roundedRect(ML, y, 4, uH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
     doc.text('Bediener / Beauftragter', ML+8, y+6);
-    // Unterschrift-Bild aus Canvas wenn vorhanden
+    // Unterschrift-Bild aus Canvas
     try {
       const untCanvas = document.getElementById('hub-fa-canvas');
       if (untCanvas && _hubFaHatStriche) {
-        doc.addImage(untCanvas.toDataURL('image/png'), 'PNG', ML+5, y+8, uw-10, 20);
+        doc.addImage(untCanvas.toDataURL('image/png'), 'PNG', ML+5, y+9, uW-10, 18);
       }
     } catch(e) {}
-    doc.setDrawColor(...ROT); doc.setLineWidth(0.4);
-    doc.line(ML+8, y+28, ML+uw-4, y+28);
-    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
-    doc.text(userName, ML+8, y+34);
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
-    doc.text(heute, ML+8, y+uh-3);
+    // Linie + Name + Datum untereinander
+    doc.setDrawColor(...GRAU_LINIE); doc.setLineWidth(0.4);
+    doc.line(ML+8, y+28, ML+uW-4, y+28);
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(userName, ML+8, y+33);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(heute, ML+8, y+38);
 
-    // Verantwortlichen-Unterschrift (rechts)
-    const rx2=ML+uw+4;
-    doc.setFillColor(240,253,244); doc.roundedRect(rx2,y,uw,uh,3,3,'F');
-    doc.setFillColor(...GRUEN); doc.roundedRect(rx2,y,4,uh,2,2,'F');
-    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text('Verantwortlicher / Vorgesetzter', rx2+8, y+6);
-    doc.setDrawColor(...GRUEN); doc.setLineWidth(0.4);
-    doc.line(rx2+8, y+28, rx2+uw-4, y+28);
-    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
-    doc.text('Gegenzeichnung ausstehend', rx2+8, y+34);
-    doc.setFontSize(7); doc.setFont('helvetica','normal');
-    doc.text('Datum: ___________', rx2+8, y+uh-3);
+    // Gegenzeichnung rechts
+    const rx = ML + uW + 6;
+    doc.setFillColor(255,252,235); doc.roundedRect(rx, y, uW, uH, 3, 3, 'F');
+    doc.setFillColor(...GOLD); doc.roundedRect(rx, y, 4, uH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text('Gegenzeichnung Verantwortlicher', rx+8, y+6);
 
-    // Footer Seite 2
-    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
-    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 2 von 2', 105, 293, {align:'center'});
-
-    // ── PDF öffnen ───────────────────────────────────────────
-    const pdfBlob   = doc.output('blob');
-    const pdfUrl    = URL.createObjectURL(pdfBlob);
-    window.open(pdfUrl, '_blank');
-    showToast('✅ PDF erstellt (Bescheinigung + Fahrauftrag)', '#14532d');
-
-    // ── Backup: Supabase Storage ─────────────────────────────
-    const pdfBytes  = doc.output('arraybuffer');
-    const fn        = `hub/${tenantId}/${userId}_${datum.getTime()}.pdf`;
-    let   pdfStored = false;
-    let   publicUrl = '';
-
+    // Gegenzeichnungs-Canvas falls vorhanden
     try {
-      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/psaga-bescheinigungen/${fn}`, {
-        method: 'POST',
-        headers: {
-          'apikey': SUPABASE_KEY,
-          'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/pdf',
-          'x-upsert': 'true'
-        },
-        body: pdfBytes
-      });
-      if (uploadRes.ok) {
-        publicUrl = `${SUPABASE_URL}/storage/v1/object/public/psaga-bescheinigungen/${fn}`;
-        pdfStored = true;
-        showToast('🗄️ PDF in Supabase gespeichert', '#0f5132');
-      } else {
-        console.warn('Supabase Upload:', uploadRes.status, await uploadRes.text());
+      const gCanvas = document.getElementById('hub-gegenz-canvas');
+      if (gCanvas && _hubFaGegenzHatStriche) {
+        doc.addImage(gCanvas.toDataURL('image/png'), 'PNG', rx+4, y+9, uW-10, 18);
       }
-    } catch(uploadErr) {
-      console.warn('Supabase Storage Upload fehlgeschlagen:', uploadErr.message);
+    } catch(e) {}
+    doc.setDrawColor(...GRAU_LINIE); doc.setLineWidth(0.4);
+    doc.line(rx+8, y+28, rx+uW-4, y+28);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,130,60);
+    doc.text('Verantwortlicher  ·  CSC GmbH', rx+8, y+33);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
+    doc.text(heute, rx+8, y+38);
+
+    // Footer S.2
+    doc.setFillColor(...DUNKELBLAU); doc.rect(0, 287, W, 10, 'F');
+    doc.setFillColor(...GOLD);       doc.rect(0, 286, W, 1, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH  ·  Petermax-Müller-Str. 3  ·  30880 Laatzen  ·  Tel. 05102-9319730  ·  Seite 2 von 2', W/2, 293, {align:'center'});
+
+    // ── PDF ausgeben ──────────────────────────────────────────
+    const pdfBlob = doc.output('blob');
+    const pdfBase64 = doc.output('datauristring');
+
+    if (_hubPreviewMode) {
+      // Vorschau: direkt öffnen, nicht speichern
+      const url = URL.createObjectURL(pdfBlob);
+      window.open(url, '_blank');
+      showToast('🔍 Vorschau-PDF geöffnet', '#1a2d4e');
+      return;
     }
 
-    // ── Backup: Supabase-Datenbank (immer, auch ohne Storage) ─
+    // Echte Speicherung: Supabase Storage + Drive
+    const fileName = `HUB_${userName.replace(/\s+/g,'_')}_${datum.getFullYear()}${String(datum.getMonth()+1).padStart(2,'0')}${String(datum.getDate()).padStart(2,'0')}.pdf`;
+    const storagePath = `${tenantId || 'allgemein'}/hub/${fileName}`;
+    let publicUrl = null;
+
     try {
-      await SB.upsert('hub_unterschriften', {
-        id:               `${userId}_${tenantId}`,
-        user_id:          userId,
-        user_name:        userName,
-        tenant_id:        tenantId || null,
-        vollname:         userName,
-        ausstellungsdatum: datum.toISOString().slice(0,10),
-        fahrauftrag_von:  datum.toISOString().slice(0,10),
-        fahrauftrag_bis:  faBis || new Date(datum.getTime()+364*86400000).toISOString().slice(0,10),
-        buehnentyp_a:     typA,
-        buehnentyp_b:     typB,
-        pdf_url:          publicUrl || null,
-        fahrauftrag_pdf_url: publicUrl || null,
-        aktualisiert_am:  new Date().toISOString()
-      });
-      if (!pdfStored) showToast('🗄️ Metadaten in Datenbank gespeichert (PDF lokal)', '#2563eb');
-    } catch(dbErr) {
-      console.warn('Supabase DB Backup fehlgeschlagen:', dbErr.message);
-      // Letzter Ausweg: Audit-Log
-      await sbAudit('HUB_BESCHEINIGUNG', JSON.stringify({
-        user_id: userId, user_name: userName, tenant_id: tenantId,
-        datum: datum.toISOString().slice(0,10), nr, typA, typB
-      })).catch(()=>{});
-      showToast('⚠️ Metadaten im Audit-Log gesichert', '#b45309');
-    }
+      publicUrl = await SB.uploadPdf(pdfBlob, storagePath);
+      if (publicUrl) {
+        await SB.patch('hub_unterschriften',
+          `user_id=eq.${userId}&tenant_id=eq.${tenantId}`,
+          { fahrauftrag_pdf_url: publicUrl });
+      }
+    } catch(e) {}
 
-  } catch(e) {
-    console.error('Hub-PDF-Fehler:', e);
-    showToast('⚠️ Fehler: ' + e.message, '#7f1d1d');
+    // Google Drive Backup
+    try { uploadPdfToDrive(pdfBase64.split(',')[1], fileName, tenantId, null); } catch(e) {}
+
+    // PDF öffnen
+    const url = URL.createObjectURL(pdfBlob);
+    window.open(url, '_blank');
+    if (!window.open(url,'_blank')) window.location.href = url;
+
+    showToast('✅ PDF gespeichert & geöffnet', '#166534');
+    hubSchulungRender();
+
+  } catch(err) {
+    console.error('Hub-PDF Fehler:', err);
+    showToast('❌ PDF-Fehler: ' + err.message, '#7f1d1d');
   }
 }
-
-
-// ══════════════════════════════════════════════════════════════
-// ── HUB FAHRAUFTRAG — Schriftliche Beauftragung nach DGUV 100-500
-// ══════════════════════════════════════════════════════════════
 
 let _hubFaCanvas = null, _hubFaCtx = null, _hubFaHatStriche = false;
 let _hubFaGegenzCanvas = null, _hubFaGegenzCtx = null, _hubFaGegenzHatStriche = false;
