@@ -2406,7 +2406,8 @@ function renderAdminVorlagen() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           ${v._eingebaut
-            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>`
+            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#7c2d12;color:#fff;background:#7c2d12;margin-left:6px">▶ Als MA testen</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
@@ -2697,6 +2698,68 @@ function vtBearbeitenAbbrechen() {
   document.getElementById('vt-msg').classList.remove('show');
 }
 
+// ── Admin Live-Test: Hub als Mitarbeiter durchspielen ──────────
+let _hubPreviewMode = false; // wenn true → kein Speichern, Demo-User
+
+function hubAlsMaSpielen() {
+  // Setzt Preview-Mode + lädt Hub-Kurs wie ein MA
+  _hubPreviewMode = true;
+  // Demo-Fortschritt: alle Kapitel als NICHT gelesen (echter Flow)
+  hubFortschritt = {};
+  // Popup schließen falls offen
+  const ov = document.getElementById('hub-admin-vorschau-overlay');
+  if (ov) ov.remove();
+
+  // Sub-Dashboard öffnen — simuliere MA-Ansicht
+  // Wir öffnen das Hub-Modul direkt im Sub-Dashboard
+  // Zuerst sicherstellen dass das Sub-Dashboard sichtbar ist
+  const sd = document.getElementById('sub-dashboard');
+  if (sd) {
+    // Sub-Dashboard auf MA-Modus setzen
+    sd.style.display = 'block';
+  }
+
+  // Preview-Banner einblenden
+  let banner = document.getElementById('hub-preview-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'hub-preview-banner';
+    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#7c2d12;color:#fff;padding:10px 16px;z-index:9998;display:flex;align-items:center;justify-content:between;gap:12px;font-size:.82rem;box-shadow:0 -2px 12px rgba(0,0,0,.25)';
+    banner.innerHTML = `
+      <span style="flex:1">🔍 <strong>Vorschau-Modus:</strong> Du siehst den Kurs wie ein Mitarbeiter — nichts wird gespeichert</span>
+      <button onclick="hubPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none">✕ Vorschau beenden</button>`;
+    document.body.appendChild(banner);
+  }
+
+  // Hub-Container anzeigen und rendern
+  const wrap = document.getElementById('hub-schulung-btn-wrap');
+  if (wrap) wrap.style.display = '';
+  const cont = document.getElementById('hub-schulung-container');
+  if (cont) {
+    cont.style.display = 'block';
+    hubSchulungRender();
+  }
+
+  // Scrollen zum Hub-Bereich
+  setTimeout(() => {
+    const hubBtn = document.getElementById('hub-schulung-btn-wrap');
+    if (hubBtn) hubBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+
+  showToast('🔍 Vorschau-Modus aktiv — kein Speichern', '#7c2d12');
+}
+
+function hubPreviewBeenden() {
+  _hubPreviewMode = false;
+  hubFortschritt = {};
+  const banner = document.getElementById('hub-preview-banner');
+  if (banner) banner.remove();
+  // Hub-Container wieder schließen
+  const cont = document.getElementById('hub-schulung-container');
+  if (cont) cont.style.display = 'none';
+  showToast('✅ Vorschau beendet', '#16a34a');
+}
+
 // ── Admin-Vorschau: Hubarbeitsbühnen DGUV 308-008 ─────────────
 function hubAdminVorschau() {
   // Overlay aufbauen
@@ -2813,10 +2876,14 @@ function hubAdminVorschau() {
         </div>
 
         <!-- Footer -->
-        <div style="margin-top:20px;text-align:center">
+        <div style="margin-top:20px;text-align:center;display:flex;gap:10px;justify-content:center">
+          <button onclick="hubAlsMaSpielen()"
+            style="padding:12px 24px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            ▶ Als MA testen
+          </button>
           <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
-            style="padding:12px 32px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
-            ✕ Vorschau schließen
+            style="padding:12px 24px;background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            ✕ Schließen
           </button>
         </div>
 
@@ -11388,6 +11455,7 @@ function _hubFortschrittLaden() {
 }
 
 function _hubFortschrittSpeichern() {
+  if (_hubPreviewMode) return; // Preview: nicht speichern
   try {
     const key = `hub_fortschritt_${currentUser?.userId || 'anon'}`;
     localStorage.setItem(key, JSON.stringify(hubFortschritt));
@@ -11651,10 +11719,12 @@ function hubQuizErgebnis() {
   const bestanden = prozent >= 70;
 
     if (bestanden) {
-    localStorage.setItem(`hub_quiz_bestanden_${userId}`, '1');
-    localStorage.setItem(`hub_quiz_ergebnis_${userId}`, `${hubQuizPunkte}/${hubQuizFragen.length} (${prozent} %)`);
-    // Supabase
-    if (currentUser?.userId) {
+    if (!_hubPreviewMode) {
+      localStorage.setItem(`hub_quiz_bestanden_${userId}`, '1');
+      localStorage.setItem(`hub_quiz_ergebnis_${userId}`, `${hubQuizPunkte}/${hubQuizFragen.length} (${prozent} %)`);
+    }
+    // Supabase — nur im echten Modus
+    if (!_hubPreviewMode && currentUser?.userId) {
       SB.upsert('hub_unterschriften', {
         id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
         user_id: currentUser.userId,
@@ -11679,8 +11749,8 @@ function hubQuizErgebnis() {
       <div style="padding:16px">
         ${bestanden ? `
           <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
-            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Quiz bestanden — Ergebnis gespeichert</div>
-            <div style="font-size:.78rem;color:#166534;margin-top:4px">Jetzt Schritt 2: Fahrauftrag unterzeichnen</div>
+            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Quiz bestanden${_hubPreviewMode ? ' — Vorschau-Modus (kein Speichern)' : ' — Ergebnis gespeichert'}</div>
+            <div style="font-size:.78rem;color:#166534;margin-top:4px">${_hubPreviewMode ? '🔍 Du siehst jetzt wie Schritt 2 (Fahrauftrag) aussieht' : 'Jetzt Schritt 2: Fahrauftrag unterzeichnen'}</div>
           </div>
           <button onclick="hubFahrauftragOeffnen()"
             style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(124,45,18,.35)">
@@ -12217,7 +12287,8 @@ async function hubFahrauftragBestaetigen() {
   if (!_hubFaHatStriche) { showToast('⚠️ Bitte erst unterzeichnen', '#92400e'); return; }
 
   const btn = document.getElementById('hub-fa-bestaetigen-btn');
-  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+  btn.disabled = true;
+  btn.textContent = _hubPreviewMode ? '⏳ Vorschau-PDF wird erstellt…' : '⏳ Wird gespeichert…';
 
   const userId   = currentUser?.userId || 'anon';
   const heute    = new Date();
@@ -12226,14 +12297,16 @@ async function hubFahrauftragBestaetigen() {
   const fmtDat   = d => d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
   const untDataUrl = _hubFaCanvas.toDataURL('image/png');
 
-  // Lokal speichern
-  localStorage.setItem(`hub_fahrauftrag_${userId}`, '1');
-  localStorage.setItem(`hub_fahrauftrag_bis_${userId}`, fmtDat(bis));
-  localStorage.setItem(`hub_fahrauftrag_typa_${userId}`, typA ? '1' : '');
-  localStorage.setItem(`hub_fahrauftrag_typb_${userId}`, typB ? '1' : '');
+  // Lokal speichern — nur im echten Modus
+  if (!_hubPreviewMode) {
+    localStorage.setItem(`hub_fahrauftrag_${userId}`, '1');
+    localStorage.setItem(`hub_fahrauftrag_bis_${userId}`, fmtDat(bis));
+    localStorage.setItem(`hub_fahrauftrag_typa_${userId}`, typA ? '1' : '');
+    localStorage.setItem(`hub_fahrauftrag_typb_${userId}`, typB ? '1' : '');
+  }
 
-  // Supabase (best-effort)
-  if (currentUser?.userId) {
+  // Supabase (best-effort) — nur im echten Modus
+  if (!_hubPreviewMode && currentUser?.userId) {
     SB.upsert('hub_unterschriften', {
       id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
       user_id: currentUser.userId,
