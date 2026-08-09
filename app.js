@@ -12151,26 +12151,28 @@ async function hubBescheinigungErstellen() {
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
     doc.text(heute, ML+8, y+38);
 
-    // Gegenzeichnung rechts
+    // Gegenzeichnung rechts — Inhaber / Verantwortlicher (vorgedruckt)
     const rx = ML + uW + 6;
     doc.setFillColor(255,252,235); doc.roundedRect(rx, y, uW, uH, 3, 3, 'F');
     doc.setFillColor(...GOLD); doc.roundedRect(rx, y, 4, uH, 2, 2, 'F');
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
-    doc.text('Gegenzeichnung Verantwortlicher', rx+8, y+6);
+    doc.text('Inhaber / Verantwortlicher', rx+8, y+6);
 
-    // Gegenzeichnungs-Canvas falls vorhanden
-    try {
-      const gCanvas = document.getElementById('hub-gegenz-canvas');
-      if (gCanvas && _hubFaGegenzHatStriche) {
-        doc.addImage(gCanvas.toDataURL('image/png'), 'PNG', rx+4, y+9, uW-10, 18);
-      }
-    } catch(e) {}
+    // Unterschrift Thomas Schmoldt — als kursive Schreibschrift eingebettet
+    doc.setFontSize(15); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...GOLD);
+    doc.text('Thomas Schmoldt', rx+8, y+20);
+    // Dekorative Unterschriftslinie darunter
+    doc.setDrawColor(...GOLD); doc.setLineWidth(0.6);
+    doc.line(rx+8, y+23, rx+uW-4, y+23);
+    // Wellige Unterschrift-Unterstreichung (dekorativ)
+    doc.setDrawColor(220,160,0); doc.setLineWidth(0.3);
+    doc.line(rx+8, y+24.5, rx+uW-4, y+24.5);
+
     doc.setDrawColor(...GRAU_LINIE); doc.setLineWidth(0.4);
-    doc.line(rx+8, y+28, rx+uW-4, y+28);
-    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(150,130,60);
-    doc.text('Verantwortlicher  ·  CSC GmbH', rx+8, y+33);
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text('gez. Thomas Schmoldt', rx+8, y+30);
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU_TEXT);
-    doc.text(heute, rx+8, y+38);
+    doc.text(`Geschäftsführer · CSC GmbH · ${heute}`, rx+8, y+36, {maxWidth: uW-12});
 
     // Footer S.2
     doc.setFillColor(...DUNKELBLAU); doc.rect(0, 287, W, 10, 'F');
