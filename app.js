@@ -11912,8 +11912,11 @@ async function hubBescheinigungErstellen() {
     doc.setFillColor(...GRUEN); doc.roundedRect(rx,y,4,sigH,2,2,'F');
     doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
     doc.text('Quiz bestanden', rx+halfW/2, y+10, {align:'center'});
+    // Prozentanzeige robust extrahieren: "8/10 (80 %)" → "80 %" oder direkt "≥70%"
+    const prozentMatch = ergebnis.match(/(\d+)\s*%/);
+    const prozentAnzeige = prozentMatch ? prozentMatch[1] + ' %' : '≥70%';
     doc.setFontSize(18); doc.setFont('helvetica','bold');
-    doc.text(ergebnis.split('(')[1]?.replace(')','') || '≥70%', rx+halfW/2, y+22, {align:'center'});
+    doc.text(prozentAnzeige, rx+halfW/2, y+22, {align:'center'});
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
     doc.text(`Min. 70 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
 
