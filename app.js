@@ -2702,61 +2702,53 @@ function vtBearbeitenAbbrechen() {
 let _hubPreviewMode = false; // wenn true → kein Speichern, Demo-User
 
 function hubAlsMaSpielen() {
-  // Setzt Preview-Mode + lädt Hub-Kurs wie ein MA
   _hubPreviewMode = true;
-  // Demo-Fortschritt: alle Kapitel als NICHT gelesen (echter Flow)
   hubFortschritt = {};
-  // Popup schließen falls offen
+  // Admin-Vorschau-Overlay schließen
   const ov = document.getElementById('hub-admin-vorschau-overlay');
   if (ov) ov.remove();
 
-  // Sub-Dashboard öffnen — simuliere MA-Ansicht
-  // Wir öffnen das Hub-Modul direkt im Sub-Dashboard
-  // Zuerst sicherstellen dass das Sub-Dashboard sichtbar ist
-  const sd = document.getElementById('sub-dashboard');
-  if (sd) {
-    // Sub-Dashboard auf MA-Modus setzen
-    sd.style.display = 'block';
-  }
+  // Eigenes Fullscreen-Modal aufbauen
+  let modal = document.getElementById('hub-preview-modal');
+  if (modal) modal.remove();
 
-  // Preview-Banner einblenden
-  let banner = document.getElementById('hub-preview-banner');
-  if (!banner) {
-    banner = document.createElement('div');
-    banner.id = 'hub-preview-banner';
-    banner.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:#7c2d12;color:#fff;padding:10px 16px;z-index:9998;display:flex;align-items:center;justify-content:between;gap:12px;font-size:.82rem;box-shadow:0 -2px 12px rgba(0,0,0,.25)';
-    banner.innerHTML = `
-      <span style="flex:1">🔍 <strong>Vorschau-Modus:</strong> Du siehst den Kurs wie ein Mitarbeiter — nichts wird gespeichert</span>
-      <button onclick="hubPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:6px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none">✕ Vorschau beenden</button>`;
-    document.body.appendChild(banner);
-  }
+  modal = document.createElement('div');
+  modal.id = 'hub-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
 
-  // Hub-Container anzeigen und rendern
-  const wrap = document.getElementById('hub-schulung-btn-wrap');
-  if (wrap) wrap.style.display = '';
-  const cont = document.getElementById('hub-schulung-container');
-  if (cont) {
-    cont.style.display = 'block';
-    hubSchulungRender();
-  }
+  // Header
+  modal.innerHTML = `
+    <div style="background:#7c2d12;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
+      </div>
+      <button onclick="hubPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#92400e">
+        <strong>🔍 Vorschau-Modus:</strong> Alles funktioniert wie beim Mitarbeiter — Kapitel lesen, Quiz machen, Fahrauftrag unterzeichnen, PDF ansehen. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="hub-preview-inner"></div>
+    </div>`;
 
-  // Scrollen zum Hub-Bereich
-  setTimeout(() => {
-    const hubBtn = document.getElementById('hub-schulung-btn-wrap');
-    if (hubBtn) hubBtn.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, 100);
+  document.body.appendChild(modal);
 
-  showToast('🔍 Vorschau-Modus aktiv — kein Speichern', '#7c2d12');
+  // Hub-Render in den Preview-Container umlenken
+  _hubPreviewContainer = document.getElementById('hub-preview-inner');
+  hubSchulungRenderIn(_hubPreviewContainer);
+
+  showToast('🔍 Vorschau-Modus aktiv', '#7c2d12');
 }
+
+let _hubPreviewContainer = null;
 
 function hubPreviewBeenden() {
   _hubPreviewMode = false;
+  _hubPreviewContainer = null;
   hubFortschritt = {};
-  const banner = document.getElementById('hub-preview-banner');
-  if (banner) banner.remove();
-  // Hub-Container wieder schließen
-  const cont = document.getElementById('hub-schulung-container');
-  if (cont) cont.style.display = 'none';
+  const modal = document.getElementById('hub-preview-modal');
+  if (modal) modal.remove();
   showToast('✅ Vorschau beendet', '#16a34a');
 }
 
@@ -11486,9 +11478,14 @@ function hubSchulungToggle() {
 
 function hubSchulungRender() {
   const cont = document.getElementById('hub-schulung-container');
+  hubSchulungRenderIn(cont);
+}
+
+function hubSchulungRenderIn(cont) {
   if (!cont) return;
-  const userId = currentUser?.userId || 'anon';
-  const quizBestanden = !!localStorage.getItem(`hub_quiz_bestanden_${userId}`);
+  // Im Preview-Mode: userId = 'preview', kein localStorage lesen
+  const userId = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+  const quizBestanden = _hubPreviewMode ? false : !!localStorage.getItem(`hub_quiz_bestanden_${userId}`);
   const bestandenAnzahl = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
   const alleGelesen = bestandenAnzahl === HUB_KAPITEL.length;
 
@@ -11601,10 +11598,15 @@ function hubKapitelAbschliessen(kapitelId) {
   _hubFortschrittSpeichern();
   _hubSubtitelAktualisieren();
   document.getElementById('hub-kapitel-modal').style.display = 'none';
-  hubSchulungRender();
+  // Im Preview-Mode: in Preview-Container rendern
+  if (_hubPreviewMode && _hubPreviewContainer) {
+    hubSchulungRenderIn(_hubPreviewContainer);
+  } else {
+    hubSchulungRender();
+  }
 
-  // Supabase speichern (best-effort)
-  if (currentUser?.userId) {
+  // Supabase speichern — nur im echten Modus
+  if (!_hubPreviewMode && currentUser?.userId) {
     const id = `${currentUser.userId}_${kapitelId}`;
     SB.upsert('hub_fortschritt', {
       id,
@@ -11633,7 +11635,7 @@ function hubQuizStarten() {
 }
 
 function hubQuizFrageZeigen() {
-  const cont = document.getElementById('hub-schulung-container');
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
   if (!cont) return;
   const q = hubQuizFragen[hubQuizIndex];
   const nr = hubQuizIndex + 1;
@@ -11688,7 +11690,7 @@ function hubQuizAntwort(gewaehlt) {
   }
 
   // Erklärung + Weiter-Button
-  const cont = document.getElementById('hub-schulung-container');
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
   const quizBox = cont.querySelector('div[style*="overflow:hidden"]');
   const erklaerungDiv = document.createElement('div');
   erklaerungDiv.style.cssText = 'padding:0 16px 16px';
@@ -11737,7 +11739,7 @@ function hubQuizErgebnis() {
     }
   }
 
-  const cont = document.getElementById('hub-schulung-container');
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
   cont.innerHTML = `
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
       <div style="padding:16px 14px;background:${bestanden?'#14532d':'#7f1d1d'};color:#fff;text-align:center">
