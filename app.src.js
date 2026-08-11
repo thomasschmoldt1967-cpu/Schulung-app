@@ -2759,12 +2759,17 @@ function hubAdminVorschau() {
   overlay.id = 'hub-admin-vorschau-overlay';
   overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto';
 
-  const modulTitel = {
+  const modulTitelDE = {
     1: 'Modul 1 — Recht & Verantwortung',
     2: 'Modul 2 — Gerätekunde & Technik',
     3: 'Modul 3 — Standsicherheit & Gefahren',
     4: 'Modul 4 — Praxis & Notfallmanagement'
   };
+  const modulTitelEN = { 1:'Module 1 — Law & Responsibility', 2:'Module 2 — Equipment & Technology', 3:'Module 3 — Stability & Hazards', 4:'Module 4 — Practice & Emergency Management' };
+  const modulTitelTR = { 1:'Modül 1 — Hukuk ve Sorumluluk', 2:'Modül 2 — Ekipman ve Teknoloji', 3:'Modül 3 — Stabilite ve Tehlikeler', 4:'Modül 4 — Pratik ve Acil Yönetim' };
+  const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
+  const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
+  const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
   const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
 
   let kapitelHtml = '';
@@ -10929,6 +10934,607 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
 // ── 14 Kapitel (4 Module) + 10-Fragen-Quiz + Bescheinigung ──
 // ══════════════════════════════════════════════════════════════
 
+// ══════════════════════════════════════════════════════════
+// HUB-SCHULUNG Übersetzungen — EN / TR / AR
+// Kapitel-Titel, Kapitel-Inhalt (plain), Quiz-Fragen, UI-Labels
+// ══════════════════════════════════════════════════════════
+
+const HUB_SPRACHEN = [
+  { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
+  { code: 'en', label: 'English',  flag: '🇬🇧' },
+  { code: 'tr', label: 'Türkçe',   flag: '🇹🇷' },
+  { code: 'ar', label: 'العربية',  flag: '🇸🇦', rtl: true },
+];
+
+let hubSprache = localStorage.getItem('hub_sprache') || 'de';
+
+// ── Kapitel-Titel ─────────────────────────────────────────
+const HUB_TITEL_I18N = {
+  'hub-01': { en: 'Legal Foundations & Duties',           tr: 'Yasal Temeller ve Yükümlülükler',       ar: 'الأسس القانونية والواجبات' },
+  'hub-02': { en: 'Responsibility & Liability',           tr: 'Sorumluluk ve Yükümlülük',              ar: 'المسؤولية والالتزام' },
+  'hub-03': { en: 'Platform Types & Categories',          tr: 'Platform Türleri ve Kategorileri',      ar: 'أنواع المنصات وفئاتها' },
+  'hub-04': { en: 'Safety Devices',                       tr: 'Güvenlik Ekipmanları',                  ar: 'أجهزة السلامة' },
+  'hub-05': { en: 'PPE — Personal Protective Equipment',  tr: 'KKD — Kişisel Koruyucu Donanım',       ar: 'معدات الحماية الشخصية' },
+  'hub-06': { en: 'Understanding the Load Chart',         tr: 'Yük Diyagramını Anlama',                ar: 'فهم مخطط الأحمال' },
+  'hub-07': { en: 'Ground & Stability',                   tr: 'Zemin ve Kararlılık',                   ar: 'الأرضية والاستقرار' },
+  'hub-08': { en: 'Wind Hazards',                         tr: 'Rüzgar Tehlikeleri',                    ar: 'مخاطر الرياح' },
+  'hub-09': { en: 'Safety Distances to Power Lines',      tr: 'Elektrik Hatlarına Güvenli Mesafe',     ar: 'مسافات الأمان من خطوط الكهرباء' },
+  'hub-10': { en: 'Daily Visual & Functional Check',      tr: 'Günlük Görsel ve Fonksiyon Kontrolü',   ar: 'الفحص اليومي البصري والوظيفي' },
+  'hub-11': { en: 'Safe Setup of the Platform',           tr: 'Platformun Güvenli Kurulumu',           ar: 'الإعداد الآمن للمنصة' },
+  'hub-12': { en: 'Prohibited Actions',                   tr: 'Yasaklanan Eylemler',                   ar: 'الإجراءات المحظورة' },
+  'hub-13': { en: 'Emergency Lowering — When All Else Fails', tr: 'Acil İniş — Her Şey Başarısız Olduğunda', ar: 'الخفض الطارئ — عند تعطل كل شيء' },
+  'hub-14': { en: 'Test & Work Order — Summary',          tr: 'Sınav ve Sürüş Emri — Özet',           ar: 'الاختبار وأمر العمل — ملخص' },
+  'hub-15': { en: 'Operating Instructions — Safe Operation', tr: 'İşletme Talimatları — Güvenli Çalışma', ar: 'تعليمات التشغيل — التشغيل الآمن' },
+};
+
+// ── Kapitel-Inhalt (plain text, wird unter den deutschen HTML-Inhalt gesetzt) ──
+const HUB_INHALT_I18N = {
+  'hub-01': {
+    en: `<p>Operating aerial work platforms is subject to strict legal requirements: <strong>§ 12 ArbSchG</strong> (duty to instruct), <strong>BetrSichV</strong> (only qualified persons may operate), <strong>DGUV 308-008</strong> (training & authorization). No driver's license is required — but the operator needs three things:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Training</div><div style="font-size:.72rem;color:#9a3412">Theory + Practice passed</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Fitness</div><div style="font-size:.72rem;color:#9a3412">Occupational health clearance</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Work Order</div><div style="font-size:.72rem;color:#9a3412">Written authorization</div></div>
+    </div>`,
+    tr: `<p>Yüksek erişim platformlarının kullanımı katı yasal gerekliliklere tabidir: <strong>§ 12 ArbSchG</strong> (eğitim yükümlülüğü), <strong>BetrSichV</strong> (sadece eğitimli kişiler kullanabilir), <strong>DGUV 308-008</strong> (eğitim ve yetkilendirme). Ehliyet gerekmez — ancak operatörün üç şeye ihtiyacı vardır:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Eğitim</div><div style="font-size:.72rem;color:#9a3412">Teori + Pratik geçildi</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-size:.72rem;color:#9a3412"><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Sağlık Uygunluğu</div>İş sağlığı muayenesi</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Sürüş Emri</div><div style="font-size:.72rem;color:#9a3412">Yazılı yetkilendirme</div></div>
+    </div>`,
+    ar: `<p>يخضع تشغيل منصات العمل الارتفاعية لمتطلبات قانونية صارمة: <strong>§ 12 ArbSchG</strong> (التزام التدريب)، <strong>BetrSichV</strong> (الأشخاص المؤهلون فقط)، <strong>DGUV 308-008</strong> (التدريب والتفويض). لا يلزم رخصة قيادة — لكن المشغّل يحتاج ثلاثة أشياء:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">التدريب</div><div style="font-size:.72rem;color:#9a3412">نظري + عملي</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">اللياقة الصحية</div><div style="font-size:.72rem;color:#9a3412">الفحص الطبي المهني</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">أمر العمل</div><div style="font-size:.72rem;color:#9a3412">تفويض خطي</div></div>
+    </div>`,
+  },
+  'hub-02': {
+    en: `<p>In case of an accident, two levels of liability apply:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Employer / Supervisor</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Bears <strong>organizational responsibility</strong>: selecting qualified persons, providing safe equipment, ensuring training and authorization.</div></div>
+      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Operator (You!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px">Bears <strong>operational responsibility</strong>: personal liability for gross negligence, ignoring prohibitions or alcohol at work.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ The written work order from the employer is <strong>mandatory</strong> — training alone is not sufficient!</p>`,
+    tr: `<p>Bir kaza durumunda iki düzey sorumluluk geçerlidir:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 İşveren / Amir</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>Organizasyonel sorumluluk</strong>: Nitelikli kişilerin seçimi, güvenli ekipman temini, eğitim ve yetkilendirme.</div></div>
+      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Operatör (Siz!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>Uygulama sorumluluğu</strong>: Ağır ihmal, yasakları çiğneme veya işyerinde alkol durumunda kişisel sorumluluk.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ İşverenin yazılı sürüş emri <strong>zorunludur</strong> — yalnızca eğitim yeterli değildir!</p>`,
+    ar: `<p>في حالة وقوع حادث، تنطبق مستويان من المسؤولية:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 صاحب العمل / المشرف</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>المسؤولية التنظيمية</strong>: اختيار الأشخاص المؤهلين، توفير معدات آمنة، ضمان التدريب والتفويض.</div></div>
+      <div style="background:#fff7ed;border-right:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 المشغّل (أنت!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>المسؤولية التنفيذية</strong>: المسؤولية الشخصية عن الإهمال الجسيم، تجاهل المحظورات، أو الكحول في العمل.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px;direction:rtl">⚠️ أمر العمل الكتابي من صاحب العمل <strong>إلزامي</strong> — التدريب وحده غير كافٍ!</p>`,
+  },
+  'hub-03': {
+    en: `<p>Aerial work platforms are categorized by their movement type:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Group A — Vertical lift</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Center of gravity always <strong>within</strong> the tipping edges. Examples: scissor lifts, personnel lifts</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Group B — Boom Lifts</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">Basket can be moved <strong>outside</strong> the tipping edges. Examples: telescopic, articulating, truck-mounted booms.<br><strong>⚠️ PPE mandatory!</strong></div></div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Drive types:</strong><br>• <strong>Type 1</strong> — Drive only in transport position (platform down)<br>• <strong>Type 3</strong> — Drive with raised platform from the basket</div>`,
+    tr: `<p>Yüksek erişim platformları hareket türlerine göre sınıflandırılır:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Grup A — Dikey Kaldırma</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Ağırlık merkezi devrilme kenarları <strong>içinde</strong> kalır. Örnekler: makaslı platformlar, personel asansörleri</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Grup B — Bomlu Platformlar</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">Sepet devrilme kenarlarının <strong>dışına</strong> çıkabilir. Örnekler: teleskopik, mafsallı, kamyon üstü platformlar.<br><strong>⚠️ KKD zorunludur!</strong></div></div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Sürüş tipleri:</strong><br>• <strong>Tip 1</strong> — Sadece taşıma konumunda sürüş (platform aşağıda)<br>• <strong>Tip 3</strong> — Sepetten yükseltilmiş platformla sürüş</div>`,
+    ar: `<p>تُصنَّف منصات العمل الارتفاعية حسب نوع حركتها:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 المجموعة أ — الرفع الرأسي</div><div style="font-size:.8rem;color:#075985;margin-top:4px">مركز الثقل دائماً <strong>داخل</strong> حواف الانقلاب. أمثلة: مقصات الرفع، مصاعد الأشخاص</div></div>
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 المجموعة ب — الذراع المتمددة</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">يمكن تحريك السلة <strong>خارج</strong> حواف الانقلاب.<br><strong>⚠️ معدات الحماية إلزامية!</strong></div></div>
+    </div>`,
+  },
+  'hub-04': {
+    en: `<p>These safety devices must be checked before every use:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">Emergency Stop</div><div style="font-size:.78rem;color:#166534">Immediately stops all functions — at ground AND in basket. Test both!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">Tilt Sensor</div><div style="font-size:.78rem;color:#854d0e">Acoustic/visual alarm or shutdown when platform is too tilted.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Overload Indicator</div><div style="font-size:.78rem;color:#1d4ed8">Blocks lifting function when allowable basket weight is exceeded.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">Dead Man Switch</div><div style="font-size:.78rem;color:#6b21a8">Controls only react when actively pressed — immediate stop when released.</div></div></div>
+    </div>`,
+    tr: `<p>Bu güvenlik ekipmanları her kullanımdan önce kontrol edilmelidir:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">Acil Stop</div><div style="font-size:.78rem;color:#166534">Tüm fonksiyonları anında durdurur — zeminde VE sepette. Her ikisini de test edin!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">Eğim Sensörü</div><div style="font-size:.78rem;color:#854d0e">Platform fazla eğik olduğunda sesli/görsel alarm veya kapanma.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Aşırı Yük Göstergesi</div><div style="font-size:.78rem;color:#1d4ed8">Sepetteki izin verilen ağırlık aşıldığında kaldırma fonksiyonunu bloke eder.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">Ölü Adam Anahtarı</div><div style="font-size:.78rem;color:#6b21a8">Kontroller yalnızca aktif basıldığında çalışır — bırakıldığında anında durur.</div></div></div>
+    </div>`,
+    ar: `<p>يجب فحص أجهزة السلامة هذه قبل كل استخدام:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;direction:rtl">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">زر الإيقاف الطارئ</div><div style="font-size:.78rem;color:#166534">يوقف جميع الوظائف فوراً — في الأرض وفي السلة. اختبر كليهما!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">مستشعر الميل</div><div style="font-size:.78rem;color:#854d0e">إنذار صوتي/بصري أو إيقاف عند ميل المنصة أكثر من اللازم.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">مؤشر الحمل الزائد</div><div style="font-size:.78rem;color:#1d4ed8">يحظر وظيفة الرفع عند تجاوز الوزن المسموح به في السلة.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">مفتاح الرجل الميت</div><div style="font-size:.78rem;color:#6b21a8">تعمل عناصر التحكم فقط عند الضغط النشط — توقف فوري عند الإفلات.</div></div></div>
+    </div>`,
+  },
+  'hub-05': {
+    en: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ MANDATORY for Group B (Boom Lifts)!</div><div style="font-size:.8rem;opacity:.9">Full body harness + short fall arrester — always wear it!</div></div>
+    <p><strong>Why PPE in aerial work platforms?</strong></p>
+    <p style="font-size:.85rem">The <strong>"whiplash effect"</strong>: On telescopic and articulating boom lifts, vibrations from uneven ground can set the long arm oscillating and catapult the operator out of the basket.</p>
+    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Key Rules:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ Attach <strong>only</strong> to designated, marked anchor points in the basket</div><div>✅ Short restraint system — no long shock absorber in the basket</div><div>✅ Put on harness <strong>before</strong> the platform moves</div></div></div>`,
+    tr: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ Grup B (Bomlu Platformlar) için ZORUNLUDUR!</div><div style="font-size:.8rem;opacity:.9">Tam vücut emniyet kemeri + kısa düşüş önleyici — her zaman takın!</div></div>
+    <p><strong>Yüksek erişim platformlarında neden KKD?</strong></p>
+    <p style="font-size:.85rem"><strong>"Kırbaç etkisi"</strong>: Teleskopik ve mafsallı platformlarda zemin engebelerinden kaynaklanan titreşimler uzun kolu sallayabilir ve operatörü sepetten fırlatabiliricek.</p>
+    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Önemli Kurallar:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ <strong>Yalnızca</strong> sepetteki işaretlenmiş bağlantı noktalarına bağlayın</div><div>✅ Kısa tutma sistemi — sepette uzun şok emici kullanmayın</div><div>✅ Platform hareket etmeden <strong>önce</strong> kemeri giyin</div></div></div>`,
+    ar: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ إلزامي للمجموعة ب (ذراع الرفع)!</div><div style="font-size:.8rem;opacity:.9">حزام الجسم الكامل + جهاز إيقاف السقوط القصير — ارتده دائماً!</div></div>
+    <p style="direction:rtl"><strong>لماذا معدات الحماية في منصات العمل الارتفاعية؟</strong></p>
+    <p style="font-size:.85rem;direction:rtl"><strong>"تأثير السوط"</strong>: في منصات الذراع التلسكوبية، يمكن للاهتزازات الناتجة عن الأرض الوعرة أن تجعل الذراع الطويل يتأرجح ويقذف المشغّل خارج السلة.</p>`,
+  },
+  'hub-06': {
+    en: `<p>The load chart shows: <strong>The further the arm extends, the lower the load capacity!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem"><div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Chart structure:</div><div style="display:flex;flex-direction:column;gap:4px;color:#475569"><div>📏 <strong>Y-axis (vertical)</strong> — Working height in meters</div><div>📐 <strong>X-axis (horizontal)</strong> — Lateral reach in meters</div><div>〰️ <strong>Curves</strong> — Weight zone limits: Zone 1 = 300 kg | Zone 3 = 100 kg</div></div></div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Never:</div><div style="color:#7f1d1d">• Exceed load capacity (person + tools + materials = total weight!)<br>• Load heavy parts from outside (e.g. from roof) while elevated</div></div>`,
+    tr: `<p>Yük diyagramı şunu gösterir: <strong>Kol ne kadar uzarsa, taşıma kapasitesi o kadar düşer!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem"><div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Diyagram yapısı:</div><div style="display:flex;flex-direction:column;gap:4px;color:#475569"><div>📏 <strong>Y ekseni (dikey)</strong> — Metre cinsinden çalışma yüksekliği</div><div>📐 <strong>X ekseni (yatay)</strong> — Metre cinsinden yanal erişim</div><div>〰️ <strong>Eğriler</strong> — Ağırlık bölgesi limitleri: Bölge 1 = 300 kg | Bölge 3 = 100 kg</div></div></div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Asla:</div><div style="color:#7f1d1d">• Taşıma kapasitesini aşmayın (kişi + alet + malzeme = toplam ağırlık!)<br>• Yüksekte iken dışarıdan ağır parça yüklemeyin</div></div>`,
+    ar: `<p style="direction:rtl">يُظهر مخطط الأحمال: <strong>كلما امتد الذراع أكثر، قلّت قدرة التحميل!</strong></p>
+    <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem;direction:rtl"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ لا تفعل أبداً:</div><div style="color:#7f1d1d">• تجاوز قدرة التحميل (شخص + أدوات + مواد = الوزن الإجمالي!)<br>• تحميل أجزاء ثقيلة من الخارج أثناء الارتفاع</div></div>`,
+  },
+  'hub-07': {
+    en: `<p>The ground is the foundation of safety — incorrect positioning leads directly to tipping!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Hazard sources:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Manhole covers · Fresh fill · Undermining · Underground parking ceilings · Basement entrances</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Protective measures:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• Always use <strong>outrigger pads</strong> for load distribution<br>• Strictly observe manufacturer's tilt limits<br>• Fully extend all outriggers + level platform horizontally<br>• Green indicator = safe · Red indicator = no operation!</div></div>
+    </div>`,
+    tr: `<p>Zemin güvenliğin temelidir — yanlış konumlandırma doğrudan devrilmeye yol açar!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Tehlike kaynakları:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Rögar kapakları · Taze dolgu · Zemin çökmesi · Otopark tavanları · Bodrum girişleri</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Koruyucu önlemler:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• Yük dağıtımı için her zaman <strong>dayak plakaları</strong> kullanın<br>• Üretici eğim sınırlarına kesinlikle uyun<br>• Tüm destekleri tam açın + platformu yatay hizalayın<br>• Yeşil ışık = güvenli · Kırmızı ışık = çalışma yasak!</div></div>
+    </div>`,
+    ar: `<p style="direction:rtl">الأرض هي أساس السلامة — الوضع الخاطئ يؤدي مباشرة إلى الانقلاب!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;direction:rtl">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ مصادر الخطر:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">أغطية مجاري · تربة مردومة حديثاً · تجاويف تحت الأرض · أسقف مواقف السيارات · مداخل الأقبية</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ التدابير الوقائية:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• استخدم دائماً <strong>ألواح التحميل</strong> لتوزيع الحمل<br>• التزم بحدود ميل الشركة المصنعة<br>• مدّد جميع الدعائم بالكامل + تسوية المنصة أفقياً<br>• المؤشر الأخضر = آمن · المؤشر الأحمر = ممنوع التشغيل!</div></div>
+    </div>`,
+  },
+  'hub-08': {
+    en: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">💨 Max. wind speed: 12.5 m/s (Beaufort 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">If exceeded: IMMEDIATELY stop work and lower platform!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>Wind at height</strong> is significantly stronger than at ground level — always use the wind meter, not personal perception!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>Sail effect ban:</strong> No tarps, signs or boards in the basket — massively increases tipping risk!</div>
+      <div style="padding:8px 12px;background:#fffbeb;border-radius:7px">📋 <strong>Manufacturer specifications</strong> in the manual always override the standard value of 12.5 m/s!</div>
+    </div>`,
+    tr: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">💨 Maks. rüzgar hızı: 12,5 m/s (Beaufort 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Aşılırsa: HEMEN çalışmayı durdurun ve platformu indirin!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>Yüksekte rüzgar</strong> yerden çok daha güçlüdür — kişisel algı değil, her zaman rüzgar ölçerini kullanın!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>Yelken etkisi yasağı:</strong> Sepete branda, tabela veya tahta koymayın — devrilme riskini büyük ölçüde artırır!</div>
+    </div>`,
+    ar: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">💨 أقصى سرعة للرياح: 12.5 م/ث (قوة 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">في حالة التجاوز: أوقف العمل فوراً وانزل بالمنصة!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px;direction:rtl">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>الرياح في الارتفاع</strong> أشد بكثير من السطح — استخدم دائماً مقياس الرياح وليس التقدير الشخصي!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>حظر تأثير الشراع:</strong> لا توضع ستائر أو لافتات أو ألواح في السلة — يزيد خطر الانقلاب!</div>
+    </div>`,
+  },
+  'hub-09': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">LIFE THREATENING — electric shock and arc flash!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>Up to <strong>1,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>Over 1,000 to <strong>110,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>Over 110,000 to <strong>220,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ Unknown voltage</strong></div><div style="font-weight:700;font-size:1rem">≥ 5.0 m</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">ELEKTRİK ÇARPMASI VE ELEKTRİK ARKI ÖLÜMCÜLDÜR!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>1.000 V'a kadar</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>1.000 - 110.000 V arası</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>110.000 - 220.000 V arası</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ Bilinmeyen gerilim</strong></div><div style="font-weight:700;font-size:1rem">≥ 5,0 m</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center;direction:rtl"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">خطر مميت — صعقة كهربائية وقوس كهربائي!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem;direction:rtl">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>حتى <strong>1,000 فولت</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1.0 م</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>فوق 1,000 حتى <strong>110,000 فولت</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3.0 م</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ جهد غير معروف</strong></div><div style="font-weight:700;font-size:1rem">≥ 5.0 م</div></div>
+    </div>`,
+  },
+  'hub-10': {
+    en: `<p>Mandatory before every work shift — per DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hydraulic hoses and cylinders for leaks','Tires for damage, foreign objects and pressure','Overall condition: cracks in steel, deformations, loose bolts','Railing and basket latch intact?','Emergency stop at ground AND basket – test both','Emergency lowering device – check function','Warning devices: horn, beacon, reversing alarm','Dead man switch: responds when released?','PPE anchor points in basket undamaged?','Inspection sticker valid?','Wind speed below manufacturer limit?','Outrigger pads available and ready?'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+    tr: `<p>Her iş vardiyasından önce zorunlu — DGUV 308-008 gereği!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hidrolik hortumlar ve silindirler sızıntı için','Lastikler hasar, yabancı cisim ve basınç için','Genel durum: çelikte çatlaklar, deformasyonlar, gevşek cıvatalar','Korkuluk ve sepet kilidi sağlam mı?','Zeminde VE sepette acil stop — her ikisini test edin','Acil iniş cihazı — işlevini kontrol edin','Uyarı cihazları: korna, flaşör, geri vites alarmı','Ölü adam anahtarı: bırakıldığında tepki veriyor mu?','Sepetteki KKD bağlantı noktaları hasarsız mı?','Muayene etiketi geçerli mi?','Rüzgar hızı üretici limitinin altında mı?','Dayak plakaları mevcut ve hazır mı?'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">إلزامي قبل كل وردية عمل — وفقاً لـ DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px;direction:rtl">
+      ${['خراطيم هيدروليكية وأسطوانات للتسرب','الإطارات للتلف والأجسام الغريبة والضغط','الحالة العامة: شقوق في الفولاذ، تشوهات، براغي مفكوكة','درابزين وقفل السلة سليمان؟','زر الإيقاف الطارئ في الأرض والسلة — اختبر كليهما','جهاز الخفض الطارئ — تحقق من الوظيفة','أجهزة التحذير: البوق، الإضاءة الوامضة، إنذار التراجع','مفتاح الرجل الميت: يستجيب عند الإفلات؟','نقاط ربط معدات الحماية في السلة سليمة؟','ملصق الفحص صالح؟','سرعة الرياح أقل من حد الشركة المصنعة؟','ألواح الدعم متوفرة وجاهزة؟'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+  },
+  'hub-11': {
+    en: `<p>Correct setup is critical for stability:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[['Check surroundings','Set up barriers, assess ground load capacity (manholes, voids, slopes)'],['Lay outrigger pads','Always use large-area outrigger pads under supports — distributes point load!'],['Extend outriggers','Extend all 4 outriggers fully — never stop halfway'],['Level','Align platform exactly horizontal until green indicator lights up'],['Check release','Only begin lifting with green indicator and secure stance']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+    tr: `<p>Doğru kurulum stabilite için kritiktir:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[['Çevreyi kontrol et','Bariyerler kur, zemin taşıma kapasitesini değerlendir (rögarlar, boşluklar, eğimler)'],['Dayak plakaları yerleştir','Desteklerin altına her zaman geniş dayak plakaları koy — nokta yükü dağıtır!'],['Destekleri aç','4 desteği de tamamen aç — yarıda bırakma'],['Hizala','Yeşil gösterge yanana kadar platformu tam yatay hizala'],['Onayı kontrol et','Yeşil gösterge ve güvenli duruşla kaldırmaya başla']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">الإعداد الصحيح أمر حيوي للاستقرار:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem;direction:rtl">
+      ${[['فحص المحيط','ضع حواجز، قيّم قدرة تحمل الأرض (فتحات الصرف، التجاويف، المنحدرات)'],['وضع ألواح الدعم','استخدم دائماً ألواح دعم واسعة تحت الدعائم — لتوزيع الحمل!'],['مد الدعائم','مدّ جميع الدعائم الأربعة بالكامل — لا تتوقف في منتصف الطريق'],['التسوية','اضبط المنصة أفقياً تماماً حتى يضيء المؤشر الأخضر'],['فحص التحرير','ابدأ الرفع فقط عند المؤشر الأخضر والموقف الآمن']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+  },
+  'hub-12': {
+    en: `<p>These actions create immediate accident risk and are <strong>absolutely prohibited</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${['Exceeding maximum load capacity (person + tools + materials!)','Leaving or entering the basket while elevated (no climbing onto roofs/scaffolding)','Raising the standing position with ladders, crates or standing on the railing','Attaching tarps, signs or boards (sail effect → tipping risk!)','Bypassing or manipulating safety devices','Retracting outriggers with basket raised','Operating in excess wind speed','Violating minimum distances to power lines','Operating without a valid inspection sticker'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+    tr: `<p>Bu eylemler ani kaza riski yaratır ve <strong>kesinlikle yasaktır</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${['Maksimum taşıma kapasitesini aşmak (kişi + alet + malzeme!)','Yüksekte iken sepetten çıkmak veya girmek (çatılara/iskelelere geçiş yok)','Merdiven, sandık veya korkuluğa ayakta durarak yükseltmek','Branda, tabela veya tahta asmak (yelken etkisi → devrilme riski!)','Güvenlik ekipmanlarını atlatmak veya manipüle etmek','Sepet kaldırıkken destekleri geri çekmek','Rüzgar hızı aşıldığında çalışmak','Elektrik hatlarına minimum mesafeyi ihlal etmek','Geçerli muayene etiketi olmadan çalışmak'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">هذه الإجراءات تخلق خطر حادث فوري و<strong>محظورة تماماً</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem;direction:rtl">
+      ${['تجاوز الحمل الأقصى (شخص + أدوات + مواد!)','مغادرة أو دخول السلة في الارتفاع','رفع وضع الوقوف بسلالم أو صناديق','تثبيت ستائر أو لافتات أو ألواح (تأثير الشراع → خطر الانقلاب!)','تجاوز أجهزة السلامة أو التلاعب بها','سحب الدعائم مع سلة مرفوعة','التشغيل عند تجاوز سرعة الرياح','انتهاك المسافات الدنيا من خطوط الكهرباء','التشغيل بدون ملصق فحص صالح'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-right:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+  },
+  'hub-13': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">🚨 EMERGENCY: Operator in basket unconscious!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Only the ground control can help now!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 Mandatory: Second trained person on the ground!</div><div style="color:#854d0e;margin-top:4px">At all times when operating aerial work platforms, a second person must be present who has been trained in emergency lowering.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ Emergency lowering procedure:</div><div style="color:#166534;margin-top:4px">1. Stay calm — do not use elevator<br>2. Open emergency lowering valve / ground control panel at machine base<br>3. Lower basket slowly and in a controlled manner<br>4. After lowering: call emergency services 112 and provide first aid</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 Emergency: 📞 112</div><div style="color:#1d4ed8;margin-top:2px">WHERE — WHAT — HOW MANY — WHO</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">🚨 ACİL DURUM: Sepetteki operatör bilinçsiz!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Artık sadece zemin kontrolü yardımcı olabilir!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 Zorunlu: Zeminde ikinci eğitimli kişi!</div><div style="color:#854d0e;margin-top:4px">Yüksek erişim platformu çalışmalarında her zaman acil inişe eğitilmiş ikinci bir kişi bulunmalıdır.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ Acil iniş prosedürü:</div><div style="color:#166534;margin-top:4px">1. Sakin olun — asansör kullanmayın<br>2. Makine tabanındaki acil iniş vanasını / zemin kontrol panelini açın<br>3. Sepeti yavaş ve kontrollü indirin<br>4. İndirdikten sonra: 112'yi arayın ve ilk yardım yapın</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 Acil: 📞 112</div><div style="color:#1d4ed8;margin-top:2px">NEREDE — NE OLDU — KAÇ KİŞİ — KİM</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">🚨 طوارئ: المشغّل في السلة فاقد الوعي!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">التحكم الأرضي فقط يمكنه المساعدة الآن!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem;direction:rtl">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 إلزامي: شخص ثانٍ مدرب على الأرض!</div><div style="color:#854d0e;margin-top:4px">يجب دائماً وجود شخص ثانٍ مُدرَّب على الخفض الطارئ.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ إجراء الخفض الطارئ:</div><div style="color:#166534;margin-top:4px">1. حافظ على هدوئك — لا تستخدم المصعد<br>2. افتح صمام الخفض الطارئ في قاعدة الآلة<br>3. اخفض السلة ببطء وبشكل منضبط<br>4. بعد الخفض: اتصل بـ 112 وقدّم الإسعافات الأولية</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 طوارئ: 📞 112</div></div>
+    </div>`,
+  },
+  'hub-14': {
+    en: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Ready for the quiz?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 questions · At least 70% to pass (7/10 points)</div></div>
+    <p style="font-size:.85rem"><strong>Validity of the operator's certificate:</strong><br>The certificate is valid for life — but requires an <strong>annual briefing</strong> at the workplace!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Checklist before the quiz:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ Know all 3 pillars (training, fitness, work order)</div><div>☑ Understand difference Group A / Group B</div><div>☑ Know PPE requirement for Group B</div><div>☑ Remember wind limit 12.5 m/s</div><div>☑ Know minimum distances to power lines</div><div>☑ Understand emergency lowering procedure</div></div></div>`,
+    tr: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Quiz için hazır mısınız?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 soru · Geçmek için en az %70 (10 üzerinden 7 puan)</div></div>
+    <p style="font-size:.85rem"><strong>Operatör sertifikasının geçerliliği:</strong><br>Sertifika ömür boyu geçerlidir — ancak işyerinde <strong>yıllık eğitim</strong> gerektirir!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Quiz öncesi kontrol listesi:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ 3 temel şartı bil (eğitim, uygunluk, sürüş emri)</div><div>☑ Grup A / Grup B farkını anla</div><div>☑ Grup B için KKD zorunluluğunu bil</div><div>☑ Rüzgar limiti 12,5 m/s'yi hatırla</div><div>☑ Elektrik hatlarına minimum mesafeleri bil</div><div>☑ Acil iniş prosedürünü anla</div></div></div>`,
+    ar: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">✅ هل أنت مستعد للاختبار؟</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 أسئلة · 70% على الأقل للنجاح</div></div>
+    <p style="font-size:.85rem;direction:rtl"><strong>صلاحية شهادة المشغّل:</strong><br>الشهادة صالحة مدى الحياة — لكنها تتطلب <strong>تدريباً سنوياً</strong> في مكان العمل!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem;direction:rtl"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 قائمة التحقق قبل الاختبار:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ معرفة الركائز الثلاث (تدريب، لياقة، أمر عمل)</div><div>☑ فهم الفرق بين المجموعة أ/ب</div><div>☑ معرفة متطلبات معدات الحماية للمجموعة ب</div><div>☑ تذكر حد الرياح 12.5 م/ث</div><div>☑ معرفة المسافات الدنيا من خطوط الكهرباء</div><div>☑ فهم إجراء الخفض الطارئ</div></div></div>`,
+  },
+  'hub-15': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">Operating Instructions</div><div style="font-size:.75rem;opacity:.9">acc. § 9 BetrSichV · DGUV Rule 100-500 Ch. 2.10</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Hazards</div><div style="color:#7f1d1d">• Fall from basket (whiplash effect)<br>• Tipping due to inadequate ground or wind<br>• Crushing in slewing area<br>• Life-threatening electric shock from power lines<br>• Falling objects from basket</div></div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Protective Measures</div><div style="color:#166534">✅ Only persons with operator's certificate + written work order<br>✅ PPE (harness) for all boom lifts (Group B)<br>✅ Daily inspection before work<br>✅ Outriggers fully extended + outrigger pads + leveling<br>✅ Max. wind speed (standard 12.5 m/s)<br>✅ Min. 5 m distance to power lines (unknown voltage)</div></div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Prohibitions</div><div style="color:#7f1d1d">❌ Exceed load capacity<br>❌ Leave basket when raised<br>❌ Stand on railings or use ladders in basket<br>❌ Attach tarps/signs to basket<br>❌ Bypass safety devices<br>❌ Retract outriggers with basket raised</div></div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Emergency</div><div style="color:#78350f">⚠️ Malfunction → press emergency stop, secure machine<br>🚨 Basket control failed → ground person: activate emergency lowering!<br>📞 Emergency: 112 (WHERE – WHAT – HOW MANY – WHO)</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">İşletme Talimatı</div><div style="font-size:.75rem;opacity:.9">§ 9 BetrSichV · DGUV Kural 100-500 Böl. 2.10 uyarınca</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Tehlikeler</div><div style="color:#7f1d1d">• Sepetten düşme (kırbaç etkisi)<br>• Yetersiz zemin veya rüzgar nedeniyle devrilme<br>• Dönme alanında ezilme<br>• Elektrik hatlarından ölümcül elektrik çarpması<br>• Sepetten düşen nesneler</div></div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Koruyucu Önlemler</div><div style="color:#166534">✅ Sadece sertifikalı + yazılı sürüş emirli kişiler<br>✅ Tüm bomlu platformlarda KKD (emniyet kemeri)<br>✅ Çalışmadan önce günlük kontrol<br>✅ Destekler tam açık + plakalar + hizalama<br>✅ Max. rüzgar hızı (standart 12,5 m/s)<br>✅ Elektrik hatlarına min. 5 m mesafe</div></div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Yasaklar</div><div style="color:#7f1d1d">❌ Yük kapasitesini aşmak<br>❌ Sepeti kaldırıkken terk etmek<br>❌ Korkuluklara binmek veya sepette merdiven kullanmak<br>❌ Sepete branda/tabela asmak<br>❌ Güvenlik cihazlarını atlatmak<br>❌ Sepet kaldırıkken destekleri geri çekmek</div></div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Acil Durum</div><div style="color:#78350f">⚠️ Arıza → acil stop'a bas, makineyi güvenli hale getir<br>🚨 Sepet kontrolü arızalı → zemin kişisi: acil inişi etkinleştir!<br>📞 Acil: 112 (NEREDE – NE OLDU – KAÇ KİŞİ – KİM)</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px;direction:rtl"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">تعليمات التشغيل</div><div style="font-size:.75rem;opacity:.9">وفق § 9 BetrSichV</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem;direction:rtl">
+      <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. المخاطر</div><div style="color:#7f1d1d">• السقوط من السلة<br>• الانقلاب بسبب الأرض أو الرياح<br>• السحق في منطقة الدوران<br>• صعقة كهربائية قاتلة من خطوط الكهرباء</div></div>
+      <div style="background:#f0fdf4;border-right:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. تدابير الحماية</div><div style="color:#166534">✅ فقط الأشخاص المعتمدون + أمر عمل خطي<br>✅ معدات الحماية لجميع منصات الذراع<br>✅ فحص يومي قبل العمل<br>✅ مد الدعائم بالكامل + ألواح + تسوية<br>✅ حد الرياح (12.5 م/ث)<br>✅ مسافة 5 م على الأقل من خطوط الكهرباء</div></div>
+      <div style="background:#fffbeb;border-right:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. الطوارئ</div><div style="color:#78350f">🚨 تعطل التحكم بالسلة → الشخص الأرضي: فعّل الخفض الطارئ!<br>📞 طوارئ: 112</div></div>
+    </div>`,
+  },
+};
+
+// ── Quiz-Fragen (10 Stück) mit Übersetzungen ──────────────
+const HUB_QUIZ_I18N = [
+  {
+    richtig: 1,
+    frage: {
+      de: 'Welche drei Voraussetzungen muss ein Bediener von Hubarbeitsbühnen erfüllen?',
+      en: 'What three requirements must an aerial work platform operator fulfil?',
+      tr: 'Bir yüksek erişim platformu operatörünün karşılaması gereken üç ön koşul nedir?',
+      ar: 'ما هي الشروط الثلاثة التي يجب على مشغّل منصة العمل الارتفاعية استيفاؤها؟',
+    },
+    antworten: {
+      de: ['Amtlicher Führerschein, Mindestalter 21 Jahre, Vereinsmitgliedschaft','Ausbildung (Theorie + Praxis), arbeitsmedizinische Eignung und schriftlicher Fahrauftrag des Arbeitgebers','Nur die Schulung reicht aus — alles andere ist freiwillig','Berufserfahrung von mind. 2 Jahren und ein behördliches Zertifikat'],
+      en: ['Official driving licence, minimum age 21, club membership','Training (theory + practice), occupational health clearance and written work order from employer','Training alone is sufficient — everything else is optional','At least 2 years work experience and an official certificate'],
+      tr: ['Resmi sürücü belgesi, asgari 21 yaş, dernek üyeliği','Eğitim (teori + pratik), iş sağlığı uygunluğu ve işverenin yazılı sürüş emri','Sadece eğitim yeterlidir — diğer her şey isteğe bağlıdır','En az 2 yıl iş deneyimi ve resmi sertifika'],
+      ar: ['رخصة قيادة رسمية، الحد الأدنى للعمر 21 عاماً، عضوية نادي','التدريب (نظري + عملي)، اللياقة الطبية المهنية، وأمر عمل خطي من صاحب العمل','التدريب وحده يكفي — كل شيء آخر اختياري','خبرة عمل لا تقل عن سنتين وشهادة رسمية'],
+    },
+    erklaerung: {
+      de: 'Nach DGUV 308-008 sind alle drei Säulen zwingend: erfolgreiche Ausbildung, gesundheitliche Eignung (Höhentauglichkeit) und der schriftliche Fahrauftrag des Arbeitgebers.',
+      en: 'According to DGUV 308-008, all three pillars are mandatory: successful training, medical fitness (height suitability) and the written work order from the employer.',
+      tr: 'DGUV 308-008\'e göre üç temel zorunludur: başarılı eğitim, sağlık uygunluğu (yükseklik uygunluğu) ve işverenin yazılı sürüş emri.',
+      ar: 'وفقاً لـ DGUV 308-008، الركائز الثلاث إلزامية: التدريب الناجح، اللياقة الطبية، وأمر العمل الخطي من صاحب العمل.',
+    },
+  },
+  {
+    richtig: 1,
+    frage: {
+      de: 'Was unterscheidet Gruppe A von Gruppe B bei Hubarbeitsbühnen?',
+      en: 'What distinguishes Group A from Group B in aerial work platforms?',
+      tr: 'Yüksek erişim platformlarında Grup A ile Grup B arasındaki fark nedir?',
+      ar: 'ما الفرق بين المجموعة أ والمجموعة ب في منصات العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Gruppe A ist schwerer als Gruppe B','Bei Gruppe B (Boom-Lifts) kann der Korb außerhalb der Kippkanten bewegt werden — daher PSAgA-Pflicht','Gruppe A ist nur für den Innenbereich, Gruppe B für den Außenbereich','Der Unterschied liegt ausschließlich in der Farbgebung der Maschine'],
+      en: ['Group A is heavier than Group B','With Group B (boom lifts) the basket can be moved outside the tipping edges — hence PPE mandatory','Group A is only for indoor use, Group B for outdoor','The difference lies solely in the colour of the machine'],
+      tr: ['Grup A, Grup B\'den daha ağırdır','Grup B\'de (bomlu platformlar) sepet devrilme kenarlarının dışına çıkabilir — bu nedenle KKD zorunludur','Grup A sadece iç mekan, Grup B dış mekan içindir','Fark yalnızca makinenin rengindedir'],
+      ar: ['المجموعة أ أثقل من المجموعة ب','في المجموعة ب (الذراع المتمددة) يمكن تحريك السلة خارج حواف الانقلاب — لذا معدات الحماية إلزامية','المجموعة أ للداخل فقط، المجموعة ب للخارج','الفرق في لون الآلة فقط'],
+    },
+    erklaerung: {
+      de: 'Gruppe A (Scherenbühnen) bleibt stets innerhalb der Kippkanten. Bei Gruppe B (Teleskop-, Gelenk-, Lkw-Bühnen) kann der Schwerpunkt außerhalb liegen — daher höhere Kippgefahr und PSAgA-Pflicht.',
+      en: 'Group A (scissor lifts) always stays within the tipping edges. With Group B (telescopic, articulating, truck-mounted), the centre of gravity can be outside — hence higher tipping risk and PPE mandatory.',
+      tr: 'Grup A (makaslı platformlar) her zaman devrilme kenarları içinde kalır. Grup B\'de ağırlık merkezi dışında olabilir — bu nedenle daha yüksek devrilme riski ve KKD zorunluluğu.',
+      ar: 'المجموعة أ (مقصات الرفع) تبقى دائماً داخل حواف الانقلاب. في المجموعة ب يمكن أن يكون مركز الثقل خارجها — مما يزيد خطر الانقلاب ويجعل معدات الحماية إلزامية.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Ab welcher Windgeschwindigkeit muss der Betrieb einer Hubarbeitsbühne im Freien eingestellt werden?',
+      en: 'At what wind speed must operation of an outdoor aerial work platform be stopped?',
+      tr: 'Açık havada yüksek erişim platformunun çalışması hangi rüzgar hızında durdurulmalıdır?',
+      ar: 'عند أي سرعة رياح يجب إيقاف تشغيل منصة العمل الارتفاعية في الهواء الطلق؟',
+    },
+    antworten: {
+      de: ['Erst bei sichtbaren Sturmschäden an Gebäuden','20 m/s — das ist der gesetzliche Grenzwert','12,5 m/s (Windstärke 6) bzw. nach genauer Herstellerangabe','Der Bediener entscheidet das selbst nach eigenem Ermessen'],
+      en: ['Only when visible storm damage to buildings is visible','20 m/s — that is the legal limit','12.5 m/s (Beaufort 6) or according to exact manufacturer specification','The operator decides at their own discretion'],
+      tr: ['Ancak binalarda görünür fırtına hasarı olduğunda','20 m/s — bu yasal sınırdır','12,5 m/s (Beaufort 6) veya tam üretici spesifikasyonuna göre','Operatör kendi takdirine göre karar verir'],
+      ar: ['فقط عند ظهور أضرار العاصفة المرئية على المباني','20 م/ث — هذا هو الحد القانوني','12.5 م/ث (قوة 6) أو وفق مواصفات الشركة المصنعة بالضبط','المشغّل يقرر بنفسه وفق تقديره'],
+    },
+    erklaerung: {
+      de: 'Standard-Richtwert: 12,5 m/s (Windstärke 6). Herstellerangaben gehen immer vor. Bei Überschreitung: Arbeit sofort einstellen und Bühne absenken!',
+      en: 'Standard guideline: 12.5 m/s (Beaufort 6). Manufacturer specifications always take precedence. If exceeded: immediately stop work and lower platform!',
+      tr: 'Standart kılavuz değer: 12,5 m/s (Beaufort 6). Üretici spesifikasyonları her zaman önceliklidir. Aşılırsa: hemen çalışmayı durdurun ve platformu indirin!',
+      ar: 'القيمة الإرشادية القياسية: 12.5 م/ث (قوة 6). مواصفات الشركة المصنعة لها الأولوية دائماً. عند التجاوز: أوقف العمل فوراً وانزل بالمنصة!',
+    },
+  },
+  {
+    richtig: 3,
+    frage: {
+      de: 'Warum muss eine zweite eingewiesene Person am Boden anwesend sein?',
+      en: 'Why must a second trained person be present on the ground?',
+      tr: 'Zeminde neden ikinci bir eğitimli kişinin bulunması gerekir?',
+      ar: 'لماذا يجب أن يكون هناك شخص ثانٍ مدرب على الأرض؟',
+    },
+    antworten: {
+      de: ['Als Assistent, um Werkzeug zu reichen','Das ist nicht vorgeschrieben — nur empfohlen','Damit sie den Bediener beobachtet und Fotos macht','Um bei technischem Defekt oder Bewusstlosigkeit des Bedieners die Bühne über den Notablass sicher von unten absenken zu können'],
+      en: ['As assistant to pass tools','This is not required — only recommended','To observe the operator and take photos','To safely lower the platform via the emergency lowering device in the event of technical failure or loss of consciousness'],
+      tr: ['Alet vermek için asistan olarak','Bu zorunlu değil — sadece tavsiye edilir','Operatörü gözlemlemek ve fotoğraf çekmek için','Teknik arıza veya operatörün bilincini yitirmesi halinde platformu acil iniş cihazıyla aşağıdan güvenle indirmek için'],
+      ar: ['كمساعد لتمرير الأدوات','هذا غير مطلوب — موصى به فقط','لمراقبة المشغّل وأخذ الصور','لإنزال المنصة بأمان عبر جهاز الخفض الطارئ في حالة العطل الفني أو فقدان الوعي'],
+    },
+    erklaerung: {
+      de: 'Die zweite Person ist Pflicht und muss in die Notablass-Bedienung eingewiesen sein. Ohne „Bodenmann" ist eine Rettung aus der Höhe im Ernstfall lebensgefährlich.',
+      en: 'The second person is mandatory and must be trained in the emergency lowering procedure. Without a "ground person", rescue from height in an emergency is life-threatening.',
+      tr: 'İkinci kişi zorunludur ve acil iniş prosedürüne eğitilmiş olmalıdır. "Zemin kişisi" olmadan yüksekten kurtarma operasyonu tehlikelidir.',
+      ar: 'الشخص الثاني إلزامي ويجب أن يكون مدرباً على إجراء الخفض الطارئ. بدون "شخص أرضي" الإنقاذ من الارتفاع في حالات الطوارئ يهدد الحياة.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Welchen Mindestabstand müssen Sie zu einer Freileitung mit unbekannter Spannung einhalten?',
+      en: 'What minimum distance must you maintain from an overhead power line with unknown voltage?',
+      tr: 'Gerilimi bilinmeyen bir havai hatta asgari hangi mesafeyi korumalısınız?',
+      ar: 'ما هي المسافة الدنيا التي يجب الحفاظ عليها من خط كهربائي هوائي بجهد غير معروف؟',
+    },
+    antworten: {
+      de: ['1,0 Meter','2,0 Meter','5,0 Meter — da Spannung unbekannt immer maximalen Sicherheitsabstand wählen','10,0 Meter'],
+      en: ['1.0 metre','2.0 metres','5.0 metres — with unknown voltage always choose the maximum safety distance','10.0 metres'],
+      tr: ['1,0 metre','2,0 metre','5,0 metre — gerilim bilinmiyorsa her zaman maksimum güvenlik mesafesini seçin','10,0 metre'],
+      ar: ['1.0 متر','2.0 متر','5.0 متر — عند الجهد غير المعروف اختر دائماً أقصى مسافة أمان','10.0 متر'],
+    },
+    erklaerung: {
+      de: 'Bei unbekannter Spannung gilt der maximale Mindestabstand von 5,0 Metern. Lichtbögen können auch über größere Strecken überspringen — im Zweifel immer Energieversorger kontaktieren!',
+      en: 'With unknown voltage the maximum minimum distance of 5.0 metres applies. Arc flashes can jump over greater distances — when in doubt always contact the energy supplier!',
+      tr: 'Bilinmeyen gerilimde maksimum asgari mesafe olan 5,0 metre geçerlidir. Elektrik arkları daha büyük mesafelere atlayabilir — şüphe durumunda her zaman enerji tedarikçisine başvurun!',
+      ar: 'عند الجهد غير المعروف تنطبق المسافة الدنيا القصوى 5.0 أمتار. يمكن للقوس الكهربائي أن يقفز لمسافات أكبر — عند الشك اتصل دائماً بمزود الطاقة!',
+    },
+  },
+  {
+    richtig: 1,
+    frage: {
+      de: 'Was ist der sogenannte „Peitscheneffekt" bei Hubarbeitsbühnen?',
+      en: 'What is the so-called "whiplash effect" in aerial work platforms?',
+      tr: 'Yüksek erişim platformlarında sözde "kırbaç etkisi" nedir?',
+      ar: 'ما هو "تأثير السوط" في منصات العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Eine Bremstechnik beim Absenken der Bühne','Erschütterungen durch Bodenunebenheiten können den langen Ausleger in Schwingung versetzen und den Bediener aus dem Korb katapultieren','Ein Sicherheitsmechanismus der die Bühne automatisch absenkt','Der Geräusch beim Ausfahren der Stützen'],
+      en: ['A braking technique when lowering the platform','Vibrations from uneven ground can set the long boom oscillating and catapult the operator out of the basket','A safety mechanism that automatically lowers the platform','The noise when extending the outriggers'],
+      tr: ['Platformu indirirken kullanılan bir frenleme tekniği','Zemin engebelerinden kaynaklanan titreşimler uzun kolu sallayabilir ve operatörü sepetten fırlatabilir','Platformu otomatik olarak indiren bir güvenlik mekanizması','Destekleri açarken çıkan ses'],
+      ar: ['تقنية كبح عند إنزال المنصة','الاهتزازات الناتجة عن الأرض الوعرة يمكن أن تجعل الذراع الطويل يتأرجح ويقذف المشغّل خارج السلة','آلية أمان تخفض المنصة تلقائياً','الصوت عند مد الدعائم'],
+    },
+    erklaerung: {
+      de: 'Der Peitscheneffekt tritt besonders bei Teleskop- und Gelenkbühnen auf. Die PSAgA (Auffanggurt + kurzes Höhensicherungsgerät) schützt vor dem Herausschleudern.',
+      en: 'The whiplash effect occurs particularly with telescopic and articulating boom lifts. PPE (full body harness + short fall arrester) protects against being thrown out.',
+      tr: 'Kırbaç etkisi özellikle teleskopik ve mafsallı platformlarda görülür. KKD (tam vücut kemeri + kısa düşüş önleyici) fırlamaya karşı korur.',
+      ar: 'يحدث تأثير السوط خاصة في منصات الذراع التلسكوبية والمفصلية. معدات الحماية (حزام الجسم الكامل + جهاز إيقاف السقوط القصير) تحمي من القذف للخارج.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Was prüft die Überlastanzeige der Hubarbeitsbühne?',
+      en: 'What does the overload indicator of the aerial work platform check?',
+      tr: 'Yüksek erişim platformunun aşırı yük göstergesi neyi kontrol eder?',
+      ar: 'ماذا يفحص مؤشر الحمل الزائد في منصة العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Den Ölstand des Hydrauliksystems','Ob das zulässige Gesamtgewicht im Korb überschritten wird — und blockiert dann die Hubfunktion','Die maximale Arbeitshöhe der Bühne','Den Kraftstoffverbrauch des Motors'],
+      en: ['The oil level of the hydraulic system','Whether the permissible total weight in the basket is exceeded — and then blocks the lifting function','The maximum working height of the platform','The fuel consumption of the engine'],
+      tr: ['Hidrolik sistemin yağ seviyesini','Sepetteki izin verilen toplam ağırlığın aşılıp aşılmadığını — ve kaldırma fonksiyonunu bloke eder','Platformun maksimum çalışma yüksekliğini','Motorun yakıt tüketimini'],
+      ar: ['مستوى زيت النظام الهيدروليكي','ما إذا كان الوزن الإجمالي المسموح به في السلة متجاوزاً — ثم يحظر وظيفة الرفع','الارتفاع الأقصى للعمل في المنصة','استهلاك الوقود في المحرك'],
+    },
+    erklaerung: {
+      de: 'Die Überlastanzeige schützt vor Überlastung des gesamten Systems. Wichtig: Person + Werkzeug + Material = Gesamtgewicht — immer alle Lasten zusammenzählen!',
+      en: 'The overload indicator protects against overloading the entire system. Important: person + tools + materials = total weight — always add up all loads!',
+      tr: 'Aşırı yük göstergesi tüm sistemin aşırı yüklenmesinden korur. Önemli: kişi + alet + malzeme = toplam ağırlık — her zaman tüm yükleri toplayın!',
+      ar: 'يحمي مؤشر الحمل الزائد من زيادة تحميل النظام بأكمله. مهم: الشخص + الأدوات + المواد = الوزن الإجمالي — احسب دائماً جميع الأحمال!',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Was bedeutet die grüne Kontrollleuchte nach dem Ausnivellieren der Bühne?',
+      en: 'What does the green indicator light mean after levelling the platform?',
+      tr: 'Platformun hizalanmasından sonra yeşil kontrol lambası ne anlama gelir?',
+      ar: 'ماذا يعني ضوء التحكم الأخضر بعد تسوية المنصة؟',
+    },
+    antworten: {
+      de: ['Die Bühne steht sicher und waagerecht — Betrieb ist freigegeben','Die Bühne ist zu schräg und darf nicht benutzt werden','Der Akku ist vollständig geladen','Der Motor ist betriebsbereit'],
+      en: ['The platform is standing safely and level — operation is approved','The platform is too tilted and must not be used','The battery is fully charged','The engine is ready for operation'],
+      tr: ['Platform güvenli ve yatay duruyor — çalışma onaylandı','Platform fazla eğik ve kullanılmamalı','Akü tamamen şarjlı','Motor çalışmaya hazır'],
+      ar: ['المنصة واقفة بأمان وأفقياً — التشغيل مسموح','المنصة مائلة أكثر من اللازم ولا يجب استخدامها','البطارية مشحونة بالكامل','المحرك جاهز للتشغيل'],
+    },
+    erklaerung: {
+      de: 'Grüne Leuchte = sicherer Stand, Betrieb freigegeben. Rote Leuchte = Bühne zu schräg, Fahrt verboten! Niemals bei roter Leuchte heben!',
+      en: 'Green light = safe stance, operation approved. Red light = platform too tilted, no operation! Never lift with red light!',
+      tr: 'Yeşil ışık = güvenli duruş, çalışma onaylı. Kırmızı ışık = platform çok eğik, çalışma yasak! Kırmızı ışıkta asla kaldırmayın!',
+      ar: 'الضوء الأخضر = موقف آمن، التشغيل مسموح. الضوء الأحمر = المنصة مائلة أكثر من اللازم، ممنوع التشغيل! لا ترفع أبداً مع الضوء الأحمر!',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Wie lange ist der Bedienerausweis für Hubarbeitsbühnen gültig?',
+      en: 'How long is the aerial work platform operator\'s certificate valid?',
+      tr: 'Yüksek erişim platformu operatör sertifikası ne kadar süre geçerlidir?',
+      ar: 'كم مدة صلاحية شهادة مشغّل منصة العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Lebenslang — setzt aber eine jährliche Unterweisung im Betrieb voraus','5 Jahre, dann muss eine Prüfung wiederholt werden','2 Jahre, dann automatische Verlängerung','Er ist unbegrenzt gültig ohne weitere Maßnahmen'],
+      en: ['Lifelong — but requires an annual briefing at the workplace','5 years, then an examination must be repeated','2 years, then automatic renewal','It is valid indefinitely without further measures'],
+      tr: ['Ömür boyu — ancak işyerinde yıllık eğitim gerektirir','5 yıl, sonra sınav tekrarlanmalıdır','2 yıl, sonra otomatik yenileme','Başka önlemler almadan süresiz geçerlidir'],
+      ar: ['مدى الحياة — لكن يتطلب تدريباً سنوياً في مكان العمل','5 سنوات، ثم يجب تكرار الاختبار','سنتان، ثم تجديد تلقائي','صالح إلى أجل غير مسمى دون مزيد من الإجراءات'],
+    },
+    erklaerung: {
+      de: 'Der Bedienerausweis ist lebenslang gültig — aber ohne die jährliche Unterweisung erlischt die Berechtigung zum Fahren! Jedes Jahr muss der Arbeitgeber die Unterweisung dokumentieren.',
+      en: 'The operator\'s certificate is valid for life — but without the annual briefing the authorisation to operate lapses! Every year the employer must document the briefing.',
+      tr: 'Operatör sertifikası ömür boyu geçerlidir — ancak yıllık eğitim olmadan sürüş yetkisi sona erer! Her yıl işveren eğitimi belgelendirmelidir.',
+      ar: 'شهادة المشغّل صالحة مدى الحياة — لكن بدون التدريب السنوي تنتهي صلاحية التشغيل! يجب على صاحب العمل توثيق التدريب كل عام.',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Welchen Mindestabstand müssen Sie zu einer Freileitung bis 1.000 Volt einhalten?',
+      en: 'What minimum distance must you maintain from an overhead power line up to 1,000 volts?',
+      tr: '1.000 Volta kadar olan bir havai hatta asgari hangi mesafeyi korumalısınız?',
+      ar: 'ما هي المسافة الدنيا الواجبة من خط كهربائي هوائي حتى 1,000 فولت؟',
+    },
+    antworten: {
+      de: ['Mindestens 1,0 Meter','Mindestens 3,0 Meter','Kein besonderer Abstand — die Leitung ist isoliert','Mindestens 0,5 Meter reicht aus'],
+      en: ['At least 1.0 metre','At least 3.0 metres','No special distance — the line is insulated','At least 0.5 metres is sufficient'],
+      tr: ['En az 1,0 metre','En az 3,0 metre','Özel mesafe yok — hat yalıtımlıdır','En az 0,5 metre yeterlidir'],
+      ar: ['مسافة 1.0 متر على الأقل','مسافة 3.0 أمتار على الأقل','لا مسافة خاصة — الخط معزول','0.5 متر على الأقل كافٍ'],
+    },
+    erklaerung: {
+      de: 'Bei Leitungen bis 1.000 Volt gilt ein Mindestabstand von 1,0 Meter. Achtung: Auch isolierte Leitungen können beschädigt sein — Abstand immer einhalten!',
+      en: 'For lines up to 1,000 volts a minimum distance of 1.0 metre applies. Note: Even insulated lines can be damaged — always maintain the distance!',
+      tr: '1.000 Volta kadar olan hatlarda asgari 1,0 metre mesafe geçerlidir. Dikkat: Yalıtımlı hatlar bile hasarlı olabilir — her zaman mesafeyi koruyun!',
+      ar: 'للخطوط حتى 1,000 فولت تنطبق مسافة دنيا 1.0 متر. تنبيه: حتى الخطوط المعزولة يمكن أن تكون تالفة — حافظ دائماً على المسافة!',
+    },
+  },
+];
+
+// ── UI-Labels ─────────────────────────────────────────────
+const HUB_UI = {
+  de: {
+    sprachwahlTitel: 'Sprache der Unterweisung wählen',
+    sprachwahlHinweis: 'Die Teilnahmebescheinigung und der Fahrauftrag werden immer auf Deutsch ausgestellt.',
+    starten: 'Unterweisung starten',
+    modul: 'Modul',
+    kapitel: 'Kapitel',
+    kapitelAbschliessen: '✓ Kapitel gelesen',
+    alleGelesen: 'Alle Kapitel gelesen',
+    quizStarten: 'Quiz starten',
+    frage: 'Frage',
+    von: 'von',
+    richtig: '✅ Richtig!',
+    falsch: '❌ Falsch',
+    bestanden: '🎉 Bestanden!',
+    nichtBestanden: '❌ Nicht bestanden',
+    nochmal: 'Nochmal versuchen',
+    erklaerung: 'Erklärung:',
+    weiter: 'Weiter',
+    bitteLesen: 'Bitte alle Kapitel lesen um das Quiz freizuschalten',
+    nochOffen: 'noch offen',
+    bescheinigungHinweis: '📄 Bescheinigung nur auf Deutsch',
+  },
+  en: {
+    sprachwahlTitel: 'Select training language',
+    sprachwahlHinweis: 'The certificate of participation and work order are always issued in German.',
+    starten: 'Start training',
+    modul: 'Module',
+    kapitel: 'Chapter',
+    kapitelAbschliessen: '✓ Chapter read',
+    alleGelesen: 'All chapters read',
+    quizStarten: 'Start quiz',
+    frage: 'Question',
+    von: 'of',
+    richtig: '✅ Correct!',
+    falsch: '❌ Incorrect',
+    bestanden: '🎉 Passed!',
+    nichtBestanden: '❌ Not passed',
+    nochmal: 'Try again',
+    erklaerung: 'Explanation:',
+    weiter: 'Continue',
+    bitteLesen: 'Please read all chapters to unlock the quiz',
+    nochOffen: 'remaining',
+    bescheinigungHinweis: '📄 Certificate in German only',
+  },
+  tr: {
+    sprachwahlTitel: 'Eğitim dilini seçin',
+    sprachwahlHinweis: 'Katılım belgesi ve sürüş emri her zaman Almanca olarak düzenlenir.',
+    starten: 'Eğitimi başlat',
+    modul: 'Modül',
+    kapitel: 'Bölüm',
+    kapitelAbschliessen: '✓ Bölüm okundu',
+    alleGelesen: 'Tüm bölümler okundu',
+    quizStarten: 'Quizi başlat',
+    frage: 'Soru',
+    von: '/',
+    richtig: '✅ Doğru!',
+    falsch: '❌ Yanlış',
+    bestanden: '🎉 Başardınız!',
+    nichtBestanden: '❌ Başarısız',
+    nochmal: 'Tekrar dene',
+    erklaerung: 'Açıklama:',
+    weiter: 'Devam et',
+    bitteLesen: 'Quizi açmak için tüm bölümleri okuyun',
+    nochOffen: 'kalan',
+    bescheinigungHinweis: '📄 Sertifika yalnızca Almanca',
+  },
+  ar: {
+    sprachwahlTitel: 'اختر لغة التدريب',
+    sprachwahlHinweis: 'تُصدر شهادة المشاركة وأمر العمل دائماً باللغة الألمانية.',
+    starten: 'بدء التدريب',
+    modul: 'وحدة',
+    kapitel: 'فصل',
+    kapitelAbschliessen: '✓ تمت قراءة الفصل',
+    alleGelesen: 'تمت قراءة جميع الفصول',
+    quizStarten: 'بدء الاختبار',
+    frage: 'سؤال',
+    von: 'من',
+    richtig: '✅ صحيح!',
+    falsch: '❌ خطأ',
+    bestanden: '🎉 نجحت!',
+    nichtBestanden: '❌ لم تنجح',
+    nochmal: 'حاول مرة أخرى',
+    erklaerung: 'الشرح:',
+    weiter: 'متابعة',
+    bitteLesen: 'اقرأ جميع الفصول لفتح الاختبار',
+    nochOffen: 'متبقية',
+    bescheinigungHinweis: '📄 الشهادة باللغة الألمانية فقط',
+  },
+};
+
+
 const HUB_KAPITEL = [
   // ── Modul 1: Recht & Verantwortung ──
   {
@@ -11481,32 +12087,99 @@ function hubSchulungRender() {
   hubSchulungRenderIn(cont);
 }
 
+function hubSpracheSetzen(code) {
+  hubSprache = code;
+  localStorage.setItem('hub_sprache', code);
+  hubSchulungRender();
+  if (_hubPreviewMode && _hubPreviewContainer) hubSchulungRenderIn(_hubPreviewContainer);
+}
+
+function _hubT(key) {
+  return (HUB_UI[hubSprache] || HUB_UI.de)[key] || (HUB_UI.de)[key] || key;
+}
+
+function _hubKapitelTitel(k) {
+  if (hubSprache === 'de') return k.titel;
+  return (HUB_TITEL_I18N[k.id] || {})[hubSprache] || k.titel;
+}
+
+function _hubKapitelInhalt(k) {
+  if (hubSprache === 'de') return k.inhalt;
+  return (HUB_INHALT_I18N[k.id] || {})[hubSprache] || k.inhalt;
+}
+
 function hubSchulungRenderIn(cont) {
   if (!cont) return;
   // Im Preview-Mode: userId = 'preview', kein localStorage lesen
   const userId = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+
+  // ── Sprach-Auswahl-Screen ──
+  const spracheGesetzt = !!localStorage.getItem('hub_sprache') || _hubPreviewMode;
+  if (!spracheGesetzt) {
+  let html_sprachbtn = '';
+  HUB_SPRACHEN.forEach(function(s) {
+    html_sprachbtn += '<button onclick="hubSpracheSetzen(\'' + s.code + '\')"'
+      + ' style="padding:14px 10px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:700;color:#1a3a5c;display:flex;flex-direction:column;align-items:center;gap:4px"'
+      + ' onmouseover="this.style.borderColor=\'#7c2d12\';this.style.background=\'#fef7ee\'"'
+      + ' onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.background=\'#f8fafc\'">'
+      + '<span style="font-size:1.6rem">' + s.flag + '</span>'
+      + '<span>' + s.label + '</span>'
+      + '</button>';
+  });
+  cont.innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:14px;background:#7c2d12;color:#fff;text-align:center">'
+    + '<div style="font-size:1.5rem">&#127959;&#65039;</div>'
+    + '<div style="font-weight:700;font-size:.95rem;margin-top:6px">Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
+    + '</div>'
+    + '<div style="padding:16px">'
+    + '<div style="font-weight:700;font-size:.9rem;color:#1a3a5c;text-align:center;margin-bottom:14px">&#127760; Bitte Sprache wählen / Please select language / Lütfen dil seçin / اختر اللغة</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' + html_sprachbtn + '</div>'
+    + '<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:10px 12px;font-size:.8rem;color:#92400e;text-align:center">'
+    + '&#9888;&#65039; Die Teilnahmebescheinigung und der Fahrauftrag werden immer auf <strong>Deutsch</strong> ausgestellt.<br>'
+    + '<span style="font-size:.75rem;opacity:.85">Certificate &amp; work order always in German &middot; Sertifika ve sürüş emri Almanca &middot; الشهادة وأمر العمل بالألمانية</span>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+  return;
+
+  }
   const quizBestanden = _hubPreviewMode ? false : !!localStorage.getItem(`hub_quiz_bestanden_${userId}`);
   const bestandenAnzahl = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
   const alleGelesen = bestandenAnzahl === HUB_KAPITEL.length;
+  const isRTL = (HUB_SPRACHEN.find(s => s.code === hubSprache) || {}).rtl || false;
+  const hubSpracheAkt = HUB_SPRACHEN.find(s => s.code === hubSprache) || HUB_SPRACHEN[0];
 
   // Modul-Gruppen
   const module = [1,2,3,4];
-  const modulTitel = {
+  const modulTitelDE = {
     1: 'Modul 1 — Recht & Verantwortung',
     2: 'Modul 2 — Gerätekunde & Technik',
     3: 'Modul 3 — Standsicherheit & Gefahren',
     4: 'Modul 4 — Praxis & Notfallmanagement'
   };
+  const modulTitelEN = { 1:'Module 1 — Law & Responsibility', 2:'Module 2 — Equipment & Technology', 3:'Module 3 — Stability & Hazards', 4:'Module 4 — Practice & Emergency Management' };
+  const modulTitelTR = { 1:'Modül 1 — Hukuk ve Sorumluluk', 2:'Modül 2 — Ekipman ve Teknoloji', 3:'Modül 3 — Stabilite ve Tehlikeler', 4:'Modül 4 — Pratik ve Acil Yönetim' };
+  const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
+  const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
+  const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
   const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
 
-  let html = `<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
-    <div style="padding:12px 14px;background:#7c2d12;color:#fff">
-      <div style="font-weight:700;font-size:.9rem">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
-      <div style="font-size:.72rem;opacity:.8;margin-top:2px">${bestandenAnzahl} von ${HUB_KAPITEL.length} Kapiteln gelesen</div>
-      <div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">
-        <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round(bestandenAnzahl/HUB_KAPITEL.length*100)}%;transition:width .4s"></div>
-      </div>
-    </div>`;
+  let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:12px 14px;background:#7c2d12;color:#fff">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div>'
+    + '<div style="font-weight:700;font-size:.9rem">&#127959;&#65039; Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
+    + '<div style="font-size:.72rem;opacity:.8;margin-top:2px">' + bestandenAnzahl + ' ' + _hubT('von') + ' ' + HUB_KAPITEL.length + ' ' + _hubT('kapitel') + '</div>'
+    + '</div>'
+    + '<button onclick="localStorage.removeItem(\"hub_sprache\");hubSprache=\"de\";hubSchulungRender();"'
+    + ' style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 8px;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">'
+    + hubSpracheAkt.flag + ' ' + hubSpracheAkt.label + ' ✎</button>'
+    + '</div>'
+    + '<div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">'
+    + '<div style="height:100%;background:#fbbf24;border-radius:3px;width:' + Math.round(bestandenAnzahl/HUB_KAPITEL.length*100) + '%;transition:width .4s"></div>'
+    + '</div>'
+    + '<div style="margin-top:5px;font-size:.7rem;opacity:.75">' + _hubT('bescheinigungHinweis') + '</div>'
+    + '</div>';
 
   module.forEach(mod => {
     const kapitelDesModuls = HUB_KAPITEL.filter(k => k.modul === mod);
@@ -11563,8 +12236,8 @@ function hubSchulungRenderIn(cont) {
   } else {
     html += `
       <div style="text-align:center;color:#9ca3af;font-size:.8rem;padding:6px">
-        📖 Bitte alle ${HUB_KAPITEL.length} Kapitel lesen um das Quiz freizuschalten<br>
-        <span style="font-size:.75rem">(noch ${HUB_KAPITEL.length - bestandenAnzahl} offen)</span>
+        📖 ${_hubT('bitteLesen')}<br>
+        <span style="font-size:.75rem">(${HUB_KAPITEL.length - bestandenAnzahl} ${_hubT('nochOffen')})</span>
       </div>`;
   }
   html += `</div></div>`;
