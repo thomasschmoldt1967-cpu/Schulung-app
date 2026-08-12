@@ -10249,14 +10249,24 @@ function psagaFolienOeffnen(modulId) {
 }
 
 // TTS / Audio für PSAgA-Folien
-// Modul 00: Original-MP3 aus Supabase Storage + Auto-Durchlauf
-// Modul 01+: Web Speech API (TTS-Texte)
+// Modul 00–21: Original-MP3 aus Supabase Storage + Auto-Durchlauf
+// Sprache: 'de' (Standard) oder 'en' (Englisch — Ordner-Suffix: -en)
 let psagaTTSAktiv = false;
 let psagaTTSUtterance = null;
-let psagaAudioEl = null;     // <audio>-Element für Modul-00-MP3s
+let psagaAudioEl = null;     // <audio>-Element für MP3s
 let psagaAutoModus = false;  // Auto-Durchlauf aktiv?
 let psagaAutoPause = false;  // Pausiert (aber nicht deaktiviert)?
 let psagaAutoTimer = null;   // setTimeout-Handle für 1,5s Wartezeit
+let psagaSprache = 'de';     // Aktive Audiosprache: 'de' | 'en'
+
+function psagaSprachToggle() {
+  psagaSprache = (psagaSprache === 'de') ? 'en' : 'de';
+  const btn = document.getElementById('psaga-lang-btn');
+  if (btn) btn.textContent = psagaSprache === 'de' ? '🇩🇪 DE' : '🇬🇧 EN';
+  // Laufendes Audio stoppen und mit neuer Sprache neu starten
+  psagaAudioStop();
+  if (psagaTTSAktiv) psagaTTSSprechen();
+}
 
 function psagaAudioStop() {
   if (psagaAutoTimer) { clearTimeout(psagaAutoTimer); psagaAutoTimer = null; }
@@ -10355,10 +10365,14 @@ function psagaTTSSprechen() {
   if (!psagaTTSAktiv || !psagaAktivesModul) return;
   psagaAudioStop();
 
-  // Modul mit Original-MP3-Tonspur: aus PPTX extrahierte Audio-Dateien abspielen
+  // MP3 aus Supabase Storage abspielen (DE oder EN)
   if (psagaAktivesModul.hasAudio) {
-    const nr = String(psagaAktuelleFolie).padStart(2, '0');
-    const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${psagaAktivesModul.pfad}/audio-${nr}.mp3`;
+    const nr      = String(psagaAktuelleFolie).padStart(2, '0');
+    // EN: Ordner-Suffix '-en', DE: Original-Pfad
+    const ordner  = psagaSprache === 'en'
+      ? `${psagaAktivesModul.pfad}-en`
+      : psagaAktivesModul.pfad;
+    const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${ordner}/audio-${nr}.mp3`;
     if (!psagaAudioEl) {
       psagaAudioEl = document.createElement('audio');
       psagaAudioEl.style.display = 'none';
@@ -10375,7 +10389,7 @@ function psagaTTSSprechen() {
     return;
   }
 
-  // Modul 01+: Web Speech API
+  // Fallback: Web Speech API (falls ein Modul kein hasAudio hat)
   if (!window.speechSynthesis) return;
   const texte = PSAGA_TTS_TEXTE && PSAGA_TTS_TEXTE[psagaAktivesModul.id];
   if (!texte) return;
@@ -10646,8 +10660,11 @@ function psagaFolienSchliessen() {
   psagaAutoPause = false;
   psagaAudioStop();
   psagaTTSAktiv = false;
+  psagaSprache = 'de';  // Sprache bei Schließen auf DE zurücksetzen
   const btn = document.getElementById('psaga-tts-btn');
   if (btn) btn.textContent = '🔊 Ton';
+  const langBtn = document.getElementById('psaga-lang-btn');
+  if (langBtn) langBtn.textContent = '🇩🇪 DE';
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
     modal.style.display = 'none';
