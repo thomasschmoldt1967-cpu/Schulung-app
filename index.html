@@ -545,7 +545,10 @@
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:rgba(0,0,0,.7);flex-shrink:0">
         <span id="psaga-folien-titel" style="color:#fff;font-weight:700;font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
-          <button id="psaga-lang-btn" onclick="psagaSprachToggle()" style="background:#374151;border:none;color:#fff;font-size:.78rem;padding:6px 10px;border-radius:6px;cursor:pointer;font-weight:700;letter-spacing:.04em" title="Sprache wechseln / Switch language">🇩🇪 DE</button>
+          <div style="display:flex;gap:4px">
+            <button id="psaga-lang-de" onclick="psagaSprachWechseln('de')" style="background:#3b82f6;border:none;color:#fff;font-size:.78rem;padding:5px 9px;border-radius:6px;cursor:pointer;font-weight:700" title="Deutsch">🇩🇪 DE</button>
+            <button id="psaga-lang-en" onclick="psagaSprachWechseln('en')" style="background:#374151;border:none;color:#9ca3af;font-size:.78rem;padding:5px 9px;border-radius:6px;cursor:pointer;font-weight:700" title="English">🇬🇧 EN</button>
+          </div>
           <button id="psaga-tts-btn" onclick="psagaTTSToggle()" style="background:#374151;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">🔊 Ton</button>
           <button id="psaga-auto-btn" onclick="psagaAutoToggle()" style="display:none;background:#1a3a5c;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">▶ Auto</button>
           <button onclick="psagaFolienSchliessen()" style="background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;padding:0 0 0 4px;line-height:1">✕</button>

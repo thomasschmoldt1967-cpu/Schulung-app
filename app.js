@@ -10281,9 +10281,16 @@ let psagaAutoTimer = null;   // setTimeout-Handle für 1,5s Wartezeit
 let psagaSprache = 'de';     // Aktive Audiosprache: 'de' | 'en'
 
 function psagaSprachToggle() {
-  psagaSprache = (psagaSprache === 'de') ? 'en' : 'de';
-  const btn = document.getElementById('psaga-lang-btn');
-  if (btn) btn.textContent = psagaSprache === 'de' ? '🇩🇪 DE' : '🇬🇧 EN';
+  psagaSprachWechseln(psagaSprache === 'de' ? 'en' : 'de');
+}
+
+function psagaSprachWechseln(sprache) {
+  psagaSprache = sprache;
+  // Buttons aktualisieren: aktive Sprache blau/weiß, inaktive grau
+  const de = document.getElementById('psaga-lang-de');
+  const en = document.getElementById('psaga-lang-en');
+  if (de) { de.style.background = sprache === 'de' ? '#3b82f6' : '#374151'; de.style.color = sprache === 'de' ? '#fff' : '#9ca3af'; }
+  if (en) { en.style.background = sprache === 'en' ? '#3b82f6' : '#374151'; en.style.color = sprache === 'en' ? '#fff' : '#9ca3af'; }
   // Laufendes Audio stoppen und mit neuer Sprache neu starten
   psagaAudioStop();
   if (psagaTTSAktiv) psagaTTSSprechen();
@@ -10715,8 +10722,8 @@ function psagaAdminVorschau() {
   psagaSprache = 'de';
   const ttsBtn = document.getElementById('psaga-tts-btn');
   if (ttsBtn) ttsBtn.textContent = '🔊 Ton';
-  const langBtn = document.getElementById('psaga-lang-btn');
-  if (langBtn) langBtn.textContent = '🇩🇪 DE';
+  // Sprachbuttons zurücksetzen
+  psagaSprachWechseln('de');
   // Erst Modal öffnen, dann Folien rendern (DOM muss sichtbar sein)
   // Modal zu body verschieben damit position:fixed auch im Admin-Screen greift
   const modal = document.getElementById('psaga-folien-modal');
