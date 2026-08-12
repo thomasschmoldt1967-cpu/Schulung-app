@@ -2394,13 +2394,15 @@ function renderAdminVorlagen() {
     : liste;
 
   document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
-    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #7c2d12' : ''}">
+    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #7c2d12' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
-          <div class="card-title" style="margin-bottom:4px">${v._eingebaut ? '🏗️' : '📄'} ${escHtml(v.titel)}</div>
+          <div class="card-title" style="margin-bottom:4px">${v._eingebaut ? '🏗️' : v.id === '__psaga__' ? '🪝' : '📄'} ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
           ${v._eingebaut
             ? `<div style="font-size:.78rem;color:#7c2d12;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
+            : v.id === '__psaga__'
+            ? `<div style="font-size:.78rem;color:#166534;font-weight:600">🔒 PSAgA-Folienviewer · 22 Module · Quiz · Teilnahmebescheinigung · nicht editierbar</div>`
             : `<div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>`
           }
         </div>
@@ -2408,6 +2410,8 @@ function renderAdminVorlagen() {
           ${v._eingebaut
             ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#7c2d12;color:#fff;background:#7c2d12;margin-left:6px">▶ Als MA testen</button>`
+            : v.id === '__psaga__'
+            ? `<div style="font-size:.78rem;color:#166534;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:6px 12px;font-weight:600">🪝 22-Modul-Folienviewer · kein Formular</div>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
