@@ -40,6 +40,19 @@ let inactivityTimer   = null; // Session-Timeout Timer
 let pushSubscription  = null; // Push-Benachrichtigungen
 let adminSuchFilter   = '';   // Admin-Suche Filter
 
+// ── CACHE LEEREN ─────────────────────────────────────────────
+function appCacheLeeren() {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    return Promise.all(regs.map(r => r.unregister()));
+  }).then(() => {
+    caches.keys().then(keys => {
+      return Promise.all(keys.map(k => caches.delete(k)));
+    }).then(() => {
+      location.reload(true);
+    });
+  });
+}
+
 // ── LERNPFAD: 22 KAPITEL (Gebäudereinigung & Höhentechnologie) ───────────
 // Direkt in app.js — data.js wird nicht mehr geladen (Daten kommen aus Supabase)
 // Stufe 1: Checklisten-System | Stufe 2+3: Tests + Mehrsprachigkeit (geplant)
