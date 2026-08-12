@@ -2112,7 +2112,9 @@ function renderAdminTenantTable() {
           <span style="font-size:.78rem;color:#374151">${pct}%</span>
         </div>
       </td>
-      <td><button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button></td>
+      <td><button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button>
+          <button class="btn btn-sm" style="margin-left:4px;background:${t.aktiv===false?'#fee2e2':'#dcfce7'};color:${t.aktiv===false?'#991b1b':'#166534'};border:1px solid ${t.aktiv===false?'#fca5a5':'#86efac'}" onclick="tenantAktivToggle('${t.id}',${t.aktiv!==false})" title="${t.aktiv===false?'Aktivieren':'Deaktivieren'}">${t.aktiv===false?'🔴 Inaktiv':'🟢 Aktiv'}</button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="tenantLoeschen('${t.id}','${escHtml(t.name)}')">🗑</button></td>
     </tr>`;
   }).join('');
   document.getElementById('admin-tenant-table').innerHTML = `
@@ -2121,6 +2123,35 @@ function renderAdminTenantTable() {
       <tbody>${rows}</tbody>
     </table></div>`;
 }
+async function tenantLoeschen(tenantId, name) {
+  showConfirmModal(
+    `<strong>🗑 Unternehmen löschen</strong><br><br>„${name}" wirklich endgültig löschen?<br><small style="color:#6b7280">Alle Mitarbeiter, Zuweisungen und Formulare werden unwiderruflich gelöscht.</small>`,
+    async () => {
+      showToast('⏳ Lösche Unternehmen…', '#374151');
+      const tabellen = ['formulare','zuweisungen','bereiche','vorlagen','users'];
+      for (const tab of tabellen) {
+        await SB.delete(tab, `tenant_id=eq.${tenantId}`).catch(()=>{});
+      }
+      await SB.delete('tenants', `id=eq.${tenantId}`).catch(()=>{});
+      APP_TENANTS = APP_TENANTS.filter(t => t.id !== tenantId);
+      zuweisungen  = zuweisungen.filter(z => z.tenantId !== tenantId);
+      APP_USERS    = APP_USERS.filter(u => u.tenantId !== tenantId);
+      renderAdminTenantTable();
+      showToast(`✅ „${name}" gelöscht`, '#166534');
+    },
+    { jaLabel: '🗑 Endgültig löschen', neinLabel: 'Abbrechen', jaColor: '#dc2626' }
+  );
+}
+
+async function tenantAktivToggle(tenantId, aktuellerWert) {
+  const neuerWert = !aktuellerWert;
+  await SB.patch('tenants', `id=eq.${tenantId}`, { aktiv: neuerWert }).catch(()=>{});
+  const t = APP_TENANTS.find(t => t.id === tenantId);
+  if (t) t.aktiv = neuerWert;
+  renderAdminTenantTable();
+  showToast(neuerWert ? '🟢 Unternehmen aktiviert' : '🔴 Unternehmen deaktiviert', neuerWert ? '#166534' : '#991b1b');
+}
+
 function adminZeigeTenant(tenantId) {
   const tenant = APP_TENANTS.find(t=>t.id===tenantId);
   const zuws   = zuweisungen.filter(z=>z.tenantId===tenantId);
