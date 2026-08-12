@@ -2424,8 +2424,7 @@ function renderAdminVorlagen() {
             ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#7c2d12;color:#fff;background:#7c2d12;margin-left:6px">▶ Als MA testen</button>`
             : v.id === '__psaga__'
-            ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>
-               <button class="btn btn-outline btn-sm" onclick="psagaAlsMaSpielen()" style="border-color:#166534;color:#fff;background:#166534;margin-left:6px">▶ Als MA testen</button>`
+            ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
