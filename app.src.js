@@ -1634,7 +1634,7 @@ async function vorgesetzterPwReset(userId, userName) {
   overlay.innerHTML = `
     <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
       <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">🔑 Neues Passwort für ${escHtml(userName)}</h3>
-      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:9px;padding:12px;margin-bottom:14px">
+      <div style="background:#eff6ff;border:1px solid #fed7aa;border-radius:9px;padding:12px;margin-bottom:14px">
         <div style="font-size:.8rem;color:#92400e;margin-bottom:6px">Generiertes Passwort:</div>
         <div style="display:flex;align-items:center;gap:8px">
           <code id="vpr-pw-anzeige" style="font-size:1rem;font-weight:700;color:#1e3a5f;flex:1;word-break:break-all">${neuesPw}</code>
@@ -2054,7 +2054,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : z.vorlagenId === HUB_VORLAGE_ID ? '<span style="color:#7c2d12">🏗️ Hubarbeitsbühnen DGUV 308-008</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : z.vorlagenId === HUB_VORLAGE_ID ? '<span style="color:#1a3a5c">🏗️ Hubarbeitsbühnen DGUV 308-008</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -2169,7 +2169,7 @@ function adminZeigeTenant(tenantId) {
       const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#7c2d12;font-weight:700':''}">${titel}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#1a3a5c;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -2255,9 +2255,9 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vor
       const gegengezeichnet = (hubDaten||[]).filter(d => d.verantwortlicher_am).length;
       html += `
         <div style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:.88rem;color:#7c2d12;margin-bottom:8px">🏗️ Hubarbeitsbühnen DGUV 308-008</div>
+          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🏗️ Hubarbeitsbühnen DGUV 308-008</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
-            ${_statKachel(abgeschlossen,   'Quiz bestanden + Bescheinigung', '#fff7ed','#c2410c')}
+            ${_statKachel(abgeschlossen,   'Quiz bestanden + Bescheinigung', '#eff6ff','#c2410c')}
             ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
           </div>
         </div>`;
@@ -2406,7 +2406,7 @@ function adminDetailAnzeigen(zuwId) {
 
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#7c2d12':''}">${titelAnzeige}</div>
+    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#1a3a5c':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -2438,13 +2438,13 @@ function renderAdminVorlagen() {
     : liste;
 
   document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
-    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #7c2d12' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
+    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #1a3a5c' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
           <div class="card-title" style="margin-bottom:4px">${v._eingebaut ? '🏗️' : v.id === '__psaga__' ? '🪝' : '📄'} ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
           ${v._eingebaut
-            ? `<div style="font-size:.78rem;color:#7c2d12;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
+            ? `<div style="font-size:.78rem;color:#1a3a5c;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
             : v.id === '__psaga__'
             ? `<div style="font-size:.78rem;color:#166534;font-weight:600">🔒 PSAgA-Folienviewer · 22 Module · Quiz · Teilnahmebescheinigung · nicht editierbar</div>`
             : `<div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>`
@@ -2452,8 +2452,8 @@ function renderAdminVorlagen() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           ${v._eingebaut
-            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>
-               <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#7c2d12;color:#fff;background:#7c2d12;margin-left:6px">▶ Als MA testen</button>`
+            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#1a3a5c;color:#1a3a5c">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#1a3a5c;color:#fff;background:#1a3a5c;margin-left:6px">▶ Als MA testen</button>`
             : v.id === '__psaga__'
             ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
@@ -2603,7 +2603,7 @@ function renderAdminKernkapitel() {
   const saeuleInfo = {
     A: { label: 'Säule A — Gesetzliche Basis-Unterweisungen', farbe: '#1a3a5c', bg: '#e8f0fb' },
     B: { label: 'Säule B — Reinigungstechnologie & Chemie',   farbe: '#166534', bg: '#dcfce7' },
-    C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#7c2d12', bg: '#fff7ed' },
+    C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#1a3a5c', bg: '#eff6ff' },
     D: { label: 'Säule D — Das 4-Farben-System (Hygiene)',    farbe: '#6b21a8', bg: '#faf5ff' },
   };
 
@@ -2766,7 +2766,7 @@ function hubAlsMaSpielen() {
 
   // Header
   modal.innerHTML = `
-    <div style="background:#7c2d12;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
       <div style="flex:1">
         <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
         <div style="font-weight:700;font-size:.95rem;margin-top:2px">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
@@ -2774,7 +2774,7 @@ function hubAlsMaSpielen() {
       <button onclick="hubPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
     </div>
     <div style="padding:14px">
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#92400e">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
         <strong>🔍 Vorschau-Modus:</strong> Alles funktioniert wie beim Mitarbeiter — Kapitel lesen, Quiz machen, Fahrauftrag unterzeichnen, PDF ansehen. <strong>Nichts wird gespeichert.</strong>
       </div>
       <div id="hub-preview-inner"></div>
@@ -2786,7 +2786,7 @@ function hubAlsMaSpielen() {
   _hubPreviewContainer = document.getElementById('hub-preview-inner');
   hubSchulungRenderIn(_hubPreviewContainer);
 
-  showToast('🔍 Vorschau-Modus aktiv', '#7c2d12');
+  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
 }
 
 let _hubPreviewContainer = null;
@@ -2818,7 +2818,7 @@ function hubAdminVorschau() {
   const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
   const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
   const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
-  const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#064e3b', 4:'#581c87' };
 
   let kapitelHtml = '';
   let aktuellerMod = 0;
@@ -2864,8 +2864,8 @@ function hubAdminVorschau() {
     <div style="background:#fff;border-radius:16px;width:100%;max-width:600px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
 
       <!-- Header -->
-      <div style="background:#7c2d12;color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1">
-        <div style="font-size:.7rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Admin-Vorschau</div>
+      <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1">
+        <div style="font-size:.7rem;font-weight:700;color:#93c5fd;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Admin-Vorschau</div>
         <div style="font-weight:700;font-size:1rem">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
         <div style="font-size:.75rem;opacity:.85;margin-top:2px">14 Kapitel · 10 Quiz-Fragen · Teilnahmebescheinigung</div>
         <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
@@ -2875,7 +2875,7 @@ function hubAdminVorschau() {
       <div style="padding:18px">
 
         <!-- Info-Banner -->
-        <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#92400e">
+        <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#1e40af">
           <strong>🔍 Admin-Vorschau</strong> — Du siehst hier alle Inhalte wie ein Mitarbeiter. Kapitel aufklappen zum Lesen, Quiz-Antworten sind markiert.
         </div>
 
@@ -2883,7 +2883,7 @@ function hubAdminVorschau() {
         <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:18px">
           <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">📊 Kursübersicht</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem">
-            <div style="background:#fff7ed;border-radius:7px;padding:6px 12px;color:#7c2d12;font-weight:700">🏗️ 14 Kapitel</div>
+            <div style="background:#eff6ff;border-radius:7px;padding:6px 12px;color:#1e40af;font-weight:700">🏗️ 14 Kapitel</div>
             <div style="background:#f0f9ff;border-radius:7px;padding:6px 12px;color:#0369a1;font-weight:700">📚 4 Module</div>
             <div style="background:#f0fdf4;border-radius:7px;padding:6px 12px;color:#15803d;font-weight:700">🎯 10 Quiz-Fragen</div>
             <div style="background:#faf5ff;border-radius:7px;padding:6px 12px;color:#7e22ce;font-weight:700">📄 Teilnahmebescheinigung</div>
@@ -2909,13 +2909,13 @@ function hubAdminVorschau() {
         <!-- Bescheinigung Vorschau -->
         <div style="margin-top:20px;padding-top:16px;border-top:2px solid #f0f2f5">
           <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:10px">📄 Teilnahmebescheinigung — Vorschau</div>
-          <div style="background:#7c2d12;border-radius:10px;padding:14px 16px;color:#fff;margin-bottom:8px">
-            <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">TEILNAHMEBESCHEINIGUNG</div>
+          <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);border-radius:10px;padding:14px 16px;color:#fff;margin-bottom:8px">
+            <div style="font-size:.65rem;font-weight:700;color:#93c5fd;letter-spacing:.08em;text-transform:uppercase">TEILNAHMEBESCHEINIGUNG</div>
             <div style="font-weight:700;font-size:.95rem;margin-top:4px">CSC GmbH · Hubarbeitsbühnen | DGUV 308-008</div>
           </div>
-          <div style="background:#fff7ed;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#7c2d12">
+          <div style="background:#eff6ff;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#1e40af">
             <strong>Hiermit wird bestätigt,</strong> dass [Name Mitarbeiter] die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Quiz mit mindestens 70 % bestanden hat.<br><br>
-            <span style="color:#9a3412">Ausgestellt: [Datum] · gez. Thomas Schmoldt · CSC GmbH</span>
+            <span style="color:#1d4ed8">Ausgestellt: [Datum] · gez. Thomas Schmoldt · CSC GmbH</span>
           </div>
           <div style="font-size:.75rem;color:#9ca3af;margin-top:6px;text-align:center">Die echte Bescheinigung wird als professionelles A4-PDF mit allen Schulungsinhalten generiert.</div>
         </div>
@@ -2923,7 +2923,7 @@ function hubAdminVorschau() {
         <!-- Footer -->
         <div style="margin-top:20px;text-align:center;display:flex;gap:10px;justify-content:center">
           <button onclick="hubAlsMaSpielen()"
-            style="padding:12px 24px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            style="padding:12px 24px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
             ▶ Als MA testen
           </button>
           <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
@@ -2942,7 +2942,7 @@ function hubAdminVorschau() {
 
 async function vtLoeschen(id) {
   const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
-  if (v?._eingebaut) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#7c2d12'); return; }
+  if (v?._eingebaut) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#1a3a5c'); return; }
   // Prüfen ob abgeschlossene Formulare existieren
   const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
   const abgeschlosseneAnzahl = zuws.filter(z => formulare[z.id]?.abgeschlossen).length;
@@ -3827,7 +3827,7 @@ function renderAdminZuweisungen() {
     const isPsaga = z.vorlagenId === '__psaga__';
     const isHub = z.vorlagenId === HUB_VORLAGE_ID;
     const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
-    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#7c2d12;font-weight:700' : '';
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#1a3a5c;font-weight:700' : '';
 
     // Mitarbeiter dieses Tenants
     const tenantMitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
@@ -3962,9 +3962,9 @@ function azVorlagenListeRendern(suche) {
   const hubMatch = !s || 'hub'.includes(s) || 'hubarbeit'.includes(s) || 'arbeitsbühne'.includes(s) || 'hebebühne'.includes(s) || '308'.includes(s) || '14 kapitel'.includes(s);
   const hubHtml = hubMatch ? `
     <div onclick="azVorlageWaehlen('${HUB_VORLAGE_ID}','🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)')"
-      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#fff7ed"
-      onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#fff7ed'">
-      <div style="font-weight:600;font-size:.88rem;color:#7c2d12">🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)</div>
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#eff6ff"
+      onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#eff6ff'">
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)</div>
       <div style="font-size:.76rem;color:#c2410c;margin-top:2px">
         Module 1–4 &nbsp;·&nbsp; 10 Quizfragen · mind. 70&thinsp;% zum Bestehen &nbsp;·&nbsp; Teilnahmebescheinigung
       </div>
@@ -4293,7 +4293,7 @@ async function renderMitarbeiterListe() {
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Schulungshistorie anzeigen">📋 Historie</button>`;
       const btnPwReset = !istArchiviert ? `<button onclick="event.stopPropagation();vorgesetzterPwReset('${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}')"
-          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #fed7aa;background:#fff7ed;color:#c2410c;cursor:pointer;white-space:nowrap;margin-top:3px"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #fed7aa;background:#eff6ff;color:#c2410c;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Neues Passwort vergeben">🔑 Neues PW</button>` : '';
 
       // ── Lernpfad-Unterschrift-Status für diesen Mitarbeiter ──
@@ -4383,7 +4383,7 @@ async function renderMitarbeiterListe() {
               if (!hubUnt || !hubUnt.unterzeichnet_am) {
                 // Quiz noch nicht bestanden
                 return `<div style="padding:0 14px 10px">
-                  <div style="padding:8px 10px;background:#fff7ed;border:1.5px solid #f97316;border-radius:7px;font-size:.72rem;color:#92400e">
+                  <div style="padding:8px 10px;background:#dbeafe;border:1.5px solid #3b82f6;border-radius:7px;font-size:.72rem;color:#92400e">
                     🏗️ Hubarbeitsbühnen DGUV 308-008 — Quiz noch ausstehend
                   </div>
                 </div>`;
@@ -4400,7 +4400,7 @@ async function renderMitarbeiterListe() {
                       📅 Gültig bis: <b>${hubUnt.fahrauftrag_bis || '–'}</b>
                     </div>
                     <button onclick="event.stopPropagation();hubGegenzeichnenOeffnen('${m.id}')"
-                      style="font-size:.75rem;padding:5px 12px;border-radius:6px;border:none;background:#7c2d12;color:#fff;cursor:pointer;font-weight:700;width:100%">
+                      style="font-size:.75rem;padding:5px 12px;border-radius:6px;border:none;background:#1a3a5c;color:#fff;cursor:pointer;font-weight:700;width:100%">
                       ✍️ Fahrauftrag gegenzeichnen
                     </button>
                   </div>
@@ -4428,7 +4428,7 @@ async function renderMitarbeiterListe() {
                   </div>
                   ${hubUnt.fahrauftrag_pdf_url ? `
                   <a href="${escHtml(hubUnt.fahrauftrag_pdf_url)}" target="_blank" onclick="event.stopPropagation()"
-                    style="display:block;margin-top:6px;font-size:.72rem;text-align:center;background:#7c2d12;color:#fff;padding:5px;border-radius:6px;text-decoration:none;font-weight:700">
+                    style="display:block;margin-top:6px;font-size:.72rem;text-align:center;background:#1a3a5c;color:#fff;padding:5px;border-radius:6px;text-decoration:none;font-weight:700">
                     📄 PDF herunterladen
                   </a>` : ''}
                 </div>
@@ -11105,40 +11105,40 @@ const HUB_INHALT_I18N = {
   'hub-01': {
     en: `<p>Operating aerial work platforms is subject to strict legal requirements: <strong>§ 12 ArbSchG</strong> (duty to instruct), <strong>BetrSichV</strong> (only qualified persons may operate), <strong>DGUV 308-008</strong> (training & authorization). No driver's license is required — but the operator needs three things:</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Training</div><div style="font-size:.72rem;color:#9a3412">Theory + Practice passed</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Fitness</div><div style="font-size:.72rem;color:#9a3412">Occupational health clearance</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Work Order</div><div style="font-size:.72rem;color:#9a3412">Written authorization</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Training</div><div style="font-size:.72rem;color:#2563a8">Theory + Practice passed</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Fitness</div><div style="font-size:.72rem;color:#2563a8">Occupational health clearance</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Work Order</div><div style="font-size:.72rem;color:#2563a8">Written authorization</div></div>
     </div>`,
     tr: `<p>Yüksek erişim platformlarının kullanımı katı yasal gerekliliklere tabidir: <strong>§ 12 ArbSchG</strong> (eğitim yükümlülüğü), <strong>BetrSichV</strong> (sadece eğitimli kişiler kullanabilir), <strong>DGUV 308-008</strong> (eğitim ve yetkilendirme). Ehliyet gerekmez — ancak operatörün üç şeye ihtiyacı vardır:</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Eğitim</div><div style="font-size:.72rem;color:#9a3412">Teori + Pratik geçildi</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-size:.72rem;color:#9a3412"><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Sağlık Uygunluğu</div>İş sağlığı muayenesi</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Sürüş Emri</div><div style="font-size:.72rem;color:#9a3412">Yazılı yetkilendirme</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Eğitim</div><div style="font-size:.72rem;color:#2563a8">Teori + Pratik geçildi</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-size:.72rem;color:#2563a8"><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Sağlık Uygunluğu</div>İş sağlığı muayenesi</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Sürüş Emri</div><div style="font-size:.72rem;color:#2563a8">Yazılı yetkilendirme</div></div>
     </div>`,
     ar: `<p>يخضع تشغيل منصات العمل الارتفاعية لمتطلبات قانونية صارمة: <strong>§ 12 ArbSchG</strong> (التزام التدريب)، <strong>BetrSichV</strong> (الأشخاص المؤهلون فقط)، <strong>DGUV 308-008</strong> (التدريب والتفويض). لا يلزم رخصة قيادة — لكن المشغّل يحتاج ثلاثة أشياء:</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;direction:rtl">
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">التدريب</div><div style="font-size:.72rem;color:#9a3412">نظري + عملي</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">اللياقة الصحية</div><div style="font-size:.72rem;color:#9a3412">الفحص الطبي المهني</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">أمر العمل</div><div style="font-size:.72rem;color:#9a3412">تفويض خطي</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">التدريب</div><div style="font-size:.72rem;color:#2563a8">نظري + عملي</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">اللياقة الصحية</div><div style="font-size:.72rem;color:#2563a8">الفحص الطبي المهني</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">أمر العمل</div><div style="font-size:.72rem;color:#2563a8">تفويض خطي</div></div>
     </div>`,
   },
   'hub-02': {
     en: `<p>In case of an accident, two levels of liability apply:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
       <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Employer / Supervisor</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Bears <strong>organizational responsibility</strong>: selecting qualified persons, providing safe equipment, ensuring training and authorization.</div></div>
-      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Operator (You!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px">Bears <strong>operational responsibility</strong>: personal liability for gross negligence, ignoring prohibitions or alcohol at work.</div></div>
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 Operator (You!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px">Bears <strong>operational responsibility</strong>: personal liability for gross negligence, ignoring prohibitions or alcohol at work.</div></div>
     </div>
     <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ The written work order from the employer is <strong>mandatory</strong> — training alone is not sufficient!</p>`,
     tr: `<p>Bir kaza durumunda iki düzey sorumluluk geçerlidir:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
       <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 İşveren / Amir</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>Organizasyonel sorumluluk</strong>: Nitelikli kişilerin seçimi, güvenli ekipman temini, eğitim ve yetkilendirme.</div></div>
-      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Operatör (Siz!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>Uygulama sorumluluğu</strong>: Ağır ihmal, yasakları çiğneme veya işyerinde alkol durumunda kişisel sorumluluk.</div></div>
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 Operatör (Siz!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>Uygulama sorumluluğu</strong>: Ağır ihmal, yasakları çiğneme veya işyerinde alkol durumunda kişisel sorumluluk.</div></div>
     </div>
     <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ İşverenin yazılı sürüş emri <strong>zorunludur</strong> — yalnızca eğitim yeterli değildir!</p>`,
     ar: `<p>في حالة وقوع حادث، تنطبق مستويان من المسؤولية:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
       <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 صاحب العمل / المشرف</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>المسؤولية التنظيمية</strong>: اختيار الأشخاص المؤهلين، توفير معدات آمنة، ضمان التدريب والتفويض.</div></div>
-      <div style="background:#fff7ed;border-right:4px solid #f97316;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#92400e">👤 المشغّل (أنت!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>المسؤولية التنفيذية</strong>: المسؤولية الشخصية عن الإهمال الجسيم، تجاهل المحظورات، أو الكحول في العمل.</div></div>
+      <div style="background:#dbeafe;border-right:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 المشغّل (أنت!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>المسؤولية التنفيذية</strong>: المسؤولية الشخصية عن الإهمال الجسيم، تجاهل المحظورات، أو الكحول في العمل.</div></div>
     </div>
     <p style="font-size:.82rem;color:#6b7280;margin-top:8px;direction:rtl">⚠️ أمر العمل الكتابي من صاحب العمل <strong>إلزامي</strong> — التدريب وحده غير كافٍ!</p>`,
   },
@@ -11146,19 +11146,19 @@ const HUB_INHALT_I18N = {
     en: `<p>Aerial work platforms are categorized by their movement type:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
       <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Group A — Vertical lift</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Center of gravity always <strong>within</strong> the tipping edges. Examples: scissor lifts, personnel lifts</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Group B — Boom Lifts</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">Basket can be moved <strong>outside</strong> the tipping edges. Examples: telescopic, articulating, truck-mounted booms.<br><strong>⚠️ PPE mandatory!</strong></div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Group B — Boom Lifts</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">Basket can be moved <strong>outside</strong> the tipping edges. Examples: telescopic, articulating, truck-mounted booms.<br><strong>⚠️ PPE mandatory!</strong></div></div>
     </div>
     <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Drive types:</strong><br>• <strong>Type 1</strong> — Drive only in transport position (platform down)<br>• <strong>Type 3</strong> — Drive with raised platform from the basket</div>`,
     tr: `<p>Yüksek erişim platformları hareket türlerine göre sınıflandırılır:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
       <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Grup A — Dikey Kaldırma</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Ağırlık merkezi devrilme kenarları <strong>içinde</strong> kalır. Örnekler: makaslı platformlar, personel asansörleri</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Grup B — Bomlu Platformlar</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">Sepet devrilme kenarlarının <strong>dışına</strong> çıkabilir. Örnekler: teleskopik, mafsallı, kamyon üstü platformlar.<br><strong>⚠️ KKD zorunludur!</strong></div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Grup B — Bomlu Platformlar</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">Sepet devrilme kenarlarının <strong>dışına</strong> çıkabilir. Örnekler: teleskopik, mafsallı, kamyon üstü platformlar.<br><strong>⚠️ KKD zorunludur!</strong></div></div>
     </div>
     <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Sürüş tipleri:</strong><br>• <strong>Tip 1</strong> — Sadece taşıma konumunda sürüş (platform aşağıda)<br>• <strong>Tip 3</strong> — Sepetten yükseltilmiş platformla sürüş</div>`,
     ar: `<p>تُصنَّف منصات العمل الارتفاعية حسب نوع حركتها:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
       <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 المجموعة أ — الرفع الرأسي</div><div style="font-size:.8rem;color:#075985;margin-top:4px">مركز الثقل دائماً <strong>داخل</strong> حواف الانقلاب. أمثلة: مقصات الرفع، مصاعد الأشخاص</div></div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 المجموعة ب — الذراع المتمددة</div><div style="font-size:.8rem;color:#9a3412;margin-top:4px">يمكن تحريك السلة <strong>خارج</strong> حواف الانقلاب.<br><strong>⚠️ معدات الحماية إلزامية!</strong></div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 المجموعة ب — الذراع المتمددة</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">يمكن تحريك السلة <strong>خارج</strong> حواف الانقلاب.<br><strong>⚠️ معدات الحماية إلزامية!</strong></div></div>
     </div>`,
   },
   'hub-04': {
@@ -11185,15 +11185,15 @@ const HUB_INHALT_I18N = {
     </div>`,
   },
   'hub-05': {
-    en: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ MANDATORY for Group B (Boom Lifts)!</div><div style="font-size:.8rem;opacity:.9">Full body harness + short fall arrester — always wear it!</div></div>
+    en: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ MANDATORY for Group B (Boom Lifts)!</div><div style="font-size:.8rem;opacity:.9">Full body harness + short fall arrester — always wear it!</div></div>
     <p><strong>Why PPE in aerial work platforms?</strong></p>
     <p style="font-size:.85rem">The <strong>"whiplash effect"</strong>: On telescopic and articulating boom lifts, vibrations from uneven ground can set the long arm oscillating and catapult the operator out of the basket.</p>
-    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Key Rules:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ Attach <strong>only</strong> to designated, marked anchor points in the basket</div><div>✅ Short restraint system — no long shock absorber in the basket</div><div>✅ Put on harness <strong>before</strong> the platform moves</div></div></div>`,
-    tr: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ Grup B (Bomlu Platformlar) için ZORUNLUDUR!</div><div style="font-size:.8rem;opacity:.9">Tam vücut emniyet kemeri + kısa düşüş önleyici — her zaman takın!</div></div>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Key Rules:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ Attach <strong>only</strong> to designated, marked anchor points in the basket</div><div>✅ Short restraint system — no long shock absorber in the basket</div><div>✅ Put on harness <strong>before</strong> the platform moves</div></div></div>`,
+    tr: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ Grup B (Bomlu Platformlar) için ZORUNLUDUR!</div><div style="font-size:.8rem;opacity:.9">Tam vücut emniyet kemeri + kısa düşüş önleyici — her zaman takın!</div></div>
     <p><strong>Yüksek erişim platformlarında neden KKD?</strong></p>
     <p style="font-size:.85rem"><strong>"Kırbaç etkisi"</strong>: Teleskopik ve mafsallı platformlarda zemin engebelerinden kaynaklanan titreşimler uzun kolu sallayabilir ve operatörü sepetten fırlatabiliricek.</p>
-    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Önemli Kurallar:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ <strong>Yalnızca</strong> sepetteki işaretlenmiş bağlantı noktalarına bağlayın</div><div>✅ Kısa tutma sistemi — sepette uzun şok emici kullanmayın</div><div>✅ Platform hareket etmeden <strong>önce</strong> kemeri giyin</div></div></div>`,
-    ar: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ إلزامي للمجموعة ب (ذراع الرفع)!</div><div style="font-size:.8rem;opacity:.9">حزام الجسم الكامل + جهاز إيقاف السقوط القصير — ارتده دائماً!</div></div>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Önemli Kurallar:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ <strong>Yalnızca</strong> sepetteki işaretlenmiş bağlantı noktalarına bağlayın</div><div>✅ Kısa tutma sistemi — sepette uzun şok emici kullanmayın</div><div>✅ Platform hareket etmeden <strong>önce</strong> kemeri giyin</div></div></div>`,
+    ar: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ إلزامي للمجموعة ب (ذراع الرفع)!</div><div style="font-size:.8rem;opacity:.9">حزام الجسم الكامل + جهاز إيقاف السقوط القصير — ارتده دائماً!</div></div>
     <p style="direction:rtl"><strong>لماذا معدات الحماية في منصات العمل الارتفاعية؟</strong></p>
     <p style="font-size:.85rem;direction:rtl"><strong>"تأثير السوط"</strong>: في منصات الذراع التلسكوبية، يمكن للاهتزازات الناتجة عن الأرض الوعرة أن تجعل الذراع الطويل يتأرجح ويقذف المشغّل خارج السلة.</p>`,
   },
@@ -11327,13 +11327,13 @@ const HUB_INHALT_I18N = {
     </div>`,
   },
   'hub-14': {
-    en: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Ready for the quiz?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 questions · At least 70% to pass (7/10 points)</div></div>
+    en: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Ready for the quiz?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 questions · At least 70% to pass (7/10 points)</div></div>
     <p style="font-size:.85rem"><strong>Validity of the operator's certificate:</strong><br>The certificate is valid for life — but requires an <strong>annual briefing</strong> at the workplace!</p>
     <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Checklist before the quiz:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ Know all 3 pillars (training, fitness, work order)</div><div>☑ Understand difference Group A / Group B</div><div>☑ Know PPE requirement for Group B</div><div>☑ Remember wind limit 12.5 m/s</div><div>☑ Know minimum distances to power lines</div><div>☑ Understand emergency lowering procedure</div></div></div>`,
-    tr: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Quiz için hazır mısınız?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 soru · Geçmek için en az %70 (10 üzerinden 7 puan)</div></div>
+    tr: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Quiz için hazır mısınız?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 soru · Geçmek için en az %70 (10 üzerinden 7 puan)</div></div>
     <p style="font-size:.85rem"><strong>Operatör sertifikasının geçerliliği:</strong><br>Sertifika ömür boyu geçerlidir — ancak işyerinde <strong>yıllık eğitim</strong> gerektirir!</p>
     <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Quiz öncesi kontrol listesi:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ 3 temel şartı bil (eğitim, uygunluk, sürüş emri)</div><div>☑ Grup A / Grup B farkını anla</div><div>☑ Grup B için KKD zorunluluğunu bil</div><div>☑ Rüzgar limiti 12,5 m/s'yi hatırla</div><div>☑ Elektrik hatlarına minimum mesafeleri bil</div><div>☑ Acil iniş prosedürünü anla</div></div></div>`,
-    ar: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">✅ هل أنت مستعد للاختبار؟</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 أسئلة · 70% على الأقل للنجاح</div></div>
+    ar: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">✅ هل أنت مستعد للاختبار؟</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 أسئلة · 70% على الأقل للنجاح</div></div>
     <p style="font-size:.85rem;direction:rtl"><strong>صلاحية شهادة المشغّل:</strong><br>الشهادة صالحة مدى الحياة — لكنها تتطلب <strong>تدريباً سنوياً</strong> في مكان العمل!</p>
     <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem;direction:rtl"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 قائمة التحقق قبل الاختبار:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ معرفة الركائز الثلاث (تدريب، لياقة، أمر عمل)</div><div>☑ فهم الفرق بين المجموعة أ/ب</div><div>☑ معرفة متطلبات معدات الحماية للمجموعة ب</div><div>☑ تذكر حد الرياح 12.5 م/ث</div><div>☑ معرفة المسافات الدنيا من خطوط الكهرباء</div><div>☑ فهم إجراء الخفض الطارئ</div></div></div>`,
   },
@@ -11683,20 +11683,20 @@ const HUB_KAPITEL = [
     </ul>
     <p>Ein amtlicher Führerschein ist <strong>nicht</strong> erforderlich — aber der Bediener braucht drei Dinge:</p>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
         <div style="font-size:1.4rem">📚</div>
-        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Ausbildung</div>
-        <div style="font-size:.72rem;color:#9a3412">Theorie + Praxis bestanden</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Ausbildung</div>
+        <div style="font-size:.72rem;color:#2563a8">Theorie + Praxis bestanden</div>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
         <div style="font-size:1.4rem">🏥</div>
-        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Eignung</div>
-        <div style="font-size:.72rem;color:#9a3412">Arbeitsmedizinische Vorsorge</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Eignung</div>
+        <div style="font-size:.72rem;color:#2563a8">Arbeitsmedizinische Vorsorge</div>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px;text-align:center">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
         <div style="font-size:1.4rem">✍️</div>
-        <div style="font-weight:700;font-size:.8rem;color:#7c2d12;margin-top:4px">Fahrauftrag</div>
-        <div style="font-size:.72rem;color:#9a3412">Schriftliche Beauftragung</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Fahrauftrag</div>
+        <div style="font-size:.72rem;color:#2563a8">Schriftliche Beauftragung</div>
       </div>
     </div>`
   },
@@ -11710,7 +11710,7 @@ const HUB_KAPITEL = [
         <div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Unternehmer / Vorgesetzter</div>
         <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Trägt die <strong>Organisationsverantwortung</strong>: Auswahl geeigneter Personen, Bereitstellung sicherer Geräte, Sicherstellung der Schulung und Beauftragung.</div>
       </div>
-      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:10px 14px">
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px">
         <div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Bediener (Sie!)</div>
         <div style="font-size:.8rem;color:#78350f;margin-top:4px">Trägt die <strong>Durchführungsverantwortung</strong>: Persönliche Haftung bei grober Fahrlässigkeit, Missachtung von Verboten oder Alkohol am Arbeitsplatz.</div>
       </div>
@@ -11728,9 +11728,9 @@ const HUB_KAPITEL = [
         <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Gruppe A — Senkrechthub</div>
         <div style="font-size:.8rem;color:#075985;margin-top:4px">Gewichtsschwerpunkt bleibt immer <strong>innerhalb</strong> der Kippkanten.<br>Beispiele: Scherenbühnen, Personenlifte</div>
       </div>
-      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:8px;padding:10px 14px">
-        <div style="font-weight:700;font-size:.9rem;color:#7c2d12">💥 Gruppe B — Boom-Lifts (Auslegerbühnen)</div>
-        <div style="font-size:.8rem;color:#9a3412;margin-top:4px">Arbeitskorb kann <strong>außerhalb</strong> der Kippkanten bewegt werden.<br>Beispiele: Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Bühnen<br><strong>⚠️ PSAgA-Pflicht!</strong></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Gruppe B — Boom-Lifts (Auslegerbühnen)</div>
+        <div style="font-size:.8rem;color:#2563a8;margin-top:4px">Arbeitskorb kann <strong>außerhalb</strong> der Kippkanten bewegt werden.<br>Beispiele: Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Bühnen<br><strong>⚠️ PSAgA-Pflicht!</strong></div>
       </div>
     </div>
     <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem">
@@ -11771,13 +11771,13 @@ const HUB_KAPITEL = [
     id: 'hub-05', modul: 2, nr: 5,
     titel: 'PSAgA — Persönliche Schutzausrüstung gegen Absturz',
     icon: '🦺',
-    inhalt: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+    inhalt: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
       <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ PFLICHT bei Gruppe B (Boom-Lifts)!</div>
       <div style="font-size:.8rem;opacity:.9">Auffanggurt + kurzes Höhensicherungsgerät — immer anlegen!</div>
     </div>
     <p><strong>Warum PSAgA in Hubarbeitsbühnen?</strong></p>
     <p style="font-size:.85rem">Der sogenannte <strong>„Peitscheneffekt"</strong> (Katapult-Effekt): Bei Teleskop- und Gelenkbühnen können Erschütterungen durch Bodenunebenheiten den langen Ausleger in Schwingung versetzen und den Bediener aus dem Korb katapultieren.</p>
-    <div style="background:#fff7ed;border-radius:8px;padding:10px;margin-top:10px">
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px">
       <div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Wichtige Regeln:</div>
       <div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px">
         <div>✅ Anschlagen <strong>nur</strong> an den vorgesehenen, gekennzeichneten Haltepunkten im Korb</div>
@@ -11965,7 +11965,7 @@ const HUB_KAPITEL = [
     id: 'hub-14', modul: 4, nr: 14,
     titel: 'Prüfung & Fahrauftrag — Zusammenfassung',
     icon: '📋',
-    inhalt: `<div style="background:#7c2d12;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+    inhalt: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
       <div style="font-weight:700;font-size:.95rem">✅ Bereit für das Quiz?</div>
       <div style="font-size:.8rem;opacity:.9;margin-top:4px">10 Fragen · Mindestens 70 % richtig zum Bestehen (7/10 Punkte)</div>
     </div>
@@ -12253,14 +12253,14 @@ function hubSchulungRenderIn(cont) {
   HUB_SPRACHEN.forEach(function(s) {
     html_sprachbtn += '<button onclick="hubSpracheSetzen(\'' + s.code + '\')"'
       + ' style="padding:14px 10px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:700;color:#1a3a5c;display:flex;flex-direction:column;align-items:center;gap:4px"'
-      + ' onmouseover="this.style.borderColor=\'#7c2d12\';this.style.background=\'#fef7ee\'"'
+      + ' onmouseover="this.style.borderColor=\'#1a3a5c\';this.style.background=\'#fef7ee\'"'
       + ' onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.background=\'#f8fafc\'">'
       + '<span style="font-size:1.6rem">' + s.flag + '</span>'
       + '<span>' + s.label + '</span>'
       + '</button>';
   });
   cont.innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
-    + '<div style="padding:14px;background:#7c2d12;color:#fff;text-align:center">'
+    + '<div style="padding:14px;background:#1a3a5c;color:#fff;text-align:center">'
     + '<div style="font-size:1.5rem">&#127959;&#65039;</div>'
     + '<div style="font-weight:700;font-size:.95rem;margin-top:6px">Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
     + '</div>'
@@ -12295,10 +12295,10 @@ function hubSchulungRenderIn(cont) {
   const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
   const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
   const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
-  const modulColor = { 1:'#1e3a5f', 2:'#7c2d12', 3:'#064e3b', 4:'#581c87' };
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#064e3b', 4:'#581c87' };
 
   let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
-    + '<div style="padding:12px 14px;background:#7c2d12;color:#fff">'
+    + '<div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">'
     + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
     + '<div>'
     + '<div style="font-weight:700;font-size:.9rem">&#127959;&#65039; Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
@@ -12353,17 +12353,17 @@ function hubSchulungRenderIn(cont) {
       </div>
       ${!fahrauftragUnterzeichnet ? `
       <button onclick="hubFahrauftragOeffnen()"
-        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35);margin-bottom:8px">
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);margin-bottom:8px">
         ✍️ Schritt 2: Fahrauftrag unterzeichnen →
       </button>` : `
       <button onclick="hubBescheinigungErstellen()"
-        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35);margin-bottom:8px">
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);margin-bottom:8px">
         📄 Kombiniertes PDF herunterladen
       </button>`}`;
   } else if (alleGelesen) {
     html += `
       <button onclick="hubQuizStarten()"
-        style="width:100%;padding:12px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.35)">
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
         🎯 Quiz starten — 10 Fragen (mind. 70 % zum Bestehen)
       </button>`;
   } else {
@@ -12449,7 +12449,7 @@ function hubQuizFrageZeigen() {
 
   cont.innerHTML = `
     <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
-      <div style="padding:12px 14px;background:#7c2d12;color:#fff">
+      <div style="padding:12px 14px;background:#1a3a5c;color:#fff">
         <div style="font-weight:700;font-size:.88rem">🎯 Quiz — Frage ${nr} von ${gesamt}</div>
         <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
           <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round((nr-1)/gesamt*100)}%"></div>
@@ -12461,10 +12461,10 @@ function hubQuizFrageZeigen() {
           ${q.antworten.map((a, i) => `
             <button onclick="hubQuizAntwort(${i})"
               style="text-align:left;padding:11px 14px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.84rem;color:#1e293b;cursor:pointer;transition:all .15s;line-height:1.4"
-              onmouseover="this.style.background='#fff7ed';this.style.borderColor='#f97316'"
+              onmouseover="this.style.background='#dbeafe';this.style.borderColor='#3b82f6'"
               onmouseout="this.style.background='#f9fafb';this.style.borderColor='#e5e7eb'"
               id="hub-quiz-btn-${i}">
-              <span style="font-weight:700;color:#7c2d12;margin-right:8px">${String.fromCharCode(65+i)}.</span>
+              <span style="font-weight:700;color:#1a3a5c;margin-right:8px">${String.fromCharCode(65+i)}.</span>
               ${escHtml(a)}
             </button>`).join('')}
         </div>
@@ -12506,7 +12506,7 @@ function hubQuizAntwort(gewaehlt) {
       <div style="color:${richtig?'#166534':'#7f1d1d'}">${escHtml(q.erklaerung)}</div>
     </div>
     <button onclick="hubQuizWeiter()"
-      style="width:100%;margin-top:10px;padding:11px;background:#7c2d12;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.88rem;cursor:pointer">
+      style="width:100%;margin-top:10px;padding:11px;background:#1a3a5c;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.88rem;cursor:pointer">
       ${hubQuizIndex < hubQuizFragen.length - 1 ? 'Nächste Frage →' : 'Ergebnis anzeigen'}
     </button>`;
   quizBox.appendChild(erklaerungDiv);
@@ -12561,7 +12561,7 @@ function hubQuizErgebnis() {
             <div style="font-size:.78rem;color:#166534;margin-top:4px">${_hubPreviewMode ? '🔍 Du siehst jetzt wie Schritt 2 (Fahrauftrag) aussieht' : 'Jetzt Schritt 2: Fahrauftrag unterzeichnen'}</div>
           </div>
           <button onclick="hubFahrauftragOeffnen()"
-            style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(124,45,18,.35)">
+            style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(26,58,92,.35)">
             ✍️ Schritt 2: Fahrauftrag unterzeichnen →
           </button>` : `
           <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
@@ -12569,7 +12569,7 @@ function hubQuizErgebnis() {
             <div style="font-size:.78rem;color:#7f1d1d;margin-top:4px">Bitte Kapitel wiederholen und erneut versuchen.</div>
           </div>
           <button onclick="hubQuizStarten()"
-            style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px">
+            style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px">
             🔄 Quiz wiederholen
           </button>`}
         <button onclick="hubSchulungRender()"
@@ -12893,7 +12893,7 @@ async function hubBescheinigungErstellen() {
     const pdfBlob   = doc.output('blob');
     const pdfUrl    = URL.createObjectURL(pdfBlob);
     window.open(pdfUrl, '_blank');
-    if (_hubPreviewMode) { showToast('🔍 Vorschau-PDF (nicht gespeichert)', '#7c2d12'); return; }
+    if (_hubPreviewMode) { showToast('🔍 Vorschau-PDF (nicht gespeichert)', '#1a3a5c'); return; }
     showToast('✅ PDF erstellt (Bescheinigung + Fahrauftrag)', '#14532d');
 
     // ── Backup: Supabase Storage ─────────────────────────────
@@ -13020,8 +13020,8 @@ function hubFahrauftragSchliessen() {
 function hubFaTypChanged() {
   const a = document.getElementById('hub-fa-typ-a').checked;
   const b = document.getElementById('hub-fa-typ-b').checked;
-  document.getElementById('hub-fa-label-a').style.borderColor = a ? '#7c2d12' : '#e5e7eb';
-  document.getElementById('hub-fa-label-b').style.borderColor = b ? '#7c2d12' : '#e5e7eb';
+  document.getElementById('hub-fa-label-a').style.borderColor = a ? '#1a3a5c' : '#e5e7eb';
+  document.getElementById('hub-fa-label-b').style.borderColor = b ? '#1a3a5c' : '#e5e7eb';
   document.getElementById('hub-fa-typ-fehler').style.display = 'none';
   _hubFaPruefenObBereit();
 }
@@ -13031,7 +13031,7 @@ function _hubFaPruefenObBereit() {
   const btn = document.getElementById('hub-fa-bestaetigen-btn');
   const bereit = typOk && _hubFaHatStriche;
   btn.disabled = !bereit;
-  btn.style.background = bereit ? '#7c2d12' : '#d1d5db';
+  btn.style.background = bereit ? '#1a3a5c' : '#d1d5db';
   btn.style.color = bereit ? '#fff' : '#9ca3af';
   btn.style.cursor = bereit ? 'pointer' : 'not-allowed';
 }
@@ -13169,7 +13169,7 @@ function _hubGegenzMove(e) {
     document.getElementById('hub-gegenz-status').textContent = '✅ Unterschrift erfasst';
     document.getElementById('hub-gegenz-status').style.color = '#16a34a';
     const btn = document.getElementById('hub-gegenz-btn');
-    btn.disabled = false; btn.style.background = '#7c2d12'; btn.style.color = '#fff'; btn.style.cursor = 'pointer';
+    btn.disabled = false; btn.style.background = '#1a3a5c'; btn.style.color = '#fff'; btn.style.cursor = 'pointer';
   }
 }
 function _hubGegenzEnd() { _hubGegenzZeichnet = false; }
