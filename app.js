@@ -2411,7 +2411,8 @@ function renderAdminVorlagen() {
             ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#7c2d12;color:#7c2d12">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#7c2d12;color:#fff;background:#7c2d12;margin-left:6px">▶ Als MA testen</button>`
             : v.id === '__psaga__'
-            ? `<div style="font-size:.78rem;color:#166534;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:6px 12px;font-weight:600">🪝 22-Modul-Folienviewer · kein Formular</div>`
+            ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="psagaAlsMaSpielen()" style="border-color:#166534;color:#fff;background:#166534;margin-left:6px">▶ Als MA testen</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
@@ -10204,9 +10205,10 @@ function psagaFolienOeffnen(modulId) {
   if (!psagaAktivesModul) return;
 
   // Sicherheitsprüfung: Modul gesperrt wenn Vorgänger nicht bestanden
+  // (im Admin-Vorschau-Modus übersprungen)
   const idx = PSAGA_MODULE.findIndex(m => m.id === modulId);
   const userId = currentUser?.userId || '';
-  if (idx > 0) {
+  if (idx > 0 && !window._psagaAdminModus) {
     const vorherigBestanden = !!localStorage.getItem(`psaga_bestanden_${PSAGA_MODULE[idx-1].id}_${userId}`);
     if (!vorherigBestanden) {
       showToast(`🔒 Bitte zuerst Kapitel ${idx} abschließen!`, '#92400e');
@@ -10665,6 +10667,7 @@ function psagaFolienSchliessen() {
   psagaAudioStop();
   psagaTTSAktiv = false;
   psagaSprache = 'de';  // Sprache bei Schließen auf DE zurücksetzen
+  window._psagaAdminModus = false;  // Admin-Modus zurücksetzen
   const btn = document.getElementById('psaga-tts-btn');
   if (btn) btn.textContent = '🔊 Ton';
   const langBtn = document.getElementById('psaga-lang-btn');
@@ -10675,6 +10678,51 @@ function psagaFolienSchliessen() {
     document.body.style.overflow = '';
   }
   psagaAktivesModul = null;
+}
+
+// ── PSAgA Admin-Vorschau & Als-MA-Testen ──────────────────────────────────────
+
+// Vorschau: Erstes Modul direkt öffnen ohne Sperr-Prüfung (Admin-Modus)
+function psagaAdminVorschau() {
+  const erstesModul = PSAGA_MODULE[0];
+  if (!erstesModul) return;
+  psagaAktivesModul = erstesModul;
+  psagaAktuelleFolie = 1;
+  psagaAutoModus = false;
+  psagaAutoPause = false;
+  psagaTTSAktiv = false;
+  psagaSprache = 'de';
+  const ttsBtn = document.getElementById('psaga-tts-btn');
+  if (ttsBtn) ttsBtn.textContent = '🔊 Ton';
+  const langBtn = document.getElementById('psaga-lang-btn');
+  if (langBtn) langBtn.textContent = '🇩🇪 DE';
+  psagaFolienAnzeigen();
+  psagaAutoButtonUpdate();
+  const modal = document.getElementById('psaga-folien-modal');
+  if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  showToast('👁 Admin-Vorschau — Modul 00', '#166534');
+}
+
+// Als MA testen: vollständige MA-Ansicht mit PSAgA-Modulübersicht
+function psagaAlsMaSpielen() {
+  // Admin-Vorschau-Flag setzen (unterdrückt Sperr-Prüfung in psagaFolienOeffnen)
+  window._psagaAdminModus = true;
+  // PSAgA-Container im MA-Bereich aufklappen
+  const cont = document.getElementById('psaga-schulungen-container');
+  const pfeil = document.getElementById('psaga-schulungen-pfeil');
+  if (cont) {
+    cont.style.display = 'block';
+    if (pfeil) pfeil.style.transform = 'rotate(180deg)';
+    psagaSchulungenRender();
+  }
+  // Zum MA-Screen wechseln
+  showScreen('screen-mitarbeiter');
+  setTimeout(() => {
+    const psagaBtn = document.getElementById('btn-psaga-toggle') ||
+                     document.querySelector('[onclick*="psagaToggle"]');
+    if (psagaBtn) psagaBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+  showToast('🔍 Vorschau-Modus: PSAgA als Mitarbeiter', '#166534');
 }
 
 // Keyboard-Navigation für Folien-Viewer
