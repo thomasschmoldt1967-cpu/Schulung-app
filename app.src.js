@@ -10368,9 +10368,9 @@ function psagaTTSSprechen() {
   // MP3 aus Supabase Storage abspielen (DE oder EN)
   if (psagaAktivesModul.hasAudio) {
     const nr      = String(psagaAktuelleFolie).padStart(2, '0');
-    // EN: Ordner-Suffix '-en', DE: Original-Pfad
+    // EN: Ordner = Modul-ID + '-en' | DE: Original-Pfad (aus PPTX)
     const ordner  = psagaSprache === 'en'
-      ? `${psagaAktivesModul.pfad}-en`
+      ? `${psagaAktivesModul.id}-en`
       : psagaAktivesModul.pfad;
     const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${ordner}/audio-${nr}.mp3`;
     if (!psagaAudioEl) {
