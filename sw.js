@@ -1,42 +1,24 @@
 // ============================================================
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
-//  v3.1 – Push-Benachrichtigungen + Offline-Modus
+//  v3.2 – Vereinfacht: Network-First für alles außer Supabase
 // ============================================================
-const CACHE_NAME = 'schulung-v128';
-const OFFLINE_URL = '/';
+const CACHE_NAME = 'schulung-v129';
 
-const APP_SHELL = [
-  '/',
-  '/index.html',
-  '/app.js',
-  '/data.js',
-  '/style.css',
-  '/csc-logo.png',
-  '/anleitung.html',
-  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/bcryptjs/2.4.3/bcrypt.min.js'
-];
-
-// ── INSTALL: App-Shell cachen ────────────────────────────────
+// ── INSTALL: Sofort aktivieren ───────────────────────────────
 self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(APP_SHELL.map(url => new Request(url, { cache: 'reload' })))
-        .catch(e => console.warn('SW Cache partial fail:', e));
-    }).then(() => self.skipWaiting())
-  );
+  self.skipWaiting();
 });
 
-// ── ACTIVATE: Alte Caches aufräumen ─────────────────────────
+// ── ACTIVATE: Alle alten Caches löschen ─────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
+      Promise.all(keys.map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// ── FETCH: Network-First für HTML/JS/CSS, Cache-First für Assets ──
+// ── FETCH: Network-First für alles ──────────────────────────
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -44,43 +26,22 @@ self.addEventListener('fetch', event => {
   if (url.hostname.includes('supabase.co') || url.hostname.includes('supabase.io')) {
     event.respondWith(
       fetch(event.request).catch(() =>
-        new Response(JSON.stringify({ error: 'Offline – keine Verbindung zur Datenbank' }),
+        new Response(JSON.stringify({ error: 'Offline' }),
           { status: 503, headers: { 'Content-Type': 'application/json' } })
       )
     );
     return;
   }
 
-  // HTML, JS, CSS → Network-First (immer aktuelle Version)
-  const isAppFile = ['/index.html', '/app.js', '/sw.js', '/style.css', '/'].some(p => url.pathname === p || url.pathname.endsWith(p));
-  if (isAppFile) {
-    event.respondWith(
-      fetch(event.request, { cache: 'no-store' }).then(response => {
-        if (response && response.status === 200) {
-          const toCache = response.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
-        }
-        return response;
-      }).catch(() => caches.match(event.request))
-    );
-    return;
-  }
-
-  // Alles andere → Cache-First
+  // Alles andere → Network-First, Cache als Fallback
   event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        if (event.request.method !== 'GET' || !response || response.status !== 200) return response;
+    fetch(event.request, { cache: 'no-store' }).then(response => {
+      if (response && response.status === 200 && event.request.method === 'GET') {
         const toCache = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
-        return response;
-      }).catch(() => {
-        if (event.request.headers.get('accept')?.includes('text/html')) {
-          return caches.match('/index.html');
-        }
-      });
-    })
+      }
+      return response;
+    }).catch(() => caches.match(event.request))
   );
 });
 
@@ -115,9 +76,4 @@ self.addEventListener('notificationclick', event => {
       return clients.openWindow(url);
     })
   );
-});
-
-// ── PUSH SUBSCRIPTION CHANGE ──────────────────────────────────
-self.addEventListener('pushsubscriptionchange', event => {
-  event.waitUntil(self.registration.pushManager.subscribe({ userVisibleOnly: true }));
 });
