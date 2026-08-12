@@ -10249,6 +10249,8 @@ function psagaFolienOeffnen(modulId) {
   psagaAutoButtonUpdate();
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
+    // Modal direkt zu body verschieben damit position:fixed auch im Admin-Screen greift
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
@@ -10697,8 +10699,13 @@ function psagaAdminVorschau() {
   const langBtn = document.getElementById('psaga-lang-btn');
   if (langBtn) langBtn.textContent = '🇩🇪 DE';
   // Erst Modal öffnen, dann Folien rendern (DOM muss sichtbar sein)
+  // Modal zu body verschieben damit position:fixed auch im Admin-Screen greift
   const modal = document.getElementById('psaga-folien-modal');
-  if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  if (modal) {
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
   psagaAutoButtonUpdate();
   psagaFolienAnzeigen();
   showToast('👁 Admin-Vorschau — Modul 00', '#166534');
