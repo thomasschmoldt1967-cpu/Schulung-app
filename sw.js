@@ -2,7 +2,7 @@
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
 //  v3.1 – Push-Benachrichtigungen + Offline-Modus
 // ============================================================
-const CACHE_NAME = 'schulung-v127';
+const CACHE_NAME = 'schulung-v128';
 const OFFLINE_URL = '/';
 
 const APP_SHELL = [
@@ -36,7 +36,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// ── FETCH: Cache-First für App-Shell, Network-First für API ──
+// ── FETCH: Network-First für HTML/JS/CSS, Cache-First für Assets ──
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
@@ -51,18 +51,31 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // App-Shell → Cache-First
+  // HTML, JS, CSS → Network-First (immer aktuelle Version)
+  const isAppFile = ['/index.html', '/app.js', '/sw.js', '/style.css', '/'].some(p => url.pathname === p || url.pathname.endsWith(p));
+  if (isAppFile) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' }).then(response => {
+        if (response && response.status === 200) {
+          const toCache = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Alles andere → Cache-First
   event.respondWith(
     caches.match(event.request).then(cached => {
       if (cached) return cached;
       return fetch(event.request).then(response => {
-        // Nur GET-Requests cachen
         if (event.request.method !== 'GET' || !response || response.status !== 200) return response;
         const toCache = response.clone();
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, toCache));
         return response;
       }).catch(() => {
-        // Offline-Fallback: App-Shell zurückgeben
         if (event.request.headers.get('accept')?.includes('text/html')) {
           return caches.match('/index.html');
         }
