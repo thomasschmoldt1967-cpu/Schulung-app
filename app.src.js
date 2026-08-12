@@ -10696,10 +10696,11 @@ function psagaAdminVorschau() {
   if (ttsBtn) ttsBtn.textContent = '🔊 Ton';
   const langBtn = document.getElementById('psaga-lang-btn');
   if (langBtn) langBtn.textContent = '🇩🇪 DE';
-  psagaFolienAnzeigen();
-  psagaAutoButtonUpdate();
+  // Erst Modal öffnen, dann Folien rendern (DOM muss sichtbar sein)
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) { modal.style.display = 'flex'; document.body.style.overflow = 'hidden'; }
+  psagaAutoButtonUpdate();
+  psagaFolienAnzeigen();
   showToast('👁 Admin-Vorschau — Modul 00', '#166534');
 }
 
