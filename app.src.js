@@ -10429,7 +10429,13 @@ function psagaFolienAnzeigen() {
   const zaehler = document.getElementById('psaga-folien-zaehler');
   const nextBtn = document.getElementById('psaga-folien-next-btn');
   const progBar = document.getElementById('psaga-progress-bar');
-  if (bild)    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
+  if (bild) {
+    // Spinner einblenden, Bild ausblenden bis geladen
+    const spinner = document.getElementById('psaga-folien-spinner');
+    if (spinner) spinner.style.display = 'flex';
+    bild.style.opacity = '0';
+    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
+  }
   if (titel)   titel.textContent = psagaAktivesModul.titel;
   if (zaehler) zaehler.textContent = `Folie ${psagaAktuelleFolie} von ${psagaAktivesModul.folien}`;
   if (progBar) progBar.style.width = `${Math.round(psagaAktuelleFolie / psagaAktivesModul.folien * 100)}%`;
