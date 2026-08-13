@@ -2914,7 +2914,7 @@ function hubAdminVorschau() {
             <div style="font-weight:700;font-size:.95rem;margin-top:4px">CSC GmbH · Hubarbeitsbühnen | DGUV 308-008</div>
           </div>
           <div style="background:#eff6ff;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#1e40af">
-            <strong>Hiermit wird bestätigt,</strong> dass [Name Mitarbeiter] die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Quiz mit mindestens 70 % bestanden hat.<br><br>
+            <strong>Hiermit wird bestätigt,</strong> dass [Name Mitarbeiter] die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Quiz mit mindestens 85 % bestanden hat.<br><br>
             <span style="color:#1d4ed8">Ausgestellt: [Datum] · gez. Thomas Schmoldt · CSC GmbH</span>
           </div>
           <div style="font-size:.75rem;color:#9ca3af;margin-top:6px;text-align:center">Die echte Bescheinigung wird als professionelles A4-PDF mit allen Schulungsinhalten generiert.</div>
@@ -3966,7 +3966,7 @@ function azVorlagenListeRendern(suche) {
       onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#eff6ff'">
       <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)</div>
       <div style="font-size:.76rem;color:#c2410c;margin-top:2px">
-        Module 1–4 &nbsp;·&nbsp; 10 Quizfragen · mind. 70&thinsp;% zum Bestehen &nbsp;·&nbsp; Teilnahmebescheinigung
+        Module 1–4 &nbsp;·&nbsp; 10 Quizfragen · mind. 85&thinsp;% zum Bestehen &nbsp;·&nbsp; Teilnahmebescheinigung
       </div>
     </div>` : '';
 
@@ -11967,7 +11967,8 @@ const HUB_KAPITEL = [
     icon: '📋',
     inhalt: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
       <div style="font-weight:700;font-size:.95rem">✅ Bereit für das Quiz?</div>
-      <div style="font-size:.8rem;opacity:.9;margin-top:4px">10 Fragen · Mindestens 70 % richtig zum Bestehen (7/10 Punkte)</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">10 Fragen · Mindestens 85 % richtig zum Bestehen (9/10 Punkte)</div>
+      <div style="font-size:.78rem;opacity:.85;margin-top:6px;border-top:1px solid rgba(255,255,255,.2);padding-top:6px">📄 Das Ergebnis wird in der Teilnahmebescheinigung ausgewiesen.</div>
     </div>
     <p style="font-size:.85rem"><strong>Gültigkeitsdauer des Bedienerausweises:</strong><br>Der Bedienerausweis ist lebenslang gültig — setzt aber eine <strong>jährliche Unterweisung</strong> im Betrieb voraus!</p>
     <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem">
@@ -12362,9 +12363,14 @@ function hubSchulungRenderIn(cont) {
       </button>`}`;
   } else if (alleGelesen) {
     html += `
+      <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.8rem;color:#92400e">
+        <div style="font-weight:700;margin-bottom:2px">⚠️ Wichtiger Hinweis vor dem Quiz:</div>
+        <div>Mindestens <strong>85 % richtige Antworten</strong> (9 von 10) sind erforderlich.</div>
+        <div style="margin-top:3px">Das Ergebnis wird in der <strong>Teilnahmebescheinigung</strong> ausgewiesen.</div>
+      </div>
       <button onclick="hubQuizStarten()"
         style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
-        🎯 Quiz starten — 10 Fragen (mind. 70 % zum Bestehen)
+        🎯 Quiz starten — 10 Fragen (mind. 85 % zum Bestehen)
       </button>`;
   } else {
     html += `
@@ -12524,7 +12530,7 @@ function hubQuizWeiter() {
 function hubQuizErgebnis() {
   const userId  = currentUser?.userId || 'anon';
   const prozent = Math.round(hubQuizPunkte / hubQuizFragen.length * 100);
-  const bestanden = prozent >= 70;
+  const bestanden = prozent >= 85;
 
     if (bestanden) {
     if (!_hubPreviewMode) {
@@ -12552,7 +12558,7 @@ function hubQuizErgebnis() {
         <div style="font-size:2.5rem">${bestanden?'🏆':'📚'}</div>
         <div style="font-weight:700;font-size:1.1rem;margin-top:8px">${bestanden?'Quiz bestanden!':'Nicht bestanden'}</div>
         <div style="font-size:.82rem;opacity:.9;margin-top:4px">${hubQuizPunkte} von ${hubQuizFragen.length} Fragen richtig (${prozent} %)</div>
-        <div style="font-size:.78rem;opacity:.8;margin-top:2px">Mindestpunktzahl: 70 % (${Math.ceil(hubQuizFragen.length*0.7)}/${hubQuizFragen.length})</div>
+        <div style="font-size:.78rem;opacity:.8;margin-top:2px">Mindestpunktzahl: 85 % (${Math.ceil(hubQuizFragen.length*0.85)}/${hubQuizFragen.length})</div>
       </div>
       <div style="padding:16px">
         ${bestanden ? `
@@ -12663,7 +12669,7 @@ async function hubBescheinigungErstellen() {
     doc.text('DGUV-Grundsatzes 308-008', ML, y);
     doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
     doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y); y += 5.5;
-    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 70 %) bestanden hat.`, ML, y); y += 12;
+    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 85 %) bestanden hat.`, ML, y); y += 12;
 
     // Schulungsinhalte
     doc.setFillColor(...ORANGE); doc.rect(ML,y,4,7,'F');
@@ -12724,11 +12730,11 @@ async function hubBescheinigungErstellen() {
     doc.text('Quiz bestanden', rx+halfW/2, y+10, {align:'center'});
     // Prozentanzeige robust extrahieren: "8/10 (80 %)" → "80 %" oder direkt "≥70%"
     const prozentMatch = ergebnis.match(/(\d+)\s*%/);
-    const prozentAnzeige = prozentMatch ? prozentMatch[1] + ' %' : '≥70%';
+    const prozentAnzeige = prozentMatch ? prozentMatch[1] + ' %' : '≥85%';
     doc.setFontSize(18); doc.setFont('helvetica','bold');
     doc.text(prozentAnzeige, rx+halfW/2, y+22, {align:'center'});
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
-    doc.text(`Min. 70 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
+    doc.text(`Min. 85 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
 
     // Footer Seite 1
     doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
