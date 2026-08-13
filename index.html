@@ -353,7 +353,39 @@
     <!-- Tab: Audit-Trail -->
     <div id="tab-audit" class="tab-content" style="display:none">
       <div class="card">
-        <div class="card-title">🔍 Änderungsprotokoll</div>
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>🔍 Änderungsprotokoll</span>
+          <span id="audit-count" style="font-size:.75rem;font-weight:400;color:#6b7280"></span>
+        </div>
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="audit-filter-action" onchange="loadAuditFromDB()"
+            style="flex:1;min-width:180px;background:#1f2937;color:#e5e7eb;border:1px solid #374151;border-radius:8px;padding:7px 10px;font-size:.82rem">
+            <option value="">Alle Aktionen</option>
+            <optgroup label="📜 Nachweise">
+              <option value="PSAGA_BESCHEINIGUNG">🏅 PSAgA Bescheinigung</option>
+              <option value="PSAGA_BESTANDEN">🎯 PSAgA Modul bestanden</option>
+              <option value="HUB_BESCHEINIGUNG">🏅 Hub Bescheinigung</option>
+              <option value="ABSCHLUSS">✅ Schulung abgeschlossen</option>
+              <option value="LERNPFAD_UNTERZEICHNET">✍️ Lernpfad unterzeichnet</option>
+              <option value="LERNPFAD_ZERTIFIKAT">🎓 Lernpfad Zertifikat</option>
+            </optgroup>
+            <optgroup label="👤 Benutzer">
+              <option value="LOGIN">🔑 Login</option>
+              <option value="LOGOUT">🔓 Logout</option>
+              <option value="PW_AENDERUNG">🔐 Passwort geändert</option>
+              <option value="MITARBEITER_EINZEL">👤 Mitarbeiter angelegt</option>
+              <option value="MITARBEITER_IMPORT">👥 Mitarbeiter importiert</option>
+            </optgroup>
+            <optgroup label="⚙️ Verwaltung">
+              <option value="ZUWEISUNG">📋 Zuweisung</option>
+              <option value="LOESCHEN">🗑️ Gelöscht</option>
+              <option value="VORLAGE_NEU">📄 Vorlage erstellt</option>
+              <option value="VORLAGE_EDIT">✏️ Vorlage bearbeitet</option>
+              <option value="UNTERNEHMEN_NEU">🏢 Unternehmen angelegt</option>
+            </optgroup>
+          </select>
+          <button onclick="loadAuditFromDB()" class="btn btn-outline btn-sm" style="white-space:nowrap">🔄 Aktualisieren</button>
+        </div>
         <div id="audit-list"></div>
       </div>
     </div>

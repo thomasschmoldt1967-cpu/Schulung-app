@@ -1744,7 +1744,7 @@ function adminTab(tabName, btn) {
   document.getElementById(`tab-${tabName}`).style.display='';
   // Sidebar auf Mobile schließen
   adminSidebarClose();
-  if (tabName==='protokoll') loadAuditFromDB();
+  if (tabName==='protokoll' || tabName==='audit') loadAuditFromDB();
   if (tabName==='unternehmen') nuRenderListe();
   if (tabName==='kalender') renderKalender();
   if (tabName==='archiv') renderArchiv();
@@ -1758,19 +1758,68 @@ function adminSidebarClose() {
   document.getElementById('admin-sidebar').classList.remove('open');
   document.getElementById('admin-sidebar-overlay').style.display = 'none';
 }
+function auditIcon(action) {
+  const icons = {
+    LOGIN: '🔑', LOGOUT: '🔓', QR_LOGIN: '📱',
+    ABSCHLUSS: '✅', ABSCHLUSS_MANUELL: '✅',
+    ZWISCHENSPEICHERN: '💾',
+    PSAGA_BESCHEINIGUNG: '🏅', PSAGA_BESTANDEN: '🎯',
+    HUB_BESCHEINIGUNG: '🏅',
+    LERNPFAD_UNTERZEICHNET: '✍️', LERNPFAD_V_UNTERZEICHNET: '✍️',
+    LERNPFAD_BESTAETIGT: '✍️', LERNPFAD_ZERTIFIKAT: '🎓',
+    ZUWEISUNG: '📋', LOESCHEN: '🗑️',
+    VORLAGE_NEU: '📄', VORLAGE_EDIT: '✏️',
+    UNTERNEHMEN_NEU: '🏢', LIZENZNEHMER_AKTIVIERT: '🟢', LIZENZNEHMER_DEAKTIVIERT: '🔴',
+    MITARBEITER_EINZEL: '👤', MITARBEITER_IMPORT: '👥',
+    MITARBEITER_AKTIV: '🟢', MITARBEITER_PASSIV: '🔴', MITARBEITER_ARCHIVIERT: '📦',
+    BL_ANGELEGT: '👔', BL_MITARBEITER_NEU: '👤', BL_SCHULUNG_ZUGEWIESEN: '📋',
+    BEREICH_NEU: '🏗️', BEREICH_GELOESCHT: '🗑️',
+    PW_AENDERUNG: '🔐', PW_PFLICHT_AENDERUNG: '🔐', PW_RESET_VORGESETZTER: '🔐',
+    BERICHT_PDF: '📊', PUSH_AKTIVIERT: '🔔',
+    WIEDERKEHREND_NEU: '🔄', SCHULUNG_NEU_GESTARTET: '▶️',
+    ERINNERUNG_GESENDET: '📧',
+  };
+  return icons[action] || '📝';
+}
+function auditDetailText(detail) {
+  if (!detail) return '';
+  if (detail.startsWith('{')) {
+    try {
+      const obj = JSON.parse(detail);
+      // Kompakte Darstellung: nur relevante Felder
+      const keys = Object.keys(obj).filter(k => !['user_id','tenant_id'].includes(k));
+      return keys.map(k => `<span style="color:#9ca3af">${k}:</span> ${escHtml(String(obj[k]))}`).join(' · ');
+    } catch(e) { return escHtml(detail); }
+  }
+  return escHtml(detail);
+}
 async function loadAuditFromDB() {
   try {
-    const log = await SB.get('audit','order=ts.desc&limit=100');
+    const filterEl = document.getElementById('audit-filter-action');
+    const filterVal = filterEl ? filterEl.value : '';
+    const query = filterVal
+      ? `order=ts.desc&limit=200&action=eq.${encodeURIComponent(filterVal)}`
+      : 'order=ts.desc&limit=200';
+    const log = await SB.get('audit', query);
     const html = log.map(e => `
-      <div class="audit-item">
-        <span class="audit-icon">${e.action==='LOGIN'?'🔑':e.action==='LOGOUT'?'🔓':e.action==='ABSCHLUSS'?'✅':e.action==='ZWISCHENSPEICHERN'?'💾':'📝'}</span>
-        <div>
-          <div style="font-size:.82rem"><strong>${e.action}</strong> — ${escHtml(e.detail)}</div>
-          <div class="audit-time">${dateStr(e.ts)} • ${escHtml(e.user_name)}</div>
+      <div class="audit-item" style="display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid #1f2937">
+        <span style="font-size:1.2rem;flex-shrink:0;margin-top:1px">${auditIcon(e.action)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;line-height:1.4">
+            <strong style="color:#e5e7eb">${escHtml(e.action)}</strong>
+            <span style="color:#6b7280"> — </span>
+            <span style="color:#d1d5db">${auditDetailText(e.detail)}</span>
+          </div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px">
+            🕐 ${dateStr(e.ts)} &nbsp;·&nbsp; 👤 ${escHtml(e.user_name || '–')}
+            ${e.user_email ? `<span style="color:#4b5563"> (${escHtml(e.user_email)})</span>` : ''}
+          </div>
         </div>
       </div>
     `).join('') || '<div class="empty-state"><div class="icon">📋</div><p>Noch keine Einträge</p></div>';
     document.getElementById('audit-list').innerHTML = html;
+    const countEl = document.getElementById('audit-count');
+    if (countEl) countEl.textContent = `${log.length} Einträge`;
   } catch(e) { console.warn(e); }
 }
 function renderAuditTrail() {
@@ -11045,13 +11094,13 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
         });
         showToast('🗄️ Bescheinigung gespeichert', '#0f5132');
       } catch(dbErr) {
-        // Tabelle existiert noch nicht → nur Audit-Log
-        await sbAudit('PSAGA_BESCHEINIGUNG', JSON.stringify({
-          user_id: userId, user_name: userName, tenant_id: tenantId,
-          datum: datum.toISOString().slice(0,10), nr: zertNr, pdf_url: publicUrl
-        })).catch(()=>{});
-        showToast('🗄️ Bescheinigung in Audit gespeichert', '#2563eb');
+        console.warn('psaga_bescheinigungen Speicherung fehlgeschlagen:', dbErr.message);
       }
+      // Audit-Eintrag IMMER schreiben (manipulationssichere Protokollierung)
+      await sbAudit('PSAGA_BESCHEINIGUNG', JSON.stringify({
+        user_id: userId, user_name: userName, tenant_id: tenantId,
+        datum: datum.toISOString().slice(0,10), nr: zertNr, pdf_url: publicUrl
+      })).catch(()=>{});
     } catch(uploadErr) {
       console.warn('Bescheinigung-Upload fehlgeschlagen:', uploadErr.message);
       showToast('⚠️ PDF geöffnet, aber Speicherung fehlgeschlagen: ' + uploadErr.message, '#b45309');
@@ -12950,13 +12999,12 @@ async function hubBescheinigungErstellen() {
       if (!pdfStored) showToast('🗄️ Metadaten in Datenbank gespeichert (PDF lokal)', '#2563eb');
     } catch(dbErr) {
       console.warn('Supabase DB Backup fehlgeschlagen:', dbErr.message);
-      // Letzter Ausweg: Audit-Log
-      await sbAudit('HUB_BESCHEINIGUNG', JSON.stringify({
-        user_id: userId, user_name: userName, tenant_id: tenantId,
-        datum: datum.toISOString().slice(0,10), nr, typA, typB
-      })).catch(()=>{});
-      showToast('⚠️ Metadaten im Audit-Log gesichert', '#b45309');
     }
+    // Audit-Eintrag IMMER schreiben (manipulationssichere Protokollierung)
+    await sbAudit('HUB_BESCHEINIGUNG', JSON.stringify({
+      user_id: userId, user_name: userName, tenant_id: tenantId,
+      datum: datum.toISOString().slice(0,10), nr, typA, typB, pdf_url: publicUrl
+    })).catch(()=>{});
 
   } catch(e) {
     console.error('Hub-PDF-Fehler:', e);
