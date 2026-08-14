@@ -5306,6 +5306,10 @@ async function doAbschluss(felder) {
   pushSchulungsAbschluss(vorlage, tenant);
   // PDF generieren und zu Supabase Storage hochladen
   generatePdf(activeZuwId, false);
+  // Spezial-Nachweis für Leitern & Tritte (professionelles PDF mit Personen-/Firmendaten + Quiz)
+  if (zuw.vorlagenId === 'vorlage_leitern_tritte') {
+    setTimeout(() => leiternNachweisPDF(activeZuwId), 900);
+  }
   setTimeout(() => {
     if (currentUser.role==='admin') { renderAdminDashboard(); showScreen('screen-admin'); }
     else { renderSubDashboard(); showScreen('screen-sub'); }
@@ -15030,3 +15034,394 @@ async function bpZertifikatErstellen() {
   }
 }
 
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  LEITERN & TRITTE — TEILNAHMENACHWEIS PDF
+//  Aufruf: leiternNachweisPDF(zuwId)
+//  Eingebettet nach doAbschluss() wenn vorlagenId === 'vorlage_leitern_tritte'
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function leiternNachweisPDF(zuwId) {
+  try {
+    if (typeof window.jspdf === 'undefined') {
+      showToast('⚠️ PDF-Bibliothek nicht geladen', '#7f1d1d'); return;
+    }
+    const { jsPDF } = window.jspdf;
+
+    // ── Formulardaten laden ────────────────────────────────────────────────────
+    const form    = formulare[zuwId] || {};
+    const felder  = form.felder || {};
+    const zuw     = zuweisungen.find(z => z.id === zuwId) || {};
+
+    // Personendaten aus Formular
+    const vorname   = felder.td_vorname   || '';
+    const nachname  = felder.td_nachname  || '';
+    const vollname  = [vorname, nachname].filter(Boolean).join(' ') || currentUser?.name || 'Teilnehmer/in';
+    const geburt    = felder.td_geburtsdatum || '–';
+    const funktion  = felder.td_funktion  || '–';
+    const email     = felder.td_email     || '–';
+
+    // Firmendaten aus Formular
+    const firma     = felder.fd_firma         || '–';
+    const strasse   = felder.fd_strasse       || '';
+    const plzOrt    = felder.fd_plz_ort       || '';
+    const auftraggeber = felder.fd_ansprechpartner || '–';
+    const agFunktion   = felder.fd_funktion_ap   || '';
+    const firmaAdresse = [strasse, plzOrt].filter(Boolean).join(', ') || '–';
+
+    // Quiz-Auswertung
+    const QUIZ_IDS = ['quiz_01','quiz_02','quiz_03','quiz_04','quiz_05','quiz_06','quiz_07','quiz_08'];
+    const RICHTIG  = [0, 0, 0, 0, 0, 0, 0, 0]; // Index der richtigen Antwort je Frage
+    let richtig = 0;
+    QUIZ_IDS.forEach((qid, i) => {
+      const val = felder[qid];
+      if (val !== undefined && val !== null && val !== '') {
+        // Wert ist der ausgewählte Option-Text – wir prüfen über Positions-Index
+        // Da select-Felder den Text speichern, prüfen wir ob es die erste Option ist
+        // (alle richtigen Antworten sind Index 0 = erste Option)
+        const optionen = [
+          'Beide Hände + ein Fuß oder beide Füße + eine Hand gleichzeitig an der Leiter',
+          'Die drei obersten Stufen dürfen nicht betreten werden',
+          '60–70° zur Waagerechten',
+          'Seitliches Hinauslehnen – Körperschwerpunkt verlässt den Bereich zwischen den Holmen',
+          'Sofort außer Betrieb setzen und Meldung an Vorgesetzte/n',
+          'Maximal 10 kg Werkzeug/Material',
+          'Nein – erhöhte Kippgefahr durch die Form der Leiterfüße',
+          'Lose Unterlagen, einzelne Ziegelsteine, Kisten oder verschmutzter Untergrund'
+        ];
+        if (val === optionen[i]) richtig++;
+      }
+    });
+    const gesamt     = QUIZ_IDS.length;
+    const prozent    = Math.round((richtig / gesamt) * 100);
+    const bestanden  = prozent >= 80;
+
+    // Zertifikatsnummer: LT-YYYY-NNNNNN
+    const jetzt   = new Date();
+    const certNr  = `LT-${jetzt.getFullYear()}-${String(Date.now()).slice(-6)}`;
+    const datumDE = jetzt.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+    // Gültig bis: 12 Monate ab heute
+    const ablaufDate = new Date(jetzt);
+    ablaufDate.setFullYear(ablaufDate.getFullYear() + 1);
+    const ablaufDE = ablaufDate.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+
+    // ── PDF-Setup ──────────────────────────────────────────────────────────────
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const ML = 16, MR = 16, CW = W - ML - MR;
+
+    // Farbpalette — einheitlich mit PSAgA/BP
+    const C = {
+      navy:      [26,  58,  92],
+      blau:      [37,  99, 168],
+      cyan:      [0,  180, 210],
+      gold:      [202,138,   4],
+      gruen:     [22, 163,  74],
+      rot:       [220,  38,  38],
+      hellblau:  [239,246,255],
+      hellgruen: [240,253,244],
+      hellrot:   [254,242,242],
+      hellgold:  [254,249,195],
+      grauText:  [70,  80, 100],
+      grauLinie: [200,210,225],
+      grauLeicht:[245,247,251],
+      weiss:     [255,255,255],
+    };
+
+    const fmt = d => typeof d === 'object'
+      ? d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'})
+      : String(d);
+
+    // ════════════════════════════════════════════════════════
+    //  SEITE 1 — TEILNAHMENACHWEIS
+    // ════════════════════════════════════════════════════════
+
+    // Hintergrund
+    doc.setFillColor(...C.grauLeicht);
+    doc.rect(0, 0, W, H, 'F');
+
+    // ── HEADER ──────────────────────────────────────────────
+    const HH = 52;
+    // Subtiler Verlauf (helle Schichten)
+    for (let i = 0; i < HH; i++) {
+      const v = Math.round(248 - (i / HH) * 14);
+      doc.setFillColor(v, v, Math.min(255, v + 10));
+      doc.rect(0, i, W, 1.05, 'F');
+    }
+    // Linker Akzentbalken Navy
+    doc.setFillColor(...C.navy);  doc.rect(0, 0, 6, HH, 'F');
+    // Gold-Streifen
+    doc.setFillColor(...C.gold);  doc.rect(6, 0, 2.5, HH, 'F');
+    // Trennlinie unten
+    doc.setFillColor(...C.blau);  doc.rect(0, HH - 1, W, 1, 'F');
+
+    // SIBEDA-Logo
+    try {
+      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', 12, (HH - 22) / 2, 54, 22);
+    } catch(e) {}
+
+    // Titel-Block
+    const tx = 74;
+    doc.setTextColor(...C.navy);
+    doc.setFontSize(19); doc.setFont('helvetica', 'bold');
+    doc.text('TEILNAHMENACHWEIS', tx, 17);
+    doc.setFillColor(...C.blau);
+    doc.rect(tx, 20, W - tx - MR, 0.8, 'F');
+    doc.setFontSize(8.5); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    doc.text('Sicherheitsunterweisung Leitern und Tritte', tx, 27);
+    doc.setFontSize(7.5);
+    doc.text('gem. DGUV Information 208-016 · § 12 ArbSchG · DGUV V1', tx, 33);
+
+    // ISO-Logos rechts unten im Header
+    try {
+      const isoH = 14, isoW = Math.round(isoH * 299 / 229);
+      const isoY = HH - isoH - 3;
+      doc.addImage(ISO9001_LOGO_B64,  'PNG', W - MR - isoW * 2 - 3, isoY, isoW, isoH);
+      doc.addImage(ISO14001_LOGO_B64, 'PNG', W - MR - isoW,         isoY, isoW, isoH);
+    } catch(e) {}
+
+    let y = HH + 9;
+
+    // ── TEILNEHMERIN-BOX ─────────────────────────────────────
+    doc.setFillColor(...C.hellblau);
+    doc.roundedRect(ML, y, CW, 28, 3, 3, 'F');
+    doc.setFillColor(...C.navy);
+    doc.roundedRect(ML, y, 4, 28, 2, 2, 'F');
+
+    doc.setFontSize(16); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navy);
+    doc.text(vollname, ML + 9, y + 11);
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    doc.text(`Geburtsdatum: ${geburt}  ·  Funktion: ${funktion}`, ML + 9, y + 19);
+    doc.text(`E-Mail: ${email}`, ML + 9, y + 25);
+
+    // Grüner/Roter Status-Badge
+    const badgeCol = bestanden ? C.gruen : C.rot;
+    doc.setFillColor(...badgeCol);
+    doc.circle(ML + CW - 10, y + 14, 6, 'F');
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.weiss);
+    doc.text(bestanden ? '✓' : '✗', ML + CW - 10, y + 16.5, { align: 'center' });
+    y += 34;
+
+    // ── ARBEITGEBER-BOX ──────────────────────────────────────
+    doc.setFillColor(...C.hellgruen);
+    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+    doc.setFillColor(...C.gruen);
+    doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
+
+    doc.setFontSize(7); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.gruen);
+    doc.text('ARBEITGEBER / AUFTRAGGEBER', ML + 9, y + 6);
+
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navy);
+    doc.text(firma, ML + 9, y + 13);
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    const firmaZeile2 = [firmaAdresse, auftraggeber ? `Beauftragt durch: ${auftraggeber}${agFunktion ? ` (${agFunktion})` : ''}` : ''].filter(Boolean).join('  ·  ');
+    doc.text(firmaZeile2, ML + 9, y + 19);
+    y += 28;
+
+    // ── DATUM / GÜLTIGKEIT / ZERTIFIKAT-NR ──────────────────
+    const col3W = (CW - 8) / 3;
+    const boxes3 = [
+      { label: 'SCHULUNGSDATUM', val: datumDE,  col: C.blau,  bg: C.hellblau },
+      { label: 'GÜLTIG BIS',     val: ablaufDE,  col: C.gold,  bg: C.hellgold },
+      { label: 'NACHWEIS-NR.',   val: certNr,   col: C.navy,  bg: C.grauLeicht },
+    ];
+    boxes3.forEach((b, i) => {
+      const bx = ML + i * (col3W + 4);
+      doc.setFillColor(...b.bg);
+      doc.roundedRect(bx, y, col3W, 18, 3, 3, 'F');
+      doc.setFillColor(...b.col);
+      doc.roundedRect(bx, y, 4, 18, 2, 2, 'F');
+      doc.setFontSize(6.5); doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...b.col);
+      doc.text(b.label, bx + 7, y + 6);
+      doc.setFontSize(i === 2 ? 8 : 10); doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...C.navy);
+      doc.text(b.val, bx + 7, y + 14);
+    });
+    y += 24;
+
+    // ── UNTERWIESENE INHALTE ─────────────────────────────────
+    doc.setFillColor(...C.gruen); doc.rect(ML, y, 4, 8, 'F');
+    doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navy);
+    doc.text('Unterwiesene Inhalte', ML + 7, y + 6);
+    y += 12;
+
+    const inhalte = [
+      'Sichtkontrolle vor jeder Nutzung',
+      'Dreipunkt-Methode und sicherer Stand',
+      'Grundregeln: Belastung, Schuhwerk, Blickrichtung',
+      'Standsicherheit und Hinauslehnen',
+      'Anlege- und Schiebeleiter: Anlegewinkel (60–75°)',
+      'Stehleiter: Spreizsicherungen und Nutzungsgrenzen',
+      'Elektrische Gefährdungen und Verbote',
+      'Transport und Lagerung',
+    ];
+    const icw = (CW - 4) / 2, ih = 7;
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    inhalte.forEach((txt, i) => {
+      const col = i % 2, row = Math.floor(i / 2);
+      const ix = ML + col * (icw + 4), iy = y + row * ih;
+      doc.setFillColor(...C.grauLeicht);
+      doc.roundedRect(ix, iy - 2, icw, ih - 0.5, 1, 1, 'F');
+      doc.setFillColor(...C.blau); doc.rect(ix, iy - 2, 2.5, ih - 0.5, 'F');
+      doc.setTextColor(...C.grauText);
+      doc.text(`✓  ${txt}`, ix + 5, iy + 1.5, { maxWidth: icw - 7 });
+    });
+    y += Math.ceil(inhalte.length / 2) * ih + 6;
+
+    // ── WISSENSTEST-ERGEBNIS ─────────────────────────────────
+    doc.setFillColor(...C.grauLinie); doc.rect(ML, y, CW, 0.6, 'F');
+    y += 7;
+
+    const quizBg = bestanden ? C.hellgruen : C.hellrot;
+    const quizRand = bestanden ? C.gruen : C.rot;
+    doc.setFillColor(...quizBg);
+    doc.roundedRect(ML, y, CW, 16, 3, 3, 'F');
+    doc.setFillColor(...quizRand);
+    doc.roundedRect(ML, y, 4, 16, 2, 2, 'F');
+
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...quizRand);
+    doc.text('WISSENSTEST (8 Fragen · Bestehensgrenze 80 %)', ML + 9, y + 6);
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navy);
+    doc.text(
+      bestanden
+        ? `Bestanden  —  ${richtig}/${gesamt} richtig (${prozent} %)`
+        : `Nicht bestanden  —  ${richtig}/${gesamt} richtig (${prozent} %)`,
+      ML + 9, y + 13
+    );
+    y += 22;
+
+    // ── UNTERSCHRIFTEN ───────────────────────────────────────
+    doc.setFillColor(...C.grauLinie); doc.rect(ML, y, CW, 0.6, 'F');
+    y += 7;
+
+    const sigH = 34, sigHalfW = (CW - 4) / 2;
+
+    // Links: Unterweisender (CSC)
+    doc.setFillColor(...C.hellblau);
+    doc.roundedRect(ML, y, sigHalfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...C.blau);
+    doc.roundedRect(ML, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    doc.text('Unterweisender / Schulungsanbieter', ML + 7, y + 7);
+    doc.setDrawColor(...C.blau); doc.setLineWidth(0.4);
+    doc.line(ML + 7, y + 19, ML + sigHalfW - 4, y + 19);
+    doc.setFontSize(11); doc.setFont('helvetica', 'bolditalic');
+    doc.setTextColor(...C.blau);
+    doc.text('gez. Thomas Schmoldt', ML + 7, y + 26);
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(120, 120, 120);
+    doc.text(`CSC GmbH  ·  ${datumDE}`, ML + 7, y + 31);
+
+    // Rechts: Teilnehmer
+    const rx = ML + sigHalfW + 4;
+    doc.setFillColor(...C.hellgruen);
+    doc.roundedRect(rx, y, sigHalfW, sigH, 3, 3, 'F');
+    doc.setFillColor(...C.gruen);
+    doc.roundedRect(rx, y, 4, sigH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    doc.text('Teilnehmer/in', rx + 7, y + 7);
+
+    // Unterschriftsbild einbetten (aus Formularfeld lt_sig_ma)
+    const sigMa = felder.lt_sig_ma;
+    if (sigMa) {
+      try {
+        doc.addImage(sigMa, 'PNG', rx + 5, y + 8, sigHalfW - 10, 16);
+      } catch(e) {}
+    }
+    doc.setDrawColor(...C.gruen); doc.setLineWidth(0.4);
+    doc.line(rx + 7, y + 26, rx + sigHalfW - 4, y + 26);
+    doc.setFontSize(8); doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...C.navy);
+    doc.text(vollname, rx + 7, y + 32);
+    y += sigH + 6;
+
+    // ── RECHTSHINWEIS / FOOTER-BAND ──────────────────────────
+    doc.setFillColor(...C.grauLeicht);
+    doc.setDrawColor(...C.grauLinie); doc.setLineWidth(0.3);
+    doc.roundedRect(ML, y, CW, 12, 2, 2, 'FD');
+    doc.setFontSize(6.8); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...C.grauText);
+    doc.text(
+      'Diese Unterweisung wurde durchgeführt gem. § 12 ArbSchG i.V.m. DGUV Information 208-016 und DGUV V1 § 4. ' +
+      'Der Nachweis ist 5 Jahre aufzubewahren (§ 4 Abs. 3 BetrSichV).',
+      ML + 4, y + 5, { maxWidth: CW - 8 }
+    );
+    doc.text(`Nachweis-Nr.: ${certNr}`, ML + 4, y + 10);
+    y += 18;
+
+    // ── QR-CODE BEREICH ──────────────────────────────────────
+    // Platzhalter – QR-Code-Bibliothek kann nachgerüstet werden
+    doc.setFillColor(240, 240, 240);
+    doc.roundedRect(ML, y, 28, 28, 2, 2, 'F');
+    doc.setFontSize(5.5); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(150, 150, 150);
+    doc.text('QR-Code', ML + 14, y + 14, { align: 'center' });
+    doc.text('(Verifikation)', ML + 14, y + 19, { align: 'center' });
+
+    doc.setFontSize(7); doc.setTextColor(...C.grauText);
+    doc.text('Zur Verifikation dieses Nachweises:', ML + 32, y + 8);
+    doc.setTextColor(...C.blau);
+    doc.text(`schulung.csc-hannover.de/verify?nr=${certNr}`, ML + 32, y + 14);
+    doc.setTextColor(...C.grauText);
+    doc.text(`Aussteller: CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen`, ML + 32, y + 20);
+
+    // ── FOOTER ───────────────────────────────────────────────
+    doc.setFillColor(...C.navy);
+    doc.rect(0, H - 14, W, 14, 'F');
+    doc.setFillColor(...C.gold);
+    doc.rect(0, H - 14, 6, 14, 'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica', 'normal');
+    doc.setTextColor(180, 200, 230);
+    doc.text(
+      'CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · Tel. 05102-9319730 · www.csc-hannover.de',
+      W / 2, H - 7.5, { align: 'center' }
+    );
+    doc.setTextColor(160, 180, 210);
+    doc.text(`Nachweis-Nr. ${certNr}  ·  Seite 1 von 1`, W / 2, H - 3.5, { align: 'center' });
+
+    // ── SPEICHERN / ÖFFNEN ───────────────────────────────────
+    const pdfBlob = doc.output('blob');
+    const safeName = vollname.replace(/[^a-zA-ZäöüÄÖÜß\s]/g, '').replace(/\s+/g, '_');
+    const datStr   = jetzt.toISOString().slice(0, 10);
+    const filename = `Teilnahmenachweis_Leitern_${safeName}_${datStr}.pdf`;
+
+    // Im Browser öffnen (Android-PWA-sicher)
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    window.open(blobUrl, '_blank');
+
+    // Parallel: in Supabase Storage hochladen
+    try {
+      uploadPdfToSupabase(pdfBlob, filename, zuwId, zuw.tenantId || 'csc');
+    } catch(e) { console.warn('Upload:', e.message); }
+
+    showToast('📄 Teilnahmenachweis erstellt!', '#0f5132');
+
+    // Zertifikatsdaten in Supabase sichern (Audit-Trail)
+    try {
+      await sbAudit('LEITERN_NACHWEIS', JSON.stringify({
+        zuwId, vollname, firma, certNr,
+        datum: datStr, quiz: `${richtig}/${gesamt} (${prozent}%)`, bestanden
+      }));
+    } catch(e) {}
+
+  } catch(e) {
+    console.error('leiternNachweisPDF Fehler:', e);
+    showToast('⚠️ PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
+  }
+}
