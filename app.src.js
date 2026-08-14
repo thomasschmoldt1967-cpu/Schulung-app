@@ -14447,14 +14447,18 @@ async function bpZertifikatErstellen() {
     doc.text('ARBEITGEBER / GESCHÄFTSFÜHRUNG', ML+4, y+6);
     doc.setDrawColor(180, 190, 200);
     doc.setLineWidth(0.5);
-    doc.line(ML+4, y+26, ML+sigW-4, y+26);
+    // Unterschrift Geschäftsführer (T. Schmoldt) einbetten
+    try {
+      doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+4, y+8, 70, 20);
+    } catch(e) {}
+    doc.line(ML+4, y+30, ML+sigW-4, y+30);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(107, 114, 128);
-    doc.text('Ort, Datum', ML+4, y+31);
-    doc.text('Unterschrift', ML+sigW-4, y+31, { align: 'right' });
+    doc.text('Laatzen, ' + datum, ML+4, y+35);
+    doc.text('T. Schmoldt, Geschäftsführer', ML+sigW-4, y+35, { align: 'right' });
     doc.setFontSize(7.5);
-    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen', ML+4, y+37);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen', ML+4, y+41);
 
     // Rechte Unterschrift — Befähigte Person
     const rx = ML + sigW + 8;
