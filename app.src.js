@@ -13975,6 +13975,8 @@ function bpKapitelOeffnen(kapitelId) {
     document.getElementById('bp-modal-body').innerHTML = k.inhalt;
     const btnWeiter = document.getElementById('bp-modal-weiter');
     if (btnWeiter) btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
+    // Im Preview-Modus über dem Preview-Modal anzeigen (z-index erhöhen)
+    modal.style.zIndex = _bpPreviewMode ? '10010' : '10001';
     modal.style.display = 'flex';
     return;
   }
