@@ -13365,231 +13365,663 @@ async function hubGegenzBestaetigen() {
 // ════════════════════════════════════════════════════════════════
 
 const BP_KAPITEL = [
-  // ── Modul 1: Rechtliche Grundlagen ──
+
+  // ══════════════════════════════════════════
+  // MODUL 1 — Rechtliche Grundlagen
+  // ══════════════════════════════════════════
   {
     id: 'bp-01', modul: 1, nr: 1,
     titel: 'Rechtliche Grundlagen & Prüfpflicht',
     icon: '⚖️',
-    inhalt: `<p>In Betrieben, in denen Leitern und Tritte als Arbeitsmittel eingesetzt werden, greift zwingend die <strong>Betriebssicherheitsverordnung (BetrSichV)</strong>:</p>
-    <ul>
-      <li><strong>BetrSichV § 3</strong> — Gefährdungsbeurteilung: Ausgangspunkt jeder Prüfpflicht</li>
-      <li><strong>BetrSichV § 14</strong> — Prüfpflicht vor erster Verwendung, wiederkehrend und außerordentlich</li>
-      <li><strong>ArbSchG § 25</strong> — Bußgelder bis zu <strong>30.000 Euro</strong> bei fehlender oder unzureichender Prüfung</li>
-      <li><strong>TRBS 1203</strong> — Qualifikationsanforderungen an die Befähigte Person</li>
-    </ul>
-    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px;margin:10px 0">
-      <div style="font-weight:700;font-size:.88rem;color:#991b1b">⚠️ Haftungsrisiko</div>
-      <div style="font-size:.82rem;color:#7f1d1d;margin-top:4px">Fehlt der Nachweis der Fachkunde bei einer Kontrolle der Berufsgenossenschaft oder nach einem Arbeitsunfall, drohen Bußgelder bis zu 30.000 € sowie eine persönliche Haftung der Geschäftsführung.</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">⚖️</div>
+      <div style="font-weight:700;font-size:1rem">Warum gibt es eine Prüfpflicht?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
     </div>
-    <p style="font-size:.83rem;color:#374151">Ein externer Prüfdienst ist rechtlich <strong>nicht erforderlich</strong> — eigene Mitarbeiter können intern zur Befähigten Person qualifiziert werden.</p>`
+    <p style="font-size:.88rem;color:#374151">Die wichtigsten Rechtsgrundlagen im Überblick:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 BetrSichV § 3 — Gefährdungsbeurteilung</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Der Arbeitgeber muss vor dem Einsatz jedes Arbeitsmittels eine Gefährdungsbeurteilung durchführen. Für Leitern und Tritte bedeutet das: Welche Risiken bestehen? Wie häufig werden sie genutzt? Unter welchen Bedingungen?</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 BetrSichV § 14 — Prüfpflicht</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Drei Prüfanlässe sind gesetzlich vorgeschrieben: <strong>vor der ersten Benutzung</strong> (Erstprüfung), <strong>wiederkehrend</strong> nach Fristen und <strong>außerordentlich</strong> nach besonderen Ereignissen wie Stürzen oder Überlastung.</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 TRBS 1203 — Qualifikation der Befähigten Person</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Diese Technische Regel legt fest, welche Voraussetzungen eine Person erfüllen muss, um Leitern prüfen zu dürfen: Berufsausbildung, praktische Erfahrung und zeitnahe Tätigkeit auf dem Gebiet.</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 ArbSchG § 25 — Bußgelder</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Fehlt der Nachweis fachkundiger Prüfungen, drohen Bußgelder bis zu <strong>30.000 €</strong> — und im Schadensfall persönliche Haftung der Geschäftsführung.</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:11px 14px;margin:12px 0">
+      <div style="font-weight:700;font-size:.88rem;color:#991b1b">🚨 Haftungsrisiko im Schadensfall</div>
+      <div style="font-size:.82rem;color:#7f1d1d;margin-top:5px">Kommt es zu einem Arbeitsunfall mit einer nicht geprüften Leiter, trägt der Arbeitgeber die volle Verantwortung. Die Berufsgenossenschaft prüft nach jedem meldepflichtigen Unfall, ob die Prüfpflichten eingehalten wurden. Fehlende Dokumentation gilt dabei als Nachweis der Pflichtverletzung.</div>
+    </div>
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:11px 14px;margin:12px 0">
+      <div style="font-weight:700;font-size:.88rem;color:#14532d">✅ Gut zu wissen</div>
+      <div style="font-size:.82rem;color:#166534;margin-top:5px">Ein externer Prüfdienst ist <strong>nicht gesetzlich vorgeschrieben</strong>. Betriebe können eigene Mitarbeiter intern zur Befähigten Person qualifizieren — das spart Kosten und schafft fachkundiges Personal im Haus.</div>
+    </div>`
   },
+
   {
     id: 'bp-02', modul: 1, nr: 2,
     titel: 'Normenübersicht — Bezug zur Schulung',
     icon: '📋',
-    inhalt: `<p>Die Schulungsinhalte orientieren sich strikt an folgenden Vorschriften:</p>
-    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">BetrSichV § 3 + § 14</div>
-        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Gefährdungsbeurteilung · Prüfanlässe · Dokumentation</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📋</div>
+      <div style="font-weight:700;font-size:1rem">Das Regelwerk auf einen Blick</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Diese Schulung folgt strikt den geltenden deutschen und europäischen Vorschriften für Leitern und Tritte als Arbeitsmittel.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 BetrSichV § 3 + § 14</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Gefährdungsbeurteilung, Prüfanlässe und Dokumentationspflicht — das gesetzliche Fundament</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Gilt für alle Arbeitsmittel in deutschen Betrieben. Tritt ergänzend zur DGUV-Normenwelt.</div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">TRBS 1203</div>
-        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Qualifikation der Befähigten Person (Ausbildung + Erfahrung + Aktualität)</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 TRBS 1203 — Befähigte Person</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Qualifikationsanforderungen: Ausbildung + Erfahrung + zeitnahe Tätigkeit</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Definiert, wer Leitern prüfen darf. Nicht erfüllt = Prüfung rechtlich unwirksam.</div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">TRBS 2121 Teil 2</div>
-        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Gefährdungen bei der Verwendung von Leitern — Absturz, Umkippen, Wegrutschen</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 TRBS 2121 Teil 2 — Gefährdungen</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Absturz, Umkippen, Wegrutschen — technische Regeln für sicheres Arbeiten auf Leitern</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Gibt konkrete Hinweise zur sicheren Aufstellung und Nutzung verschiedener Leitertypen.</div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">DGUV Information 208-016</div>
-        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Praxisanleitung: Bauarten, Prüfkriterien, Prüffristen, Dokumentation (vormals BGI 6949)</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 DGUV Information 208-016</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Praxisanleitung: Bauarten · Prüfkriterien · Prüffristen · Dokumentation (vormals BGI 6949)</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Das wichtigste Praxisdokument: enthält Checklisten, Beispielprotokolle und Entscheidungshilfen für die Befähigte Person.</div>
       </div>
     </div>
-    <p style="font-size:.78rem;color:#6b7280">Hinweis: Das Zertifikat der internen Schulung hat kein gesetzliches Ablaufdatum. Empfohlen: Auffrischung alle 3–5 Jahre bei Normenänderungen.</p>`
+    <div style="background:#fef9c3;border:1.5px solid #fde047;border-radius:8px;padding:10px 13px;margin-top:12px">
+      <div style="font-weight:700;font-size:.84rem;color:#713f12">💡 Gültigkeitsdauer des Zertifikats</div>
+      <div style="font-size:.79rem;color:#92400e;margin-top:4px">Das Schulungszertifikat hat kein gesetzliches Ablaufdatum. Empfohlen wird eine Auffrischung alle <strong>3–5 Jahre</strong> — insbesondere wenn Normen geändert werden oder neue Leitertypen im Betrieb eingesetzt werden.</div>
+    </div>`
   },
-  // ── Modul 2: Bauarten & Normen ──
+
+  // ══════════════════════════════════════════
+  // MODUL 2 — Bauarten & Normen
+  // ══════════════════════════════════════════
   {
     id: 'bp-03', modul: 2, nr: 3,
-    titel: 'Bauarten, Normen & Anforderungen',
+    titel: 'Bauarten, Werkstoffe & Kennzeichnung',
     icon: '🪜',
-    inhalt: `<p>Die <strong>DGUV Information 208-016</strong> und die einschlägigen DIN-Normen unterscheiden folgende Typen:</p>
-    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
-      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Anlegeleitern</div>
-        <div style="font-size:.79rem;color:#075985;margin-top:3px">Werden gegen eine Wand oder ein Objekt angelehnt. Aufstellwinkel: 65–75°.</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#0c4a6e,#0ea5e9);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🪜</div>
+      <div style="font-weight:700;font-size:1rem">Leiter ist nicht gleich Leiter</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Verschiedene Typen haben unterschiedliche Einsatzbereiche, Belastungsgrenzen und Prüfkriterien. Die richtige Auswahl ist bereits Teil der Gefährdungsbeurteilung.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🔷 Leitertypen im Überblick</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🪜</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Anlegeleitern</div>
+            <div style="font-size:.78rem;color:#075985">Sprossen- oder Stufenleitern, gegen Wand angelehnt</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          <strong>Aufstellwinkel:</strong> 65°–75° (optimal 70°) · <strong>Faustregel:</strong> 1 m Abstand vom Fuß pro 4 m Höhe · Nie seitlich überstrecken · Oberes Ende muss sicher aufliegen oder befestigt sein
+        </div>
       </div>
-      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Stehleitern</div>
-        <div style="font-size:.79rem;color:#075985;margin-top:3px">Freistehend, mit Spreize. Dürfen nicht als Anleigeleitern verwendet werden.</div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🔺</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Stehleitern</div>
+            <div style="font-size:.78rem;color:#075985">Freistehend, beidseitig nutzbar, mit Spreizsicherung</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          <strong>Spreize muss vollständig geöffnet und gesichert sein</strong> · Darf <em>nicht</em> als Anlegeleiter zweckentfremdet werden · Oberste Stufe / Plattform nur belasten, wenn konstruktiv dafür vorgesehen
+        </div>
       </div>
-      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Mehrzweck- und Podestleitern, Tritte</div>
-        <div style="font-size:.79rem;color:#075985;margin-top:3px">Verschiedene Verwendungsmöglichkeiten. Tritte: max. 4 Stufen, ohne Abstützung.</div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🔧</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Mehrzweckleitern</div>
+            <div style="font-size:.78rem;color:#075985">Mehrere Verwendungsmöglichkeiten (Anlege-, Steh-, Schiebeleiter)</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Besondere Prüfung aller Gelenke und Arretiermechanismen · Aufbau nur nach Herstelleranleitung · Unterschiedliche Maximalbelastung je nach Konfiguration beachten
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🪑</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Tritte</div>
+            <div style="font-size:.78rem;color:#075985">Tragbare Auf- und Abstiegshilfen mit max. 4 Stufen</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Ohne feste Abstützung an der Wand · Rutschfeste Standfüße pflicht · Für leichte Arbeiten in geringer Höhe, keine Dachabschlussarbeiten
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🏗️</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Podestleitern & Fahrbare Treppen</div>
+            <div style="font-size:.78rem;color:#075985">Mit festem Standplatz, Handläufen oder Rollstopp</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Breiter Standplatz für längere Tätigkeiten · Fahrrollenstopper vor Benutzung aktivieren · Geeignet für schwere Arbeitsmittel und häufige Arbeiten in gleicher Höhe
+        </div>
       </div>
     </div>
-    <p><strong>Werkstoffe:</strong> Aluminium (leicht, nicht leitfähig für Wärme), Holz (isolierend, witterungsempfindlich), Faserverbund (elektrisch isolierend — Pflicht bei Elektroarbeiten).</p>
-    <p style="font-size:.82rem;color:#374151"><strong>Kennzeichnung:</strong> Jede Leiter muss nach den einschlägigen DIN-Normen gekennzeichnet sein (Hersteller, Typ, Norm, Höchstbelastung).</p>`
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🔩 Werkstoffe & ihre Eigenschaften</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">🥈</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">Aluminium</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Leicht · korrosionsfest · nicht elektrisch isolierend</div>
+      </div>
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">🪵</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">Holz</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Elektrisch isolierend · witterungsempfindlich · schwerer</div>
+      </div>
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">⚡</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">GFK / Faserverbund</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Stark isolierend · Pflicht bei Elektroarbeiten</div>
+      </div>
+    </div>
+
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e">🏷️ Pflichtangaben auf jeder Leiter</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:5px">Nach DIN EN 131 muss jede Leiter dauerhaft folgende Angaben tragen:<br>
+      <strong>Hersteller · Typ / Modell · Norm (z.B. DIN EN 131-2) · Maximale Belastung · Baujahr oder Chargencode</strong><br>
+      Fehlt diese Kennzeichnung oder ist sie unleserlich → Leiter aussondern!</div>
+    </div>`
   },
-  // ── Modul 3: Rechte & Pflichten ──
+
+  // ══════════════════════════════════════════
+  // MODUL 3 — Rechte & Pflichten
+  // ══════════════════════════════════════════
   {
     id: 'bp-04', modul: 3, nr: 4,
     titel: 'Qualifikation & Bestellung der Befähigten Person',
     icon: '🏛️',
-    inhalt: `<p>Die <strong>TRBS 1203</strong> definiert drei Anforderungen an die Qualifikation:</p>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1e3a5f,#4338ca);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🏛️</div>
+      <div style="font-weight:700;font-size:1rem">Wer darf Leitern prüfen?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Nicht jeder Mitarbeiter darf Leitern offiziell prüfen. Die TRBS 1203 legt klare Mindestanforderungen fest, die kumulativ erfüllt sein müssen.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🎓 Die drei Säulen der Qualifikation (TRBS 1203)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:1.4rem">🎓</div>
-        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Ausbildung</div>
-        <div style="font-size:.71rem;color:#1d4ed8">Berufsausbildung oder vergleichbare Kenntnisse</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">🎓</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Berufsausbildung</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Einschlägige Ausbildung oder gleichwertige Kenntnisse und Erfahrungen</div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:1.4rem">🔧</div>
-        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Erfahrung</div>
-        <div style="font-size:.71rem;color:#1d4ed8">Praktische Erfahrung mit Leitern & Tritten</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">🔧</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Praxis­erfahrung</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Nachgewiesene praktische Erfahrung mit Leitern und Tritten im Betrieb</div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
-        <div style="font-size:1.4rem">📅</div>
-        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Aktualität</div>
-        <div style="font-size:.71rem;color:#1d4ed8">Zeitnahe Tätigkeit auf dem Gebiet</div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">📅</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Aktualität</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Zeitnahe Tätigkeit auf dem Gebiet — keine veralteten Kenntnisse</div>
       </div>
     </div>
-    <p><strong>Bestellung:</strong> Schriftliche Bestellung durch den Arbeitgeber. Die Befähigte Person dokumentiert die Prüfungen und entscheidet über Weiterverwendung, Reparatur oder Aussonderung.</p>
-    <p><strong>Abgrenzung:</strong> Nutzer → bestimmungsgemäßer Gebrauch, Sichtprüfung vor Benutzung. Vorgesetzte → Organisationsverantwortung. Befähigte Person → fachkundige Prüfung und Dokumentation.</p>`
+
+    <div style="background:#fef9c3;border-left:4px solid #eab308;border-radius:8px;padding:10px 13px;margin:12px 0">
+      <div style="font-weight:700;font-size:.85rem;color:#713f12">⚠️ Alle drei Kriterien müssen gleichzeitig erfüllt sein</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:4px">Wer zwar eine Ausbildung hat, aber seit Jahren nicht mehr mit Leitern gearbeitet hat, erfüllt das Kriterium „Aktualität" nicht. Diese Schulung trägt zur Aktualitätspflege bei — ersetzt aber keine fehlende Berufsausbildung.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:14px 0 8px">📝 Schriftliche Bestellung — Pflicht!</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:.83rem;color:#374151;line-height:1.65">
+        Die Befähigte Person muss vom <strong>Arbeitgeber schriftlich bestellt</strong> werden. Diese Bestellung:<br>
+        <span style="display:block;margin:6px 0 0 10px">✅ Benennt die übertragene Aufgabe (Prüfung von Leitern und Tritten)</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Bestätigt die Qualifikation des Mitarbeiters</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Ist Grundlage für rechtssichere Prüfnachweise</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Muss zusammen mit dem Schulungsnachweis aufbewahrt werden</span>
+      </div>
+    </div>
+
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#991b1b">❌ Häufiger Fehler in der Praxis</div>
+      <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Viele Betriebe lassen Mitarbeiter Leitern prüfen, ohne sie vorher schriftlich zu bestellen. Das Prüfprotokoll ist dann <strong>rechtlich unwirksam</strong> — auch wenn die Prüfung fachlich korrekt durchgeführt wurde.</div>
+    </div>`
   },
+
   {
     id: 'bp-05', modul: 3, nr: 5,
     titel: 'Abgrenzung: Nutzer, Vorgesetzte, Befähigte Person',
     icon: '👥',
-    inhalt: `<p>Verantwortlichkeiten sind klar aufgeteilt — Überschneidungen führen zu Haftungsrisiken:</p>
-    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
-      <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:6px;padding:10px 14px">
-        <div style="font-weight:700;font-size:.88rem;color:#14532d">👤 Nutzer / Mitarbeiter</div>
-        <div style="font-size:.8rem;color:#166534;margin-top:4px">Sichtprüfung vor jeder Benutzung · Meldet Mängel sofort · Keine eigenmächtige Reparatur · Bestimmungsgemäße Verwendung</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#166534,#16a34a);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">👥</div>
+      <div style="font-weight:700;font-size:1rem">Klare Verantwortlichkeiten — weniger Haftungsrisiko</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Jeder im Betrieb trägt eine bestimmte Verantwortung für den sicheren Umgang mit Leitern. Unklare Zuständigkeiten sind ein häufiger Unfallauslöser.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">👤</div>
+          <div style="font-weight:700;font-size:.92rem;color:#14532d">Nutzer / Mitarbeiter</div>
+        </div>
+        <div style="font-size:.82rem;color:#166534;line-height:1.6">
+          <span style="display:block">✅ Sichtprüfung <strong>vor jeder Benutzung</strong> (kein schriftlicher Nachweis nötig)</span>
+          <span style="display:block">✅ Meldet Mängel sofort dem Vorgesetzten oder der Befähigten Person</span>
+          <span style="display:block">✅ Benutzt die Leiter nur bestimmungsgemäß</span>
+          <span style="display:block">❌ Führt <em>keine</em> eigenmächtige Reparatur durch</span>
+          <span style="display:block">❌ Setzt <em>keine</em> beschädigte Leiter weiter ein</span>
+        </div>
       </div>
-      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px">
-        <div style="font-weight:700;font-size:.88rem;color:#92400e">🏢 Arbeitgeber / Vorgesetzter</div>
-        <div style="font-size:.8rem;color:#78350f;margin-top:4px">Bereitstellt geeignete Arbeitsmittel · Stellt sicher, dass Prüfungen stattfinden · Schriftliche Bestellung der Befähigten Person</div>
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">🏢</div>
+          <div style="font-weight:700;font-size:.92rem;color:#92400e">Arbeitgeber / Vorgesetzter</div>
+        </div>
+        <div style="font-size:.82rem;color:#78350f;line-height:1.6">
+          <span style="display:block">✅ Stellt geeignete und geprüfte Leitern bereit</span>
+          <span style="display:block">✅ Organisiert, dass Prüfungen rechtzeitig stattfinden</span>
+          <span style="display:block">✅ Bestellt die Befähigte Person schriftlich</span>
+          <span style="display:block">✅ Stellt sicher, dass gemeldete Mängel behoben werden</span>
+          <span style="display:block">✅ Sorgt für die Aufbewahrung der Prüfdokumente</span>
+        </div>
       </div>
-      <div style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px">
-        <div style="font-weight:700;font-size:.88rem;color:#1e3a8a">🎓 Befähigte Person</div>
-        <div style="font-size:.8rem;color:#1d4ed8;margin-top:4px">Fachkundige Prüfung · Entscheidung über Weiterverwendung, Reparatur oder Aussonderung · Rechtssichere Dokumentation im Leiterkontrollbuch</div>
+      <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">🎓</div>
+          <div style="font-weight:700;font-size:.92rem;color:#1e3a8a">Befähigte Person</div>
+        </div>
+        <div style="font-size:.82rem;color:#1d4ed8;line-height:1.6">
+          <span style="display:block">✅ Führt die fachkundige Prüfung nach Prüfplan durch</span>
+          <span style="display:block">✅ Entscheidet über Weiterverwendung, Reparatur oder Aussonderung</span>
+          <span style="display:block">✅ Dokumentiert jede Prüfung vollständig im Leiterkontrollbuch</span>
+          <span style="display:block">✅ Legt Prüffristen risikobasiert fest</span>
+          <span style="display:block">✅ Kennzeichnet ausgesonderte Leitern</span>
+        </div>
       </div>
     </div>
-    <p style="font-size:.8rem;color:#374151"><strong>Meldewege:</strong> Nutzer → Vorgesetzte → Befähigte Person. Bei akuter Gefahr: sofort aus dem Verkehr ziehen und kennzeichnen.</p>`
+
+    <div style="font-weight:700;font-size:.87rem;color:#1a3a5c;margin:10px 0 6px">📣 Meldeweg bei Mängeln</div>
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 13px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151">
+        <span style="background:#16a34a;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</span>
+        <span>Nutzer erkennt Schaden → Leiter sofort <strong>nicht mehr verwenden</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151;margin-top:6px">
+        <span style="background:#f59e0b;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</span>
+        <span>Meldung an Vorgesetzten → Leiter sichern / kennzeichnen</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151;margin-top:6px">
+        <span style="background:#1d4ed8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</span>
+        <span>Befähigte Person prüft und entscheidet über das weitere Vorgehen</span>
+      </div>
+    </div>`
   },
-  // ── Modul 4: Unfallgefahren ──
+
+  // ══════════════════════════════════════════
+  // MODUL 4 — Unfallgefahren
+  // ══════════════════════════════════════════
   {
     id: 'bp-06', modul: 4, nr: 6,
-    titel: 'Unfallgefahren & Schutzmaßnahmen',
+    titel: 'Unfallgefahren, Ursachen & Schutzmaßnahmen',
     icon: '⚠️',
-    inhalt: `<p>Leitern gehören zu den häufigsten Unfallursachen in Betrieben. Die <strong>TRBS 2121 Teil 2</strong> benennt die Hauptgefahren:</p>
-    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
-      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#991b1b">🚨 Absturz</div>
-        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Häufigste Unfallursache. Schutz: korrekte Aufstellung, drei-Punkte-Regel (immer zwei Hände + ein Fuß oder zwei Füße + eine Hand).</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#991b1b,#dc2626);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">⚠️</div>
+      <div style="font-weight:700;font-size:1rem">Leitern — einer der häufigsten Unfallauslöser</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Laut Statistik der Deutschen Gesetzlichen Unfallversicherung ereignen sich jährlich mehrere Tausend meldepflichtige Unfälle an Leitern. Viele davon wären vermeidbar.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#991b1b;margin-bottom:8px">🚨 Die 5 häufigsten Unfallursachen</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">1. Falscher Aufstellwinkel (Anlegeleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Zu flach → Leiter kippt vorne weg. Zu steil → Leiter kippt hinten weg. Richtig: 65°–75°, entspricht ca. 1:4 (1 m Abstand für 4 m Höhe).</div>
       </div>
-      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#991b1b">↗️ Wegrutschen</div>
-        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Anlegeleitern: Fußsicherung oder Halterung. Aufstellwinkel 65–75°. Rutschfeste Füße prüfen.</div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">2. Wegrutschen des Fußes</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Auf nassem, glattem oder unebenem Untergrund. Schutz: Rutschfeste Fußkappen, Sicherungsstangen oder eine zweite Person sichert den Fuß.</div>
       </div>
-      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#991b1b">⚡ Umkippen</div>
-        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Stehleitern: Spreize vollständig öffnen und sichern. Keine seitliche Überladung.</div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">3. Nicht gesicherte Spreize (Stehleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Spreize nicht vollständig geöffnet oder nicht eingerastet. Resultat: plötzliches Zusammenklappen der Leiter. Prüfen vor jeder Benutzung!</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">4. Überstrecken zur Seite</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Der Körperschwerpunkt verlässt die Leiterbreite → Kippgefahr. Regel: Nabel immer zwischen den Holmen. Lieber umstellen!</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">5. Defekte oder falsche Leiter gewählt</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Gebrochene Sprossen, fehlende Fußkappen, Stehleiter als Anleigemittel. Konsequenz: Sichtprüfung vor Benutzung ist Pflicht!</div>
       </div>
     </div>
-    <p><strong>Schutzmaßnahmen:</strong> Standsicherheit prüfen · PSA nur bei besonderer Gefährdung · Keine Nutzung bei Nässe, Eis oder starkem Wind · Nie die obersten Stufen belasten.</p>`
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🛡️ Die 3-Punkte-Regel</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:.84rem;color:#166534;line-height:1.65">
+        Auf der Leiter immer <strong>mindestens 3 Körperkontaktpunkte</strong> halten:<br>
+        <span style="display:block;margin-top:6px">🟢 <strong>Beide Füße + eine Hand</strong> — wenn eine Hand für Arbeit gebraucht wird</span>
+        <span style="display:block;margin-top:3px">🟢 <strong>Beide Hände + ein Fuß</strong> — beim Auf- und Absteigen</span>
+        <span style="display:block;margin-top:8px;color:#374151;font-size:.78rem">Werkzeuge und Materialien immer in einer Gürteltasche oder mit Haken gesichert transportieren — nie in der Hand tragen!</span>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🌧️ Verbotene Bedingungen</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Nässe / Eis auf Sprossen</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Windgeschwindigkeit &gt; Beaufort 6</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Oberste 3 Sprossen belasten</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Mehrere Personen gleichzeitig</div>
+    </div>`
   },
-  // ── Modul 5: Instandhaltung ──
+
+  // ══════════════════════════════════════════
+  // MODUL 5 — Instandhaltung
+  // ══════════════════════════════════════════
   {
     id: 'bp-07', modul: 5, nr: 7,
     titel: 'Instandhaltung, Reparatur & Aussonderung',
     icon: '🔧',
-    inhalt: `<p>Grundlage: <strong>DGUV Information 208-016</strong> und <strong>BetrSichV § 14 Abs. 2</strong>.</p>
-    <p><strong>Zulässige Reparaturen</strong> — nur durch Fachbetrieb oder Hersteller:</p>
-    <ul>
-      <li>Austausch einzelner Holmabschnitte durch den Hersteller</li>
-      <li>Ersetzen von Sprossen durch Originalteile</li>
-      <li>Erneuerung rutschfester Fußkappen (Originalteile)</li>
-    </ul>
-    <p><strong>Kriterien für sofortige Aussonderung:</strong></p>
-    <div style="background:#fef2f2;border-radius:8px;padding:10px 14px;margin:8px 0">
-      <ul style="margin:0;color:#7f1d1d;font-size:.82rem">
-        <li>Verbogene, gebrochene oder gerissene Holme oder Sprossen</li>
-        <li>Fehlende oder beschädigte Sicherungseinrichtungen (Spreizensicherung, Füße)</li>
-        <li>Nicht reparierbare Korrosionsschäden oder Fäulnis</li>
-        <li>Nach außergewöhnlichen Ereignissen (Sturz, Überlast)</li>
-      </ul>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#92400e,#d97706);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🔧</div>
+      <div style="font-weight:700;font-size:1rem">Wann reparieren — wann aussondern?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Diese Entscheidung liegt bei der Befähigten Person. Sie ist eine der wichtigsten Verantwortlichkeiten — und hat direkte Auswirkungen auf die Sicherheit aller Mitarbeiter.</div>
     </div>
-    <p style="font-size:.82rem;color:#374151">Ausgesonderte Leitern müssen sofort als unbrauchbar gekennzeichnet und aus dem Verkehr gezogen werden — keinesfalls zur Reparatur zurückstellen.</p>`
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">✅ Zulässige Reparaturen</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:11px 14px;margin-bottom:12px">
+      <div style="font-size:.82rem;color:#166534;line-height:1.6">
+        <strong>Folgende Reparaturen sind erlaubt — aber NUR durch den Hersteller oder einen autorisierten Fachbetrieb:</strong><br>
+        <span style="display:block;margin-top:6px">✅ Austausch einzelner Holmabschnitte (durch Hersteller)</span>
+        <span style="display:block">✅ Ersetzen einzelner Sprossen durch Originalteile</span>
+        <span style="display:block">✅ Erneuerung rutschfester Fußkappen (ausschließlich Originalteile)</span>
+        <span style="display:block">✅ Erneuerung der Spreizensicherung mit Originalersatzteilen</span>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#991b1b;margin-bottom:8px">🚫 Sofortige Aussonderung bei …</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Strukturelle Schäden an Holmen oder Sprossen</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Risse, Brüche, Verbiegungen, Knicke — kein Sicherheitsspielraum. Auch kleine Risse können unter Last brechen.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Defekte Spreizensicherung (Stehleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Rastet nicht ein, ist verbogen oder fehlt ganz → gefährlichster Defekt bei Stehleitern.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Schwere Korrosion (Aluminium) oder Fäulnis (Holz)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Materialverlust durch Oxidation oder Pilzbefall reduziert die Tragfähigkeit erheblich.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Nach außergewöhnlichem Ereignis</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Sturz der Leiter aus Höhe, Überlastung, Fahrzeuganfahrung — auch ohne sichtbare Schäden ist eine außerordentliche Prüfung Pflicht.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Fehlende oder unleserliche Kennzeichnung</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Ohne Typ und Belastungsangabe kann die Leiter nicht bewertet werden → im Zweifel aussondern.</div>
+      </div>
+    </div>
+
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e">🏷️ Ausgesonderte Leitern richtig kennzeichnen</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:4px">Sofort ein deutliches „GESPERRT – NICHT VERWENDEN" Schild anbringen und die Leiter physisch vom Bestand trennen. Nie zur Reparatur zurückstellen ohne Kennzeichnung — andere Mitarbeiter könnten sie unwissentlich benutzen.</div>
+    </div>
+
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#14532d">💡 Praxis-Tipp: Reparatur nie selbst durchführen</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Auch wenn der Schaden klein wirkt — eigenmächtige Reparaturen (Klebeband, Draht, improvisierte Fußkappen) sind nicht zulässig und können die Haftung auf den Mitarbeiter verlagern.</div>
+    </div>`
   },
-  // ── Modul 6: Prüffristen ──
+
+  // ══════════════════════════════════════════
+  // MODUL 6 — Prüffristen
+  // ══════════════════════════════════════════
   {
     id: 'bp-08', modul: 6, nr: 8,
     titel: 'Prüfanlässe & Fristen nach BetrSichV § 14',
     icon: '📅',
-    inhalt: `<p><strong>BetrSichV § 14</strong> unterscheidet drei Prüfanlässe:</p>
-    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">§ 14 Abs. 1 — Erstprüfung</div>
-        <div style="font-size:.79rem;color:#1d4ed8;margin-top:3px">Vor der ersten Benutzung im Betrieb — auch bei neuen Arbeitsmitteln.</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📅</div>
+      <div style="font-weight:700;font-size:1rem">Wann muss geprüft werden?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Die BetrSichV § 14 schreibt drei Prüfanlässe vor. Alle drei sind verpflichtend — und jede Prüfung muss dokumentiert werden.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#1d4ed8;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 1</div>
+          <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">Erstprüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#374151;line-height:1.6">
+          Vor der <strong>ersten Benutzung</strong> im Betrieb — auch für neue Leitern direkt aus dem Karton!<br>
+          <span style="font-size:.78rem;color:#1d4ed8;display:block;margin-top:5px">💡 Warum auch neue Leitern? Transportschäden, Fertigungsfehler oder Beschriftungsmängel müssen vor dem ersten Einsatz erkannt werden.</span>
+        </div>
       </div>
-      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">§ 14 Abs. 2 — Wiederkehrende Prüfung</div>
-        <div style="font-size:.79rem;color:#1d4ed8;margin-top:3px">Risikobasiert durch die Befähigte Person. Kriterien: Nutzungsintensität, Umgebungsbedingungen (Nässe, Chemikalien), Unfallgeschehen. DGUV 208-016 empfiehlt max. 12 Monate.</div>
+
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#1d4ed8;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 2</div>
+          <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">Wiederkehrende Prüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#374151;line-height:1.6">
+          Risikobasiert durch die Befähigte Person — es gibt <strong>keine starren Jahresfristen</strong>. Die Frist richtet sich nach:<br>
+          <span style="display:block;margin-top:5px">🔹 <strong>Nutzungsintensität</strong> — täglich genutztes Arbeitsmittel = kürzere Intervalle</span>
+          <span style="display:block">🔹 <strong>Umgebungsbedingungen</strong> — Nässe, Chemikalien, Außenklima beschleunigen Verschleiß</span>
+          <span style="display:block">🔹 <strong>Vorherige Befunde</strong> — häufige Mängel = häufigere Prüfung</span>
+          <span style="display:block;margin-top:5px;color:#1d4ed8;font-size:.78rem">📌 DGUV 208-016 empfiehlt als Richtwert: maximal <strong>12 Monate</strong></span>
+        </div>
       </div>
-      <div style="background:#fef2f2;border:1.5px solid #dc2626;border-radius:8px;padding:9px 13px">
-        <div style="font-weight:700;font-size:.85rem;color:#991b1b">§ 14 Abs. 3 — Außerordentliche Prüfung</div>
-        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Erforderlich nach außergewöhnlichen Ereignissen: Sturz der Leiter, Überlast, Beschädigungen, längerer Nichtnutzung oder Änderungen im Betrieb.</div>
+
+      <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#dc2626;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 3</div>
+          <div style="font-weight:700;font-size:.9rem;color:#991b1b">Außerordentliche Prüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#7f1d1d;line-height:1.6">
+          Sofort erforderlich nach:<br>
+          <span style="display:block;margin-top:5px">🔴 Sturz der Leiter (aus jeder Höhe)</span>
+          <span style="display:block">🔴 Überlastung durch Überschreiten der Maximalbelastung</span>
+          <span style="display:block">🔴 Sichtbarer Beschädigung durch äußere Einwirkung</span>
+          <span style="display:block">🔴 Längerer Nichtbenutzung (z.B. nach Winterpause)</span>
+          <span style="display:block">🔴 Strukturellen Änderungen am Betrieb oder der Nutzungsart</span>
+          <span style="display:block;margin-top:5px;font-weight:700">Die Leiter darf erst wieder benutzt werden, wenn die Befähigte Person die Freigabe erteilt hat!</span>
+        </div>
       </div>
     </div>
-    <p style="font-size:.82rem;color:#374151">Zusätzlich: Sichtprüfung durch den Nutzer vor jeder Benutzung (kein formaler Prüfnachweis erforderlich).</p>`
+
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#374151">👁️ Sichtprüfung durch den Nutzer — vor jeder Benutzung</div>
+      <div style="font-size:.79rem;color:#6b7280;margin-top:4px">Diese ist <strong>nicht dokumentationspflichtig</strong>, aber absolut verpflichtend. Sie dauert nur 30 Sekunden und kann einen Unfall verhindern: Holme checken, Fußkappen kontrollieren, Sprossen prüfen, Spreize sichern — und dann kann's losgehen.</div>
+    </div>`
   },
-  // ── Modul 7: Prüfdurchführung ──
+
+  // ══════════════════════════════════════════
+  // MODUL 7 — Prüfdurchführung
+  // ══════════════════════════════════════════
   {
     id: 'bp-09', modul: 7, nr: 9,
     titel: 'Praktische Prüfung — Ablauf & Checkliste',
     icon: '🔍',
-    inhalt: `<p>Grundlage der praktischen Prüfung: <strong>DGUV Information 208-016</strong> und <strong>TRBS 2121 Teil 2</strong>.</p>
-    <p><strong>Prüfablauf für Anlegeleitern und Stehleitern:</strong></p>
-    <ol style="font-size:.83rem;color:#374151;line-height:1.7">
-      <li><strong>Identifikation:</strong> Inventarnummer, Typ, Hersteller, Baujahr prüfen</li>
-      <li><strong>Holme:</strong> Verbiegungen, Risse, Korrosion, Knicke</li>
-      <li><strong>Sprossen / Stufen:</strong> Vollständigkeit, fester Sitz, Rutschsicherheit</li>
-      <li><strong>Fußkappen / Gleiter:</strong> vorhanden, nicht abgenutzt, intakt</li>
-      <li><strong>Spreize (Stehleiter):</strong> Verriegelung vollständig, funktionsfähig</li>
-      <li><strong>Verbindungsteile:</strong> Schrauben, Nieten, Gelenkbeschläge</li>
-      <li><strong>Besondere Vorkommnisse:</strong> Sturzhistorie, Reparaturen</li>
-    </ol>
-    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 13px;margin:8px 0">
-      <div style="font-weight:700;font-size:.84rem;color:#14532d">✅ Ergebnis dokumentieren</div>
-      <div style="font-size:.79rem;color:#166534;margin-top:3px">Jede Prüfung sofort im Leiterkontrollbuch festhalten — auch wenn keine Mängel festgestellt wurden.</div>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#134e4a,#0d9488);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🔍</div>
+      <div style="font-weight:700;font-size:1rem">Die Prüfung Schritt für Schritt</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Eine systematische Prüfung nach DGUV 208-016 schützt alle Mitarbeiter und sichert die rechtliche Position des Betriebs. Jeden Schritt sofort dokumentieren!</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📋 Prüfablauf — 8 Schritte</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">1</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🏷️ Identifikation</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Inventarnummer, Typ, Hersteller, Baujahr. Stimmt die Leiter mit dem Prüfplan überein? Sind alle Angaben lesbar?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">2</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔩 Holme prüfen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Verbiegungen, Risse, Knicke, Korrosion (Aluminium: weißlicher Belag = Oxidation). Holz: auf Fäulnis, Risse und Splittern achten.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">3</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🪜 Sprossen / Stufen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Alle vorhanden? Fester Sitz (wackeln, drehen)? Rutschhemmende Profilierung intakt? Keine Verschleißstellen durch häufige Nutzung?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">4</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">👟 Fußkappen / Gleiter</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Beide vorhanden, vollständig, nicht abgenutzt, fest sitzend. Rutschfeste Unterseite prüfen — glatte Fußkappen sind wie Eis unter der Leiter.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">5</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔺 Spreize (nur Stehleiter)</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Spreizensicherung vollständig eingerastet? Spreize gleichmäßig geöffnet? Keine einseitige Belastung beim Test?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">6</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔗 Verbindungselemente</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Schrauben, Nieten, Gelenkbeschläge (Mehrzweckleitern) auf Vollständigkeit, festen Sitz und Korrosion prüfen.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">7</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">📖 Sturzhistorie befragen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Wurde die Leiter fallen gelassen oder ist gefallen? Gibt es im Leiterbuch Einträge zu Beschädigungen oder Reparaturen?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">8</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🧪 Funktionsprüfung</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Leiter aufstellen, Spreize öffnen, Fuß sichern und vorsichtig leicht belasten. Bewegt sich etwas, knarrt es verdächtig?</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px 14px">
+      <div style="font-weight:700;font-size:.87rem;color:#14532d">✅ Sofort ins Leiterkontrollbuch!</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Jede Prüfung — auch wenn <strong>keine Mängel</strong> festgestellt wurden — muss sofort schriftlich erfasst werden. Nur was dokumentiert ist, zählt rechtlich. Nicht dokumentierte Prüfungen gelten als nicht durchgeführt.</div>
     </div>`
   },
-  // ── Modul 8: Dokumentation ──
+
+  // ══════════════════════════════════════════
+  // MODUL 8 — Dokumentation
+  // ══════════════════════════════════════════
   {
     id: 'bp-10', modul: 8, nr: 10,
     titel: 'Rechtssichere Dokumentation — Leiterkontrollbuch',
     icon: '📄',
-    inhalt: `<p>Grundlage: <strong>BetrSichV § 14 Abs. 5</strong> und <strong>DGUV Information 208-016</strong>.</p>
-    <p><strong>Mindestangaben im Prüfprotokoll:</strong></p>
-    <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;margin:8px 0">
-      <ul style="margin:0;font-size:.82rem;color:#1d4ed8;line-height:1.7">
-        <li>Inventarnummer / Bezeichnung des Arbeitsmittels</li>
-        <li>Art der Prüfung (Erst-, wiederkehrend, außerordentlich)</li>
-        <li>Datum der Prüfung</li>
-        <li>Prüfumfang (welche Punkte wurden geprüft)</li>
-        <li>Festgestellte Mängel und getroffene Maßnahmen</li>
-        <li>Ergebnis: Freigabe zur Weiterverwendung oder Aussonderung</li>
-        <li><strong>Name und Unterschrift der Befähigten Person</strong></li>
-        <li>Termin der nächsten Prüfung</li>
-      </ul>
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📄</div>
+      <div style="font-weight:700;font-size:1rem">Das Leiterkontrollbuch — Ihr rechtlicher Schutz</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Grundlage: BetrSichV § 14 Abs. 5 und DGUV Information 208-016. Das Prüfprotokoll ist der einzige Nachweis, dass die Befähigte Person ihre Aufgabe erfüllt hat.</div>
     </div>
-    <p><strong>Aufbewahrung:</strong> Die Prüfnachweise sind bis zur nächsten Prüfung aufzubewahren und müssen bei einer Kontrolle der Berufsgenossenschaft vorgezeigt werden können.</p>
-    <div style="background:#fef9c3;border:1.5px solid #fde047;border-radius:8px;padding:9px 13px;margin:8px 0">
-      <div style="font-size:.8rem;color:#713f12">💡 <strong>Merksatz:</strong> Keine Dokumentation = kein Nachweis = keine Rechtskonformität. Was nicht schriftlich festgehalten ist, hat rechtlich nicht stattgefunden.</div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📝 Pflichtangaben im Prüfprotokoll</div>
+    <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">①</span>
+          <span>Inventarnummer und Bezeichnung des Arbeitsmittels</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">②</span>
+          <span>Art der Prüfung: Erst- / wiederkehrend / außerordentlich</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">③</span>
+          <span>Datum der Prüfung</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">④</span>
+          <span>Prüfumfang (welche Punkte wurden geprüft)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑤</span>
+          <span>Festgestellte Mängel und getroffene Maßnahmen</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑥</span>
+          <span>Ergebnis: Freigabe zur Weiterverwendung oder Aussonderung</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8;font-weight:600">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑦</span>
+          <span>Name und <strong>eigenhändige Unterschrift</strong> der Befähigten Person</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑧</span>
+          <span>Termin der nächsten Prüfung</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🗂️ Aufbewahrung & Vorlage</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">📁 Mindestaufbewahrung</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Bis zur nächsten wiederkehrenden Prüfung — mindestens jedoch 2 Jahre</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">👁️ Vorlagepflicht</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Jederzeit abrufbar für BG-Kontrollen, Behörden und im Schadensfall</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">📍 Aufbewahrungsort</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Im Betrieb zugänglich, trocken, vor Verlust geschützt — digital oder analog möglich</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">✍️ Unterschrift</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Handschriftlich oder qualifiziert digital (nicht nur Namensangabe)</div>
+      </div>
+    </div>
+
+    <div style="background:#fef9c3;border:2px solid #fde047;border-radius:10px;padding:12px 14px;margin-top:8px">
+      <div style="font-weight:700;font-size:.9rem;color:#713f12">💡 Der wichtigste Merksatz dieser Schulung:</div>
+      <div style="font-size:.84rem;color:#92400e;margin-top:6px;line-height:1.6">
+        <strong>Keine Dokumentation = kein Nachweis = keine Rechtskonformität.</strong><br>
+        Was nicht schriftlich festgehalten ist, hat rechtlich <em>nicht stattgefunden</em> — auch wenn die Prüfung fachlich einwandfrei durchgeführt wurde. Ein fehlendes Prüfprotokoll wird bei BG-Kontrollen genauso bewertet wie eine nicht durchgeführte Prüfung.
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#14532d">🚀 Bereit für das Abschlussquiz?</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Sie haben alle 10 Module abgeschlossen. Das Quiz besteht aus 20 Fragen — zum Bestehen sind mindestens <strong>16 richtige Antworten (80 %)</strong> erforderlich. Nach erfolgreichem Abschluss erhalten Sie Ihr persönliches Schulungszertifikat.</div>
     </div>`
   }
+
 ];
 
 const BP_QUIZ = [
