@@ -10844,6 +10844,74 @@ function psagaFolienSchliessen() {
   psagaAktivesModul = null;
 }
 
+// ── BP (Leitern & Tritte) Admin-Vorschau & Als-MA-Testen ──────────────────────
+
+function bpAdminVorschau() {
+  // Fullscreen-Modal analog zu hubAdminVorschau
+  let modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'bp-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
+
+  modal.innerHTML = `
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🪜 Befähigte Person Leitern & Tritte</div>
+      </div>
+      <button onclick="bpPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
+        <strong>🔍 Vorschau-Modus:</strong> Alle Kapitel und das Quiz sind zugänglich — wie beim Mitarbeiter. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="bp-preview-inner"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  _bpPreviewMode = true;
+  _bpPreviewContainer = document.getElementById('bp-preview-inner');
+  bpSchulungRenderIn(_bpPreviewContainer);
+
+  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
+}
+
+function bpPreviewBeenden() {
+  _bpPreviewMode = false;
+  _bpPreviewContainer = null;
+  const modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+  showToast('✅ Vorschau beendet', '#16a34a');
+}
+
+function bpAlsMaSpielen() {
+  // Preview-Flag setzen, dann in MA-Screen wechseln
+  _bpPreviewMode = true;
+
+  // BP-Container im MA-Bereich aufklappen
+  const cont = document.getElementById('bp-schulung-container');
+  const toggle = document.getElementById('bp-schulung-toggle');
+  if (cont) {
+    cont.style.display = 'block';
+    if (toggle) {
+      const pfeil = toggle.querySelector('.bp-pfeil') || toggle.querySelector('span[style*="transform"]');
+      if (pfeil) pfeil.style.transform = 'rotate(180deg)';
+    }
+    bpSchulungRenderIn(cont);
+  }
+  // Zum MA-Screen wechseln
+  showScreen('screen-mitarbeiter');
+  setTimeout(() => {
+    const bpBtn = document.getElementById('bp-schulung-toggle') ||
+                  document.querySelector('[onclick*="bpSchulungToggle"]');
+    if (bpBtn) bpBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+  showToast('🔍 Als MA testen: Befähigte Person', '#1a3a5c');
+}
+
 // ── PSAgA Admin-Vorschau & Als-MA-Testen ──────────────────────────────────────
 
 // Vorschau: Erstes Modul direkt öffnen ohne Sperr-Prüfung (Admin-Modus)
