@@ -1124,7 +1124,7 @@ async function initApp() {
     if (!SCHULUNG_VORLAGEN.some(v => v.id === BP_VORLAGE_ID)) {
       SCHULUNG_VORLAGEN.unshift({
         id:              BP_VORLAGE_ID,
-        titel:           'Befähigte Person — Leitern & Tritte',
+        titel:           'Schulung: Befähigte Person Leitern & Tritte',
         beschreibung:    '8 Module · 20 Quizfragen · Fachkundenachweis (BetrSichV · DGUV 208-016)',
         typ:             'befperson',
         intervall_monate: 60,
@@ -2234,7 +2234,7 @@ function adminZeigeTenant(tenantId) {
       const isPsaga = z.vorlagenId === '__psaga__';
       const isHub = z.vorlagenId === HUB_VORLAGE_ID;
       const isBp = z.vorlagenId === BP_VORLAGE_ID;
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
           <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#1a3a5c;font-weight:700':isBp?'color:#1a3a5c;font-weight:700':''}">${titel}</div>
@@ -2339,7 +2339,7 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, has
       const abgeschlossen = (bpDaten||[]).filter(d => d.unterzeichnet_am).length;
       html += `
         <div style="margin-bottom:16px">
-          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🪜 Befähigte Person — Leitern & Tritte</div>
+          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🪜 Schulung: Befähigte Person Leitern & Tritte</div>
           <div style="display:flex;gap:10px;flex-wrap:wrap">
             ${_statKachel(abgeschlossen, 'Quiz bestanden + Zertifikat', '#eff6ff','#1a3a5c')}
           </div>
@@ -2441,7 +2441,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : isBp ? '🪜 Befähigte Person — Leitern & Tritte (8 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
 
   // ── PSAgA: Mitarbeiter-Übersicht aus Bescheinigungen laden ──
   let psagaMaHtml = '';
@@ -3916,7 +3916,7 @@ function renderAdminZuweisungen() {
     const isPsaga = z.vorlagenId === '__psaga__';
     const isHub = z.vorlagenId === HUB_VORLAGE_ID;
     const isBp = z.vorlagenId === BP_VORLAGE_ID;
-    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
     const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#1a3a5c;font-weight:700' : isBp ? 'color:#1a3a5c;font-weight:700' : '';
 
     // Mitarbeiter dieses Tenants
@@ -4062,10 +4062,10 @@ function azVorlagenListeRendern(suche) {
 
   const bpMatch = !s || 'befähigte'.includes(s) || 'leiter'.includes(s) || 'tritte'.includes(s) || '208'.includes(s) || 'betrsi'.includes(s) || 'prüfung'.includes(s);
   const bpHtml = bpMatch ? `
-    <div onclick="azVorlageWaehlen('${BP_VORLAGE_ID}','🪜 Befähigte Person — Leitern & Tritte (8 Module)')"
+    <div onclick="azVorlageWaehlen('${BP_VORLAGE_ID}','🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#eff6ff"
       onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
-      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🪜 Befähigte Person — Leitern & Tritte (8 Module)</div>
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)</div>
       <div style="font-size:.76rem;color:#1d4ed8;margin-top:2px">
         8 Module &nbsp;·&nbsp; 20 Quizfragen · mind. 80&thinsp;% zum Bestehen &nbsp;·&nbsp; Fachkundenachweis (BetrSichV · DGUV 208-016)
       </div>
@@ -4117,7 +4117,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId === BP_VORLAGE_ID ? 'Befähigte Person — Leitern & Tritte' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId === BP_VORLAGE_ID ? 'Schulung: Befähigte Person Leitern & Tritte' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -4988,7 +4988,7 @@ function renderSubDashboard() {
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
           const isHub = z.vorlagenId === HUB_VORLAGE_ID;
           const isBp = z.vorlagenId === BP_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
@@ -9270,7 +9270,7 @@ async function firmaRenderHistorie() {
       const isPsaga = zuw?.vorlagenId === '__psaga__';
       const isHub = zuw?.vorlagenId === HUB_VORLAGE_ID;
       const isBpH = zuw?.vorlagenId === BP_VORLAGE_ID;
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBpH ? '🪜 Befähigte Person — Leitern & Tritte' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBpH ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
         typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : isHub ? 'hub' : isBpH ? 'befperson' : 'schulung',
@@ -13899,7 +13899,7 @@ function bpSchulungRenderIn(cont) {
 
   let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
     + '<div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">'
-    + '<div style="font-weight:700;font-size:.9rem">🪜 Befähigte Person — Leitern & Tritte</div>'
+    + '<div style="font-weight:700;font-size:.9rem">🪜 Schulung: Befähigte Person Leitern & Tritte</div>'
     + '<div style="font-size:.72rem;opacity:.8;margin-top:2px">BetrSichV · TRBS 1203 · TRBS 2121-2 · DGUV 208-016</div>'
     + '<div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">'
     + '<div style="height:100%;background:#fbbf24;border-radius:3px;width:' + Math.round(bestandenAnzahl/BP_KAPITEL.length*100) + '%;transition:width .4s"></div>'
