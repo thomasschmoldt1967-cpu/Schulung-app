@@ -14166,8 +14166,10 @@ async function bpZertifikatErstellen() {
   const vollname  = currentUser?.name   || 'Teilnehmer';
   const datum     = new Date().toLocaleDateString('de-DE');
   const ergebnis  = localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–';
-  const tenant    = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
+  const tenant     = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
   const tenantName = tenant?.name || 'CSC GmbH';
+  // Unterschrift nur für CSC-eigene Mitarbeiter einbetten
+  const isCscTenant = !tenant || tenantName.toLowerCase().includes('csc');
 
   // Befristung: 3 Jahre ab heute
   const befristungDate = new Date();
@@ -14214,10 +14216,12 @@ async function bpZertifikatErstellen() {
     doc.setFontSize(8);
     doc.setTextColor(26, 58, 92);
     doc.text('SCHULUNGSLEITER / AUSBILDER', ML+6, sigLineY+7);
-    // Unterschrift einbetten
-    try {
-      doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+6, sigLineY+7, 80, 22);
-    } catch(e) {}
+    // Unterschrift einbetten (nur CSC)
+    if (isCscTenant) {
+      try {
+        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+6, sigLineY+7, 80, 22);
+      } catch(e) {}
+    }
     doc.setDrawColor(180, 190, 200);
     doc.setLineWidth(0.4);
     doc.line(ML+6, sigLineY+32, ML+85, sigLineY+32);
@@ -14447,10 +14451,12 @@ async function bpZertifikatErstellen() {
     doc.text('ARBEITGEBER / GESCHÄFTSFÜHRUNG', ML+4, y+6);
     doc.setDrawColor(180, 190, 200);
     doc.setLineWidth(0.5);
-    // Unterschrift Geschäftsführer (T. Schmoldt) einbetten
-    try {
-      doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+4, y+8, 70, 20);
-    } catch(e) {}
+    // Unterschrift Geschäftsführer (T. Schmoldt) — nur für CSC-Mitarbeiter
+    if (isCscTenant) {
+      try {
+        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+4, y+8, 70, 20);
+      } catch(e) {}
+    }
     doc.line(ML+4, y+30, ML+sigW-4, y+30);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
