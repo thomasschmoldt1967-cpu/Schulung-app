@@ -14161,15 +14161,26 @@ function bpQuizWiederholen() {
 }
 
 async function bpZertifikatErstellen() {
-  const userId = currentUser?.userId || 'anon';
-  const vollname = currentUser?.name || 'Teilnehmer';
-  const datum = new Date().toLocaleDateString('de-DE');
-  const ergebnis = localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–';
+  const userId    = currentUser?.userId || 'anon';
+  const vollname  = currentUser?.name   || 'Teilnehmer';
+  const datum     = new Date().toLocaleDateString('de-DE');
+  const ergebnis  = localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–';
+  const tenant    = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
+  const tenantName = tenant?.name || 'CSC GmbH';
+
+  // Befristung: 3 Jahre ab heute
+  const befristungDate = new Date();
+  befristungDate.setFullYear(befristungDate.getFullYear() + 3);
+  const befristung = befristungDate.toLocaleDateString('de-DE');
 
   try {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    const W = 210, H = 297;
+    const W = 210, H = 297, ML = 20, CW = 170;
+
+    // ══════════════════════════════════════
+    // SEITE 1 — FACHKUNDENACHWEIS
+    // ══════════════════════════════════════
 
     // Hintergrund
     doc.setFillColor(245, 247, 250);
@@ -14178,12 +14189,9 @@ async function bpZertifikatErstellen() {
     // Navy-Blauer Header
     doc.setFillColor(26, 58, 92);
     doc.rect(0, 0, W, 55, 'F');
-
-    // Akzentlinie
     doc.setFillColor(37, 99, 168);
     doc.rect(0, 52, W, 3, 'F');
 
-    // Logo-Platzhalter / Titel im Header
     doc.setTextColor(255, 255, 255);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
@@ -14195,27 +14203,23 @@ async function bpZertifikatErstellen() {
     doc.setTextColor(180, 200, 230);
     doc.text('gemäß BetrSichV · TRBS 1203 · TRBS 2121 Teil 2 · DGUV Information 208-016', W/2, 42, { align: 'center' });
 
-    // Zertifikat-Body
+    // Body Seite 1
     doc.setTextColor(30, 58, 92);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
     doc.text('Hiermit wird bestätigt, dass', W/2, 72, { align: 'center' });
 
-    // Name
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(26, 58, 92);
     doc.text(vollname, W/2, 90, { align: 'center' });
 
-    // Linie unter Name
     doc.setDrawColor(37, 99, 168);
     doc.setLineWidth(0.8);
     doc.line(40, 94, W-40, 94);
 
-    // Text
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    doc.setTextColor(55, 65, 81);
     const bodyText = [
       'die theoretische Qualifizierung zur',
       'Befähigten Person zur Prüfung von Leitern und Tritten',
@@ -14255,7 +14259,7 @@ async function bpZertifikatErstellen() {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(20, 83, 45);
-    doc.text(`✓ Abschlusstest bestanden`, W/2, 193, { align: 'center' });
+    doc.text('✓ Abschlusstest bestanden', W/2, 193, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
     doc.text(`Ergebnis: ${ergebnis} — Bestehensgrenze: 80 %`, W/2, 203, { align: 'center' });
@@ -14270,88 +14274,200 @@ async function bpZertifikatErstellen() {
     doc.setTextColor(107, 114, 128);
     const hinweis = [
       'Dieser Nachweis bescheinigt die theoretische Fachkunde als Befähigte Person gemäß TRBS 1203.',
-      'Die schriftliche Bestellung durch den Arbeitgeber ist zusätzlich erforderlich.',
+      'Die schriftliche Bestellung durch den Arbeitgeber erfolgt auf Seite 2 dieses Dokuments.',
       'Empfehlung: Auffrischung alle 3–5 Jahre oder bei wesentlichen Normänderungen.'
     ];
-    hinweis.forEach((h, i) => doc.text(h, W/2, 232 + i * 7, { align: 'center' }));
+    hinweis.forEach((h, i) => doc.text(h, W/2, 234 + i * 7, { align: 'center' }));
 
-    // Footer
+    // Footer Seite 1
     doc.setFillColor(26, 58, 92);
-    doc.rect(0, H-20, W, 20, 'F');
+    doc.rect(0, H-16, W, 16, 'F');
     doc.setTextColor(180, 200, 230);
-    doc.setFontSize(8);
-    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · schulung.csc-hannover.de', W/2, H-10, { align: 'center' });
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · schulung.csc-hannover.de · Seite 1 von 2', W/2, H-6, { align: 'center' });
 
+    // ══════════════════════════════════════
+    // SEITE 2 — SCHRIFTLICHE BESTELLUNG
+    // ══════════════════════════════════════
+    doc.addPage();
+
+    // Hintergrund
+    doc.setFillColor(245, 247, 250);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Header Seite 2
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, 0, W, 38, 'F');
+    doc.setFillColor(37, 99, 168);
+    doc.rect(0, 35, W, 3, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('SCHRIFTLICHE BESTELLUNG', ML, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('Befähigte Person zur Prüfung von Leitern und Tritten gemäß TRBS 1203 · BetrSichV § 14', ML, 24);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 200, 230);
+    doc.text('Diese Bestellung gilt als schriftlicher Nachweis gemäß BetrSichV', 210-ML, 16, { align: 'right' });
+    doc.text(`Ausstellungsdatum: ${datum}`, 210-ML, 23, { align: 'right' });
+
+    let y = 46;
+
+    // Arbeitgeber-Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(26, 58, 92);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(ML, y, CW, 32, 3, 3, 'FD');
+    doc.setFillColor(26, 58, 92);
+    doc.roundedRect(ML, y, 4, 32, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('ARBEITGEBER / AUFTRAGGEBER', ML+8, y+7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('CSC GmbH', ML+8, y+16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text('Petermax-Müller-Str. 3  ·  30880 Laatzen', ML+8, y+23);
+    doc.text('Fon: 05102-9319730  ·  www.csc-hannover.de', ML+8, y+29);
+    y += 38;
+
+    // Befähigte Person Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(37, 99, 168);
+    doc.roundedRect(ML, y, CW, 32, 3, 3, 'FD');
+    doc.setFillColor(37, 99, 168);
+    doc.roundedRect(ML, y, 4, 32, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(37, 99, 168);
+    doc.text('BEFÄHIGTE PERSON', ML+8, y+7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(26, 58, 92);
+    doc.text(vollname, ML+8, y+18);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Unternehmen: ${tenantName}`, ML+8, y+27);
+    y += 38;
+
+    // Prüfauftrag Box
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(59, 130, 246);
+    doc.roundedRect(ML, y, CW, 42, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(26, 58, 92);
+    doc.text('PRÜFAUFTRAG — ART DER ARBEITSMITTEL', ML+6, y+8);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 58, 92);
+    const pruefpunkte = [
+      '• Anlegeleitern, Stehleitern, Mehrzweckleitern, Podestleitern',
+      '• Tritte aller Bauarten gemäß TRBS 2121 Teil 2 / DGUV Information 208-016',
+      '• Prüfumfang: Erst-, wiederkehrende und außerordentliche Prüfung nach BetrSichV § 14',
+      '• Geltungsbereich: Sämtliche Betriebsstätten des Unternehmens'
+    ];
+    pruefpunkte.forEach((p, i) => doc.text(p, ML+6, y+17 + i*6));
+    y += 48;
+
+    // Qualifikation Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(200, 210, 220);
+    doc.roundedRect(ML, y, CW, 24, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(26, 58, 92);
+    doc.text('QUALIFIKATIONSNACHWEIS', ML+6, y+8);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Theoretische Schulung absolviert am: ${datum}   ·   Ergebnis: ${ergebnis}`, ML+6, y+16);
+    doc.text('Nachweis: Fachkundenachweis Seite 1 dieses Dokuments (TRBS 1203, DGUV 208-016)', ML+6, y+22);
+    y += 30;
+
+    // Befristung Box
+    doc.setFillColor(254, 249, 195);
+    doc.setDrawColor(234, 179, 8);
+    doc.roundedRect(ML, y, CW, 16, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(113, 63, 18);
+    doc.text(`Befristung: Diese Bestellung gilt bis zum ${befristung} (3 Jahre ab Ausstellungsdatum).`, ML+6, y+7);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Empfehlung: Auffrischung vor Ablauf bei Normänderungen. Widerruf jederzeit durch den Arbeitgeber möglich.', ML+6, y+13);
+    y += 22;
+
+    // Rechtshinweis
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Die befähigte Person ist berechtigt und verpflichtet, Leitern und Tritte des Unternehmens fachgerecht zu prüfen,', ML, y+4);
+    doc.text('das Prüfergebnis im Leiterkontrollbuch zu dokumentieren und über Weiterverwendung oder Aussonderung zu entscheiden.', ML, y+10);
+    y += 18;
+
+    // Unterschriften
+    const sigW = (CW - 8) / 2;
+    // Linke Unterschrift — Arbeitgeber
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(200, 210, 220);
+    doc.roundedRect(ML, y, sigW, 38, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('ARBEITGEBER / GESCHÄFTSFÜHRUNG', ML+4, y+6);
+    doc.setDrawColor(180, 190, 200);
+    doc.setLineWidth(0.5);
+    doc.line(ML+4, y+26, ML+sigW-4, y+26);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Ort, Datum', ML+4, y+31);
+    doc.text('Unterschrift', ML+sigW-4, y+31, { align: 'right' });
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen', ML+4, y+37);
+
+    // Rechte Unterschrift — Befähigte Person
+    const rx = ML + sigW + 8;
+    doc.setFillColor(240, 253, 244);
+    doc.setDrawColor(134, 239, 172);
+    doc.roundedRect(rx, y, sigW, 38, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(20, 83, 45);
+    doc.text('BEFÄHIGTE PERSON (KENNTNISNAHME)', rx+4, y+6);
+    doc.setDrawColor(134, 239, 172);
+    doc.setLineWidth(0.5);
+    doc.line(rx+4, y+26, rx+sigW-4, y+26);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Ort, Datum', rx+4, y+31);
+    doc.text('Unterschrift', rx+sigW-4, y+31, { align: 'right' });
+    doc.setFontSize(7.5);
+    doc.setTextColor(20, 83, 45);
+    doc.text(vollname, rx+4, y+37);
+
+    // Footer Seite 2
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, H-16, W, 16, 'F');
+    doc.setTextColor(180, 200, 230);
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · schulung.csc-hannover.de · Seite 2 von 2', W/2, H-6, { align: 'center' });
+
+    // Speichern
     const filename = `Fachkundenachweis_Befaehigte_Person_${vollname.replace(/\s+/g,'_')}_${datum.replace(/\./g,'-')}.pdf`;
     doc.save(filename);
-    showToast('✅ Fachkundenachweis wurde erstellt!', '#14532d');
+    showToast('✅ 2-seitiges PDF erstellt: Fachkundenachweis + Bestellungsurkunde', '#14532d');
   } catch(e) {
     console.error('BP Zertifikat Fehler:', e);
     showToast('⚠️ PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
   }
 }
 
-// Admin-Vorschau
-function bpAdminVorschau() {
-  _bpPreviewMode = true;
-  bpFortschritt  = {};
-  const overlay = document.createElement('div');
-  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10002;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
-  overlay.onclick = (e) => { if (e.target === overlay) { document.body.removeChild(overlay); _bpPreviewMode = false; _bpPreviewContainer = null; } };
-  const box = document.createElement('div');
-  box.style.cssText = 'background:#f0f4f8;border-radius:16px;width:100%;max-width:480px;padding:16px;margin:auto';
-  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <div style="font-weight:700;font-size:.95rem;color:#1a3a5c">🪜 Admin-Vorschau — Befähigte Person</div>
-    <button onclick="this.closest('.bp-overlay-root').remove();_bpPreviewMode=false;_bpPreviewContainer=null;"
-      style="background:#1a3a5c;border:none;color:#fff;border-radius:50%;width:30px;height:30px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
-  </div>
-  <div id="bp-preview-content"></div>`;
-  box.classList.add('bp-overlay-root');
-  overlay.classList.add('bp-overlay-root');
-  box.querySelector('button').onclick = () => { document.body.removeChild(overlay); _bpPreviewMode = false; _bpPreviewContainer = null; };
-  overlay.appendChild(box);
-  document.body.appendChild(overlay);
-  _bpPreviewContainer = box.querySelector('#bp-preview-content');
-  bpSchulungRenderIn(_bpPreviewContainer);
-}
-
-function bpAlsMaSpielen() {
-  _bpPreviewMode = true;
-  bpFortschritt  = {};
-  document.querySelectorAll('.bp-overlay-root').forEach(el => el.remove());
-
-  let modal = document.getElementById('bp-preview-modal');
-  if (modal) modal.remove();
-
-  modal = document.createElement('div');
-  modal.id = 'bp-preview-modal';
-  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
-
-  modal.innerHTML = `
-    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
-      <div style="flex:1">
-        <div style="font-size:.65rem;font-weight:700;color:#fbbf24;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
-        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🪜 Befähigte Person — Leitern &amp; Tritte</div>
-      </div>
-      <button onclick="bpPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
-    </div>
-    <div style="padding:14px">
-      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
-        <strong>🔍 Vorschau-Modus:</strong> Alles funktioniert wie beim Mitarbeiter — Module lesen, Quiz machen, PDF ansehen. <strong>Nichts wird gespeichert.</strong>
-      </div>
-      <div id="bp-preview-inner"></div>
-    </div>`;
-
-  document.body.appendChild(modal);
-  _bpPreviewContainer = document.getElementById('bp-preview-inner');
-  bpSchulungRenderIn(_bpPreviewContainer);
-  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
-}
-
-function bpPreviewBeenden() {
-  _bpPreviewMode = false;
-  _bpPreviewContainer = null;
-  bpFortschritt = {};
-  const modal = document.getElementById('bp-preview-modal');
-  if (modal) modal.remove();
-}
