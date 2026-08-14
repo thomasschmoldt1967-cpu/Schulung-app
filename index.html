@@ -9,6 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#1e3a5f">
   <link rel="stylesheet" href="style.css">
+  <style>@keyframes psagaSpin{to{transform:rotate(360deg)}}</style>
   <!-- jsPDF für PDF-Export -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <!-- pdf.js für PDF-Text-Extraktion (Vorlage aus PDF konvertieren) -->
@@ -45,8 +46,8 @@
     </div>
     <div id="login-fehler" class="error-msg"></div>
     <div class="form-group">
-      <label for="login-email">E-Mail-Adresse</label>
-      <input type="email" id="login-email" placeholder="name@unternehmen.de" autocomplete="email">
+      <label for="login-email">E-Mail oder Handynummer</label>
+      <input type="text" id="login-email" placeholder="E-Mail oder Handynummer" autocomplete="username" inputmode="email">
     </div>
     <div class="form-group">
       <label for="login-password">Passwort</label>
@@ -57,7 +58,7 @@
     </div>
     <button class="btn btn-primary btn-full" style="margin-top:6px" onclick="doLogin()">Anmelden</button>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
-      <a href="#" onclick="zeigePwReset();return false;" style="font-size:0.72rem;color:#9ca3af;text-decoration:none">Passwort vergessen?</a>
+      <a href="#" onclick="zeigePasswortVergessenHilfe();return false;" style="font-size:0.72rem;color:#9ca3af;text-decoration:none">Passwort vergessen?</a>
     </div>
     <p style="font-size:0.72rem;color:#9ca3af;text-align:center;margin:8px 0 0;line-height:1.5">
       Mit der Anmeldung stimmen Sie der Verarbeitung Ihrer Daten gemäß unserer
@@ -122,6 +123,7 @@
       <div class="admin-nav-divider"></div>
       <button class="admin-nav-btn admin-nav-sync" onclick="adminSidebarClose();syncMissingToDrive()">☁️ Drive-Sync</button>
       <button class="admin-nav-btn admin-nav-help" onclick="adminSidebarClose();hilfeOeffnen('admin')">📖 App-Anleitung</button>
+      <button class="admin-nav-btn" onclick="appCacheLeeren()" style="font-size:0.75rem;padding:3px 8px;opacity:0.7">🔄 Cache</button>
     </nav>
 
     <!-- ── HAUPTINHALT ── -->
@@ -351,7 +353,39 @@
     <!-- Tab: Audit-Trail -->
     <div id="tab-audit" class="tab-content" style="display:none">
       <div class="card">
-        <div class="card-title">🔍 Änderungsprotokoll</div>
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>🔍 Änderungsprotokoll</span>
+          <span id="audit-count" style="font-size:.75rem;font-weight:400;color:#6b7280"></span>
+        </div>
+        <div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <select id="audit-filter-action" onchange="loadAuditFromDB()"
+            style="flex:1;min-width:180px;background:#1f2937;color:#e5e7eb;border:1px solid #374151;border-radius:8px;padding:7px 10px;font-size:.82rem">
+            <option value="">Alle Aktionen</option>
+            <optgroup label="📜 Nachweise">
+              <option value="PSAGA_BESCHEINIGUNG">🏅 PSAgA Bescheinigung</option>
+              <option value="PSAGA_BESTANDEN">🎯 PSAgA Modul bestanden</option>
+              <option value="HUB_BESCHEINIGUNG">🏅 Hub Bescheinigung</option>
+              <option value="ABSCHLUSS">✅ Schulung abgeschlossen</option>
+              <option value="LERNPFAD_UNTERZEICHNET">✍️ Lernpfad unterzeichnet</option>
+              <option value="LERNPFAD_ZERTIFIKAT">🎓 Lernpfad Zertifikat</option>
+            </optgroup>
+            <optgroup label="👤 Benutzer">
+              <option value="LOGIN">🔑 Login</option>
+              <option value="LOGOUT">🔓 Logout</option>
+              <option value="PW_AENDERUNG">🔐 Passwort geändert</option>
+              <option value="MITARBEITER_EINZEL">👤 Mitarbeiter angelegt</option>
+              <option value="MITARBEITER_IMPORT">👥 Mitarbeiter importiert</option>
+            </optgroup>
+            <optgroup label="⚙️ Verwaltung">
+              <option value="ZUWEISUNG">📋 Zuweisung</option>
+              <option value="LOESCHEN">🗑️ Gelöscht</option>
+              <option value="VORLAGE_NEU">📄 Vorlage erstellt</option>
+              <option value="VORLAGE_EDIT">✏️ Vorlage bearbeitet</option>
+              <option value="UNTERNEHMEN_NEU">🏢 Unternehmen angelegt</option>
+            </optgroup>
+          </select>
+          <button onclick="loadAuditFromDB()" class="btn btn-outline btn-sm" style="white-space:nowrap">🔄 Aktualisieren</button>
+        </div>
         <div id="audit-list"></div>
       </div>
     </div>
@@ -359,43 +393,50 @@
     <!-- Tab: Unternehmen verwalten -->
     <div id="tab-unternehmen" class="tab-content" style="display:none">
 
-      <!-- Neues Unternehmen anlegen (immer offen) -->
+      <!-- Neuer Lizenznehmer anlegen -->
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">➕ Neues Unternehmen anlegen</div>
+        <div class="card-title">➕ Neuer Lizenznehmer anlegen</div>
+        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Schulungsinhalte werden nach dem Anlegen im Tab <strong>Zuweisungen</strong> durch CSC freigeschaltet.</p>
         <div>
-          <div class="form-group">
-            <label>Firmenname *</label>
-            <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="form-group" style="margin:0">
+              <label>Firmenname *</label>
+              <input type="text" id="nu-name" placeholder="z.B. Reinigung Müller GmbH">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Ansprechpartner *</label>
+              <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>E-Mail (Login) *</label>
+              <input type="email" id="nu-email" placeholder="chef@unternehmen.de">
+            </div>
+            <div class="form-group" style="margin:0">
+              <label>Telefon (optional)</label>
+              <input type="tel" id="nu-telefon" placeholder="z.B. 0511 123456">
+            </div>
           </div>
-          <div class="form-group">
-            <label>E-Mail (Unternehmens-Login) *</label>
-            <input type="email" id="nu-email" placeholder="verantwortlicher@unternehmen.de">
-          </div>
-          <div class="form-group">
-            <label>Ansprechpartner Name *</label>
-            <input type="text" id="nu-kontakt" placeholder="z.B. Max Mustermann">
-          </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:12px">
             <label>Passwort *</label>
             <div style="display:flex;gap:8px;align-items:center">
               <input type="text" id="nu-passwort" placeholder="Passwort eingeben" style="flex:1">
               <button class="btn btn-outline btn-sm" onclick="nuGenerierePasswort()">🎲 Generieren</button>
             </div>
           </div>
-          <div style="margin-top:14px;display:flex;gap:10px">
-            <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Unternehmen anlegen</button>
+          <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="nuAnlegen()">🏢 Lizenznehmer anlegen</button>
           </div>
-          <div id="nu-msg" class="error-msg" style="margin-top:8px"></div>
+          <div id="nu-msg" style="margin-top:10px;font-size:.88rem;font-weight:500"></div>
         </div>
       </div>
 
-      <!-- Bestehende Unternehmen mit Toggle + Filter -->
+      <!-- Bestehende Lizenznehmer -->
       <div class="card">
         <div style="display:flex;justify-content:space-between;align-items:center;cursor:pointer" onclick="nuListeToggle()">
-          <div class="card-title" style="margin:0">📋 Bestehende Unternehmen</div>
+          <div class="card-title" style="margin:0">📋 Bestehende Lizenznehmer</div>
           <span id="nu-liste-toggle-icon" style="font-size:1.2rem;color:#1e3a5f;transition:transform .25s">▶</span>
         </div>
-          <div id="nu-liste-bereich" style="display:none;margin-top:12px">
+        <div id="nu-liste-bereich" style="display:none;margin-top:12px">
           <input type="search" id="nu-filter" placeholder="🔍 Unternehmen suchen…" oninput="nuRenderListe()" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.83rem;outline:none;box-sizing:border-box;margin-bottom:10px">
           <div id="nu-liste"></div>
         </div>
@@ -448,7 +489,35 @@
         <div id="psaga-schulungen-container" style="display:none;margin-top:8px"></div>
       </div>
 
-      <!-- Lernpfad -->
+      <!-- Hubarbeitsbühnen DGUV 308-008 -->
+      <div id="hub-schulung-btn-wrap" style="display:none;grid-column:1/-1">
+        <button type="button" id="btn-hub-schulung"
+          style="display:flex;align-items:center;gap:10px;background:#7c2d12;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(124,45,18,.35);border:none;width:100%;cursor:pointer;text-align:left;-webkit-appearance:none;box-sizing:border-box"
+          onclick="hubSchulungToggle()">
+          <span style="font-size:1.5rem;pointer-events:none">🏗️</span>
+          <div style="flex:1;pointer-events:none">
+            <div style="font-weight:700;font-size:.9rem">Hubarbeitsbühnen — DGUV 308-008</div>
+            <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-hub-sub">15 Kapitel · Quiz · Fahrauftrag · Bescheinigung</div>
+          </div>
+          <span id="btn-hub-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
+        </button>
+        <div id="hub-schulung-container" style="display:none;margin-top:8px"></div>
+      </div>
+
+      <!-- Befähigte Person Leitern & Tritte -->
+      <div id="bp-schulung-btn-wrap" style="display:none;grid-column:1/-1">
+        <button type="button" id="btn-bp-schulung"
+          style="display:flex;align-items:center;gap:10px;background:#1a3a5c;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(26,58,92,.35);border:none;width:100%;cursor:pointer;text-align:left;-webkit-appearance:none;box-sizing:border-box"
+          onclick="bpSchulungToggle()">
+          <span style="font-size:1.5rem;pointer-events:none">🪜</span>
+          <div style="flex:1;pointer-events:none">
+            <div style="font-weight:700;font-size:.9rem">Schulung: Befähigte Person Leitern &amp; Tritte</div>
+            <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-bp-sub">8 Module · 20 Quizfragen · Fachkundenachweis</div>
+          </div>
+          <span id="btn-bp-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
+        </button>
+        <div id="bp-schulung-container" style="display:none;margin-top:8px"></div>
+      </div>
       <div style="grid-column:1/-1">
         <button type="button" id="btn-lernpfad"
           style="display:flex;align-items:center;gap:10px;background:#0f5132;color:#fff;padding:14px 16px;border-radius:12px;box-shadow:0 2px 8px rgba(15,81,50,.35);border:none;width:100%;cursor:pointer;text-align:left;-webkit-appearance:none;box-sizing:border-box"
@@ -521,6 +590,10 @@
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:rgba(0,0,0,.7);flex-shrink:0">
         <span id="psaga-folien-titel" style="color:#fff;font-weight:700;font-size:.85rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></span>
         <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <div style="display:flex;gap:4px">
+            <button id="psaga-lang-de" onclick="psagaSprachWechseln('de')" style="background:#3b82f6;border:none;color:#fff;font-size:.78rem;padding:5px 9px;border-radius:6px;cursor:pointer;font-weight:700" title="Deutsch">🇩🇪 DE</button>
+            <button id="psaga-lang-en" onclick="psagaSprachWechseln('en')" style="background:#374151;border:none;color:#9ca3af;font-size:.78rem;padding:5px 9px;border-radius:6px;cursor:pointer;font-weight:700" title="English">🇬🇧 EN</button>
+          </div>
           <button id="psaga-tts-btn" onclick="psagaTTSToggle()" style="background:#374151;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">🔊 Ton</button>
           <button id="psaga-auto-btn" onclick="psagaAutoToggle()" style="display:none;background:#1a3a5c;border:none;color:#fff;font-size:.78rem;padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:600">▶ Auto</button>
           <button onclick="psagaFolienSchliessen()" style="background:none;border:none;color:#fff;font-size:1.6rem;cursor:pointer;padding:0 0 0 4px;line-height:1">✕</button>
@@ -531,8 +604,11 @@
         <div id="psaga-progress-bar" style="height:100%;background:#3b82f6;width:0%;transition:width .3s ease"></div>
       </div>
       <!-- Folienbild: nimmt gesamten Restplatz ein -->
-      <div style="position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center">
-        <img id="psaga-folien-bild" src="" alt="Folie" style="width:100%;height:100%;object-fit:contain;display:block">
+      <div style="position:relative;flex:1;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#0f172a">
+        <div id="psaga-folien-spinner" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:2">
+          <div style="width:48px;height:48px;border:5px solid rgba(255,255,255,.2);border-top-color:#3b82f6;border-radius:50%;animation:psagaSpin 0.8s linear infinite"></div>
+        </div>
+        <img id="psaga-folien-bild" src="" alt="Folie" style="width:100%;height:100%;object-fit:contain;display:block;opacity:0;transition:opacity .3s ease" onload="this.style.opacity='1';var s=document.getElementById('psaga-folien-spinner');if(s)s.style.display='none';" onerror="var s=document.getElementById('psaga-folien-spinner');if(s)s.style.display='none';this.style.opacity='1'">
         <button onclick="psagaFolienPrev()" style="position:absolute;left:0;top:0;bottom:0;width:15%;background:rgba(0,0,0,.0);border:none;color:rgba(255,255,255,.7);font-size:2.5rem;cursor:pointer;display:flex;align-items:center;justify-content:flex-start;padding-left:8px">‹</button>
         <button onclick="psagaFolienNext()" style="position:absolute;right:0;top:0;bottom:0;width:15%;background:rgba(0,0,0,.0);border:none;color:rgba(255,255,255,.7);font-size:2.5rem;cursor:pointer;display:flex;align-items:center;justify-content:flex-end;padding-right:8px">›</button>
       </div>
@@ -964,8 +1040,8 @@
         <input type="text" id="einzel-name" placeholder="z.B. Max Mustermann" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
       </div>
       <div style="margin-bottom:14px">
-        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">E-Mail *</label>
-        <input type="email" id="einzel-email" placeholder="max@beispiel.de" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">Handynummer *</label>
+        <input type="tel" id="einzel-email" placeholder="z.B. 0151 12345678" style="width:100%;padding:10px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;box-sizing:border-box">
       </div>
       <div style="margin-bottom:14px">
         <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:6px;color:#374151">Standort / Objekt</label>
@@ -1014,7 +1090,7 @@
     <div id="import-step-upload">
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:16px;font-size:.83rem;color:#0369a1">
         <strong>📋 Excel-Format:</strong><br>
-        Spalte A: <strong>Name</strong> (Pflicht) · Spalte B: <strong>E-Mail</strong> (Pflicht) · Spalte C: <strong>Passwort</strong> (optional – wird automatisch generiert)<br>
+        Spalte A: <strong>Name</strong> (Pflicht) · Spalte B: <strong>Handynummer</strong> (Pflicht) · Spalte C: <strong>Passwort</strong> (optional – wird automatisch generiert)<br>
         <span style="font-size:.75rem;opacity:.8">Erste Zeile = Kopfzeile (wird übersprungen)</span>
       </div>
       <div style="margin-bottom:14px">
@@ -1455,5 +1531,184 @@
   </div>
 </div>
 
+
+<script>
+// Rechtsklick-Schutz auf PDF-Container und Schulungsbilder
+document.addEventListener('contextmenu', function(e) {
+  const t = e.target;
+  if (t.closest('iframe') || t.closest('[oncontextmenu]') ||
+      t.tagName === 'IMG' && t.closest('[data-schutz]')) {
+    e.preventDefault();
+    return false;
+  }
+});
+// Drag-Schutz auf Bilder in Schulungsmodulen
+document.addEventListener('dragstart', function(e) {
+  if (e.target.tagName === 'IMG' && e.target.closest('.schulung-inhalt, [data-schutz]')) {
+    e.preventDefault();
+  }
+});
+</script>
+
+<!-- Hubarbeitsbühnen Kapitel-Modal -->
+<div id="hub-kapitel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10001;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:540px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
+    <div style="background:#7c2d12;color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:relative">
+      <div style="font-size:.72rem;font-weight:600;color:#fcd34d;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px" id="hub-modal-modul">Modul 1 — DGUV 308-008</div>
+      <div style="font-weight:700;font-size:1rem;line-height:1.35" id="hub-modal-titel">Kapitel-Titel</div>
+      <button onclick="hubKapitelModalSchliessen()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.2rem;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">✕</button>
+    </div>
+    <div style="padding:18px 18px 12px;font-size:.86rem;color:#374151;line-height:1.6;max-height:60vh;overflow-y:auto" id="hub-modal-body"></div>
+    <div style="padding:12px 18px 18px;border-top:1px solid #f3f4f6">
+      <button id="hub-modal-weiter"
+        style="width:100%;padding:13px;background:#7c2d12;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;box-shadow:0 2px 8px rgba(124,45,18,.3);-webkit-appearance:none">
+        ✅ Kapitel abschließen &amp; weiter
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Hubarbeitsbühnen Fahrauftrag-Modal (nach bestandenem Quiz) -->
+<div id="hub-fahrauftrag-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10001;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:540px;box-shadow:0 8px 40px rgba(0,0,0,.35);margin:auto">
+    <!-- Header -->
+    <div style="background:#7c2d12;color:#fff;padding:16px 18px;border-radius:16px 16px 0 0">
+      <div style="font-size:.68rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Schritt 2 von 2</div>
+      <div style="font-weight:700;font-size:1rem">✍️ Schriftliche Beauftragung</div>
+      <div style="font-size:.75rem;opacity:.85;margin-top:2px">Fahrauftrag nach DGUV Regel 100-500 Kap. 2.10</div>
+    </div>
+
+    <div style="padding:18px">
+
+      <!-- Personendaten -->
+      <div style="background:#fff7ed;border:1.5px solid #f97316;border-radius:10px;padding:12px 14px;margin-bottom:16px">
+        <div style="font-size:.72rem;font-weight:700;color:#92400e;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Beauftragter Bediener</div>
+        <div id="hub-fa-name" style="font-weight:700;font-size:.95rem;color:#7c2d12"></div>
+        <div id="hub-fa-firma" style="font-size:.78rem;color:#9a3412;margin-top:2px"></div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:.78rem;color:#6b7280">
+          <span>📅 Ausbildung absolviert: <strong id="hub-fa-datum-schulung"></strong></span>
+        </div>
+      </div>
+
+      <!-- Bühnentyp-Auswahl -->
+      <div style="margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">1. Umfang der Beauftragung</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all .15s" id="hub-fa-label-a">
+            <input type="checkbox" id="hub-fa-typ-a" onchange="hubFaTypChanged()" style="margin-top:2px;width:18px;height:18px;accent-color:#7c2d12;flex-shrink:0">
+            <div>
+              <div style="font-weight:700;font-size:.88rem;color:#1e293b">Gruppe A — Senkrechthub</div>
+              <div style="font-size:.75rem;color:#6b7280;margin-top:2px">Scherenbühnen, Personenlifte (Schwerpunkt bleibt innerhalb der Kippkanten)</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:12px;padding:12px 14px;border:1.5px solid #e5e7eb;border-radius:10px;cursor:pointer;transition:all .15s" id="hub-fa-label-b">
+            <input type="checkbox" id="hub-fa-typ-b" onchange="hubFaTypChanged()" style="margin-top:2px;width:18px;height:18px;accent-color:#7c2d12;flex-shrink:0">
+            <div>
+              <div style="font-weight:700;font-size:.88rem;color:#1e293b">Gruppe B — Auslegerbühnen (Boom-Lifts)</div>
+              <div style="font-size:.75rem;color:#6b7280;margin-top:2px">Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Bühnen — ⚠️ PSAgA-Pflicht</div>
+            </div>
+          </label>
+        </div>
+        <div id="hub-fa-typ-fehler" style="display:none;color:#dc2626;font-size:.78rem;margin-top:6px">⚠️ Bitte mindestens einen Bühnentyp auswählen</div>
+      </div>
+
+      <!-- Gültigkeitszeitraum -->
+      <div style="margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">2. Gültigkeitszeitraum</div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:.7rem;color:#166534;font-weight:600;text-transform:uppercase">Gültig ab</div>
+            <div id="hub-fa-von" style="font-weight:700;font-size:.92rem;color:#14532d;margin-top:2px"></div>
+          </div>
+          <div style="color:#9ca3af;font-size:1.2rem">→</div>
+          <div style="flex:1;background:#f0fdf4;border-radius:8px;padding:10px 12px;text-align:center">
+            <div style="font-size:.7rem;color:#166534;font-weight:600;text-transform:uppercase">Gültig bis</div>
+            <div id="hub-fa-bis" style="font-weight:700;font-size:.92rem;color:#14532d;margin-top:2px"></div>
+          </div>
+        </div>
+        <div style="font-size:.72rem;color:#9ca3af;margin-top:6px;text-align:center">
+          Jährliche betriebliche Unterweisung bleibt Pflicht (DGUV 308-008)
+        </div>
+      </div>
+
+      <!-- Pflichten-Info -->
+      <div style="background:#f8fafc;border-radius:8px;padding:10px 12px;margin-bottom:16px;font-size:.78rem;color:#475569">
+        <div style="font-weight:700;margin-bottom:4px;color:#1e293b">3. Pflichten des Bedieners</div>
+        Mit der Unterzeichnung bestätige ich, dass ich die Schulung nach DGUV 308-008 erfolgreich absolviert habe und verpflichte mich zur Einhaltung der Betriebssicherheitsverordnung, der DGUV-Vorschriften und der Herstellerbetriebsanleitungen. Vor jeder Inbetriebnahme führe ich die vorgeschriebene Sicht- und Funktionsprüfung durch.
+      </div>
+
+      <!-- Unterschrift MA -->
+      <div style="margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">4. Unterschrift Bediener</div>
+        <canvas id="hub-fa-canvas"
+          style="width:100%;height:140px;border:2px solid #d1d5db;border-radius:10px;background:#f9fafb;touch-action:none;display:block"
+          width="440" height="140"></canvas>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px">
+          <span id="hub-fa-canvas-status" style="font-size:.75rem;color:#9ca3af">Bitte mit dem Finger unterzeichnen</span>
+          <button onclick="hubFaCanvasLeeren()"
+            style="background:#f3f4f6;color:#374151;border:none;padding:5px 12px;border-radius:7px;font-size:.78rem;cursor:pointer">
+            🗑 Löschen
+          </button>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div style="display:flex;gap:10px">
+        <button onclick="hubFahrauftragSchliessen()"
+          style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer;-webkit-appearance:none">
+          Abbrechen
+        </button>
+        <button id="hub-fa-bestaetigen-btn" onclick="hubFahrauftragBestaetigen()" disabled
+          style="flex:2;background:#d1d5db;color:#9ca3af;border:none;padding:12px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:not-allowed;-webkit-appearance:none">
+          ✍️ Fahrauftrag unterzeichnen
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Hubarbeitsbühnen Gegenzeichnung-Modal (Verantwortlicher) -->
+<div id="hub-gegenz-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:10001;align-items:center;justify-content:center;padding:16px">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:480px;box-shadow:0 8px 40px rgba(0,0,0,.35);padding:20px">
+    <h3 style="margin:0 0 4px;font-size:1rem;color:#7c2d12">✍️ Fahrauftrag gegenzeichnen</h3>
+    <p id="hub-gegenz-hinweis" style="margin:0 0 12px;font-size:.82rem;color:#374151"></p>
+    <canvas id="hub-gegenz-canvas"
+      style="width:100%;height:140px;border:2px solid #d1d5db;border-radius:10px;background:#f9fafb;touch-action:none;display:block"
+      width="440" height="140"></canvas>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;margin-bottom:14px">
+      <span id="hub-gegenz-status" style="font-size:.75rem;color:#9ca3af">Noch keine Unterschrift</span>
+      <button onclick="hubGegenzCanvasLeeren()"
+        style="background:#f3f4f6;color:#374151;border:none;padding:5px 12px;border-radius:7px;font-size:.78rem;cursor:pointer">
+        🗑 Löschen
+      </button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="document.getElementById('hub-gegenz-modal').style.display='none'"
+        style="flex:1;background:#f3f4f6;color:#374151;border:none;padding:12px;border-radius:10px;font-size:.88rem;font-weight:600;cursor:pointer">
+        Abbrechen
+      </button>
+      <button id="hub-gegenz-btn" onclick="hubGegenzBestaetigen()" disabled
+        style="flex:2;background:#d1d5db;color:#9ca3af;border:none;padding:12px;border-radius:10px;font-size:.88rem;font-weight:700;cursor:not-allowed;-webkit-appearance:none">
+        ✅ Gegenzeichnen bestätigen
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Befähigte Person Kapitel-Modal -->
+<div id="bp-kapitel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10002;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:16px;width:100%;max-width:540px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
+    <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:relative">
+      <div style="font-size:.72rem;font-weight:600;color:#fbbf24;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px" id="bp-modal-modul">Modul 1</div>
+      <div style="font-weight:700;font-size:1rem;line-height:1.35" id="bp-modal-titel">Kapitel-Titel</div>
+      <button onclick="bpKapitelModalSchliessen()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.2rem;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none"></body>#x2715;</button>
+    </div>
+    <div style="padding:18px 18px 12px;font-size:.86rem;color:#374151;line-height:1.6;max-height:60vh;overflow-y:auto" id="bp-modal-body"></div>
+    <div style="padding:12px 18px 18px;border-top:1px solid #f3f4f6">
+      <button id="bp-modal-weiter" style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.3);-webkit-appearance:none"></body>#x2705; Modul abschliessen &amp; weiter</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>

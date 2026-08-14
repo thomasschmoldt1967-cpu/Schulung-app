@@ -19,11 +19,15 @@ const SESSION_KEY        = 'schulung_session';
 const SESSION_HOURS      = 8;    // Session-Timeout: 8h Inaktivität
 const INACTIVITY_MINUTES = 8 * 60; // Minuten bis Auto-Logout
 const LERNPFAD_VORLAGE_ID = '__lernpfad__'; // Pseudo-ID für Lernpfad-Zuweisung
+const HUB_VORLAGE_ID      = '__hub__';      // Pseudo-ID für Hubarbeitsbühnen DGUV 308-008
+const BP_VORLAGE_ID       = '__befperson__'; // Pseudo-ID für Befähigte Person Leitern/Tritte
+const BP_SCHULUNGSLEITER_SIG = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAC4CAYAAACVflTLAAA0pElEQVR4nO3de3Rd93Uf+O/ev/O49+JFAARAgJQoi5Qt07YsGZb4kBLk5YziOhk76Y2sByU/upR2Ok1Xm8lKm84Mw3ZmVrOmaZvVmfyhNLElW5IbNLHjxLE6cRLTpiWKMu1KsinraVF8gACJ9+Pec87vt/f8AYACSZDiAyBBcn/WoilfnHN+59wL3t/+vfYPMMYYY4wxxhhjjDHGGGOMMcYYY8yS6uuLOjZVGwHwpSz2khZmjDHGmBMYADqLnttdY/rLPbdvb517nS5F4dGlKMQYY4wxi1N1JBzKec2XLmW51gNgjDHGXEbO6RiIJzTmS1onWw+AMcYYc3koALAgkKLBKTdcysItADDGGGMuowLOE+CUdX4IgDAXHCwnGwIwxhhjLg8FgHqhY0T5q8xhbOHry80CAGOMMeYympyuT4pGb/mc8ktZrgUAxhhjzOVDHUDCQF8U8YcAANXqJambLQAwxhhjLh86Vn4jg9NJYgQAQH+/DQEYY4wxV719+wrK+Q2wP45LNAEQsADAGGOMuZxmK/tIiEHN2Hh3cqkKtgDAGGOMuXxm0/4qV0Sou7WlqYRL1ANgeQCMMcaYy8xrmCJQzXNxyepl6wEwxhhjLp/ZbIBxOsrqRlXKl2QjIMACAGOMMebyq2cgQmtjQvPpgJc9ELAAwBhjjLncSgCYKlzQJdsR0AIAY4wx5vJRAMjc9AioeClXTFyqgi0AMMYYYy6zcayq+0DjrpgJl6pMCwCMMcaYy+1NgNh1IE07AAA7dtgcAGOMMeYqx8CbiIHrifl6AMDOnRYAGGOMMVe9A7syYcpFNZ17ZdmTAVkAYIwxxlx+qhJyIkqxqXpJ0gFbAGCMMcasAOpcnUBxe8hSALLc5VkAYIwxxqwATiRTaJQ0NqTvfPTFswDAGGOMWQFEXKZEURb7+QBgWScC2mZAxhhjzAqgmtcJ7JM8viR1s/UAGGOMMZeXAkARhTEFjVyqQi0AMMYYY1aCjNU5aVLnm+ZeWdYhAAsAjDHGmBUgIilUnCOgfCnKswDAGGOMubwUAPI0zgCAOL4kOwJaAGCMMcZcflSa4FxIi6CwREDGGGPMNYIGX8jqxDSlBHcpCrQAwBhjjFkR+oOqsCNpAqrLHgRYAGCMMcasEEQ0LsSCLUiwzBsCWQBgjDHGrCAMaWqZjktY5gDAMgEaY4wxK4QqZyBESSlfmA54WQIB6wEwxhhjVggRyVTBzsfLviGQBQDGGGPMChEp14goBHC83GVZAGCMMcZcfjr7P3lNgngXZ/O5AJYtHbAFAMYYY8wKkQcEcihDqGG5y7IAwBhjjLn8FADSUqVOcJ6cszkAxhhjzLUiz/NMQbVCaNnrZwsAjDHGmJWBRkJDTaEjxCrLXZgFAMYYY8zKwNj3SBGpVCJ1q+des0mAxhhjzFVOASAwgoc0YePdKZYxG6AFAMYYY8wKIurGKMJEV2V1BGDZhgIsFbAxxhizMigAuCAHwVoXny1b9z9gPQDGGGPMSkEAwKytBNwsqWte+PpSswDAGGOMWUHEuYyVOIrDsuYCsADAGGOMWRlmJwHmWniiiAouzb1uPQDGGGPM1c5xnoOUPWt5OcuxAMAYY8xiCNhhdcRlIFKqE8izi5N3PvrC2SoAY4y5uhGwg4CdihNryqsOGyejjrVN8bFd/VMnjqxWHfr7w9z/U2AnsKVabmfXGmnU5kB3KGmWY+Krw09/dfKSP8nVTwEgT4us7CkQy7LOAbAAwBhjri7z48X69t87TySTabnrvtZS4LWsSTIjNNqz7cGfgeq6bGT8C8P9/bOVet9DpS6fbYBEXVEclUSohURuUpEbWPHN4YHx4hI/07WEKrWJLMSthRNYAGCMMeacvZ05rlp1bQd8t4vKqyFxAzkEYi0ToySFHCzlhWqU3qfQJF5V/rvurduv58jdANHjXqKXC6EBDqGdgjSK8g9qM+E/jb/4xOhlfLZrAQ3sK2drtqIIFErvfPiFswDAGGNWBsKFp309ce6aWz/doY3FjU7RqQc1Ulce5kKPRmlx4C130yR27fQA0HXLA53ckP46qbYQuW9I4vooyKh43SWYGGGt3JkwNojQj2rIvzHxbP/IEj2neUf9Qej+jJVToC8Cdi1LNkALAIwxZmWYr/xp7s85fOnvYGAngCp1bU3bieh6R9gk4lLhcJAZr8xM+qHxpHEKux+Z77anrs0P3OEc/x6ATSry7zSKvksqU7Ws/pqUY65I80cJIann2R+O7usfX1Agn9t9mYulcHVh39h1y3Xp4AuYWY4yLAAwxpils3C99qmt+dnJeJv2RxvzSaqvbuJQ1Mg3lrk2jrJrjP34SFFgf/8MUCWg/yzF7ODZcf2dAvRF3dsatsLJz0FpWlS/LxqeH9z9xaFFTuTubdv/MQH/G5jforzYHlqGvjn41389/fYhfRH3vucvR8ffquO1pzLs2MHYeWIC4Uqr/Bd7vy+mJ2XFcKIZQPGMz1IA0+94wgVY1jzDxpir2vwX7WyLtVol9PfPVRDzL1/5X8RLYf36vlJ23Y1NSq7R1WpJEVGIWR0K1lDSguq+3SVR4QOnEdHPaMRNR779uX81d/rCCu2kyq1j6wPbIuc+C6aaFvmfHH3miW+d6R567vr0xwD9LQUSBf7d0d2fPzXCOLXiXEmt/auiUj9HDEA677x/Cwk2hXzm68f3fXkAy/AeWA+AMeZCLZhlDkX/wvrkVx02VR329+dzL6ykyuRCEaCAEkCnL6truyNpaIhCYy1Qg2OXRg4NwVNJJXCWOCFRYWReHI8FkWmE3NdRKkqcZYGS4ZHvbJhC71+6nuTm3wbF7+rFw7+zD48UJ5c/W15H7z0b4lLy60rUyOT+7PC3/vhrJ446eSkfOrfdu9VR/BtQLSnRHwzs/tyTC645v85fcHrlspI+r7mIssroq8SYGmaM+9DW1p7GjkpF0MRp7jlql9RNFG/tvml8tnfkyiXCGauwi5JlWwlgAYAx5lRn6sYmoMrdvbU0RI1NhLQMnSFNYnJFsoHjsEpUxwR8xIkmgJaLbQ82+jx7afS7/+UgrsxW3MJ7VoDm3p2dCoA7NlUbonKpTZK4mSlrDZom7GSG1Y8qpUdqUT41PlJMY/8T+ZkKmF9M3937sQri9/4bJRoZ+Nbue47gtfnK/0T5XR95oCGa4V8X4BYVfHVmhr4+/vwfj83+uOqA/jBf+a/7iQfv8IJfYaCsRP+N8uLrR/bmA3PXcoAKQFdAJbkpab/tltWugUsMKlEu14W0taSdUouEOhTCseMCiKeIZ0JRYAjr3/whDqB+ue/8AikAREEyiZR8HlkAYIy5ZE6rpNetq5ZH17rmik8aEVNL7MpdAQFB44G8CGOpC1MoeERQHx6clOOYrviudeEjTvUPiemfAXgSqDLwdsv0CnHivWjf9pmmyOerOZE2kajZAU1etJEjYhF/OEh8PIox5jMZHyofmcGuXf6Ua80l5AFO7j0AerZtvweKn4PgpbqXncBrGU4JmDq3PvSzNK0fE6gH5A+QN+wbf/6RGqpVh039ip2z7233nduvV3A1KDZB5M2g9KcxZl48tLe/NpfZjwCEixgBPuXECx7uIazvS1uaG8tR1FRmhArSFORnhONyO5FrhRYEcJsSusXrUWKdJmjZiWaiPgf4gIDGnaPxqdxNl6Zr2bH9Q3XgtPf+iiOJ1iGAcyc2BLIhAGPMRVskMxyAvr6orbauQlFoZIo6nHALlCrqUNeioOYYOXE+k3ua4ghj6mjm2OH2UbzWVmDT/iPYjzBfwXdsu2cDh+gnCfp7R8sDX54tYMVW/nOz7ndgrtuYsPHupKe1o1EYneTcasRBKWhJYo7hdVAjd+DIyNQQ9i/IovfOTkrIg413p2s7Vt+p0JtFtS0An5OxiRdHXv7q9Nv3BO24/aE1kZOfAevdEPpuFsKfjex9/BCAhd391HP79nbE8Z2E8D8oUUtQ+ergeP0rC4ZhcJZu8XeKBvQM/33KqVXX3VtLpzgqx9RQZpIyE5UIWiZEZWJKxYdYCQ4qDGIhRuCAQlzkVfzxAvFoKefBzIUBz34mnUB+rGOovkhAdZrJc3uWK4L3URZDhAJZD4Ax5oKdITPcDu7u3VeejrtKLVy0ai7lzKE54jQTUldk0aBzM2ND9VdHsG/f2TO/7UcOAD23f7xd48bPArgxkPYPPfP43yzfY12wU4c45v7sRHfvxypxuWOND75FSRqV4lWkkqniYCQ0Ps2+Nj5RTGP/4wVOGx456ZqnmOueR9V190atiNPr4cLNADoh9BoQvnbsmScOLDiBgSr1fJiv04T+CQm1SZAnju754lMnXW+uu7/rzgc3gfh3AfkwwH945OjAP8drT2Wzh8Jh0w7FTgDYOX+fp475n7ll2ftw3J4eLSVZQ0okZXJc8uxSIipR8CVlYhXJlOImB2kSRL6BEYhCoYFyYc1dQbXC6YhmMl34qdr42FgdB3adRxf9DkZ1l0P/afe52DNcacNMp1IASIsik8QJueVLB3xVRErGLJHz7WKbb0kDK2vC1Fldf9d9rXWfrIs4NCqkSSjKIYHBPCj1rJ6X3UilNpEN7CtnC1rt9PbfO3DqM7feuf36knOfoCAbBPrNo9/5wlcW/HxFj/2v7r2/m120niO/kTluVshokOLNIpdDUYOMnpQr/9wRduygBcvnZsva+snb4rjxdgp5pyjeZMe7jnz78wdPOm/2d0q6N2+/CxH9DpS+P/D0zL9YrAela+uvvp/F/axLKv+HQo/mxeQvHNvT/9rZb20HY+OzMVqOSZu7uRxRKIvPOC5FcaAQce5KhKRdOWqAFuScoxCCEqsQ2Au0cIFy4SIXSnLJi1oEHgeaZgaAAvsesTTBS6B92y81xdr4cfF0ZOi5x/8GyzCR1gIAYxY3N+N4iDD1HsKNo7JwZvXpx66ICu7Ulj7WbamWgXJb4ZJVFLLVYDRwlDgEIOTTb9Tz2uHx5/987MKK64u67lz/Hgf9sArdSBG/US/kGyN7HhvA7BfVipz533bH/c1lirvEybvIcbeIKIIeIFf/8cB3+t86y6kX9jlvqZa7tLKZnW6E6mph98PB70z/1dmGRLq33P8JuOi3g/C/H3rmpFn7aO19uCUpzfwkAx9FwA+JeQMYW4Iv/ungnie/23Xng+9lX7QKJy3ElCL4mUCY4FwTxOgkuFZwmAaoJkzjpMUACwUWBI+kYC+CEpDPFD6N6lk2IXljfbw4sHoqYN+++Z6Ds7XEzcVjbKpGXatKn4Avpgb3fulrsADAmPO2cLwbOOMX1Y5o3Zb98QRQdr6hIQ05Zy6RpOwj+LyBqdRDJKlXYiIZ54AJjbhJPGIAKBxeSSaPDg++8NfLkrDjLHhu/f1cZVJ1XbekJW6idlDaAfKrVZUI0aTmMqquOI5pTA++kNUXqYDO0o0934UNarp9e1sz01pP4WbHURupP1iIO1j42oG5rHErJSDiud4K7eirNrCkHZG49cFRG3yoE2ECwseR58cHxkcnT3SZn7w07p2cFnQBs2l2qULvZYcNqmgQ0TdDod89vu/xAWA2L8BUaUMsjZOcJD4NUcXFM1IM1Hy9uyn+DLH7dQH+fUHjX6CipRtpaHISNbsQPgJHNwnzD9SHl4j5Tib+ddXwBwL5FhPfCJlNGiPMwtARgRyRgkY59h6BGkDayJT8CgRbA4XfHHrm8b9BX1+EXT8197w7Fz7PSvgcr0WzuQC23P8JVqWjzz7xZZxzdshzZwHAtescK8YryqJfxid+tqkat6/K0ixrSBuipFGpaFLH7ERaKJCCI2HxAWlc8YVMhaQYZaEQaprEcdRFDgFBZij2x2ozMtFUjnl6WspxKdlIKo8owv91dM+RJ7DjpwQ7l20N8hnTxLZv+0xTzHqdBnmXo3C9Mo9pwGFx/pDP6fjI3scnT7w3O8DYOVs5nvH9OnWiYF9f1JVvuJnI3+qADtFwlMX98PCzj72wTM96oU6qwLs233MDR8k2IrdGCRMQ+pFI8crgM4tmypt7f/sYve8hjL/FKLoIq4e5o1ZmjlIFgKKkrqkccchmGBNAvZykHLkOiqiNEWIRtIPRDpIDXuhVnc6nXDktx0RNJEWijliFMw2BfcQVAFAktYTyWwn8f6rS10Ix/W/ApQ8w0xqwuxnQGqlMqGLUq/xt4uhDCv5dUTw++MwX/1X7tk/28FiYiMqtMtCYCabScHp3fNV131W5FUF+UUWKo7Wh/4hLH7Sad8YAZM227R/V4JsHjx75Cg7symEBgLlAZ6scubv3YyUfr+pxSvHRZ7/w0qW8sWWz8e60u6W1ycduVRS5FgU3RvDIfPCRcxTAPiIZCbkWlGRThWT14bE0w/7+Uyd4nYkDEACgZ9uDbwb1//fgsZH/jNeeys/x/ItF7dvuf3fC0XuJ3BpoGFPHh6iQqekYb47venTsfK839/dJ996x6X9qdKtmfpKhtympsIQX/DR9c/CFL67oiqPtjvubS1H0a8R6YwC+k5VqfzH6jfm89lWHdUg6muF8Gc5zEWkRczmGE+9Y00CQhDTknLjUSVQwKG5Mg4ivF0eLios50zKcNiJJup3wu0jRTMBQYPqxePERPEBhRpnZeRepI/ZBBQCISFUCqyMGgKDiE4laKdLfIMbgke88/kDXXQ9sdoHep4wPE8XjBeV/cezbX3x6/vnWbH3w70elcr+fGd9+9NkvfRELv8833p20tjSVOHUNae6aqBJvUI8mldwhLpF67D76zB8vnHRoVhYGIF1bH/gZCrI2C8VXT9mTYUnYKoBrx9tf6r0Px13JTKsjbQWziqBZSd4XKX6a4V4B8COszB6BU5drAai69X2VeGRGGhqi0KjgJiVqij2rxKEJyuQc6hQwIa54i1XGjhUvT2HPGWe10yl/LzSXBu5X59ezBwDcfef9fwHGVwfXFH+IZ546Y8KXi3vm2ci/5a77WlOfrHMs3QRuVWgkisNTBT0z/eyjQzj9c2MsPma7mLeP2VItr40btgrhdifTKqpv1gM+P7LnscNnurfLry+aX//ds/W+fwyifxQQHquPy2+Pv/jEaMemamPblurahOKIuNB6xhqlQkmRiApTSOIoZrgQuUhYncIzuVQ5zyaU3Eyei6ckanFl96FYqYniEABeT8IblOQwSF6GUOqEbhSVQ4VGb1JMFQqRV81rQUq5g/cFtGCvIQoln8lUPnq8kuHAo/U1d1Q3gZKbNOBrPdu23wPB9cTu9Tga/e0Du+bmaWy8O50fqgiedqM2/fscxR/vufNT43koDjO00IxraRrafBSVQ8iLIqXpJPjDGfyx4YlwHPufyLt7P1Zpv+2TPWk5Xh84tJMiqEZ1hm4kjnzhpvovcPKjWUKikjFxlBR+WXIBWABw1VFC9VcZ/f3zG3dw+7ZfapCspTVJtLlISmNlCPLCrXaRlBHcakfa6xWOFf9V8mwPVk7lf+ov+4nlWsBsZVgu3Jog2tTgojIUUEaupDM1+OG0LnVfy+rHOobq+PY5JwY507PPVXakmG/1b95+j8b0D0j1qSPffuz3znDPF2h+sxfo/Jp0RLhegI0UURQCDRHLD0I9jBw/Ho3iwB/VZ8veMdf9fU6btxB2gLBz9pi2O+5vjhJ3Q6S4WYlaBDwDod0zef3Fkb2PT5w4p1rluZz/5xpYnM3sUIPuVNC5XWv9+odKk7FPksY89S6JEvJR4Dhi51Lougox/SLA90DktwYnsr9rL4d1Xb333qSOOXIAeY4kII4dR+ol0sjFPgCIZSYPpIyicMK+IAaIlEtJIzTuKpeKikDLwlpmig8XtfAsMLUnSRtvYKWSKLXARW0Ioa7q3zzu5CDiiiL7QcC+ff5M71Xzlmpb49r7biZ2vwK46wP8wSDhlaGi8c+w7xE/m0AJ6NhUbQSAY0AGAMeee3QQW6r/srteoyJqWuskTtQxc1LzxBhGCD5VmTwUshr2IJ8LWrlr6wPvJxd9Ng7+MEBrHaWZenmVXPYWNB4KKuPHMHTFJ9K5Gjh2mYi4IlmedMA2BHDlO5EwBAu/YDbenbasaavERbKanDZogEscQtDgwdG7ALqeNWTKGHPAK4d3r7hx3JNtqiYdq8rXRcQ3KqljpZ6gXijQENgdc6EYONxCo/jrRbqlFbQgd/vsKxdh7bZPfVRVPq6ECWX3x0d3f27/3I8udpbuaS3qrq3/sNNxfbOS3gBInYVey4vaS8ee6z96YUXMbx87V8bGu9Pm1WsbKlJfo0wbyFEbqRtjlh9rpoePPFcfA/rDXMKZxfLFL42Nd6fNq5saUuZW1rg8mziG2wBqU4RCVBMHJnJulWoYg5cpIi4LhYTITRBRKhQKFW1hpX8LYH+Uyf0+du8PDkFFsthFwXtRYeTOUy4R6gjZVB1FEUnsS6gVUqwibg3lWl5uKEtY7SMuE/kScxS7gCO1MHV8BBjBnv5a97ZP/Y8E2QLwMWHapxPFS4Mzx8cXTCY8FaH34aijcTQNWbmllGinCHcB2ihFyB1xI4j+VyX9Xwr1bySI1kuQKGZ6+dCeL55pad/5B5y3PNDQ0YSNGM1eP3ZyIqOVMnnTnJgEeN8HwNiiteLvjn2//zUs8WdkAcCV6Yzj+W133L+uHLmbhLibgBJUjovyQNA8icg1gqlCQKzQI9Ohvn9iD8YXzAY/n9nPS2wHz/bsz2Zi67rlgYpridqC9y3OuS6othM5gYRhH7IfD5IMYk9/7VLdXfOWz7Y1ONkE+LtI0aygb9az0rOj+x6ZWHDYhf7DPO3z7Lnr/p8FRT+jStMQ/u7MZP258RefGD3DuWcr94y/K6t/8lM3xUHeT0otohKU5WAc3KuHTu7mX0ZV17Mt2agU9yIUFSUkTNShoBEAdaiSsHoID0mRj7hSZQyZr8AVq4liJdZEAlrBmIZGTM4XEsg70s8p4NnndxcSTWZFPOIrE8l03jG62Br1jr5qYzydrJWEmziKYy2K5oji4QIFQpyM5aE2PF5rnJo/t2vrA51M9P8SuFDN//XAM0/+6B0fta8v6pl+V3eIXDe7PFEXNUGl4oIb8eSHaLo2dHRqzUTrqqFOilKpAJiRMLmg5+VcnOn73Cr1Kw8B0NWb772JHf0UFfL04HNf+iGWeCmgBQBXuPZtn2kqq9wsjDVgbleRnBhviufDLmTBx64lKiQqnK5mZQ+RY+ro+OB4NjaXIpRPHlO/ZBZNlIKNd6c9nT03KPx6ZW4BY5oCTTin43UtjpeKfOzQnv4MJ/4R7GDs2AnsXJLuaOCkZXVzWdvS9L0gfIgYsYq8zr74weFnn3z1xHNcXLknzu+65SMNaOj6VUfuJiU6Iix7B7/92N6Tjj55b/bz09sb96TveR8h3qCENeJIXVEcqIXhb4/sfWqxima5W4TUdcsDlVolSzEBxKGp8KVhN15Oso4UDseA+Rbq6rv+wbtLGt6nJI0exairhxEhysE6TVzSekHTSAOlAZ8ixj8n5i+IhBtA7EnlRTB9FIX2hyD9UeK6BGgFszhQk3oaVdaMyU9MhvTgxJ4/Gln8dncwsFN6tt37j1za8gehXr/zSJ4814rRSlpuTAqpxVFIEyf1xDuXwvEaRtREJClCgLKLSXjQk7zGU3L0LJMoL0VL/GyTgs3lRwC0+87t14cgP+9QfG9gz598DxYAXJNowUYq3PKB+1rKFbcGMTqVuDEKpAhyKHA0HpTiKPItItrMpN0qKNTT/tjV3jh0CVvMZ3H6F8/Gu9OuNd23sqKHoM2iWgbpAYjff/SZ4tAlyCF/+mS2vodK3QHvU1AfQztV6QUuim8dns/Bfn7XPoVibi7BnKpbs618LyC9AL/CqnvqQV4f2ZtPz6ePBc6p+30+qJp9jk3VpKfS0OVTXcvQVpCuRgBA8UtZNvnqIrOKz2fC4IU47xZqR1+1MdLm32IftBD0Z6kePNvqhtWb770pcu4WcEykRYsKukF0N4PfEsgPVcPzEaJScIATDGukdS/FtPqGGfCU8tTI0QW5HE7Ni0AAtP09v9SUdrT0gXirCL1FIUwqY0xUMlb2zD5ndZMqzB40UZuMJibKbvIsGfIWq4ytO/7aRgC0c/Mnu4jd31MvLw099+QzsADgmsHYsQMnrSe/++50zUj7BnV8I7NrZqLch2KEWFKiaBUpJ6rsPYc3cxT7x3efscsYuOxfLn1R97Z3bQXrzQhaCQhDLom+P7Br5tUzVPhLfd+LXm/tHfevCwn/Eim/j4FXoe75w0//8TextF/OhN6HI+x7JKzuvb/LJVRl4tVB5Xvs4u8c3f25Y+dYziLPUHUtH6w0ldLQKnG8NlJaTxyCqhxSj2FBMTLkm0dmK6MT8wEuptKfD57mr3Pqd8q5fllxx6ZqJW+LY5dTQ8zSw0hiRb7BJeXPS1H8R3b0+ZqvDTdGq2fGMY4mH1UyzkoamE9sOEOsgTl1oCYBjbpA+UxN3xh//oxBA6Gvz2FXpwInJs6+0/POP+d80Dg7dNbXl6zLOsmlFT2wa6ZYNNHSjh00l5N/OQMtc5Vo+eBDq8rl8Euq+tbgs49/ExYAXNUWXVbVtuXBteWYblXBDaKaCHCMKBziEBWBUGIVT6kf1FAaplo8PbDvkRpOfLksyZf8kmnf9pmmhPzPEehGIkyKyv6pHC9NDvE0Djw6vznI4sMDy6Rz82e7oii7Q4EPg9w0gjyfzPCzB06uNM7WOj69It5UTdoakxLYNZUibdDg2Su1u+AycD7t4rg59xIlcfpPRcK7VOXfHn36i386e/JsV/P5PMPGjXenk22re1ziblRwL6mEQPwyQwZmJvH6WSrAM7n48eT1faWWVatKaGqgtJCkCJpECRJRjp1oIuQipxSrEIOLaVb3bnCYgksIpKs1YBRSHEtc0lJXmWK4VoZvBjMJdJIDR8rCCh5RH2oaaV2LMEMoTUg8Oj2cranPzqKfv+cT2QyXwvxqiJW6w6G58hG2VEudiD/hgg4PPPfkf4MFAFetk1p767ZU23xU+gCB3w0idarHA3AMTIxAq0V8wYwxER2rOzm8oLW/wtZmv61j2z0bIkq2k1JKSrs1qr9w5Nv/5RBmn3uZu5+VAJp/X6jn9u1twdEGcvpeB1cS0kEUxcGZevz6+PMzk29XFAuW4y1u9h9kb2/cw5uahdHJElJEXCk4sBZMaYzCC015BB9JUvcuy6mIG+NE/iVT8svByz1M8j4Atwb1/2lwz5N7F6beXbTs3ocra5KpDiBaD+b3MkkOiYaVw2FxGB7c9eibZ3kzLrA3peo6NqGs5aSpFFNDnXwTK3un2iLKLSBMC0vqJGrgSCIIsaowVI4JtCB2QqISBIGVPSP4EEeFc0U+UeORxHGpMdHpbILzwRe+OHPK/VHXLQ9UBmeO+7PMsl/kORfZ9tiYKwMDwJqt9/+yBC2G9j7x57AA4OrWc9f2d0P1PUJ0HYSFCAURpQT1nnCYFWM+w+vHnnv0ApeBXR7tt32yJynH/aQqR5754k8s+BG9w456Z0jI847d47zgmBNj4t3lqFnT8g1M/kYCtwrJBECvvN1KVgJ+ygG7wjtc/229D1fWNOQ/RXl4NxhrofQ9F+H1LGTDPJVP+izUhkOe47Umv3Asv3vr/ftFZO/gs09+quf27e0a0d8o5I2CJh4ajm+rYdfOubXYO7i7d1+JuLWMFO1KrlG9NMIpRZ5qBUUzdVc/PL67mDix1vuWB8qSZk2iSUvsmIm9Ljpbfa6nIqIwt/QuKSv5JnLU7oQaRCUFc5lUpkLQSUfcCMdlCeqVkLP4AabIeQARwog65lyFIonrweW5z5FHJEUkkZ/JKbgyBTeVS9qMcOj4pGBtLWDXOb/Xc3kLTqQwxjl/RsZceWazAW554BeJpHQ0f/kr2LcvwAKAq4XOJpbZVE3WrCrdAuhPMOg9IIwreEAJwy7Q4Trx4a6xyR/vn521v9AKGc8/KwKgXZvvuYFd+pJCv8yQndNxNHgBqWrPeP13Oqj7zu3XQ+nnwWhnuBoUr3op9p0hH/w5XHu2m76zt/qRuFz5Jwp8VzjqD8cnDp6ytnrhtWb19Tns2uW7ttz/m+z4QSj9/sDTj/3n1t5qSxy59UPPfulETobuvntXZ/Woo5S4Vg1wytrgwKO5zBz3FTn+dmrb2VUEUfv6zVqvdyqkE8QfVKXrSLUgQrMCfwvojwQ6CWVSEQYAYhVS8sKUO9V6EArK6iJFPfc6LSTTnrKZ0nScHSu/kWHfaVkUGajOPl/fEM2Np1vXuDEXZzYXwJ0PfMSF0Okn/J8f298/DcsDcMU6eZY2gMbee1c3JckvM+PXRP0YKf1ZAXwf3r2Rp0W2ysW1A7sendsEYmWN5587AqDUeGt1dVNzw33ksUpJDynxOGkxLo59JBieIR51M4UnjjRQHJWiWkMoXATOpoMkCaeR50ChqM8UHAWJm0tFmFFXzGRxU1IJU3HGLiAQRwoNN4Cok8k5qH4C5ATQESH6Sz+TvZIw5UWF4yREXUE0gQsVDRwxhZwCaZwkh8Xz2KH0tQnsOi2LIAHQtg/+vbUNbet+pL743WL84H84v50AZ9PWrr3z078g6j+lihmB/HdH+J6ANkTKLcG5YQKCSDjq0nAky9LJaCof99kEF61pnBRJymUte19klQnU8qa0N0qiv4/ClxU6RKAeEB9XDa9CuS5KrwnXDpK6ST/sam0Yzl479+7087RwrtwV9KtqzMoxuyHQ1gd/UsXfOCMzfzH53FeGl7IACwCW3+Kt9N6PVToqq2+NRP+ZqnYT4y9m8tqfjO/t//FFXffyOdPv0mnzEZo3VdsampMb2CUhOJ/Do4GYVUSb2UWxamAStINIg+gMkxxS8UzEykg9UCBIkTiu5J6zlAqqxClP1bOQRhF1EvNGUvSo6KiEsItJC1F/GC6dLpTjOOSrCChHrpQVTkQzX9MkImKnWgvEUb6aXHyvi+MPeU//++B3/uibizyTAsDauz5VFQ2fIaLDovxXEBwsoJNxYKZEysEXOUkxlacNvlyroaZCLgpp4koNUrhoSkbfLKOhJYrTh5QlFugzjqiDhAWkM9BoGvAQoEwqPoAnoUrEPjC5QtVRCDIehZCFmOJYaLQeTY4PP/3VySX/hI0xl9LsEMDmBzaD5P0+k68Pf/9LR7CEUbXtBbD8TnxQ7bd9sieqlHod0WpVWQ/x/zOp++HA04/dtch5p1aop37gK6Xin3em+1Gg6tD7BmNfowK7wsT+/pEJ4AzJVs5q7j2p8oKxdAaq1HN7sYriynVErAp3nFTGc8qHhvcODM1vELPAO2W6e73x/T8/3tb97r0uwR0Avnn6M81daPfn/xTAn3Vse/CGhNwHhfy7Y9AoWERUm5njAMVMGgJpzCGFq2lImgBulDQMN4dV70ZRHDyy57HfwdxkwlbcWIlqCMfyyQKvPZWjr8+1TnU2xJErEc9oKCqOOKhDvahLp2+IR/ND4Q2PPUs7PmiMufzESUYBHMVhyfcDsB6ApXVyq3x9X+m6tevXFqLriKhndvmSePL6ooJrLqHvic9/raCpp4af/uoU3rlSZ2yqRi1tcUOpCC0UVypTmDo2tbv/+Dmcew733uewqZOxf0iwqZPRMSSYmiLUbiRMVxgH3vTYeItDclQ7OjqSeGYyrZOUmaTsRBMuuVQ9nAoxsYoH+yQGCs9KEYVQaEGSByYqwVGDC8jhpCLgiNUH9lGRzeVpJ1ZBiZUK1kJ9JSHWglhZg3dRMZ7nXIpduoaAHoL0BOIZBo7kFF4Otfogp5lE2lz2lEQcT4oUjlEDuKxlDggiUieNK3HMNwRQO0AK9tNU0JQCwxTRv4CCZHr6NwZf+PIQzhx1n3H1Qtsd9zfHjkpUy7TWGPvSBOeDrQezRYYUzvKZnNfnOvf7ZzPfjbkKEABds3n7e8WFu1ym3x7Y9+SPsIQ9ABYAXLxT8ufPJWIpYZVjbCCn3V60YMLhQNGRbFJGxp+/YQLYKV2b7/20i5JPKcJTIPctBAyr84yg0wVJMSxhdD7ffWPvvavLkBZ16HFRvIGJVik59iH83fFn6i+cx6SrBb88D8ft246WfEyuMlWJcuJ2ikMFXqeTiBrUpRUp6rFSEjGKSCmOHACvoR6zS0IgpUi8EuVczwtJkpzB3odMQKxRgCviGDEKUOBUYucDtIhC7nLEKKlOZkWh2sCceOaQU8yRJqwUF1w0EkqliNyMhwcjeFVHjuCC+gDiDgdcL8yJKgJJOAwXvRUUgVXaiLSAEBNRqhoaEAB1GikoJuXXvfoj5KghRnS9KhoEYQKOjodAeayOYinqb+19fP/p79lZ3tdzS/JCC/6cOpP9ncs4PdmOVfLGXJ1mJ1Df8cC7NJKfU+/3Htv7J89jCZcCWgBwYRYdf2/Y/MmuliTaIMIfiChKFH6gAF4JMvbjs43Jrt22/aPqXAfEjSjnufpQI3bCzC1B5H6AhES+pcGPaMSNpFSJKBr3pCN5EV4c2fv4EZzTL0TVdW4r3RET3RICwNA6VEYVeliVanBoUBc4ZDqaIIEwnISQhSD1Ig31dAL5sY6h+tlbsHPd/QDmuvzPpbU7n+r4LJnYqq67t5bmKbskkzAw7sOp68G7+x5ezbXpkicfBR9lMaSYKVNIRori2P6h+lnuZTYzH/YB6AX2jcqCgGrJcv0bY8x5mE09ve2TPZFEv4AivDi478m9sABg5ej88H03utRtYdB7lFig+F5O4eXju7/wyiKHn1oZnP5BbqomLW1xw/hIMd3dGH1Uk/TTJPIsVPep+jo8z+TOT6Vc0iJKx48Pjw7j9OWBi5UFANyx7cF3OWirD348yvzY0ZbKJHY9mi1y7BmcV312akt3oTNk1JvfG/5EQ/fMLekqGP079Byy5s3ve6/n2D1Op+frN8aYS6/p9u3tlVh/kb2+PrD38W/DAoBLbmElxm1bHuxOHG5xQIcIWoVoHBq+O5i/9PLCNdKdmz/bpeLp2HM/GAZOWzu90KLb8LbdcX8zRWljkkVjA40v5+eRMGX2mpuq0RmCg8XKn73uYtncr7wW7EpbIWGMMReCOjZVG9yq5OMienRozxPfwBIGALYKYHEnZ6fr63NttXWVUpR2g/J3B6DMqhSU3hTndxe1Ynh0X/8EAJ1PHdtz10P3gGWt1PnrAN5p7eaiGfDm9gI/n/3AgXVbyt3r33s3k3xIQ/j6EeDpczjr7fKvjpDQKn5jzNWAjpXfyLro5pwCSkt+8aW+4BVsvtI/qTLu7n24gjTvhePrAWklwkxehO8ff+atFxcZU3YAQs/mBz9NEf0HoeI3B3Y/8YcXf1/nNxO8o6/awKNjen6JaYwxxqwws9kAtz7wcZbgjj775JfnXrchgGXT91BpTSabCfQBcrwKrMdJ9enDux974SxnMQBpu+2e96aV8l8T6deO7H701y7VLV+dqm5h7nxjjLnGzGYD3HzfL4jSqiHOv4I9/XVYIqCl1dpbbSmVSh9g8IclRwkkBzxFu4/1TL94ypafZ9ptTwBQqbnlHzKhkg+/8f+0bXlw7UgxMop9fzlzyR7karIFCfb0Fee4ksAYY65K6qI6SxG31PJ0HKgt1XWvtQDgpH3m27d9ponhO53DWgRcT4omUrwZiuIFz3R8ZO/M9OxysBM5+Odbo6dGX7Pd9Ov7Ukj2faE4pYY1N5Qoj7DvLwcu8TNePeZyIBhjzLVMVDIm59JSeT4b4JIsL74WhgBO24AHAK/56fuuQ5HeTqpriWQiKP2YpPjx0WeeOHDZ7tQYY4x5GwOQ7s339Qai21yR/38D+/rfwhIFAFdrD8DCZWA61+Kf7eZPSlvYuVu1oIigr6Ao/vTw3scPLXHZ80MElgTGGGPMRRHmDCRURNGS7gdwtQYAJyrdlr6HVpUKd5ujsAmEtaLhR3UpvjL89OMvn3LOUq0dXzhEYJW/McaYC6UAIIo6EeBCWNIhgKslADhpYl7LXfe1lpF2Q8N6FHoDk8wIyQ+kSP7r0OTM6ILkOAs3crHK2hhjzIrjfZHFUaTsrAdg3lylvwPATkFfn1uXbVyVAW2JFtuEfEqgcSV9MVN+Y7ieHMO+RwoAPDepT2BbpxpjjFnhkjjOABXvl3ZL4CsxAJhPgzjXat+Jptu3tzcH+mmN5f2xyDFRGlOvuweefeylRc6XuRn9xhhjzEqmAJDnWZbGqWd212QAsHC8Y7bV3vuxypqk7cME3EZEXVAMqchXjjz96H9f5FzAuviNMcZceXj0eCXr7PEFM1+TAYACQNctDzRwS/QeCG4myI1CGNYQnh6Q/AenrBlfuLnOtVzxW/BjjDFXugOPZrz2gVxCWNL9AFZiADC/N/xs5d33UKl7Sjo1Rae6+P2kaFPSAaXwVzQjbw3s86NAf8COHTzbs29j+7N28Lot+9NDEz8M2L//XHYENMYYszKpqmTEXMGmaoL9/UuSHXWlJAI6KUPf/ItNt29vr5RkSxTcB4NSBsKbEtErQ/Tjl7DrRHpYW2tvjDHmajW7IdBd23+OC1lTjE3++fDLX51cigtfzh6ARZP1rNtSLWvcsDWEcCuRtrDER3LoXx175rSxfSw43xhjjLlqOZFMoFHS2JACuOIDgBMVd0dftTEKlQ8S+BaBtEHCgDB9Y2j3F07dfc/GtI0xxlxzRFwG8i7zfsmSAV3KAIBQrfL8znotd93XWglxlzrcwEG7EVBTJy8U5N8o+XxsaH5S344djJ0nbcRjjDHGXFPESUYeHMXxkq0EWO4A4OTZ+P39Ab0fq6zm1nUO/CGKUGKlaQFeCZK9NvTMlwbnjp/P7KenbOJjjDHGXEtm0wFLyJwjMJYuGdByBwAnKu+O3gc3uJJ+kJTbSSVA6Zgv6n839OyJSn8ha+kbY4wxcyJJ6uoKBHFXwBBAX1/UOb32epe4DwDcqRIyDnRkurbqb8ef//2xU462sX1jjDHmDIL3mSMWYr/iewAIh8sudLo2Cno0Jv3uoQE3jAOP1hccYxvxGGOMMWc3mw44zrMyx4GKpcsGyO98yAVRvPZUDoy/PDiZff/QnscO48CjOapVh7db+zapzxhjjHlnVJ5JMwUXwrLiewAAQIefPilZgaC/fxmLM8YYY65KNNh6MFuTX58r0ZKlA16uHgBjjDHGLJVdu7xQyEk4BapuKS5pAYAxxhhzBWDhTFiT7t5aiiUYQrcAwBhjjLkCqNM6g6OZvNkCAGOMMeZaocqZkkZJqViYC+CCWQBgjDHGXAFEJFMFO7806YAtADDGGGOuAM6FDKzko6VJB2wBgDHGGLOyze4HoEkdAPjkdMAXzAIAY4wx5goQfMggpLxEyYAsADDGGGNWNgWAJM8zIgrBLU06YAsAjDHGmCtAniQZgTyL9QAYY4wx1woeGRnOFFoQWQ+AMcYYc+147amMmHJaov0ALAAwxhhjrhAqkolqgo13X3QvgAUAxhhjzBVCgTqB4ra29hSAXMy1LAAwxhhjrhDKnCkkTvL8onsAoqW4IWOMMcYsPyeSKTnOE16YDOiCNgayAMAYY4y5Qoi4DPDswsWnA7YAwBhjjFn5FACCC5kD4DS66B4AmwNgjDHGXCFi1TpA6uXiewAsADDGGGOuEMHHGYkqs7MAwBhjjLkGKADkaZERuGDV5GIvaAGAMcYYc2WgSm0igwPA2nixF7MAwBhjjLkSVKs8sK+ciWhB6pK51+gy35UxxhhjlhkBQMftD61Zc2u143LfjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcYYY4wxxhhjjDHGGGOMMcaY8/f/AyUVI5eN/sjAAAAAAElFTkSuQmCC'; // Unterschrift T. Schmoldt
 
 // ── GLOBALER APP-ZUSTAND ─────────────────────────────────────
 let currentUser       = null;
 let APP_TENANTS       = [];
 let APP_USERS         = [];
+let APP_BEREICHE      = []; // Bereiche (bereichsleiter-System)
 let SCHULUNG_VORLAGEN = [];
 let zuweisungen       = [];
 let formulare         = {};   // { zuwId: { felder, gestartet, abgeschlossen, ... } }
@@ -37,6 +41,19 @@ let uploadFiles       = {};
 let inactivityTimer   = null; // Session-Timeout Timer
 let pushSubscription  = null; // Push-Benachrichtigungen
 let adminSuchFilter   = '';   // Admin-Suche Filter
+
+// ── CACHE LEEREN ─────────────────────────────────────────────
+function appCacheLeeren() {
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    return Promise.all(regs.map(r => r.unregister()));
+  }).then(() => {
+    caches.keys().then(keys => {
+      return Promise.all(keys.map(k => caches.delete(k)));
+    }).then(() => {
+      location.reload(true);
+    });
+  });
+}
 
 // ── LERNPFAD: 22 KAPITEL (Gebäudereinigung & Höhentechnologie) ───────────
 // Direkt in app.js — data.js wird nicht mehr geladen (Daten kommen aus Supabase)
@@ -75,6 +92,10 @@ const LERNPFAD_KAPITEL = [
   { id:'kap_27', nr:27, saeule:'D', titel:'🔵 Blau — Standardzone: Allgemeine Oberflächen',                 rechtsgrundlage:'DGUV V1, allgemeine Hygiene' },
   { id:'kap_28', nr:28, saeule:'D', titel:'Das Schloss-Prinzip, pH-Codierung & Mischverbote',              rechtsgrundlage:'§ 14 GefStoffV, TRGS 555' },
   { id:'kap_29', nr:29, saeule:'D', titel:'Wechseltuch-Methode, 16-Seiten-Falttechnik & Waschprotokoll',   rechtsgrundlage:'RKI-Richtlinien, HACCP' },
+  // ── Säule E: Arbeitsrecht & Gesundheit ────────────────────────
+  { id:'kap_30', nr:30, saeule:'E', titel:'Ergonomie — Rückengerechtes Arbeiten & Heben',            rechtsgrundlage:'§ 12 ArbSchG, DGUV R 109-001' },
+  { id:'kap_31', nr:31, saeule:'E', titel:'Sicherer Umgang mit Leitern',                              rechtsgrundlage:'§ 12 ArbSchG, BetrSichV, DGUV R 100-500' },
+  { id:'kap_32', nr:32, saeule:'E', titel:'Krankmeldung — Pflichten & Fristen',                       rechtsgrundlage:'§ 5 EntgFG, § 275 SGB V' },
 ];
 
 // ── LERNPFAD-HTML: Kapitel mit visuellen HTML-Inhalten ─────────────────────
@@ -491,6 +512,51 @@ const LERNPFAD_TEXTE = {
     en: "The lock principle: red cloth → red cap (acidic chemical) → red bucket. The colour of the cloth and bottle must match. pH coding: red (acidic) against limescale. Green (neutral) for daily cleaning. Blue (alkaline) against grease. WARNING: NEVER mix acidic (red) and alkaline (blue) cleaners — life-threatening!",
     ar: "مبدأ القفل: قماشة حمراء ← غطاء أحمر ← دلو أحمر. يجب تطابق اللون مع الزجاجة. ترميز pH: أحمر ضد الكلس، أخضر للتنظيف اليومي، أزرق ضد الدهون. تحذير: لا تخلط أبداً المنظفات الحمضية مع القلوية — خطر على الحياة!"
   },
+  kap_30: {
+    de: "Rücken- und Gelenkschmerzen sind häufige Berufserkrankungen. Richtig heben: Stelle dich nah an die Last, gehe in die Hocke, halte den Rücken gerade und hebe mit den Beinen. Trage schwere Lasten nah am Körper. Wechsle regelmäßig die Körperhaltung und mache Pausen. Nutze Hilfsmittel wie Rollwagen wann immer möglich — dein Rücken dankt es dir.",
+    tr: "Sırt ve eklem ağrıları sık görülen meslek hastalıklarıdır. Doğru kaldırma: Yüke yakın dur, çömel, sırtını dik tut ve bacaklarınla kaldır. Ağır yükleri vücuduna yakın taşı. Düzenli olarak duruş değiştir ve mola ver. Mümkün olduğunda yük arabası gibi yardımcı araçlar kullan — belini koru.",
+    ro: "Durerile de spate și articulații sunt boli profesionale frecvente. Ridicare corectă: Stai aproape de greutate, ghemuiește-te, ține spatele drept și ridică cu picioarele. Poartă greutățile aproape de corp. Schimbă regulat poziția corpului și fă pauze. Folosește cărucioare ori de câte ori e posibil — spatele tău îți va mulțumi.",
+    sr: "Bolovi u leđima i zglobovima česte su profesionalne bolesti. Pravilno dizanje: Stani blizu tereta, čučni, drži leđa ravno i diži nogama. Nosite teške terete blizu tijela. Redovno mijenjaj položaj tijela i pravi pauze. Koristite kolica kada je to moguće — čuvajte leđa.",
+    pl: "Bóle pleców i stawów to częste choroby zawodowe. Prawidłowe podnoszenie: Stań blisko ładunku, kucnij, trzymaj plecy prosto i unoś nogami. Noś ciężkie ładunki blisko ciała. Regularnie zmieniaj postawę i rób przerwy. Używaj wózków kiedy tylko możliwe — twoje plecy ci podziękują.",
+    en: "Back and joint pain are common occupational diseases. Correct lifting: Stand close to the load, crouch down, keep your back straight and lift with your legs. Carry heavy loads close to your body. Change your posture regularly and take breaks. Use trolleys whenever possible — your back will thank you.",
+    ar: "آلام الظهر والمفاصل أمراض مهنية شائعة. الرفع الصحيح: قف قريباً من الحمل، انحن للأسفل، أبقِ ظهرك مستقيماً وارفع بساقيك. احمل الأحمال الثقيلة قريباً من جسمك. غيّر وضعيتك بانتظام وخذ فترات راحة. استخدم العربات كلما أمكن ذلك — ظهرك سيشكرك."
+  },
+  kap_31: {
+    de: "Leitern sind gefährlich wenn sie falsch genutzt werden. Prüfe vor jeder Nutzung: Keine Risse, keine losen Sprossen, rutschfeste Füße. Anleigeleitern immer im Winkel 70° aufstellen (1 m Abstand pro 4 m Höhe). Nie seitlich über die Leiter herauslehnen — immer mit dem Gesicht zur Leiter auf- und absteigen. Aluminium-Leitern nicht in der Nähe von Strom verwenden!",
+    tr: "Merdivenler yanlış kullanıldığında tehlikelidir. Her kullanımdan önce kontrol et: Çatlak yok, gevşek basamak yok, kaymaz ayaklar var. Dayama merdivenleri her zaman 70° açıyla kur (4 m yükseklik için 1 m mesafe). Merdivenden yana doğru çıkma — her zaman merdivene dönük şekilde çık ve in. Alüminyum merdivenleri elektrik yakınında kullanma!",
+    ro: "Scările sunt periculoase dacă sunt folosite greșit. Verifică înainte de fiecare utilizare: Fără crăpături, fără trepte slabe, picioare antiderapante. Scările rezemate se montează întotdeauna la 70° (1 m distanță per 4 m înălțime). Nu te apleca lateral — urcă și coboară întotdeauna cu fața spre scară. Nu folosi scări din aluminiu lângă curent electric!",
+    sr: "Ljestve su opasne ako se pogrešno koriste. Provjeri prije svake upotrebe: Nema pukotina, nema labavnih prečki, klizave noge. Naslonske ljestve uvijek postavi pod uglom 70° (1 m razmaka na 4 m visine). Nikada se ne naginjaj bočno — uvijek se penjuj i silazi okrenuta licem prema ljestvama. Aluminijske ljestve ne koristiti u blizini struje!",
+    pl: "Drabiny są niebezpieczne gdy są używane nieprawidłowo. Sprawdź przed każdym użyciem: Brak pęknięć, brak luźnych szczebli, antypoślizgowe stopy. Drabiny opierane zawsze ustawiaj pod kątem 70° (1 m odległości na 4 m wysokości). Nigdy nie wychylaj się na bok — zawsze wchodź i schodź twarzą do drabiny. Nie używaj drabiny aluminiowej w pobliżu prądu!",
+    en: "Ladders are dangerous when used incorrectly. Check before each use: No cracks, no loose rungs, non-slip feet. Lean-to ladders must always be set up at 70° (1 m clearance per 4 m height). Never lean sideways — always climb and descend facing the ladder. Do not use aluminium ladders near electricity!",
+    ar: "السلالم خطيرة عند استخدامها بطريقة غير صحيحة. تحقق قبل كل استخدام: لا تشققات، لا درجات مفككة، أقدام مانعة للانزلاق. تُنصب سلالم الاستناد دائماً بزاوية 70° (مسافة 1 م لكل 4 م ارتفاع). لا تميل أبداً جانبياً — تسلق وانزل دائماً مع توجيه وجهك نحو السلم. لا تستخدم السلالم الألومنيوم بالقرب من الكهرباء!"
+  },
+  kap_32: {
+    de: "Wenn du krank bist und nicht arbeiten kannst, musst du deinen Vorgesetzten sofort informieren — bevor deine Arbeitszeit beginnt. Geh noch am ersten Krankheitstag zum Arzt und reiche die Krankmeldung (AU) noch am selben Tag ein. Bleibt die Krankheit länger, informiere sofort und reiche eine Folgebescheinigung ein. Deine Diagnose bleibt vertraulich — dein Chef darf nur wissen wie lange du fehlst.",
+    tr: "Hasta olduğunda ve çalışamadığında, mesai başlamadan önce amirini hemen bilgilendirmelisin. Hastalığının ilk gününde doktora git ve hastalık iznini (AU) aynı gün teslim et. Hastalık uzarsa hemen bildir ve devam raporu sun. Teşhisin gizli kalır — amirin sadece ne kadar süre devamsızlık yaptığını öğrenebilir.",
+    ro: "Când ești bolnav și nu poți munci, trebuie să informezi imediat șeful tău — înainte de începerea programului. Mergi la medic chiar în prima zi de boală și predă concediul medical (AU) în aceeași zi. Dacă boala durează mai mult, informează imediat și depune un certificat de continuare. Diagnosticul tău rămâne confidențial — șeful poate afla doar cât timp lipsești.",
+    sr: "Kada si bolestan/na i ne možeš raditi, morate odmah obavijestiti nadređenog — prije početka radnog vremena. Idi kod doktora prvog dana bolesti i predaj potvrdu o bolovanju (AU) isti dan. Ako bolest traje duže, odmah obavijesti i podnesi nastavnu potvrdu. Dijagnoza ostaje povjerljiva — šef smije znati samo koliko dugo izostas.",
+    pl: "Kiedy jesteś chory i nie możesz pracować, musisz natychmiast poinformować przełożonego — przed rozpoczęciem czasu pracy. Idź do lekarza już pierwszego dnia choroby i złóż zwolnienie lekarskie (AU) tego samego dnia. Jeśli choroba trwa dłużej, natychmiast poinformuj i złóż kontynuację. Twoja diagnoza pozostaje poufna — szef może wiedzieć tylko jak długo jesteś nieobecny.",
+    en: "When you are sick and cannot work, you must inform your supervisor immediately — before your working hours begin. Visit a doctor on the very first day of illness and hand in your sick note (AU) the same day. If the illness lasts longer, inform immediately and submit a follow-up certificate. Your diagnosis remains confidential — your manager may only know how long you are absent.",
+    ar: "عندما تكون مريضاً ولا تستطيع العمل، يجب عليك إخطار مشرفك فوراً — قبل بدء ساعات العمل. اذهب إلى الطبيب في اليوم الأول من المرض وسلّم شهادة المرض (AU) في نفس اليوم. إذا استمر المرض أطول، أخبر فوراً وقدّم شهادة متابعة. تشخيصك يبقى سرياً — مديرك لا يحق له معرفة سوى مدة غيابك."
+  },
+  kap_33: {
+    de: "Hygieneplan für Kindertagesstätten (§ 36 IfSG): Trage immer Schutzhandschuhe — bei Bedarf auch Einmalschürze und Mundschutz. Hände vor Arbeitsbeginn, nach Sanitärreinigung und nach Ausziehen der Handschuhe desinfizieren oder gründlich waschen. Kein Schmuck an Händen und Unterarmen während der Arbeit. Masernimpfnachweis ist Pflicht. Tägliche Reinigung: Türgriffe, Lichtschalter, Handläufe, Armaturen, WCs, Waschbecken, Böden feucht wischen. 3-Farben-System: 🔴 Rot = WC, 🟡 Gelb = Sanitär, 🔵 Blau = Möbel/Türen. Täglich frische Reinigungstücher — kein Wiederverwenden! Desinfektionsmittel nur nach freigegebener Produktpalette und Dosierplan. Bei Infektionshäufungen (z. B. Norovirus) erweiterte Desinfektion mit VAH/RKI-gelisteten Mitteln (viruzid).",
+    tr: "Kreşler için Hijyen Planı (§ 36 IfSG): Çalışırken daima koruyucu eldiven giy — gerektiğinde tek kullanımlık önlük ve maske. Çalışmaya başlamadan önce, tuvalet temizliğinden sonra ve eldivenleri çıkardıktan sonra elleri dezenfekte et veya iyice yıka. Çalışma sırasında ellerde ve kolllarda takı takma. Kızamık aşısı zorunludur. Günlük temizlik: kapı kolları, ışık anahtarları, tutamaklar, armatürler, tuvaletler, lavabolar, ıslak paspas. 3-renk sistemi: 🔴 Kırmızı = Tuvalet, 🟡 Sarı = Banyo, 🔵 Mavi = Mobilya/Kapılar. Her gün temiz bez — yeniden kullanma! Dezenfektanlar yalnızca onaylı ürün listesine ve dozaj planına göre kullanılır.",
+    ro: "Plan de igienă pentru grădinițe (§ 36 IfSG): Poartă întotdeauna mănuși de protecție — dacă este necesar șorț de unică folosință și mască. Dezinfectează sau spală bine mâinile înainte de lucru, după curățarea toaletelor și după scoaterea mănușilor. Fără bijuterii pe mâini și antebrațe în timpul lucrului. Dovada vaccinării împotriva rujeolei este obligatorie. Curățare zilnică: mânere, întrerupătoare, balustrade, robinete, toalete, chiuvete, podele șterse umed. Sistem 3 culori: 🔴 Roșu = Toaletă, 🟡 Galben = Baie, 🔵 Albastru = Mobilier/Uși. Cârpe proaspete zilnic — fără reutilizare! Dezinfectanți doar conform listei aprobate și planului de dozare.",
+    sr: "Plan higijene za vrtiće (§ 36 IfSG): Uvijek nosi zaštitne rukavice — po potrebi jednokratnu pregaču i masku. Dezinficiraj ili temeljito operi ruke prije rada, nakon čišćenja toaleta i nakon skidanja rukavica. Bez nakita na rukama i podlakticama za vrijeme rada. Dokaz o cijepljenju protiv ospica je obavezan. Svakodnevno čišćenje: kvake, prekidači, rukohvati, armature, WC-i, umivaonici, podovi mokrim brisanjem. Sustav 3 boje: 🔴 Crvena = WC, 🟡 Žuta = Sanitarije, 🔵 Plava = Namještaj/Vrata. Svaki dan svježe krpe — bez ponovne upotrebe! Dezinficijensi samo prema odobrenoj listi i planu doziranja.",
+    pl: "Plan higieny dla żłobków i przedszkoli (§ 36 IfSG): Zawsze noś rękawice ochronne — w razie potrzeby jednorazowy fartuch i maskę. Dezynfekuj lub dokładnie myj ręce przed pracą, po czyszczeniu toalet i po zdjęciu rękawic. Bez biżuterii na dłoniach i przedramionach podczas pracy. Obowiązkowy dowód szczepienia przeciwko odrze. Codzienne sprzątanie: klamki, włączniki, poręcze, armatura, toalety, umywalki, podłogi na mokro. System 3 kolorów: 🔴 Czerwony = WC, 🟡 Żółty = Sanitariaty, 🔵 Niebieski = Meble/Drzwi. Codziennie świeże ściereczki — bez ponownego użycia! Środki dezynfekcyjne tylko według zatwierdzonej listy i planu dozowania.",
+    en: "Hygiene plan for daycare centres (§ 36 IfSG): Always wear protective gloves — disposable apron and mask if needed. Disinfect or thoroughly wash hands before work, after cleaning toilets and after removing gloves. No jewellery on hands and forearms during work. Proof of measles vaccination is mandatory. Daily cleaning: door handles, light switches, handrails, fittings, toilets, washbasins, floors wet-mopped. 3-colour system: 🔴 Red = Toilet, 🟡 Yellow = Sanitary, 🔵 Blue = Furniture/Doors. Fresh cloths daily — no reuse! Disinfectants only per approved product list and dosing plan. In case of infection outbreaks (e.g. norovirus): enhanced disinfection with VAH/RKI-listed virucidal agents.",
+    ar: "خطة النظافة لدور الحضانة (§ 36 IfSG): ارتدِ دائماً قفازات واقية — ارتدِ مريلة يمكن التخلص منها وقناعاً عند الحاجة. عقّم أو اغسل يديك جيداً قبل العمل وبعد تنظيف المراحيض وبعد خلع القفازات. لا مجوهرات على اليدين والساعدين أثناء العمل. إثبات التطعيم ضد الحصبة إلزامي. التنظيف اليومي: مقابض الأبواب، مفاتيح الإضاءة، الدرابزين، الحنفيات، المراحيض، أحواض الغسيل، الأرضيات بالمسح الرطب. نظام 3 ألوان: 🔴 أحمر = مرحاض، 🟡 أصفر = صحي، 🔵 أزرق = أثاث/أبواب. قطع قماش طازجة يومياً — لا إعادة استخدام! المطهّرات فقط وفق قائمة المنتجات المعتمدة وخطة الجرعات."
+  },
+  kap_34: {
+    de: "Sicherheitsunterweisung DPD-Depot (§ 12 ArbSchG, DGUV V1): PSA-Pflicht — Warnweste (EN ISO 20471) und Sicherheitsschuhe (S1P/S3) sind auf dem gesamten Depot- und Hofgelände zu tragen. Eng anliegende Arbeitskleidung, kein Schmuck, langes Haar sichern (Einzugsgefahr). Innerbetrieblicher Verkehr: Nur gelb markierte Fußwege nutzen! Vor Überqueren von Fahrbahnen immer Blickkontakt mit Fahrern herstellen. Flurförderzeuge haben Vorrang — max. Schrittgeschwindigkeit. Förderbänder: Niemals in laufende Bänder greifen oder übersteigen! Paketstaus nur durch befugtes Personal beseitigen. Vor Eingriffen: Anlage abschalten (Lockout). Laderampen: Lkw erst befahren nach Arretierung (Radkeile, Feststellbremse). Hallentore bei nicht angedockten Fahrzeugen geschlossen halten. Notfall: Standorte der Not-Aus-Taster, Fluchtwege und Sammelstelle kennen.",
+    tr: "DPD Depot Güvenlik Talimatı (§ 12 ArbSchG, DGUV V1): KKD Zorunluluğu — Tüm depo ve avlu alanında ikaz yeleği (EN ISO 20471) ve güvenlik ayakkabısı (S1P/S3) giyilmelidir. Dar iş kıyafeti, takı yok, uzun saçları sabitle (sıkışma tehlikesi). İç trafik: Yalnızca sarı işaretli yaya yollarını kullan! Yolu geçmeden önce sürücülerle daima göz teması kur. Forkliftlerin önceliği var — maksimum yürüyüş hızı. Bantlar: Çalışan bantlara asla dokunma veya üstünden geçme! Paket sıkışmalarını yalnızca yetkili personel giderir. Müdahaleden önce: Tesisi kapat (kilitleme). Yükleme rampaları: Takozlama ve el freni sonrası TIR'a gir. Yangın kapıları araç yokken kapalı tutulmalıdır. Acil: Acil durdurma düğmelerinin, kaçış yollarının ve toplanma noktasının yerlerini bil.",
+    ro: "Instrucțiuni de securitate DPD Depot (§ 12 ArbSchG, DGUV V1): Obligația EIP — vestă de avertizare (EN ISO 20471) și pantofi de protecție (S1P/S3) obligatorii pe tot terenul depozitului. Îmbrăcăminte de lucru strânsă, fără bijuterii, fixează părul lung (pericol de prindere). Trafic intern: folosește exclusiv căile pietonale marcate cu galben! Înainte de traversarea căilor de circulație stabilește întotdeauna contact vizual cu șoferii. Vehiculele de transport au prioritate — viteză maximă de mers pe jos. Benzi transportoare: Nu introduce niciodată mâna în benzi în funcțiune și nu trece peste ele! Blocajele de pachete se remediază numai de personal autorizat. Înainte de intervenții: oprește instalația (blocare). Rampe de încărcare: urcă pe camion doar după blocare (pene de roată, frână de mână). Uși hală ținute închise fără vehicul andocat. Urgență: cunoaște locațiile butoanelor de oprire de urgență, căile de evacuare și punctul de adunare.",
+    sr: "Sigurnosne upute DPD depoa (§ 12 ArbSchG, DGUV V1): Obveza LZO — upozoravajući prsluk (EN ISO 20471) i zaštitne cipele (S1P/S3) obvezni su na cijelom prostoru depoa. Uska radna odjeća, bez nakita, osiguraj dugu kosu (opasnost od uvlačenja). Unutarnji promet: koristiti isključivo žuto označene pješačke staze! Prije prelaska prometnica uspostavi kontakt očima s vozačima. Viličari imaju prednost — maksimalna brzina hoda. Transportne trake: nikad ne posezati u pokretne trake ili prelaziti preko njih! Zagušenje paketa uklanja samo ovlašteno osoblje. Prije zahvata: isključi postrojenje (zaključavanje). Utovarni mostovi: na kamion tek nakon blokiranja (klin za kotač, ručna kočnica). Halna vrata držati zatvorena bez privezan vozila. Hitni slučaj: znati lokacije tipki za hitno zaustavljanje, putove bijega i zbirno mjesto.",
+    pl: "Instrukcja bezpieczeństwa DPD Depot (§ 12 ArbSchG, DGUV V1): Obowiązek ŚOI — kamizelka ostrzegawcza (EN ISO 20471) i buty ochronne (S1P/S3) obowiązkowe na całym terenie magazynu. Obcisła odzież robocza, bez biżuterii, zabezpiecz długie włosy (niebezpieczeństwo wciągnięcia). Ruch wewnętrzny: korzystaj wyłącznie z żółto oznakowanych ścieżek! Przed przekroczeniem dróg nawiąż kontakt wzrokowy z kierowcami. Wózki mają pierwszeństwo — maksymalna prędkość kroku. Taśmy: nigdy nie wkładaj rąk w ruchome taśmy i nie przekraczaj ich! Zatory paczek usuwa tylko upoważniony personel. Przed ingerencją: wyłącz urządzenie (blokada). Rampy załadunkowe: wejście na ciężarówkę dopiero po zablokowaniu (kliny, hamulec ręczny). Bramy hali zamknięte przy braku zadokowanego pojazdu. Nagły wypadek: znaj lokalizacje wyłączników awaryjnych, dróg ewakuacyjnych i miejsca zbiórki.",
+    en: "DPD Depot Safety Briefing (§ 12 ArbSchG, DGUV V1): PPE mandatory — high-visibility vest (EN ISO 20471) and safety shoes (S1P/S3) must be worn across the entire depot and yard. Close-fitting work clothing, no jewellery, secure long hair (entrapment hazard). Internal traffic: use only yellow-marked pedestrian walkways! Always make eye contact with drivers before crossing any lane. Forklifts have right of way — walking pace maximum. Conveyor belts: never reach into or step over moving belts! Package jams to be cleared by authorised personnel only. Before any intervention: switch off the system (lockout). Loading ramps: board lorry only after securing (wheel chocks, handbrake). Hall doors kept closed when no vehicle is docked. Emergency: know the locations of emergency-stop buttons, escape routes and assembly point.",
+    ar: "تعليمات السلامة لمستودع DPD (§ 12 ArbSchG, DGUV V1): إلزامية معدات الحماية الشخصية — سترة التحذير (EN ISO 20471) وأحذية السلامة (S1P/S3) إلزامية في جميع أنحاء المستودع. ملابس عمل ضيقة، لا مجوهرات، اربط الشعر الطويل (خطر الانجراف). حركة المرور الداخلية: استخدم فقط المسارات المخصصة للمشاة والمحددة باللون الأصفر! قبل عبور المسارات تواصل دائماً بصرياً مع السائقين. الرافعات الشوكية لها الأولوية — السرعة القصوى خطوة المشي. الأحزمة الناقلة: لا تدخل يدك أبداً في الأحزمة المتحركة ولا تتجاوزها! يُزيل انسداد الطرود الموظفون المعتمدون فقط. قبل أي تدخل: أوقف المنشأة (القفل). منصات التحميل: اصعد على الشاحنة فقط بعد التثبيت (أوتاد العجلات، الفرامل اليدوية). أبواب القاعة مغلقة عند عدم رسو مركبة. الطوارئ: اعرف مواقع مفاتيح الإيقاف الطارئ، ومسارات الإخلاء، ونقطة التجمع."
+  },
   kap_29: {
     de: "Die Wechseltuch-Methode: Ein Tuch = Ein Sanitärobjekt — danach sofort in die Wäsche, kein Zurücktauchen in die Lösung. Pflicht in Kliniken, Pflegeeinrichtungen und Sanitäranlagen (RKI-Richtlinien). Die 16-Seiten-Falttechnik: Tuch zweimal falten ergibt 16 saubere Flächen. Für jede neue Oberfläche eine frische Seite — spart Wasser und maximiert Keimfreiheit. Waschprotokoll: 🔴🟢 bei 95 °C, 🟡🔵 bei 60 °C. NIEMALS Weichspüler — er verklebt die Mikrofasern! Trockner empfohlen — die Hitze ist ein zusätzlicher Hygieneschritt.",
     tr: "Değiştirme bezi yöntemi: Bir bez = Bir sanitasyon nesnesi — sonra hemen çamaşıra, solüsyona geri daldırmayın. Klinikler ve bakım tesislerinde zorunludur. 16 yüz katlama: Bezi iki kez katlamak 16 temiz yüzey verir. Yıkama: 🔴🟢 95°C, 🟡🔵 60°C. ASLA yumuşatıcı kullanmayın — mikrofiberleri yapıştırır!",
@@ -662,6 +728,19 @@ function zeigePwReset() {
   document.getElementById('pw-reset-email').value = document.getElementById('login-email').value || '';
   document.getElementById('pw-reset-msg').textContent = '';
 }
+
+// Passwort vergessen: erkennt ob Handynummer oder E-Mail eingegeben
+function zeigePasswortVergessenHilfe() {
+  const eingabe = document.getElementById('login-email').value.trim();
+  const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
+  if (istHandynummer) {
+    zeigeInfoModal('📱 Passwort vergessen?',
+      'Bitte wende dich an deinen Vorgesetzten (Bereichsleiter oder Verantwortlichen).<br><br>' +
+      'Er kann dir über die App ein neues Passwort vergeben und es dir per WhatsApp/SMS schicken.');
+  } else {
+    zeigePwReset();
+  }
+}
 function schliessePwReset() {
   document.getElementById('pw-reset-modal').style.display = 'none';
 }
@@ -793,6 +872,61 @@ async function pruefePasswordResetToken() {
 }
 
 // ══════════════════════════════════════════════════════════════
+//  PASSWORT PFLICHT-ÄNDERN (erster Login)
+// ══════════════════════════════════════════════════════════════
+function zeigePwPflichtAendern() {
+  const overlay = document.createElement('div');
+  overlay.id = 'pw-pflicht-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99999;display:flex;align-items:center;justify-content:center;padding:16px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-size:2rem">🔐</div>
+        <h3 style="margin:8px 0 4px;font-size:1.1rem;color:#1e3a5f">Passwort festlegen</h3>
+        <p style="font-size:.83rem;color:#6b7280;margin:0">Bitte lege jetzt dein eigenes Passwort fest.</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <input id="ppf-neu" type="password" placeholder="Neues Passwort (mind. 8 Zeichen)"
+          style="padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.92rem;width:100%;box-sizing:border-box">
+        <input id="ppf-neu2" type="password" placeholder="Passwort wiederholen"
+          style="padding:11px 14px;border:1.5px solid #d1d5db;border-radius:9px;font-size:.92rem;width:100%;box-sizing:border-box">
+      </div>
+      <div id="ppf-msg" style="font-size:.82rem;min-height:20px;margin:8px 0;color:#dc2626"></div>
+      <button id="ppf-btn" onclick="pwPflichtSpeichern()" class="btn-primary"
+        style="width:100%;padding:12px;font-size:.95rem;border-radius:9px;border:none;cursor:pointer;background:#1e3a5f;color:#fff;font-weight:600;margin-top:4px">
+        💾 Passwort speichern
+      </button>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function pwPflichtSpeichern() {
+  const neu  = document.getElementById('ppf-neu').value;
+  const neu2 = document.getElementById('ppf-neu2').value;
+  const msg  = document.getElementById('ppf-msg');
+  const btn  = document.getElementById('ppf-btn');
+  msg.textContent = '';
+  if (neu.length < 8) { msg.textContent = 'Mindestens 8 Zeichen.'; return; }
+  if (neu !== neu2)   { msg.textContent = 'Passwörter stimmen nicht überein.'; return; }
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const hash = await hashPasswort(neu);
+    await SB.patch('users', `id=eq.${currentUser.userId}`, { password_hash: hash, muss_pw_aendern: false });
+    await sbAudit('PW_PFLICHT_AENDERUNG', 'Erstes Passwort gesetzt');
+    currentUser.mussPasswortAendern = false;
+    const s = JSON.parse(localStorage.getItem(SESSION_KEY)||'{}');
+    s.mussPasswortAendern = false;
+    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    document.getElementById('pw-pflicht-overlay')?.remove();
+    showToast('✅ Passwort gespeichert!', '#0f5132');
+    routeAfterLogin();
+  } catch(e) {
+    msg.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '💾 Passwort speichern';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
 //  PASSWORT ÄNDERN (für eingeloggte Nutzer)
 // ══════════════════════════════════════════════════════════════
 function zeigePwAendern() {
@@ -902,7 +1036,27 @@ const SB = {
       body: pdfBlob
     });
     if (!r.ok) { const t = await r.text(); throw new Error(t); }
-    return `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
+    // Gibt jetzt den Storage-Pfad zurück (kein public URL mehr)
+    return `schulung-pdfs/${path}`;
+  },
+  async signedUrl(storagePath, expiresIn = 300) {
+    // Generiert eine signierte URL die nach expiresIn Sekunden abläuft (Standard: 5 Min)
+    // storagePath Format: "bucket/pfad/zur/datei.pdf"
+    const parts = storagePath.replace(/^\//, '').split('/');
+    const bucket = parts.shift();
+    const filePath = parts.join('/');
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/sign/${bucket}/${filePath}`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ expiresIn })
+    });
+    if (!r.ok) throw new Error('Signierte URL konnte nicht erstellt werden: ' + await r.text());
+    const data = await r.json();
+    return `${SUPABASE_URL}/storage/v1${data.signedURL}`;
   },
   async delete(table, filter) {
     const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
@@ -937,23 +1091,58 @@ async function initApp() {
   } catch(e) { /* nicht kritisch */ }
 
   try {
-    const [tenants, vorlagen, zuws, users] = await Promise.all([
+    const [tenants, vorlagen, zuws, users, bereiche] = await Promise.all([
       SB.get('tenants'),
       SB.get('vorlagen'),
       SB.get('zuweisungen'),
-      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert')
+      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert,bereich_id,personalnummer'),
+      SB.get('bereiche')
     ]);
     APP_TENANTS       = tenants;
     APP_USERS         = users; // Für ID→Name Auflösung (z.B. im PDF)
+    APP_BEREICHE      = bereiche || [];
     SCHULUNG_VORLAGEN = vorlagen.map(v => ({
       ...v, intervallMonate: v.intervall_monate,
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
     }));
+
+    // ── Hubarbeitsbühnen DGUV 308-008 — eingebaute Vorlage ──
+    if (!SCHULUNG_VORLAGEN.some(v => v.id === HUB_VORLAGE_ID)) {
+      SCHULUNG_VORLAGEN.unshift({
+        id:              HUB_VORLAGE_ID,
+        titel:           'Hubarbeitsbühnen — DGUV 308-008',
+        beschreibung:    '14 Kapitel · 4 Module · 10 Quizfragen · Teilnahmebescheinigung',
+        typ:             'hub',
+        intervall_monate: 12,
+        intervallMonate:  12,
+        pflicht:         true,
+        abschnitte:      [],
+        _eingebaut:      true
+      });
+    }
+
+    // ── Befähigte Person Leitern/Tritte — eingebaute Vorlage ──
+    if (!SCHULUNG_VORLAGEN.some(v => v.id === BP_VORLAGE_ID)) {
+      SCHULUNG_VORLAGEN.unshift({
+        id:              BP_VORLAGE_ID,
+        titel:           'Schulung: Befähigte Person Leitern & Tritte',
+        beschreibung:    '8 Module · 20 Quizfragen · Fachkundenachweis (BetrSichV · DGUV 208-016)',
+        typ:             'befperson',
+        intervall_monate: 60,
+        intervallMonate:  60,
+        pflicht:         true,
+        abschnitte:      [],
+        _eingebaut:      true,
+        _bpModul:        true
+      });
+    }
+
     zuweisungen = zuws.map(z => ({
       id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
       frist: z.frist, pflicht: z.pflicht,
       intervallMonate: z.intervall_monate || null,
-      zugewiesenAn: z.zugewiesen_an || null
+      zugewiesenAn: z.zugewiesen_an || null,
+      bereichId: z.bereich_id || null
     }));
 
     // Formulare laden
@@ -1040,6 +1229,7 @@ function doLogout() {
   // SICHERHEIT: Alle globalen Datenarrays leeren — kein Datenleck beim Benutzerwechsel
   APP_TENANTS       = [];
   APP_USERS         = [];
+  APP_BEREICHE      = [];
   SCHULUNG_VORLAGEN = [];
   zuweisungen       = [];
   formulare         = {};
@@ -1074,6 +1264,8 @@ function routeAfterLogin() {
   if (currentUser.role === 'admin') {
     renderAdminDashboard();
     showScreen('screen-admin');
+  } else if (currentUser.role === 'bereichsleiter') {
+    renderBereichsleiterDashboard();
   } else if (currentUser.role === 'firma') {
     // Firma-Admin: sieht alle Verantwortlichen und Mitarbeiter seines Tenants
     const tid = currentUser.tenantId;
@@ -1125,28 +1317,300 @@ function routeAfterLogin() {
   }
 }
 
+// ── Bereichsleiter-Screen rendern ────────────────────────────
+async function renderBereichsleiterDashboard() {
+  const tid = currentUser.tenantId;
+  // Mandantentrennung: nur eigener Tenant + eigener Bereich
+  APP_TENANTS  = APP_TENANTS.filter(t => t.id === tid);
+  APP_BEREICHE = APP_BEREICHE.filter(b => b.tenant_id === tid);
+  APP_USERS    = APP_USERS.filter(u => u.tenant_id === tid);
+
+  const meinBereich = APP_BEREICHE.find(b => b.id === currentUser.bereichId);
+  const bereichName = meinBereich ? meinBereich.name : 'Mein Bereich';
+
+  // Nur Zuweisungen für diesen Bereich / eigene Mitarbeiter
+  const meineMitarbeiter = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.bereich_id === currentUser.bereichId);
+  const maIds = new Set(meineMitarbeiter.map(u => u.id));
+  zuweisungen = zuweisungen.filter(z =>
+    z.tenantId === tid &&
+    (z.bereichId === currentUser.bereichId || maIds.has(z.zugewiesenAn))
+  );
+
+  const screen = document.getElementById('screen-bereichsleiter');
+  if (!screen) return;
+  document.getElementById('bl-username').textContent  = currentUser.name;
+  document.getElementById('bl-bereichname').textContent = bereichName;
+
+  // Statistik
+  const allMaZuws = zuweisungen.filter(z => maIds.has(z.zugewiesenAn));
+  let g=0,y=0,r=0;
+  meineMitarbeiter.forEach(ma => {
+    const zuws = allMaZuws.filter(z => z.zugewiesenAn === ma.id);
+    if (!zuws.length) { r++; return; }
+    const stati = zuws.map(z => berechneStatus(z));
+    if (stati.some(s=>s==='rot')) r++;
+    else if (stati.some(s=>s==='gelb')) y++;
+    else g++;
+  });
+  document.getElementById('bl-stats').innerHTML = `
+    <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">OK</div></div>
+    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
+    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>`;
+
+  // Mitarbeiterliste rendern
+  blRenderMitarbeiterListe();
+  showScreen('screen-bereichsleiter');
+}
+
+function blRenderMitarbeiterListe(filter='') {
+  const listEl = document.getElementById('bl-mitarbeiter-list');
+  if (!listEl) return;
+  const meineMitarbeiter = APP_USERS.filter(u =>
+    u.role === 'mitarbeiter' &&
+    u.bereich_id === currentUser.bereichId &&
+    !u.archiviert &&
+    (!filter || u.name.toLowerCase().includes(filter.toLowerCase()))
+  );
+  if (!meineMitarbeiter.length) {
+    listEl.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:24px;font-size:.85rem">Noch keine Mitarbeiter in diesem Bereich.<br><br>
+      <button class="btn-primary" onclick="blMitarbeiterAnlegenModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Mitarbeiter anlegen</button></div>`;
+    return;
+  }
+  // 🔴 zuerst sortieren
+  const sorted = [...meineMitarbeiter].sort((a,b) => {
+    const statusOrder = s => s==='rot'?0:s==='gelb'?1:s==='gruen'?2:3;
+    const aZuws = zuweisungen.filter(z=>z.zugewiesenAn===a.id);
+    const bZuws = zuweisungen.filter(z=>z.zugewiesenAn===b.id);
+    const aStatus = aZuws.length ? aZuws.map(z=>berechneStatus(z)).sort((x,y)=>statusOrder(x)-statusOrder(y))[0] : 'rot';
+    const bStatus = bZuws.length ? bZuws.map(z=>berechneStatus(z)).sort((x,y)=>statusOrder(x)-statusOrder(y))[0] : 'rot';
+    return statusOrder(aStatus) - statusOrder(bStatus);
+  });
+  listEl.innerHTML = sorted.map(ma => {
+    const zuws = zuweisungen.filter(z => z.zugewiesenAn === ma.id);
+    const stati = zuws.map(z => berechneStatus(z));
+    let ampel = '⚪', farbe = '#f9fafb', border = '#e5e7eb';
+    if (stati.some(s=>s==='rot'))        { ampel='🔴'; farbe='#fef2f2'; border='#fca5a5'; }
+    else if (stati.some(s==='gelb'))     { ampel='🟡'; farbe='#fffbeb'; border='#fde68a'; }
+    else if (stati.length && stati.every(s=>s==='gruen')) { ampel='🟢'; farbe='#f0fdf4'; border='#86efac'; }
+    const offeneCount = stati.filter(s=>s==='rot'||s==='gelb').length;
+    const pnr = ma.personalnummer ? `<span style="font-size:.7rem;color:#9ca3af">PNr: ${escHtml(ma.personalnummer)}</span>` : '';
+    return `<div onclick="blMitarbeiterDetail('${ma.id}')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;margin-bottom:6px;background:${farbe};border:1px solid ${border};border-radius:10px;cursor:pointer">
+      <span style="font-size:1.2rem">${ampel}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.88rem;font-weight:700;color:#1e3a5f">${escHtml(ma.name)}</div>
+        <div style="font-size:.72rem;color:#6b7280">${pnr}${pnr&&offeneCount?' · ':''}${offeneCount?`<span style="color:#dc2626">${offeneCount} offen</span>`:zuws.length?'✅ Alles ok':'Keine Schulungen'}</div>
+      </div>
+      <span style="color:#9ca3af;font-size:.9rem">›</span>
+    </div>`;
+  }).join('');
+}
+
+function blMitarbeiterDetail(userId) {
+  const ma = APP_USERS.find(u => u.id === userId);
+  if (!ma) return;
+  const maZuws = zuweisungen.filter(z => z.zugewiesenAn === userId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:460px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0;font-size:1rem;color:#1e3a5f">👤 ${escHtml(ma.name)}</h3>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    ${ma.personalnummer?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">Personalnr.: ${escHtml(ma.personalnummer)}</div>`:''}
+    ${ma.mobil?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">📱 ${escHtml(ma.mobil)}</div>`:ma.email&&!ma.email.includes('@csc-hannover.de')?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">✉️ ${escHtml(ma.email)}</div>`:''}
+    <div style="margin-bottom:14px">
+      ${maZuws.length ? maZuws.map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const s = berechneStatus(z);
+        const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
+          <span>${dot}</span>
+          <div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>
+          ${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}
+        </div>`;
+      }).join('') : '<div style="color:#9ca3af;font-size:.82rem;text-align:center;padding:12px">Keine Schulungen zugewiesen</div>'}
+    </div>
+    <div style="display:flex;gap:8px">
+      <button onclick="blSchulungZuweisen('${userId}');this.closest('[style*=fixed]').remove()" class="btn-primary" style="flex:1;font-size:.85rem;padding:10px">📋 Schulung zuweisen</button>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:10px;border-radius:9px;font-size:.85rem;cursor:pointer">Schließen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function blSchulungZuweisen(userId) {
+  // Nur Vorlagen anzeigen die vom Verantwortlichen für diesen Bereich freigegeben wurden
+  const verfuegbar = SCHULUNG_VORLAGEN.filter(v => {
+    return zuweisungen.some(z => z.vorlagenId === v.id && z.tenantId === currentUser.tenantId && !z.zugewiesenAn);
+  });
+  if (!verfuegbar.length) {
+    showToast('⚠️ Keine Schulungsvorlagen verfügbar. Bitte Verantwortlichen um Zuweisung.', '#d97706');
+    return;
+  }
+  // Vorlage auswählen
+  const ma = APP_USERS.find(u => u.id === userId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9600;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">📋 Schulung zuweisen — ${escHtml(ma?.name||'')}</h3>
+    <div style="display:flex;flex-direction:column;gap:8px;max-height:40vh;overflow-y:auto;margin-bottom:14px">
+      ${verfuegbar.map(v => `<label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid #e5e7eb;border-radius:8px;cursor:pointer">
+        <input type="radio" name="bl-vorlage-sel" value="${v.id}" style="accent-color:#1e3a5f">
+        <span style="font-size:.85rem;color:#1e3a5f">${escHtml(v.titel)}</span>
+      </label>`).join('')}
+    </div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:.8rem;color:#374151;display:block;margin-bottom:4px">Frist:</label>
+      <input type="date" id="bl-zuw-frist" style="width:100%;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem"
+        value="${new Date(Date.now()+90*86400000).toISOString().split('T')[0]}">
+    </div>
+    <div id="bl-zuw-fehler" style="color:#dc2626;font-size:.82rem;min-height:16px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:10px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="blZuweisungBestaetigen('${userId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;font-size:.9rem;padding:11px">✅ Zuweisen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function blZuweisungBestaetigen(userId, modalEl) {
+  const sel = modalEl.querySelector('input[name="bl-vorlage-sel"]:checked');
+  const frist = modalEl.querySelector('#bl-zuw-frist').value;
+  const fehEl = modalEl.querySelector('#bl-zuw-fehler');
+  if (!sel) { fehEl.textContent = 'Bitte Schulung auswählen.'; return; }
+  const vorlagenId = sel.value;
+  const ma = APP_USERS.find(u => u.id === userId);
+  try {
+    const id = 'zuw_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId, tenant_id: currentUser.tenantId,
+      frist: frist || null, pflicht: true,
+      zugewiesen_an: userId,
+      bereich_id: currentUser.bereichId || null
+    });
+    zuweisungen.push({ id, vorlagenId, tenantId: currentUser.tenantId, frist, pflicht: true, zugewiesenAn: userId, bereichId: currentUser.bereichId || null });
+    await sbAudit('BL_SCHULUNG_ZUGEWIESEN', `${SCHULUNG_VORLAGEN.find(v=>v.id===vorlagenId)?.titel} → ${ma?.name}`);
+    modalEl.remove();
+    showToast(`✅ Schulung zugewiesen an ${ma?.name}`, '#0f5132');
+    blRenderMitarbeiterListe();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+  }
+}
+
+// Bereichsleiter: neuen Mitarbeiter anlegen
+function blMitarbeiterAnlegenModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Mitarbeiter anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="bl-ma-name" type="text" placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-handynr" type="tel" placeholder="Handynummer (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="bl-ma-pnr" type="text" placeholder="Personalnummer (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="bl-ma-pw" type="text" placeholder="Passwort (leer = auto)" style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="document.getElementById('bl-ma-pw').value=genPasswort()" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="bl-ma-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;font-size:.9rem;cursor:pointer">Abbrechen</button>
+      <button id="bl-ma-speichern-btn" onclick="blMitarbeiterSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;font-size:.9rem;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+function genPasswort() {
+  const chars = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789!@#$';
+  const arr = new Uint8Array(10);
+  crypto.getRandomValues(arr);
+  return Array.from(arr).map(b => chars[b % chars.length]).join('');
+}
+
+async function blMitarbeiterSpeichern(modalEl) {
+  const name    = modalEl.querySelector('#bl-ma-name').value.trim();
+  const email   = modalEl.querySelector('#bl-ma-email').value.trim().toLowerCase();
+  const handynr = (modalEl.querySelector('#bl-ma-handynr')?.value || '').trim().replace(/\s+/g, '');
+  const pnr     = modalEl.querySelector('#bl-ma-pnr').value.trim();
+  let   pw      = modalEl.querySelector('#bl-ma-pw').value.trim();
+  const fehEl   = modalEl.querySelector('#bl-ma-fehler');
+  fehEl.textContent = '';
+  if (!name)  { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  if (!email || !email.includes('@')) { fehEl.textContent = 'Gültige E-Mail eingeben.'; return; }
+  if (!pw) pw = genPasswort();
+  const btn = modalEl.querySelector('#bl-ma-speichern-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird angelegt…';
+  try {
+    const id = 'user_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id, name,
+      email,
+      mobil: handynr || null,
+      password_hash: hash,
+      role: 'bereichsleiter',
+      tenant_id: currentUser.tenantId,
+      bereich_id: currentUser.bereichId || null,
+      personalnummer: pnr || null,
+      aktiv: true,
+      archiviert: false,
+      muss_pw_aendern: true
+    });
+    if (res?.error) {
+      const msg = res.error.message || '';
+      fehEl.textContent = msg.includes('duplicate') ? 'E-Mail bereits registriert.' : 'Fehler: ' + msg;
+      btn.disabled = false; btn.textContent = '✅ Anlegen';
+      return;
+    }
+    APP_USERS.push({ id, name, email, mobil: handynr||null, tenant_id: currentUser.tenantId, role: 'bereichsleiter', bereich_id: currentUser.bereichId||null, personalnummer: pnr||null, aktiv: true, archiviert: false });
+    await sbAudit('BL_MITARBEITER_NEU', `${name} (${email}) angelegt von ${currentUser.name}`);
+    const emailOk = await sendLoginEmail({ an: email, name, rolle: 'bereichsleiter', passwort: pw, unternehmen: APP_BEREICHE.find(b=>b.id===currentUser.bereichId)?.name || currentUser.name });
+    modalEl.remove();
+    showToast(`✅ ${name} angelegt${emailOk ? ' — ✉️ Zugangsdaten gesendet' : ''}`, '#0f5132');
+    blRenderMitarbeiterListe();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Anlegen';
+  }
+}
+
 // ── LOGIN ────────────────────────────────────────────────────
 async function doLogin() {
-  const email = document.getElementById('login-email').value.trim().toLowerCase();
-  const pw    = document.getElementById('login-password').value;
-  const errEl = document.getElementById('login-fehler');
+  const eingabe = document.getElementById('login-email').value.trim();
+  const pw      = document.getElementById('login-password').value;
+  const errEl   = document.getElementById('login-fehler');
   errEl.classList.remove('show');
-  if (!email || !pw) { errEl.textContent='Bitte E-Mail und Passwort eingeben.'; errEl.classList.add('show'); return; }
+  if (!eingabe || !pw) { errEl.textContent='Bitte Benutzername und Passwort eingeben.'; errEl.classList.add('show'); return; }
 
   const loginBtn = document.querySelector('#screen-login .btn-primary');
   loginBtn.textContent = '⏳ Anmelden…';
   loginBtn.disabled = true;
 
+  // Handynummer? → in Pseudo-E-Mail umwandeln
+  const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
+  let suchEmail;
+  if (istHandynummer) {
+    const nr = eingabe.replace(/\s+/g,'').replace(/^00/,'+').replace(/^0/,'+49');
+    suchEmail = nr + '@csc-hannover.de';
+  } else {
+    suchEmail = eingabe.toLowerCase();
+  }
+
   try {
-    const users = await SB.get('users', `email=eq.${encodeURIComponent(email)}`);
+    const users = await SB.get('users', `email=eq.${encodeURIComponent(suchEmail)}`);
     if (!users.length) {
-      errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
+      errEl.textContent = istHandynummer ? 'Handynummer oder Passwort falsch.' : 'E-Mail oder Passwort falsch.';
+      errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
     const user = users[0];
     const ok = await verifyPasswort(pw, user.password_hash);
     if (!ok) {
-      errEl.textContent='E-Mail oder Passwort falsch.'; errEl.classList.add('show');
+      errEl.textContent = istHandynummer ? 'Handynummer oder Passwort falsch.' : 'E-Mail oder Passwort falsch.';
+      errEl.classList.add('show');
       loginBtn.textContent='Anmelden'; loginBtn.disabled=false; return;
     }
     // SHA-256 → bcrypt Auto-Migration (im Hintergrund)
@@ -1156,19 +1620,89 @@ async function doLogin() {
     const session = {
       userId: user.id, name: user.name, email: user.email,
       role: user.role, tenantId: user.tenant_id,
-      aktiv: user.aktiv !== false,        // passiv-Schutz
-      archiviert: !!user.archiviert,      // archiviert-Schutz
+      bereichId: user.bereich_id || null,
+      aktiv: user.aktiv !== false,
+      archiviert: !!user.archiviert,
+      mussPasswortAendern: !!user.muss_pw_aendern,
       expires: Date.now() + SESSION_HOURS * 3600 * 1000
     };
     localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     currentUser = session;
     startInactivityWatcher();
     await sbAudit('LOGIN','Benutzer angemeldet');
-    routeAfterLogin();
+    // Erstes Login? → Passwort-Ändern-Pflicht
+    if (session.mussPasswortAendern) {
+      zeigePwPflichtAendern();
+    } else {
+      routeAfterLogin();
+    }
   } catch(e) {
     errEl.textContent='Fehler: '+e.message; errEl.classList.add('show');
   }
   loginBtn.textContent='Anmelden'; loginBtn.disabled=false;
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PW-RESET DURCH VORGESETZTEN
+// ══════════════════════════════════════════════════════════════
+async function vorgesetzterPwReset(userId, userName) {
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px';
+  const neuesPw = genPasswort();
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">🔑 Neues Passwort für ${escHtml(userName)}</h3>
+      <div style="background:#eff6ff;border:1px solid #fed7aa;border-radius:9px;padding:12px;margin-bottom:14px">
+        <div style="font-size:.8rem;color:#92400e;margin-bottom:6px">Generiertes Passwort:</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <code id="vpr-pw-anzeige" style="font-size:1rem;font-weight:700;color:#1e3a5f;flex:1;word-break:break-all">${neuesPw}</code>
+          <button onclick="navigator.clipboard.writeText('${neuesPw}').then(()=>showToast('📋 Kopiert!'))"
+            style="padding:5px 10px;border:1px solid #d1d5db;border-radius:6px;background:#f9fafb;cursor:pointer;font-size:.8rem">📋</button>
+        </div>
+      </div>
+      <div style="font-size:.78rem;color:#6b7280;margin-bottom:14px">
+        📱 Dieses Passwort per WhatsApp/SMS an den Mitarbeiter senden.<br>
+        Beim nächsten Login muss er es selbst ändern.
+      </div>
+      <div id="vpr-msg" style="font-size:.82rem;min-height:16px;color:#dc2626;margin-bottom:8px"></div>
+      <div style="display:flex;gap:8px">
+        <button onclick="this.closest('[style*=fixed]').remove()"
+          style="flex:1;padding:10px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">Abbrechen</button>
+        <button id="vpr-btn" onclick="vorgesetzterPwSpeichern('${userId}','${escHtml(userName)}','${neuesPw}',this.closest('[style*=fixed]'))"
+          style="flex:2;padding:10px;border:none;border-radius:8px;background:#c2410c;color:#fff;font-weight:600;cursor:pointer">✅ Passwort setzen</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function vorgesetzterPwSpeichern(userId, userName, neuesPw, overlayEl) {
+  const btn = overlayEl.querySelector('#vpr-btn');
+  const msg = overlayEl.querySelector('#vpr-msg');
+  btn.disabled = true; btn.textContent = '⏳ …';
+  try {
+    const hash = await hashPasswort(neuesPw);
+    await SB.patch('users', `id=eq.${userId}`, { password_hash: hash, muss_pw_aendern: true });
+    await sbAudit('PW_RESET_VORGESETZTER', `Neues Passwort gesetzt für ${userName}`);
+    overlayEl.remove();
+    showToast(`✅ Neues Passwort für ${userName} gesetzt — bitte per WhatsApp/SMS senden`, '#0f5132');
+  } catch(e) {
+    msg.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Passwort setzen';
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  PDF ÖFFNEN — immer über signierte URL (5 Min gültig)
+// ══════════════════════════════════════════════════════════════
+async function oeffnePdfSigniert(storagePath) {
+  if (!storagePath) return;
+  try {
+    showToast('⏳ PDF wird vorbereitet…', '#0047cc');
+    const url = await SB.signedUrl(storagePath, 300);
+    window.open(url, '_blank', 'noopener');
+  } catch(e) {
+    showToast('❌ PDF konnte nicht geöffnet werden: ' + e.message.substring(0,60), '#dc2626');
+  }
 }
 
 // ── AUDIT ────────────────────────────────────────────────────
@@ -1228,7 +1762,7 @@ function adminTab(tabName, btn) {
   document.getElementById(`tab-${tabName}`).style.display='';
   // Sidebar auf Mobile schließen
   adminSidebarClose();
-  if (tabName==='protokoll') loadAuditFromDB();
+  if (tabName==='protokoll' || tabName==='audit') loadAuditFromDB();
   if (tabName==='unternehmen') nuRenderListe();
   if (tabName==='kalender') renderKalender();
   if (tabName==='archiv') renderArchiv();
@@ -1242,19 +1776,68 @@ function adminSidebarClose() {
   document.getElementById('admin-sidebar').classList.remove('open');
   document.getElementById('admin-sidebar-overlay').style.display = 'none';
 }
+function auditIcon(action) {
+  const icons = {
+    LOGIN: '🔑', LOGOUT: '🔓', QR_LOGIN: '📱',
+    ABSCHLUSS: '✅', ABSCHLUSS_MANUELL: '✅',
+    ZWISCHENSPEICHERN: '💾',
+    PSAGA_BESCHEINIGUNG: '🏅', PSAGA_BESTANDEN: '🎯',
+    HUB_BESCHEINIGUNG: '🏅',
+    LERNPFAD_UNTERZEICHNET: '✍️', LERNPFAD_V_UNTERZEICHNET: '✍️',
+    LERNPFAD_BESTAETIGT: '✍️', LERNPFAD_ZERTIFIKAT: '🎓',
+    ZUWEISUNG: '📋', LOESCHEN: '🗑️',
+    VORLAGE_NEU: '📄', VORLAGE_EDIT: '✏️',
+    UNTERNEHMEN_NEU: '🏢', LIZENZNEHMER_AKTIVIERT: '🟢', LIZENZNEHMER_DEAKTIVIERT: '🔴',
+    MITARBEITER_EINZEL: '👤', MITARBEITER_IMPORT: '👥',
+    MITARBEITER_AKTIV: '🟢', MITARBEITER_PASSIV: '🔴', MITARBEITER_ARCHIVIERT: '📦',
+    BL_ANGELEGT: '👔', BL_MITARBEITER_NEU: '👤', BL_SCHULUNG_ZUGEWIESEN: '📋',
+    BEREICH_NEU: '🏗️', BEREICH_GELOESCHT: '🗑️',
+    PW_AENDERUNG: '🔐', PW_PFLICHT_AENDERUNG: '🔐', PW_RESET_VORGESETZTER: '🔐',
+    BERICHT_PDF: '📊', PUSH_AKTIVIERT: '🔔',
+    WIEDERKEHREND_NEU: '🔄', SCHULUNG_NEU_GESTARTET: '▶️',
+    ERINNERUNG_GESENDET: '📧',
+  };
+  return icons[action] || '📝';
+}
+function auditDetailText(detail) {
+  if (!detail) return '';
+  if (detail.startsWith('{')) {
+    try {
+      const obj = JSON.parse(detail);
+      // Kompakte Darstellung: nur relevante Felder
+      const keys = Object.keys(obj).filter(k => !['user_id','tenant_id'].includes(k));
+      return keys.map(k => `<span style="color:#9ca3af">${k}:</span> ${escHtml(String(obj[k]))}`).join(' · ');
+    } catch(e) { return escHtml(detail); }
+  }
+  return escHtml(detail);
+}
 async function loadAuditFromDB() {
   try {
-    const log = await SB.get('audit','order=ts.desc&limit=100');
+    const filterEl = document.getElementById('audit-filter-action');
+    const filterVal = filterEl ? filterEl.value : '';
+    const query = filterVal
+      ? `order=ts.desc&limit=200&action=eq.${encodeURIComponent(filterVal)}`
+      : 'order=ts.desc&limit=200';
+    const log = await SB.get('audit', query);
     const html = log.map(e => `
-      <div class="audit-item">
-        <span class="audit-icon">${e.action==='LOGIN'?'🔑':e.action==='LOGOUT'?'🔓':e.action==='ABSCHLUSS'?'✅':e.action==='ZWISCHENSPEICHERN'?'💾':'📝'}</span>
-        <div>
-          <div style="font-size:.82rem"><strong>${e.action}</strong> — ${escHtml(e.detail)}</div>
-          <div class="audit-time">${dateStr(e.ts)} • ${escHtml(e.user_name)}</div>
+      <div class="audit-item" style="display:flex;gap:10px;padding:10px 4px;border-bottom:1px solid #1f2937">
+        <span style="font-size:1.2rem;flex-shrink:0;margin-top:1px">${auditIcon(e.action)}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;line-height:1.4">
+            <strong style="color:#e5e7eb">${escHtml(e.action)}</strong>
+            <span style="color:#6b7280"> — </span>
+            <span style="color:#d1d5db">${auditDetailText(e.detail)}</span>
+          </div>
+          <div style="font-size:.72rem;color:#6b7280;margin-top:2px">
+            🕐 ${dateStr(e.ts)} &nbsp;·&nbsp; 👤 ${escHtml(e.user_name || '–')}
+            ${e.user_email ? `<span style="color:#4b5563"> (${escHtml(e.user_email)})</span>` : ''}
+          </div>
         </div>
       </div>
     `).join('') || '<div class="empty-state"><div class="icon">📋</div><p>Noch keine Einträge</p></div>';
     document.getElementById('audit-list').innerHTML = html;
+    const countEl = document.getElementById('audit-count');
+    if (countEl) countEl.textContent = `${log.length} Einträge`;
   } catch(e) { console.warn(e); }
 }
 function renderAuditTrail() {
@@ -1418,7 +2001,7 @@ async function renderArchiv() {
               <div style="font-size:.88rem;font-weight:600">${escHtml(f.titel)}</div>
               <div style="font-size:.76rem;color:#6b7280">${escHtml(f.tenant)} · ${f.abgeschlossen_am ? dateStr(f.abgeschlossen_am) : '–'} ${f.mitarbeiter_name?`· ${escHtml(f.mitarbeiter_name)}`:''}</div>
             </div>
-            ${f.pdf_path?`<a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</a>`:''}\n          </div>`;
+            ${f.pdf_path?`<button onclick="oeffnePdfSigniert('${escHtml(f.pdf_path)}')" class="btn btn-outline btn-sm" style="font-size:.72rem">📄 PDF</button>`:''}\\n          </div>`;
         });
         html += '</div>';
       });
@@ -1538,7 +2121,7 @@ function subKalenderRenderInhalt(filter) {
       html += `<div onclick="kalenderEintragDetail('${z.id}')" style="background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);border-left:4px solid ${farbe};display:flex;align-items:flex-start;gap:14px;cursor:pointer;transition:box-shadow .15s" onmouseover="this.style.boxShadow='0 3px 12px rgba(0,0,0,.15)'" onmouseout="this.style.boxShadow='0 1px 4px rgba(0,0,0,.08)'">
         <div style="min-width:44px;height:44px;border-radius:50%;background:${farbe}22;display:flex;align-items:center;justify-content:center;font-size:1.3rem">${icon}</div>
         <div style="flex:1;min-width:0">
-          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (29 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
+          <div style="font-weight:700;font-size:.93rem;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${z.vorlagenId === LERNPFAD_VORLAGE_ID ? '<span style="color:#6b21a8">📚 Lernpfad (32 Kapitel)</span>' : z.vorlagenId === '__psaga__' ? '<span style="color:#166534">🪝 PSAgA-Schulung</span>' : z.vorlagenId === HUB_VORLAGE_ID ? '<span style="color:#1a3a5c">🏗️ Hubarbeitsbühnen DGUV 308-008</span>' : escHtml(z.v ? z.v.titel : z.vorlagenId)}</div>
           <div style="font-size:.78rem;color:#64748b;margin-top:3px">📅 Frist: <strong>${datumFormatiert}</strong> · ${tageText}</div>
           <div style="margin-top:6px;display:flex;align-items:center;gap:8px">
             <span style="font-size:.72rem;padding:3px 8px;border-radius:20px;background:${farbe}22;color:${farbe};font-weight:600">${badge}</span>
@@ -1596,7 +2179,9 @@ function renderAdminTenantTable() {
           <span style="font-size:.78rem;color:#374151">${pct}%</span>
         </div>
       </td>
-      <td><button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button></td>
+      <td><button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button>
+          <button class="btn btn-sm" style="margin-left:4px;background:${t.aktiv===false?'#fee2e2':'#dcfce7'};color:${t.aktiv===false?'#991b1b':'#166534'};border:1px solid ${t.aktiv===false?'#fca5a5':'#86efac'}" onclick="tenantAktivToggle('${t.id}',${t.aktiv!==false})" title="${t.aktiv===false?'Aktivieren':'Deaktivieren'}">${t.aktiv===false?'🔴 Inaktiv':'🟢 Aktiv'}</button>
+          <button class="btn btn-danger btn-sm" style="margin-left:4px" onclick="tenantLoeschen('${t.id}','${escHtml(t.name)}')">🗑</button></td>
     </tr>`;
   }).join('');
   document.getElementById('admin-tenant-table').innerHTML = `
@@ -1605,18 +2190,55 @@ function renderAdminTenantTable() {
       <tbody>${rows}</tbody>
     </table></div>`;
 }
+async function tenantLoeschen(tenantId, name) {
+  showConfirmModal(
+    `<strong>🗑 Unternehmen löschen</strong><br><br>„${name}" wirklich endgültig löschen?<br><small style="color:#6b7280">Alle Mitarbeiter, Zuweisungen und Formulare werden unwiderruflich gelöscht.</small>`,
+    async () => {
+      showToast('⏳ Lösche Unternehmen…', '#374151');
+      const tabellen = ['formulare','zuweisungen','bereiche','vorlagen','users'];
+      for (const tab of tabellen) {
+        await SB.delete(tab, `tenant_id=eq.${tenantId}`).catch(()=>{});
+      }
+      await SB.delete('tenants', `id=eq.${tenantId}`).catch(()=>{});
+      APP_TENANTS = APP_TENANTS.filter(t => t.id !== tenantId);
+      zuweisungen  = zuweisungen.filter(z => z.tenantId !== tenantId);
+      APP_USERS    = APP_USERS.filter(u => u.tenantId !== tenantId);
+      renderAdminTenantTable();
+      showToast(`✅ „${name}" gelöscht`, '#166534');
+    },
+    { jaLabel: '🗑 Endgültig löschen', neinLabel: 'Abbrechen', jaColor: '#dc2626' }
+  );
+}
+
+async function tenantAktivToggle(tenantId, aktuellerWert) {
+  const neuerWert = !aktuellerWert;
+  await SB.patch('tenants', `id=eq.${tenantId}`, { aktiv: neuerWert }).catch(()=>{});
+  const t = APP_TENANTS.find(t => t.id === tenantId);
+  if (t) t.aktiv = neuerWert;
+  renderAdminTenantTable();
+  showToast(neuerWert ? '🟢 Unternehmen aktiviert' : '🔴 Unternehmen deaktiviert', neuerWert ? '#166534' : '#991b1b');
+}
+
 function adminZeigeTenant(tenantId) {
   const tenant = APP_TENANTS.find(t=>t.id===tenantId);
   const zuws   = zuweisungen.filter(z=>z.tenantId===tenantId);
+  const hasPsaga = zuws.some(z => z.vorlagenId === '__psaga__');
+  const hasHub   = zuws.some(z => z.vorlagenId === HUB_VORLAGE_ID);
+  const hasBp    = zuws.some(z => z.vorlagenId === BP_VORLAGE_ID);
+  const hasLP    = zuws.some(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
+  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID && z.vorlagenId !== HUB_VORLAGE_ID && z.vorlagenId !== BP_VORLAGE_ID);
+
   const html = `<div class="card"><div class="card-title">🏢 ${escHtml(tenant.name)}</div>
     ${zuws.map(z => {
       const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), s=berechneStatus(z), f=formulare[z.id]||{};
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+      const isBp = z.vorlagenId === BP_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':''}">${titel}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#1a3a5c;font-weight:700':isBp?'color:#1a3a5c;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -1624,10 +2246,146 @@ function adminZeigeTenant(tenantId) {
       </div>`;
     }).join('')}
     ${!zuws.length?'<div class="empty-state"><div class="icon">📭</div><p>Keine Zuweisungen</p></div>':''}
+  </div>
+  <div class="card" style="margin-top:12px">
+    <div class="card-title">📊 Teilnehmer-Übersicht</div>
+    <div id="tenant-statistik-${tenantId}" style="font-size:.84rem;color:#6b7280">⏳ Wird geladen…</div>
   </div>`;
+
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-user-info').textContent = currentUser.name;
+  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws });
   showScreen('screen-admin-detail');
+}
+
+async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws }) {
+  const el = document.getElementById(`tenant-statistik-${tenantId}`);
+  if (!el) return;
+  try {
+    const heute = new Date().toISOString().slice(0,10);
+    let html = '';
+
+    // ── PSAgA ──────────────────────────────────────────
+    if (hasPsaga) {
+      const daten = await SB.get('psaga_bescheinigungen',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,ausstellungsdatum,pdf_url`
+      );
+      // Deduplizieren: pro User nur neueste
+      const maMap = new Map();
+      (daten||[]).forEach(d => {
+        const datum = d.ausstellungsdatum || '';
+        if (!maMap.has(d.user_id) || datum > (maMap.get(d.user_id).ausstellungsdatum||'')) maMap.set(d.user_id, d);
+      });
+      const heute = new Date().toISOString().slice(0,10);
+      const unique     = [...maMap.values()];
+      // Ablauf = 1 Jahr nach Ausstellungsdatum
+      const aktiv      = unique.filter(d => {
+        if (!d.ausstellungsdatum) return false;
+        const ablauf = new Date(d.ausstellungsdatum);
+        ablauf.setFullYear(ablauf.getFullYear() + 1);
+        return ablauf.toISOString().slice(0,10) >= heute;
+      }).length;
+      const abgelaufen = unique.length - aktiv;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🪝 PSAgA-Schulung</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(unique.length, 'Gesamt absolviert', '#eff6ff','#1d4ed8')}
+            ${_statKachel(aktiv,         'Bescheinigung aktiv', '#f0fdf4','#16a34a')}
+            ${_statKachel(abgelaufen,    'Abgelaufen / fällig', '#fef9c3','#a16207')}
+          </div>
+          ${aktiv > 0 ? `<div style="margin-top:8px;font-size:.77rem;color:#6b7280">💡 Abrechnung: <strong>${aktiv} aktive Teilnehmer</strong> × Preis/Teilnehmer</div>` : ''}
+        </div>`;
+    }
+
+    // ── Lernpfad ───────────────────────────────────────
+    if (hasLP) {
+      const lpDaten = await SB.get('lernpfad_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am,verantwortlicher_am`
+      );
+      const abgeschlossen  = (lpDaten||[]).filter(d => d.unterzeichnet_am).length;
+      const gegengezeichnet = (lpDaten||[]).filter(d => d.verantwortlicher_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#6b21a8;margin-bottom:8px">📚 Lernpfad (32 Kapitel)</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen,   'Unterzeichnet', '#faf5ff','#6b21a8')}
+            ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
+          </div>
+        </div>`;
+    }
+
+    // ── Hubarbeitsbühnen ────────────────────────────────
+    if (hasHub) {
+      const hubDaten = await SB.get('hub_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am,verantwortlicher_am`
+      );
+      const abgeschlossen  = (hubDaten||[]).filter(d => d.unterzeichnet_am).length;
+      const gegengezeichnet = (hubDaten||[]).filter(d => d.verantwortlicher_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🏗️ Hubarbeitsbühnen DGUV 308-008</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen,   'Quiz bestanden + Bescheinigung', '#eff6ff','#c2410c')}
+            ${_statKachel(gegengezeichnet, 'Gegengezeichnet', '#f0fdf4','#16a34a')}
+          </div>
+        </div>`;
+    }
+
+    // ── Befähigte Person Leitern/Tritte ─────────────────
+    if (hasBp) {
+      const bpDaten = await SB.get('bp_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am`
+      );
+      const abgeschlossen = (bpDaten||[]).filter(d => d.unterzeichnet_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🪜 Schulung: Befähigte Person Leitern & Tritte</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen, 'Quiz bestanden + Zertifikat', '#eff6ff','#1a3a5c')}
+          </div>
+        </div>`;
+    }
+
+    // ── Unterweisungsvorlagen ──────────────────────────
+    if (vorlagenZuws.length) {
+      html += `<div style="margin-bottom:8px"><div style="font-weight:700;font-size:.88rem;color:#1e3a5f;margin-bottom:8px">📋 Unterweisungen</div>`;
+      for (const z of vorlagenZuws) {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const titel = v ? v.titel : z.vorlagenId;
+        // Formulare für diese Zuweisung aus lokalem Cache
+        const tenantUsers = APP_USERS.filter(u => u.tenant_id === tenantId && u.role === 'mitarbeiter' && u.aktiv !== false);
+        const formsDieserZuw = Object.values(formulare).filter(f => f.zuwId === z.id || f.id === z.id);
+        const abgeschlossen = formsDieserZuw.filter(f => f.abgeschlossen).length;
+        const gesamt = tenantUsers.length || '–';
+        html += `
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f3f4f6;flex-wrap:wrap;gap:6px">
+            <span style="font-size:.84rem;color:#374151">${escHtml(titel)}</span>
+            <div style="display:flex;gap:8px">
+              ${_statKachel(abgeschlossen, 'abgeschlossen', '#f0fdf4','#16a34a', true)}
+              <span style="font-size:.75rem;color:#6b7280;align-self:center">von ${gesamt} MA</span>
+            </div>
+          </div>`;
+      }
+      html += `</div>`;
+    }
+
+    if (!html) html = '<p style="color:#6b7280;font-size:.85rem">Noch keine Schulungsaktivität vorhanden.</p>';
+    el.innerHTML = html;
+  } catch(e) {
+    el.innerHTML = `<p style="color:#dc2626">⚠️ Fehler: ${e.message}</p>`;
+  }
+}
+
+function _statKachel(zahl, label, bg, farbe, klein=false) {
+  if (klein) return `<div style="background:${bg};border-radius:6px;padding:4px 10px;text-align:center">
+    <span style="font-size:1rem;font-weight:800;color:${farbe}">${zahl}</span>
+    <span style="font-size:.72rem;color:${farbe};margin-left:4px">${label}</span>
+  </div>`;
+  return `<div style="background:${bg};border-radius:8px;padding:8px 16px;text-align:center;min-width:70px">
+    <div style="font-size:1.5rem;font-weight:800;color:${farbe}">${zahl}</div>
+    <div style="font-size:.72rem;color:${farbe}">${label}</div>
+  </div>`;
 }
 function adminDetailAnzeigen(zuwId) {
   activeDetailZuwId = zuwId;
@@ -1635,20 +2393,43 @@ function adminDetailAnzeigen(zuwId) {
   const tenant=APP_TENANTS.find(t=>t.id===zuw.tenantId), form=formulare[zuwId]||{}, status=berechneStatus(zuw);
   const isLP = zuw.vorlagenId === LERNPFAD_VORLAGE_ID;
   const isPsaga = zuw.vorlagenId === '__psaga__';
+  const isHub = zuw.vorlagenId === HUB_VORLAGE_ID;
+  const isBp = zuw.vorlagenId === BP_VORLAGE_ID;
 
   let feldHtml='';
   if (isLP) {
-    // Lernpfad-Detail: Status aus Cache anzeigen
-    const lpUnt = window._lpUntCache && zuw.zugewiesenAn ? window._lpUntCache[zuw.zugewiesenAn] : null;
-    feldHtml = lpUnt && lpUnt.unterzeichnet_am
-      ? `<div style="background:#f0fdf4;border-radius:8px;padding:12px 14px">
-           <div style="font-weight:700;color:#15803d;margin-bottom:4px">✅ Lernpfad unterzeichnet</div>
-           <div style="font-size:.82rem;color:#374151">
-             👤 <b>${escHtml(lpUnt.vollname||'–')}</b> · ${new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE')}
-             ${lpUnt.verantwortlicher_am ? `<br>🧑‍💼 Gegengezeichnet: <b>${escHtml(lpUnt.verantwortlicher_name||'–')}</b> · ${new Date(lpUnt.verantwortlicher_am).toLocaleDateString('de-DE')}` : '<br>⏳ Gegenzeichnung ausstehend'}
-           </div>
-         </div>`
-      : `<div class="empty-state"><div class="icon">📚</div><p>Noch nicht unterzeichnet</p></div>`;
+    // Lernpfad-Detail: alle MA des Tenants mit Unterzeichnungs-Status anzeigen
+    const tenantMA = APP_USERS.filter(u => u.tenant_id === zuw.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+    const lpCache = window._lpUntCache || {};
+
+    if (tenantMA.length === 0) {
+      feldHtml = `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:10px 14px;font-size:.82rem;font-weight:700;color:#92400e">⚠️ Zuweisung an Mitarbeiter nicht erfolgt!</div>`;
+    } else {
+      const unterzeichnet = tenantMA.filter(m => lpCache[m.id] && lpCache[m.id].unterzeichnet_am);
+      const ausstehend    = tenantMA.filter(m => !lpCache[m.id] || !lpCache[m.id].unterzeichnet_am);
+
+      feldHtml = `<div style="margin-top:4px">`;
+      if (ausstehend.length > 0) {
+        feldHtml += `
+          <div style="font-size:.8rem;font-weight:700;color:#dc2626;margin-bottom:6px">⚠️ Noch nicht unterzeichnet (${ausstehend.length}):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">
+            ${ausstehend.map(m => `<span style="background:#fef2f2;border:1px solid #fca5a5;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#991b1b">${escHtml(m.name)}</span>`).join('')}
+          </div>`;
+      }
+      if (unterzeichnet.length > 0) {
+        feldHtml += `
+          <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:6px">✅ Unterzeichnet (${unterzeichnet.length}):</div>
+          <div style="display:flex;flex-wrap:wrap;gap:6px">
+            ${unterzeichnet.map(m => {
+              const u = lpCache[m.id];
+              const datum = u.unterzeichnet_am ? new Date(u.unterzeichnet_am).toLocaleDateString('de-DE') : '';
+              const gegenz = u.verantwortlicher_am ? ` · ✓ Gegengezeichnet` : ' · ⏳ Gegenzeichnung ausstehend';
+              return `<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#15803d" title="${datum}${gegenz}">${escHtml(m.name)} ${datum ? '· '+datum : ''}</span>`;
+            }).join('')}
+          </div>`;
+      }
+      feldHtml += `</div>`;
+    }
   } else if (form.felder && vorlage) {
     vorlage.abschnitte.forEach(ab => {
       feldHtml += `<div class="form-section-title">${escHtml(ab.titel)}</div>`;
@@ -1661,10 +2442,56 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+
+  // ── PSAgA: Mitarbeiter-Übersicht aus Bescheinigungen laden ──
+  let psagaMaHtml = '';
+  if (isPsaga && tenant) {
+    // Asynchron laden und nachrüsten
+    SB.get('psaga_bescheinigungen', `tenant_id=eq.${encodeURIComponent(zuw.tenantId)}&select=user_id,user_name,ausstellungsdatum`)
+      .then(bescheinigungen => {
+        const heute = new Date().toISOString().slice(0,10);
+        const tenantMA = APP_USERS.filter(u => u.tenant_id === zuw.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+        // Pro User neueste Bescheinigung
+        const beschMap = new Map();
+        (bescheinigungen||[]).forEach(b => {
+          if (!beschMap.has(b.user_id) || (b.ausstellungsdatum||'') > (beschMap.get(b.user_id).ausstellungsdatum||'')) beschMap.set(b.user_id, b);
+        });
+        const mitBesch = [...beschMap.values()].filter(b => {
+          if (!b.ausstellungsdatum) return false;
+          const ablauf = new Date(b.ausstellungsdatum);
+          ablauf.setFullYear(ablauf.getFullYear() + 1);
+          return ablauf.toISOString().slice(0,10) >= heute;
+        });
+        const mitBeschIds = new Set(mitBesch.map(b => b.user_id));
+        const ohneBesch = tenantMA.filter(m => !mitBeschIds.has(m.id));
+
+        const maEl = document.getElementById('psaga-ma-detail');
+        if (!maEl) return;
+        if (tenantMA.length === 0) {
+          maEl.innerHTML = `<div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:10px 14px;font-size:.82rem;font-weight:700;color:#92400e">⚠️ Zuweisung an Mitarbeiter nicht erfolgt!</div>`;
+        } else {
+          maEl.innerHTML = `
+            <div style="margin-top:12px">
+              ${ohneBesch.length > 0 ? `
+                <div style="font-size:.8rem;font-weight:700;color:#dc2626;margin-bottom:6px">⚠️ Noch keine gültige Bescheinigung (${ohneBesch.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+                  ${ohneBesch.map(m=>`<span style="background:#fef2f2;border:1px solid #fca5a5;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#991b1b">${escHtml(m.name)}</span>`).join('')}
+                </div>` : ''}
+              ${mitBesch.length > 0 ? `
+                <div style="font-size:.8rem;font-weight:700;color:#15803d;margin-bottom:6px">✅ Gültige Bescheinigung (${mitBesch.length}):</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  ${mitBesch.map(b=>`<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:3px 12px;font-size:.8rem;color:#15803d">${escHtml(b.user_name||b.user_id)}</span>`).join('')}
+                </div>` : ''}
+            </div>`;
+        }
+      }).catch(() => {});
+    psagaMaHtml = `<div id="psaga-ma-detail"><div style="color:#9ca3af;font-size:.8rem;font-style:italic">Lade Teilnehmer…</div></div>`;
+  }
+
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-      <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':''}">${titelAnzeige}</div>
+    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#1a3a5c':isBp?'color:#1a3a5c':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -1672,11 +2499,15 @@ function adminDetailAnzeigen(zuwId) {
       </div>
       <div style="font-size:.82rem;color:#6b7280;margin-bottom:14px">
         Frist: ${zuw.frist||'–'} | ${form.abgeschlossen?`Abgeschlossen: ${dateStr(form.abgeschlossenAm)}`:'Noch offen'}
-        ${form.pdfPath?`<br><a href="${form.pdfPath}" target="_blank" style="color:#0047cc">📄 PDF in Supabase öffnen</a>`:''}
+        ${form.pdfPath?`<br><button onclick="oeffnePdfSigniert('${form.pdfPath}')" style="color:#0047cc;background:none;border:none;cursor:pointer;font-size:.82rem;text-decoration:underline;padding:0">📄 PDF in Supabase öffnen</button>`:''}
       </div>
       ${feldHtml||'<div class="empty-state"><div class="icon">📝</div><p>Noch kein Formular ausgefüllt</p></div>'}
+      ${psagaMaHtml}
     </div>`;
   document.getElementById('detail-user-info').textContent = currentUser.name;
+  // PDF-Button nur anzeigen wenn Formular abgeschlossen ist
+  const pdfBtnArea = document.getElementById('detail-pdf-btn-area');
+  if (pdfBtnArea) pdfBtnArea.style.display = form.abgeschlossen ? '' : 'none';
   showScreen('screen-admin-detail');
 }
 function exportDetailPdf() { if(activeDetailZuwId) generatePdf(activeDetailZuwId, true); }
@@ -1692,19 +2523,36 @@ function renderAdminVorlagen() {
     : liste;
 
   document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
-    <div class="card" style="margin-bottom:12px">
+    <div class="card" style="margin-bottom:12px${v._bpModul ? ';border-left:4px solid #1a3a5c' : v._eingebaut ? ';border-left:4px solid #1a3a5c' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
-          <div class="card-title" style="margin-bottom:4px">📄 ${escHtml(v.titel)}</div>
+          <div class="card-title" style="margin-bottom:4px">${v._bpModul ? '🪜' : v._eingebaut ? '🏗️' : v.id === '__psaga__' ? '🪝' : '📄'} ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
-          <div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>
+          ${v._bpModul
+            ? `<div style="font-size:.78rem;color:#1a3a5c;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate · BetrSichV · DGUV 208-016</div>`
+            : v._eingebaut
+            ? `<div style="font-size:.78rem;color:#1a3a5c;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
+            : v.id === '__psaga__'
+            ? `<div style="font-size:.78rem;color:#166534;font-weight:600">🔒 PSAgA-Folienviewer · 22 Module · Quiz · Teilnahmebescheinigung · nicht editierbar</div>`
+            : `<div style="font-size:.78rem;color:#6b7280">🔁 Intervall: ${v.intervallMonate||v.intervall_monate||'–'} Monate &nbsp;|&nbsp; 📑 ${(v.abschnitte||[]).length} Abschnitte &nbsp;|&nbsp; 🔢 ${(v.abschnitte||[]).reduce((s,a)=>s+a.felder.length,0)} Felder</div>`
+          }
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
-          <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>
+          ${v._bpModul
+            ? `<button class="btn btn-outline btn-sm" onclick="bpAdminVorschau()" style="border-color:#1a3a5c;color:#1a3a5c">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="bpAlsMaSpielen()" style="border-color:#1a3a5c;color:#fff;background:#1a3a5c;margin-left:6px">▶ Als MA testen</button>`
+            : v._eingebaut
+            ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#1a3a5c;color:#1a3a5c">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#1a3a5c;color:#fff;background:#1a3a5c;margin-left:6px">▶ Als MA testen</button>`
+            : v.id === '__psaga__'
+            ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>`
+            : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
+               <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
+          }
         </div>
       </div>
-      <details style="margin-top:10px">
+      ${!v._eingebaut ? `<details style="margin-top:10px">
         <summary style="font-size:.8rem;color:#6b7280;cursor:pointer;user-select:none">📑 Abschnitte anzeigen</summary>
         <div style="margin-top:8px;border-top:1px solid #f0f2f5;padding-top:8px">
           ${(v.abschnitte||[]).map(a=>`
@@ -1713,7 +2561,7 @@ function renderAdminVorlagen() {
               <span style="color:#6b7280;font-size:.78rem"> — ${a.felder.map(f=>escHtml(f.label)).join(', ')}</span>
             </div>`).join('')}
         </div>
-      </details>
+      </details>` : ''}
     </div>`).join('')
     || `<div class="empty-state"><div class="icon">${suche ? '🔍' : '📭'}</div><p>${suche ? `Keine Vorlage für „${escHtml(suche)}" gefunden` : 'Noch keine Vorlagen vorhanden'}</p></div>`;
 
@@ -1748,6 +2596,78 @@ function vtVorlagenSuche(wert) {
   renderAdminVorlagen();
 }
 
+// ── Admin-Vorschau: Formular vollständig als read-only Modal ──
+function vtVorschau(vorlagenId) {
+  const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === vorlagenId);
+  if (!vorlage) { showToast('Vorlage nicht gefunden', '#ef4444'); return; }
+
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+
+  // Abschnitte mit Feldern rendern
+  const abschnitteHtml = (vorlage.abschnitte || []).map(a => `
+    <div style="margin-bottom:20px;background:#f8fafc;border-radius:10px;padding:14px;border:1px solid #e5e7eb">
+      <div style="font-weight:700;color:#1a3a5c;font-size:.95rem;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid #e5e7eb">
+        📋 ${escHtml(a.titel)}
+      </div>
+      ${(a.felder || []).map(f => {
+        if (f.typ === 'checkbox') return `
+          <div style="display:flex;align-items:flex-start;gap:10px;padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="width:18px;height:18px;border:2px solid #9ca3af;border-radius:4px;flex-shrink:0;margin-top:1px;background:#fff"></div>
+            <span style="font-size:.87rem;color:#374151">${escHtml(f.label)}</span>
+          </div>`;
+        if (f.typ === 'text') return `
+          <div style="padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="font-size:.8rem;color:#6b7280;margin-bottom:4px">${escHtml(f.label)}</div>
+            <div style="background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px;min-height:36px;font-size:.85rem;color:#9ca3af;font-style:italic">Texteingabe…</div>
+          </div>`;
+        if (f.typ === 'unterschrift') return `
+          <div style="padding:7px 0;border-bottom:1px solid #f0f2f5">
+            <div style="font-size:.8rem;color:#6b7280;margin-bottom:4px">✍️ ${escHtml(f.label || 'Unterschrift')}</div>
+            <div style="background:#fff;border:2px dashed #d1d5db;border-radius:8px;height:70px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:.8rem">Unterschrift-Feld</div>
+          </div>`;
+        if (f.typ === 'info') return `
+          <div style="display:flex;align-items:flex-start;gap:12px;background:#f0f6ff;border:1.5px solid #c7d9f8;border-radius:10px;padding:10px 14px;margin:8px 0">
+            ${f.svg||''}
+            <div><div style="font-size:.82rem;font-weight:700;color:#1e3a5f;margin-bottom:2px">${escHtml(f.label||'')}</div>${f.text?`<div style="font-size:.78rem;color:#4b6080;line-height:1.4">${escHtml(f.text)}</div>`:''}</div>
+          </div>`;
+        return `<div style="padding:6px 0;font-size:.85rem;color:#374151">${escHtml(f.label || '')}</div>`;
+      }).join('')}
+    </div>`).join('');
+
+  const abschnittCount = (vorlage.abschnitte || []).length;
+  const feldCount = (vorlage.abschnitte || []).reduce((s, a) => s + (a.felder || []).length, 0);
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:14px;padding:0;max-width:620px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25);overflow:hidden;margin:auto">
+      <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
+        <div>
+          <div style="color:#fff;font-weight:700;font-size:1.05rem">👁 Formular-Vorschau</div>
+          <div style="color:#bfdbfe;font-size:.85rem;margin-top:3px">${escHtml(vorlage.titel)}</div>
+        </div>
+        <button onclick="this.closest('[style*=fixed]').remove()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;padding:6px 10px;color:#fff;font-size:1.1rem;cursor:pointer;line-height:1">✕</button>
+      </div>
+      <div style="padding:16px 20px;background:#f0f4fa;display:flex;gap:16px;flex-wrap:wrap">
+        <span style="font-size:.8rem;color:#374151">📑 <strong>${abschnittCount}</strong> Abschnitte</span>
+        <span style="font-size:.8rem;color:#374151">🔢 <strong>${feldCount}</strong> Felder</span>
+        ${vorlage.intervallMonate || vorlage.intervall_monate ? `<span style="font-size:.8rem;color:#374151">🔁 Alle <strong>${vorlage.intervallMonate || vorlage.intervall_monate}</strong> Monate</span>` : ''}
+        <span style="font-size:.78rem;color:#6b7280;font-style:italic">Nur-Ansicht — kein Speichern</span>
+      </div>
+      <div style="padding:16px 20px;max-height:65vh;overflow-y:auto">
+        ${abschnittCount === 0
+          ? `<div style="text-align:center;padding:30px;color:#6b7280">Diese Vorlage hat noch keine Abschnitte.</div>`
+          : abschnitteHtml}
+      </div>
+      <div style="padding:14px 20px;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end">
+        <button onclick="this.closest('[style*=fixed]').remove()" style="padding:10px 22px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;font-size:.9rem">Schließen</button>
+      </div>
+    </div>`;
+
+  // Schließen bei Klick auf Overlay (außerhalb des Modals)
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+  document.body.appendChild(overlay);
+}
+
 // ── Lernpfad-Kernkapitel im Admin anzeigen ──
 function adminKernkapitelToggle() {
   const container = document.getElementById('admin-kk-container');
@@ -1773,7 +2693,7 @@ function renderAdminKernkapitel() {
   const saeuleInfo = {
     A: { label: 'Säule A — Gesetzliche Basis-Unterweisungen', farbe: '#1a3a5c', bg: '#e8f0fb' },
     B: { label: 'Säule B — Reinigungstechnologie & Chemie',   farbe: '#166534', bg: '#dcfce7' },
-    C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#7c2d12', bg: '#fff7ed' },
+    C: { label: 'Säule C — Datenschutz & DSGVO',              farbe: '#1a3a5c', bg: '#eff6ff' },
     D: { label: 'Säule D — Das 4-Farben-System (Hygiene)',    farbe: '#6b21a8', bg: '#faf5ff' },
   };
 
@@ -1916,8 +2836,203 @@ function vtBearbeitenAbbrechen() {
   document.getElementById('vt-msg').classList.remove('show');
 }
 
+// ── Admin Live-Test: Hub als Mitarbeiter durchspielen ──────────
+let _hubPreviewMode = false; // wenn true → kein Speichern, Demo-User
+
+function hubAlsMaSpielen() {
+  _hubPreviewMode = true;
+  hubFortschritt = {};
+  // Admin-Vorschau-Overlay schließen
+  const ov = document.getElementById('hub-admin-vorschau-overlay');
+  if (ov) ov.remove();
+
+  // Eigenes Fullscreen-Modal aufbauen
+  let modal = document.getElementById('hub-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'hub-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
+
+  // Header
+  modal.innerHTML = `
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
+      </div>
+      <button onclick="hubPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
+        <strong>🔍 Vorschau-Modus:</strong> Alles funktioniert wie beim Mitarbeiter — Kapitel lesen, Quiz machen, Fahrauftrag unterzeichnen, PDF ansehen. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="hub-preview-inner"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  // Hub-Render in den Preview-Container umlenken
+  _hubPreviewContainer = document.getElementById('hub-preview-inner');
+  hubSchulungRenderIn(_hubPreviewContainer);
+
+  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
+}
+
+let _hubPreviewContainer = null;
+
+function hubPreviewBeenden() {
+  _hubPreviewMode = false;
+  _hubPreviewContainer = null;
+  hubFortschritt = {};
+  const modal = document.getElementById('hub-preview-modal');
+  if (modal) modal.remove();
+  showToast('✅ Vorschau beendet', '#16a34a');
+}
+
+// ── Admin-Vorschau: Hubarbeitsbühnen DGUV 308-008 ─────────────
+function hubAdminVorschau() {
+  // Overlay aufbauen
+  const overlay = document.createElement('div');
+  overlay.id = 'hub-admin-vorschau-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:9999;display:flex;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto';
+
+  const modulTitelDE = {
+    1: 'Modul 1 — Recht & Verantwortung',
+    2: 'Modul 2 — Gerätekunde & Technik',
+    3: 'Modul 3 — Standsicherheit & Gefahren',
+    4: 'Modul 4 — Praxis & Notfallmanagement'
+  };
+  const modulTitelEN = { 1:'Module 1 — Law & Responsibility', 2:'Module 2 — Equipment & Technology', 3:'Module 3 — Stability & Hazards', 4:'Module 4 — Practice & Emergency Management' };
+  const modulTitelTR = { 1:'Modül 1 — Hukuk ve Sorumluluk', 2:'Modül 2 — Ekipman ve Teknoloji', 3:'Modül 3 — Stabilite ve Tehlikeler', 4:'Modül 4 — Pratik ve Acil Yönetim' };
+  const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
+  const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
+  const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#064e3b', 4:'#581c87' };
+
+  let kapitelHtml = '';
+  let aktuellerMod = 0;
+  HUB_KAPITEL.forEach(k => {
+    if (k.modul !== aktuellerMod) {
+      aktuellerMod = k.modul;
+      kapitelHtml += `
+        <div style="padding:10px 0 4px;margin-top:${k.modul>1?'16px':'0'}">
+          <div style="font-size:.72rem;font-weight:700;color:${modulColor[k.modul]};text-transform:uppercase;letter-spacing:.06em">${modulTitel[k.modul]}</div>
+        </div>`;
+    }
+    kapitelHtml += `
+      <details style="margin-bottom:8px;border:1.5px solid #e5e7eb;border-radius:10px;overflow:hidden">
+        <summary style="padding:11px 14px;cursor:pointer;background:#f9fafb;font-weight:600;font-size:.88rem;color:#1e293b;list-style:none;display:flex;align-items:center;gap:10px">
+          <span style="font-size:1.3rem">${k.icon}</span>
+          <span style="flex:1">${k.nr}. ${escHtml(k.titel)}</span>
+          <span style="font-size:.75rem;color:#9ca3af">▼ aufklappen</span>
+        </summary>
+        <div style="padding:14px 16px;background:#fff;font-size:.85rem;color:#374151;line-height:1.6;border-top:1px solid #f0f2f5">
+          ${k.inhalt}
+        </div>
+      </details>`;
+  });
+
+  // Quiz-Vorschau (erste 3 Fragen)
+  let quizVorschau = '';
+  HUB_QUIZ.slice(0, 3).forEach((q, qi) => {
+    quizVorschau += `
+      <div style="margin-bottom:14px;padding:12px 14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb">
+        <div style="font-weight:700;font-size:.85rem;color:#1e293b;margin-bottom:8px">Frage ${qi+1}: ${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, ai) => `
+          <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;font-size:.82rem;color:${ai===q.richtig?'#14532d':'#6b7280'}">
+            <span style="font-weight:700;flex-shrink:0;color:${ai===q.richtig?'#16a34a':'#d1d5db'}">${ai===q.richtig?'✅':'○'}</span>
+            <span>${escHtml(a)}</span>
+          </div>`).join('')}
+        <div style="margin-top:8px;padding:8px 10px;background:#f0fdf4;border-radius:6px;font-size:.78rem;color:#166534">
+          💡 ${escHtml(q.erklaerung)}
+        </div>
+      </div>`;
+  });
+
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:600px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
+
+      <!-- Header -->
+      <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:sticky;top:0;z-index:1">
+        <div style="font-size:.7rem;font-weight:700;color:#93c5fd;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Admin-Vorschau</div>
+        <div style="font-weight:700;font-size:1rem">🏗️ Hubarbeitsbühnen — DGUV 308-008</div>
+        <div style="font-size:.75rem;opacity:.85;margin-top:2px">14 Kapitel · 10 Quiz-Fragen · Teilnahmebescheinigung</div>
+        <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
+          style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.2);border:none;color:#fff;font-size:1.2rem;width:32px;height:32px;border-radius:50%;cursor:pointer;-webkit-appearance:none">✕</button>
+      </div>
+
+      <div style="padding:18px">
+
+        <!-- Info-Banner -->
+        <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:16px;font-size:.82rem;color:#1e40af">
+          <strong>🔍 Admin-Vorschau</strong> — Du siehst hier alle Inhalte wie ein Mitarbeiter. Kapitel aufklappen zum Lesen, Quiz-Antworten sind markiert.
+        </div>
+
+        <!-- Fortschrittsübersicht -->
+        <div style="background:#f8fafc;border-radius:10px;padding:12px 14px;margin-bottom:18px">
+          <div style="font-weight:700;font-size:.88rem;color:#1e293b;margin-bottom:8px">📊 Kursübersicht</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem">
+            <div style="background:#eff6ff;border-radius:7px;padding:6px 12px;color:#1e40af;font-weight:700">🏗️ 14 Kapitel</div>
+            <div style="background:#f0f9ff;border-radius:7px;padding:6px 12px;color:#0369a1;font-weight:700">📚 4 Module</div>
+            <div style="background:#f0fdf4;border-radius:7px;padding:6px 12px;color:#15803d;font-weight:700">🎯 10 Quiz-Fragen</div>
+            <div style="background:#faf5ff;border-radius:7px;padding:6px 12px;color:#7e22ce;font-weight:700">📄 Teilnahmebescheinigung</div>
+            <div style="background:#fef9c3;border-radius:7px;padding:6px 12px;color:#854d0e;font-weight:700">✅ 70% zum Bestehen</div>
+            <div style="background:#f1f5f9;border-radius:7px;padding:6px 12px;color:#475569;font-weight:700">🔁 12 Monate Intervall</div>
+          </div>
+        </div>
+
+        <!-- Alle Kapitel -->
+        <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:10px">📖 Alle 14 Kapitel</div>
+        ${kapitelHtml}
+
+        <!-- Quiz-Vorschau -->
+        <div style="margin-top:20px;padding-top:16px;border-top:2px solid #f0f2f5">
+          <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:4px">🎯 Quiz — Vorschau (3 von 10 Fragen)</div>
+          <div style="font-size:.78rem;color:#6b7280;margin-bottom:12px">Richtige Antworten sind grün markiert — im echten Quiz sieht der Mitarbeiter dies erst nach seiner Auswahl.</div>
+          ${quizVorschau}
+          <div style="text-align:center;padding:10px;background:#f9fafb;border-radius:8px;font-size:.8rem;color:#9ca3af">
+            … + 7 weitere Fragen im echten Quiz (zufällig gemischt)
+          </div>
+        </div>
+
+        <!-- Bescheinigung Vorschau -->
+        <div style="margin-top:20px;padding-top:16px;border-top:2px solid #f0f2f5">
+          <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:10px">📄 Teilnahmebescheinigung — Vorschau</div>
+          <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);border-radius:10px;padding:14px 16px;color:#fff;margin-bottom:8px">
+            <div style="font-size:.65rem;font-weight:700;color:#93c5fd;letter-spacing:.08em;text-transform:uppercase">TEILNAHMEBESCHEINIGUNG</div>
+            <div style="font-weight:700;font-size:.95rem;margin-top:4px">CSC GmbH · Hubarbeitsbühnen | DGUV 308-008</div>
+          </div>
+          <div style="background:#eff6ff;border-radius:8px;padding:12px 14px;font-size:.82rem;color:#1e40af">
+            <strong>Hiermit wird bestätigt,</strong> dass [Name Mitarbeiter] die theoretische Ausbildung zum Bediener von Hubarbeitsbühnen gemäß DGUV-Grundsatz 308-008 erfolgreich absolviert und das abschließende Quiz mit mindestens 85 % bestanden hat.<br><br>
+            <span style="color:#1d4ed8">Ausgestellt: [Datum] · gez. Thomas Schmoldt · CSC GmbH</span>
+          </div>
+          <div style="font-size:.75rem;color:#9ca3af;margin-top:6px;text-align:center">Die echte Bescheinigung wird als professionelles A4-PDF mit allen Schulungsinhalten generiert.</div>
+        </div>
+
+        <!-- Footer -->
+        <div style="margin-top:20px;text-align:center;display:flex;gap:10px;justify-content:center">
+          <button onclick="hubAlsMaSpielen()"
+            style="padding:12px 24px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            ▶ Als MA testen
+          </button>
+          <button onclick="document.getElementById('hub-admin-vorschau-overlay').remove()"
+            style="padding:12px 24px;background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;border-radius:10px;font-weight:700;font-size:.9rem;cursor:pointer;-webkit-appearance:none">
+            ✕ Schließen
+          </button>
+        </div>
+
+      </div>
+    </div>`;
+
+  document.body.appendChild(overlay);
+  // Schließen bei Klick außen
+  overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
+}
+
 async function vtLoeschen(id) {
   const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
+  if (v?._eingebaut || v?._bpModul) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#1a3a5c'); return; }
   // Prüfen ob abgeschlossene Formulare existieren
   const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
   const abgeschlosseneAnzahl = zuws.filter(z => formulare[z.id]?.abgeschlossen).length;
@@ -1973,18 +3088,6 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   'Elektrische Geräte':           { en:'Electrical Devices',       tr:'Elektrikli Cihazlar',    ar:'الأجهزة الكهربائية',       es:'Equipos eléctricos',         ru:'Электрооборудование' },
   'Gefahrstoffe':                 { en:'Hazardous Substances',     tr:'Tehlikeli Maddeler',     ar:'المواد الخطرة',             es:'Sustancias peligrosas',      ru:'Опасные вещества' },
   'Leitern und Tritte':           { en:'Ladders and Steps',        tr:'Merdivenler ve Basamaklar', ar:'السلالم والدرجات',       es:'Escaleras y peldaños',       ru:'Лестницы и ступени' },
-  'Vor jeder Nutzung – Sichtkontrolle': { en:'Before Each Use – Visual Check', tr:'Her Kullanımdan Önce – Görsel Kontrol', ar:'قبل كل استخدام – الفحص البصري', es:'Antes de cada uso – Inspección visual', ru:'Перед каждым использованием – визуальный осмотр' },
-  'Sicherer Stand – Dreipunkt-Methode': { en:'Safe Stance – Three-Point Method', tr:'Güvenli Duruş – Üç Nokta Yöntemi', ar:'الوقوف الآمن – طريقة ثلاث نقاط', es:'Postura segura – Método de tres puntos', ru:'Безопасная позиция – метод трёх точек' },
-  'Grundregeln der Nutzung':      { en:'Basic Rules of Use',       tr:'Kullanımın Temel Kuralları', ar:'قواعد الاستخدام الأساسية', es:'Reglas básicas de uso',       ru:'Основные правила использования' },
-  'Nicht zu weit hinauslehnen – Standsicherheit': { en:'Do Not Lean Too Far – Stability', tr:'Fazla Eğilmeyin – Denge', ar:'لا تميل كثيراً – الاستقرار', es:'No inclinarse demasiado – Estabilidad', ru:'Не перегибаться – устойчивость' },
-  'Weitere Sicherheitsregeln':    { en:'Further Safety Rules',     tr:'Diğer Güvenlik Kuralları',  ar:'قواعد السلامة الإضافية',   es:'Otras normas de seguridad',   ru:'Дополнительные правила безопасности' },
-  'Anlege- & Schiebeleiter – Winkel & Aufstellung': { en:'Leaning & Extension Ladder – Angle & Setup', tr:'Dayanma ve Uzatmalı Merdiven – Açı ve Kurulum', ar:'سلم الاتكاء والتمديد – الزاوية والإعداد', es:'Escalera apoyada y extensible – Ángulo y montaje', ru:'Приставная и выдвижная лестница – угол и установка' },
-  'Stehleiter – Besondere Regeln': { en:'Step Ladder – Special Rules', tr:'İskele Merdiven – Özel Kurallar', ar:'السلم القائم – قواعد خاصة', es:'Escalera de tijera – Reglas especiales', ru:'Стремянка – особые правила' },
-  'Transport und Lagerung':       { en:'Transport and Storage',    tr:'Taşıma ve Depolama',        ar:'النقل والتخزين',            es:'Transporte y almacenamiento', ru:'Транспортировка и хранение' },
-  'Leiterdaten':                  { en:'Ladder Data',              tr:'Merdiven Verileri',          ar:'بيانات السلم',              es:'Datos de la escalera',        ru:'Данные о лестнице' },
-  'Prüfpunkte – Regelmäßige Überprüfung': { en:'Inspection Points – Regular Check', tr:'Kontrol Noktaları – Düzenli İnceleme', ar:'نقاط الفحص – المراجعة المنتظمة', es:'Puntos de inspección – Revisión periódica', ru:'Контрольные точки – регулярная проверка' },
-  'Kontrollergebnis':             { en:'Inspection Result',        tr:'Kontrol Sonucu',             ar:'نتيجة الفحص',               es:'Resultado de la inspección',   ru:'Результат проверки' },
-  'Unterschrift Prüfperson':      { en:'Inspector Signature',      tr:'Denetçi İmzası',             ar:'توقيع المفتش',              es:'Firma del inspector',          ru:'Подпись проверяющего' },
   'Alkohol & Drogen':             { en:'Alcohol & Drugs',          tr:'Alkol ve Uyuşturucu',    ar:'الكحول والمخدرات',         es:'Alcohol y drogas',           ru:'Алкоголь и наркотики' },
   'Datenschutz (DSGVO)':          { en:'Data Protection (GDPR)',   tr:'Veri Koruma (KVKK)',     ar:'حماية البيانات (GDPR)',     es:'Protección de datos (RGPD)', ru:'Защита данных (GDPR)' },
   'Fluchtwege & Brandschutz':     { en:'Escape Routes & Fire Protection', tr:'Kaçış Yolları ve Yangın Güvenliği', ar:'مسارات الإخلاء ومكافحة الحرائق', es:'Vías de evacuación y protección contra incendios', ru:'Пути эвакуации и пожарная безопасность' },
@@ -1995,6 +3098,31 @@ const ABSCHNITT_UEBERSETZUNGEN = {
   'Unterschriften':               { en:'Signatures',               tr:'İmzalar',                ar:'التوقيعات',                 es:'Firmas',                     ru:'Подписи' },
   'Allgemeine Angaben':           { en:'General Information',      tr:'Genel Bilgiler',         ar:'المعلومات العامة',          es:'Datos generales',            ru:'Общие сведения' },
   'Inhalte':                      { en:'Contents',                 tr:'İçerikler',              ar:'المحتويات',                 es:'Contenidos',                 ru:'Содержание' },
+  // ── DPD Depot ──
+  'Betriebsgelände & Zugang':     { en:'Premises & Access',        tr:'Tesis & Erişim',         ar:'المنشأة والوصول',           es:'Recinto y acceso',           ru:'Территория и доступ' },
+  'Persönliche Schutzausrüstung (PSA) im Depot':
+                                  { en:'Personal Protective Equipment (PPE) in the Depot', tr:'Depoda Kişisel Koruyucu Donanım (KKD)', ar:'معدات الحماية الشخصية (PPE) في المستودع', es:'Equipo de Protección Individual (EPI) en el Depósito', ru:'Средства индивидуальной защиты (СИЗ) на складе' },
+  'Verhaltensregeln im Depot':    { en:'Behavioural Rules in the Depot', tr:'Depoda Davranış Kuralları', ar:'قواعد السلوك في المستودع', es:'Normas de conducta en el Depósito', ru:'Правила поведения на складе' },
+  'Ergonomie im Depot':           { en:'Ergonomics in the Depot',  tr:'Depoda Ergonomi',        ar:'الإرغونوميا في المستودع',   es:'Ergonomía en el Depósito',   ru:'Эргономика на складе' },
+  'Krankmeldung & Fehlzeiten':    { en:'Sick Leave & Absences',    tr:'Hastalık İzni & Devamsızlık', ar:'إشعار المرض والغيابات', es:'Baja laboral y ausencias',   ru:'Больничный и отсутствие' },
+  // ── Hygieneplan KiTa ──
+  '1. Allgemeine Hygiene-Grundsätze':  { en:'1. General Hygiene Principles',  tr:'1. Genel Hijyen İlkeleri',     ar:'1. مبادئ النظافة العامة',          es:'1. Principios generales de higiene',  ru:'1. Общие принципы гигиены' },
+  '2. Reinigungsfrequenzen & 3-Farben-System':  { en:'2. Cleaning Frequencies & 3-Colour System', tr:'2. Temizlik Sıklığı & 3-Renk Sistemi', ar:'2. ترددات التنظيف ونظام الألوان الثلاثة', es:'2. Frecuencias de limpieza y sistema de 3 colores', ru:'2. Частота уборки и система 3 цветов' },
+  '3. Chemikalien & Desinfektionsmittel':  { en:'3. Chemicals & Disinfectants',  tr:'3. Kimyasallar & Dezenfektanlar', ar:'3. المواد الكيميائية والمطهرات', es:'3. Productos químicos y desinfectantes', ru:'3. Химикаты и дезинфицирующие средства' },
+  '4. Besondere Infektionsfälle (Ausbruchsmanagement)':  { en:'4. Special Infection Cases (Outbreak Management)', tr:'4. Özel Enfeksiyon Durumları (Salgın Yönetimi)', ar:'4. حالات العدوى الخاصة (إدارة الأوبئة)', es:'4. Casos especiales de infección (gestión de brotes)', ru:'4. Особые случаи инфекции (управление вспышками)' },
+  '5. Bestätigung':               { en:'5. Confirmation',           tr:'5. Onay',                  ar:'5. التأكيد',                  es:'5. Confirmación',             ru:'5. Подтверждение' },
+  // ── Hubarbeitsbühnen GFU ──
+  '1. Organisation und Planung':  { en:'1. Organisation and Planning',    tr:'1. Organizasyon ve Planlama',    ar:'1. التنظيم والتخطيط',               es:'1. Organización y planificación',    ru:'1. Организация и планирование' },
+  '2. Ausbildung und Instruktion':{ en:'2. Training and Instruction',     tr:'2. Eğitim ve Talimat',           ar:'2. التدريب والتعليمات',             es:'2. Formación e instrucción',         ru:'2. Обучение и инструктаж' },
+  '3. Dokumentation und Wartung': { en:'3. Documentation and Maintenance',tr:'3. Dokümantasyon ve Bakım',      ar:'3. التوثيق والصيانة',               es:'3. Documentación y mantenimiento',   ru:'3. Документация и обслуживание' },
+  '4. Maßnahmen bei Mängeln':     { en:'4. Measures for Defects',         tr:'4. Eksiklikler İçin Önlemler',   ar:'4. التدابير عند وجود عيوب',         es:'4. Medidas ante deficiencias',       ru:'4. Меры при выявлении недостатков' },
+
+  // ── DPD Sicherheitsunterweisung ──
+  'A. PSA & Allgemeine Regeln':   { en:'A. PPE & General Rules',   tr:'A. KKD & Genel Kurallar', ar:'أ. معدات الحماية والقواعد العامة', es:'A. EPI y normas generales',  ru:'А. СИЗ и общие правила' },
+  'B. Innerbetrieblicher Verkehr & Staplerwege':  { en:'B. Internal Traffic & Forklift Routes', tr:'B. İç Trafik & Forklift Yolları', ar:'ب. حركة المرور الداخلية ومسارات الرافعات', es:'B. Tráfico interno y vías de carretillas', ru:'Б. Внутреннее движение и пути погрузчиков' },
+  'C. Förderband- & Sortieranlagen':  { en:'C. Conveyor & Sorting Systems', tr:'C. Konveyör & Sıralama Sistemleri', ar:'ج. أنظمة الأحزمة الناقلة والفرز', es:'C. Cintas transportadoras y sistemas de clasificación', ru:'В. Конвейеры и сортировочные системы' },
+  'D. Laderampen & Wechselbrücken':  { en:'D. Loading Ramps & Swap Bodies', tr:'D. Yükleme Rampaları & Değiştirilebilir Kasalar', ar:'د. منصات التحميل والجسور المتبادلة', es:'D. Rampas de carga y semirremolques intercambiables', ru:'Г. Погрузочные рампы и съёмные кузова' },
+  'E. Verhalten im Notfall':      { en:'E. Emergency Procedures',  tr:'E. Acil Durum Prosedürleri', ar:'هـ. إجراءات الطوارئ',          es:'E. Procedimientos de emergencia', ru:'Д. Действия при чрезвычайной ситуации' },
 };
 
 // ── FELD-ÜBERSETZUNGEN ────────────────────────────────────────
@@ -2010,6 +3138,40 @@ const FELD_UEBERSETZUNGEN = {
   'Position / Tätigkeit':         { en:'Position / Role',          tr:'Pozisyon / Görev',       ar:'المنصب / الوظيفة',          es:'Cargo / Actividad',          ru:'Должность / Деятельность' },
   // ── Unterschriften ──
   'Unterschrift Mitarbeiter':     { en:'Employee signature',       tr:'Çalışan imzası',         ar:'توقيع الموظف',              es:'Firma del empleado',         ru:'Подпись сотрудника' },
+  'Unterschrift Einsatzleiter':   { en:'Site manager signature',   tr:'Saha yöneticisi imzası', ar:'توقيع مشرف الموقع',         es:'Firma del responsable',      ru:'Подпись руководителя объекта' },
+  'Unterschrift Hilfsperson':     { en:'Assistant signature',      tr:'Yardımcı kişi imzası',   ar:'توقيع الشخص المساعد',       es:'Firma del auxiliar',         ru:'Подпись помощника' },
+  // ── Hubarbeitsbühnen GFU Felder ──
+  'Objekt / Einsatzort':          { en:'Object / Site',            tr:'Nesne / Einsatzort',     ar:'الموقع / منطقة العمل',      es:'Objeto / Lugar de trabajo',  ru:'Объект / место работы' },
+  'Name Bediener':                { en:'Operator name',            tr:'Operatör adı',           ar:'اسم المشغّل',               es:'Nombre del operador',        ru:'Имя оператора' },
+  'Typ der Hubarbeitsbühne':      { en:'Type of aerial platform',  tr:'Yükseltici platform tipi',ar:'نوع منصة الرفع',           es:'Tipo de plataforma elevadora',ru:'Тип подъёмной платформы' },
+  'Festgestellte Mängel / Bemerkungen': { en:'Identified defects / remarks', tr:'Tespit edilen eksiklikler / notlar', ar:'العيوب المكتشفة / ملاحظات', es:'Deficiencias detectadas / observaciones', ru:'Выявленные недостатки / примечания' },
+  'Geplante Maßnahmen':           { en:'Planned measures',         tr:'Planlanan önlemler',      ar:'التدابير المخططة',          es:'Medidas planificadas',       ru:'Запланированные меры' },
+  'Verantwortlich / Frist':       { en:'Responsible / Deadline',   tr:'Sorumlu / Son tarih',     ar:'المسؤول / الموعد النهائي',  es:'Responsable / Plazo',        ru:'Ответственный / Срок' },
+  // ── Hubarbeitsbühnen GFU Checkboxen ──
+  'Ist die Hubarbeitsbühne für den geplanten Einsatz geeignet?':
+    { en:'Is the aerial work platform suitable for the planned use?', tr:'Yükseltici platform planlanan kullanım için uygun mu?', ar:'هل منصة العمل الجوية مناسبة للاستخدام المخطط؟', es:'¿Es la plataforma elevadora adecuada para el uso previsto?', ru:'Подходит ли подъёмная платформа для запланированного применения?' },
+  'Werden Gefahren am Einsatzort ermittelt und Schutzmaßnahmen getroffen?':
+    { en:'Are hazards at the site identified and protective measures taken?', tr:'İş sahasındaki tehlikeler belirlendi ve koruma önlemleri alındı mı?', ar:'هل تم تحديد المخاطر في موقع العمل واتخاذ تدابير الحماية؟', es:'¿Se identifican los peligros en el lugar de trabajo y se toman medidas de protección?', ru:'Выявлены ли опасности на объекте и приняты ли защитные меры?' },
+  'Ist für den Notfall eine Hilfsperson instruiert?':
+    { en:'Has an assistant been instructed for emergencies?', tr:'Acil durum için bir yardımcı kişi talimatlandırıldı mı?', ar:'هل تم تعليم شخص مساعد للتعامل مع حالات الطوارئ؟', es:'¿Se ha instruido a una persona auxiliar para emergencias?', ru:'Проинструктировано ли вспомогательное лицо на случай чрезвычайной ситуации?' },
+  'Steht PSAgA (Persönliche Schutzausrüstung gegen Absturz) zur Verfügung?':
+    { en:'Is PPE against falls (PSAgA) available?', tr:'Düşmeye karşı KKD (PSAgA) mevcut mu?', ar:'هل معدات الحماية من السقوط (PSAgA) متاحة؟', es:'¿Está disponible el EPI contra caídas (PSAgA)?', ru:'Имеются ли средства защиты от падения (PSAgA)?' },
+  'Wird bei Bedarf ein Einweiser mitgebracht?':
+    { en:'Is a spotter brought if required?', tr:'Gerektiğinde bir yönlendirici getirildi mi?', ar:'هل يُحضر موجّه عند الحاجة؟', es:'¿Se lleva un señalizador si es necesario?', ru:'Привлекается ли сигнальщик при необходимости?' },
+  'Ist der Bediener geeignet? (Mindestalter 18 J., gesundheitliche Eignung)':
+    { en:'Is the operator suitable? (min. age 18, health fitness)', tr:'Operatör uygun mu? (min. yaş 18, sağlık uygunluğu)', ar:'هل المشغّل مؤهل؟ (الحد الأدنى للسن 18 عامًا، اللياقة الصحية)', es:'¿Es apto el operador? (edad mín. 18 años, aptitud médica)', ru:'Пригоден ли оператор? (мин. возраст 18 лет, состояние здоровья)' },
+  'Ist der Bediener ausreichend ausgebildet? (PAL-Ausweis oder gleichwertig)':
+    { en:'Is the operator sufficiently trained? (PAL licence or equivalent)', tr:'Operatör yeterince eğitildi mi? (PAL belgesi veya eşdeğeri)', ar:'هل المشغّل مُدرَّب بما يكفي؟ (رخصة PAL أو ما يعادلها)', es:'¿Está suficientemente formado el operador? (licencia PAL o equivalente)', ru:'Имеет ли оператор достаточную подготовку? (PAL или эквивалент)' },
+  'Hat der Bediener eine spezifische Instruktion für diese Hubarbeitsbühne erhalten?':
+    { en:'Has the operator received specific instruction for this aerial platform?', tr:'Operatör bu yükseltici platform için özel talimat aldı mı?', ar:'هل تلقى المشغّل تعليمات خاصة بمنصة الرفع هذه؟', es:'¿Ha recibido el operador instrucciones específicas para esta plataforma?', ru:'Прошёл ли оператор специальный инструктаж для данной платформы?' },
+  'Ist die Betriebsanleitung in der Landessprache vorhanden und zugänglich?':
+    { en:'Is the operating manual available in the local language?', tr:'Kullanım kılavuzu yerel dilde mevcut ve erişilebilir mi?', ar:'هل دليل التشغيل متاح باللغة المحلية ويمكن الوصول إليه؟', es:'¿Está disponible el manual de instrucciones en el idioma local?', ru:'Доступно ли руководство по эксплуатации на местном языке?' },
+  'Ist die Konformitätserklärung (CE) vorhanden?':
+    { en:'Is the declaration of conformity (CE) available?', tr:'Uygunluk beyanı (CE) mevcut mu?', ar:'هل إعلان المطابقة (CE) متاح؟', es:'¿Está disponible la declaración de conformidad (CE)?', ru:'Имеется ли декларация о соответствии (CE)?' },
+  'Ist die Instandhaltung sichergestellt? (aktuelle Prüfung, kein Defekt erkennbar)':
+    { en:'Is maintenance ensured? (current inspection, no visible defect)', tr:'Bakım sağlandı mı? (güncel kontrol, görünür arıza yok)', ar:'هل تم ضمان الصيانة؟ (الفحص الحالي، لا عيوب ظاهرة)', es:'¿Se garantiza el mantenimiento? (inspección vigente, sin defecto visible)', ru:'Обеспечено ли техническое обслуживание? (актуальная проверка, без видимых дефектов)' },
+  'Alle Punkte wurden geprüft. Der Einsatz der Hubarbeitsbühne ist aus Sicht des Einsatzleiters sicher.':
+    { en:"All points have been checked. The use of the aerial platform is safe from the site manager's perspective.", tr:'Tüm noktalar kontrol edildi. Yükseltici platformun kullanımı saha yöneticisi açısından güvenlidir.', ar:'تم التحقق من جميع النقاط. استخدام منصة الرفع آمن من وجهة نظر مشرف الموقع.', es:'Se han verificado todos los puntos. El uso de la plataforma elevadora es seguro desde la perspectiva del responsable.', ru:'Все пункты проверены. Использование подъёмной платформы безопасно с точки зрения руководителя объекта.' },
   'Unterschrift Trainer':         { en:'Trainer signature',        tr:'Eğitmen imzası',         ar:'توقيع المدرب',              es:'Firma del formador',         ru:'Подпись тренера' },
   'Unterschrift Vorgesetzter':    { en:'Supervisor signature',     tr:'Amir imzası',            ar:'توقيع المشرف',              es:'Firma del supervisor',       ru:'Подпись руководителя' },
   'Unterschrift Unterweisender':  { en:'Instructor signature',     tr:'Eğitici imzası',         ar:'توقيع المعلم',              es:'Firma del instructor',       ru:'Подпись инструктора' },
@@ -2116,6 +3278,41 @@ const FELD_UEBERSETZUNGEN = {
     { en:'Observe customer requirements',        tr:'Müşteri gereksinimlerine uyun',   ar:'الالتزام بمتطلبات العميل',       es:'Cumplir con los requisitos del cliente', ru:'Соблюдать требования клиента' },
   'Verbesserungsvorschläge weitergeben':
     { en:'Pass on improvement suggestions',      tr:'İyileştirme önerilerini iletin',  ar:'أرسل اقتراحات التحسين',          es:'Transmitir sugerencias de mejora', ru:'Передавать предложения по улучшению' },
+  // ── Betriebsgelände & Zugang (DPD) ──
+  'Zutritt nur zu zugewiesenen Bereichen — andere Bereiche dürfen nicht betreten werden':
+    { en:'Access only to assigned areas — other areas must not be entered', tr:'Yalnızca atanan alanlara giriş — diğer alanlara girilmemelidir', ar:'الدخول فقط إلى المناطق المخصصة — يُحظر دخول المناطق الأخرى', es:'Acceso solo a áreas asignadas — no se deben entrar otras áreas', ru:'Доступ только в назначенные зоны — входить в другие зоны запрещено' },
+  'Anweisungen des DPD-Personals sind zu befolgen':
+    { en:'Instructions of DPD staff must be followed', tr:'DPD personelinin talimatlarına uyulmalıdır', ar:'يجب اتباع تعليمات موظفي DPD', es:'Se deben seguir las instrucciones del personal de DPD', ru:'Необходимо следовать указаниям сотрудников DPD' },
+  'Fahrzeuge nur auf ausgewiesenen Flächen parken':
+    { en:'Vehicles must only be parked in designated areas', tr:'Araçlar yalnızca belirtilen alanlara park edilmelidir', ar:'يجب وقف المركبات في المناطق المخصصة فقط', es:'Los vehículos solo deben aparcarse en las zonas designadas', ru:'Транспортные средства разрешается парковать только в отведённых местах' },
+  // ── PSA im Depot (DPD) ──
+  'Sicherheitsschuhe S1/S2/S3 sind in den Frachthallen verpflichtend zu tragen':
+    { en:'Safety shoes S1/S2/S3 are mandatory in freight halls', tr:'Kargo salonlarında S1/S2/S3 güvenlik ayakkabısı zorunludur', ar:'أحذية السلامة S1/S2/S3 إلزامية في قاعات الشحن', es:'El calzado de seguridad S1/S2/S3 es obligatorio en las naves de carga', ru:'Защитная обувь S1/S2/S3 обязательна в грузовых залах' },
+  'Warnweste ist während des gesamten Aufenthalts auf dem Gelände zu tragen':
+    { en:'High-visibility vest must be worn throughout the entire stay on the premises', tr:'Yüksek görünürlüklü yelek, tesis içindeki tüm süre boyunca giyilmelidir', ar:'يجب ارتداء السترة العاكسة طوال فترة التواجد في المنشأة', es:'El chaleco de alta visibilidad debe llevarse durante toda la estancia en el recinto', ru:'Сигнальный жилет необходимо носить всё время нахождения на территории' },
+  'Kopfschutz ist beim Aufenthalt in Hallenbereichen mit Hubstaplerbetrieb zu tragen':
+    { en:'Head protection must be worn in hall areas with forklift operation', tr:'Forklift çalışması olan salon alanlarında kafa koruyucu takılmalıdır', ar:'يجب ارتداء واقي الرأس في مناطق القاعة التي تعمل فيها الرافعات الشوكية', es:'La protección de cabeza es obligatoria en zonas de nave con operación de carretillas elevadoras', ru:'Защитная каска обязательна в зонах складских залов с работой вилочных погрузчиков' },
+  // ── Verhaltensregeln im Depot (DPD) ──
+  'Fotoverbot: Foto- und Videoaufnahmen sind auf dem gesamten Betriebsgelände streng verboten':
+    { en:'Photo ban: Photography and video recording are strictly prohibited throughout the entire premises', tr:'Fotoğraf yasağı: Tüm tesis genelinde fotoğraf ve video çekimi kesinlikle yasaktır', ar:'حظر التصوير: التصوير الفوتوغرافي والفيديو محظور تمامًا في جميع أنحاء المنشأة', es:'Prohibición de fotos: Las fotografías y grabaciones de vídeo están estrictamente prohibidas en todo el recinto', ru:'Запрет на фото: фотосъёмка и видеозапись строго запрещены на всей территории предприятия' },
+  'Handyverbot: Nutzung von Mobiltelefonen in den Frachthallen ist untersagt (Ablenkung, Unfallgefahr)':
+    { en:'Phone ban: Use of mobile phones in freight halls is prohibited (distraction, accident risk)', tr:'Telefon yasağı: Kargo salonlarında cep telefonu kullanımı yasaktır (dikkat dağıtma, kaza riski)', ar:'حظر الهاتف: يُحظر استخدام الهواتف المحمولة في قاعات الشحن (التشتت، خطر الحوادث)', es:'Prohibición de móviles: El uso de teléfonos móviles en las naves de carga está prohibido (distracción, riesgo de accidente)', ru:'Запрет телефонов: использование мобильных телефонов в грузовых залах запрещено (отвлечение внимания, риск аварии)' },
+  'Wege für Flurförderzeuge (Hubstapler, Ameisen) sind freizuhalten — Sicherheitsabstand einhalten':
+    { en:'Paths for industrial trucks (forklifts, pallet jacks) must be kept clear — maintain safety distance', tr:'Endüstriyel araçlar (forklift, transpalet) için yollar açık tutulmalıdır — güvenli mesafe korunmalıdır', ar:'يجب إبقاء المسارات خالية لمركبات النقل الداخلي (رافعات شوكية، عربات النقل) — الحفاظ على مسافة الأمان', es:'Las vías para vehículos industriales (carretillas elevadoras, transpaletas) deben mantenerse despejadas — mantener distancia de seguridad', ru:'Пути для напольного транспорта (погрузчики, электрокары) должны быть свободны — соблюдать дистанцию безопасности' },
+  'Laufwege sind zu nutzen — nicht zwischen Fahrzeugen oder Paletten laufen':
+    { en:'Pedestrian walkways must be used — do not walk between vehicles or pallets', tr:'Yaya yolları kullanılmalıdır — araçların veya paletlerin arasında yürümeyiniz', ar:'يجب استخدام ممرات المشاة — لا تمشِ بين المركبات أو البالتات', es:'Se deben utilizar los pasillos peatonales — no caminar entre vehículos o palets', ru:'Необходимо использовать пешеходные дорожки — не ходить между транспортными средствами или поддонами' },
+  // ── Ergonomie im Depot (DPD) ──
+  'Rückengerechtes Heben und Tragen — Beine nutzen, Rücken gerade halten':
+    { en:'Back-friendly lifting and carrying — use legs, keep back straight', tr:'Sırtı koruyarak kaldırma ve taşıma — bacakları kullan, sırtı dik tut', ar:'الرفع والحمل بطريقة آمنة للظهر — استخدم الساقين، أبقِ الظهر مستقيماً', es:'Levantamiento y transporte ergonómico — usar piernas, mantener espalda recta', ru:'Эргономичный подъём и переноска — использовать ноги, держать спину прямо' },
+  'Schwere Lasten mit Hilfsmitteln transportieren (Hubwagen, Rollwagen)':
+    { en:'Transport heavy loads using aids (pallet jack, trolley)', tr:'Ağır yükleri yardımcı ekipmanlarla taşı (transpalet, tekerlekli araba)', ar:'نقل الأحمال الثقيلة باستخدام الأدوات المساعدة (عربة النقل)', es:'Transportar cargas pesadas con medios auxiliares (transpaleta, carretilla)', ru:'Перевозить тяжёлые грузы с помощью вспомогательных средств (рохля, тележка)' },
+  'Regelmäßige Positionswechsel und Pausen einhalten':
+    { en:'Maintain regular position changes and breaks', tr:'Düzenli pozisyon değişiklikleri ve molalar yapın', ar:'الحفاظ على تغييرات الوضع والاستراحات المنتظمة', es:'Mantener cambios de posición regulares y pausas', ru:'Соблюдать регулярную смену поз и перерывы' },
+  // ── Krankmeldung & Fehlzeiten (DPD) ──
+  'Krankmeldung vor Arbeitsbeginn an Vorgesetzten (telefonisch oder WhatsApp)':
+    { en:'Report sick leave to supervisor before work starts (by phone or WhatsApp)', tr:'İşe başlamadan önce amire hastalık bildirimi yapın (telefon veya WhatsApp)', ar:'إخطار المشرف بالمرض قبل بدء العمل (هاتف أو واتساب)', es:'Comunicar baja médica al responsable antes del inicio del trabajo (teléfono o WhatsApp)', ru:'Сообщить о болезни руководителю до начала работы (по телефону или WhatsApp)' },
+  'Ärztliche Bescheinigung (AU) am ersten Krankheitstag beim Arbeitgeber einreichen':
+    { en:'Submit sick note (AU) to employer on the first day of illness', tr:'Hastalığın ilk günü işverene hastalık raporu (AU) teslim edilmelidir', ar:'تقديم شهادة المرض (AU) لصاحب العمل في اليوم الأول من المرض', es:'Presentar el parte médico (AU) al empleador el primer día de baja', ru:'Предоставить больничный лист (AU) работодателю в первый день болезни' },
   // ── Bestätigung ──
   'Unterweisung vollständig durchgeführt':
     { en:'Instruction fully completed',          tr:'Eğitim eksiksiz tamamlandı',      ar:'تم تنفيذ التعليمات بالكامل',     es:'Instrucción completamente realizada', ru:'Инструктаж проведён в полном объёме' },
@@ -2123,6 +3320,214 @@ const FELD_UEBERSETZUNGEN = {
     { en:'Contents understood',                  tr:'İçerikler anlaşılmıştır',         ar:'تم فهم المحتويات',               es:'Contenidos comprendidos',        ru:'Содержание усвоено' },
   'Fragen wurden beantwortet':
     { en:'Questions were answered',              tr:'Sorular yanıtlandı',              ar:'تمت الإجابة على الأسئلة',        es:'Preguntas respondidas',          ru:'Вопросы были отвечены' },
+
+  // ── Hygieneplan KiTa — Felder ──
+  'Schutzhandschuhe werden getragen (bei Bedarf Einmalschürze und Mundschutz)':
+    { en:'Protective gloves are worn (disposable apron and mask if required)',
+      tr:'Koruyucu eldiven giyilmektedir (gerektiğinde tek kullanımlık önlük ve maske)',
+      ar:'يتم ارتداء القفازات الواقية (مريلة يمكن التخلص منها وقناع عند الحاجة)',
+      es:'Se usan guantes protectores (delantal desechable y mascarilla si es necesario)',
+      ru:'Защитные перчатки надеты (при необходимости одноразовый фартук и маска)' },
+  'Händedesinfektion / Händewaschen: vor Arbeitsbeginn, nach Sanitärreinigung und nach Ausziehen der Handschuhe':
+    { en:'Hand disinfection / washing: before work, after cleaning sanitary areas and after removing gloves',
+      tr:'El dezenfeksiyonu / yıkama: işe başlamadan önce, sanitasyon temizliğinden sonra ve eldiven çıkardıktan sonra',
+      ar:'تعقيم / غسل اليدين: قبل العمل وبعد تنظيف المرافق الصحية وبعد خلع القفازات',
+      es:'Desinfección / lavado de manos: antes del trabajo, tras limpiar zonas sanitarias y tras quitarse los guantes',
+      ru:'Дезинфекция / мытьё рук: перед работой, после уборки санузлов и после снятия перчаток' },
+  'Kein Schmuck an Händen und Unterarmen während der Arbeit':
+    { en:'No jewellery on hands and forearms during work',
+      tr:'Çalışma sırasında ellerde ve kolllarda takı takılmamalıdır',
+      ar:'لا مجوهرات على اليدين والساعدين أثناء العمل',
+      es:'Sin joyas en manos y antebrazos durante el trabajo',
+      ru:'Никаких украшений на руках и предплечьях во время работы' },
+  'Masernimpfnachweis vorhanden (Pflicht gemäß § 20 IfSG)':
+    { en:'Proof of measles vaccination available (mandatory under § 20 IfSG)',
+      tr:'Kızamık aşısı kanıtı mevcut (§ 20 IfSG kapsamında zorunlu)',
+      ar:'إثبات التطعيم ضد الحصبة متوفر (إلزامي بموجب § 20 IfSG)',
+      es:'Prueba de vacunación contra el sarampión disponible (obligatoria según § 20 IfSG)',
+      ru:'Подтверждение прививки от кори имеется (обязательно по § 20 IfSG)' },
+  'Tägliche Reinigung: Türgriffe, Lichtschalter, Handläufe, Armaturen (Kontaktflächen)':
+    { en:'Daily cleaning: door handles, light switches, handrails, fittings (contact surfaces)',
+      tr:'Günlük temizlik: kapı kolları, ışık anahtarları, tutamaklar, armatürler (temas yüzeyleri)',
+      ar:'التنظيف اليومي: مقابض الأبواب ومفاتيح الإضاءة والدرابزين والحنفيات (أسطح التلامس)',
+      es:'Limpieza diaria: manillas, interruptores, pasamanos, grifería (superficies de contacto)',
+      ru:'Ежедневная уборка: дверные ручки, выключатели, перила, арматура (контактные поверхности)' },
+  'Sanitärbereiche täglich: WCs, Waschbecken, Böden (feucht wischen)':
+    { en:'Sanitary areas daily: toilets, washbasins, floors (wet wipe)',
+      tr:'Sanitasyon alanları günlük: tuvaletler, lavabolar, zemin (nemli silme)',
+      ar:'المناطق الصحية يومياً: المراحيض وأحواض الغسيل والأرضيات (مسح رطب)',
+      es:'Zonas sanitarias diariamente: WC, lavabos, suelos (limpieza húmeda)',
+      ru:'Санитарные зоны ежедневно: туалеты, раковины, полы (влажная протирка)' },
+  'Wickelbereiche: desinfizierende Reinigung der Wickelauflagen gemäß Dosier- und Einwirkplan':
+    { en:'Changing areas: disinfecting cleaning of changing mats per dosing and exposure plan',
+      tr:'Bez değiştirme alanları: doz ve bekleme planına göre paspas dezenfeksiyonu',
+      ar:'مناطق تغيير الحفاضات: تنظيف معقّم لحصائر التغيير وفقاً لخطة الجرعة والتأثير',
+      es:'Zonas de cambio: limpieza desinfectante de los cambiadores según el plan de dosificación y exposición',
+      ru:'Пеленальные зоны: дезинфицирующая уборка пеленальных матов по плану дозировки' },
+  '3-Farben-System einhalten: 🔴 Rot = WC | 🟡 Gelb = Sanitär | 🔵 Blau = Möbel/Türen':
+    { en:'Follow 3-colour system: 🔴 Red = Toilet | 🟡 Yellow = Sanitary | 🔵 Blue = Furniture/Doors',
+      tr:'3-renk sistemine uy: 🔴 Kırmızı = Tuvalet | 🟡 Sarı = Sanitasyon | 🔵 Mavi = Mobilya/Kapılar',
+      ar:'اتبع نظام 3 ألوان: 🔴 أحمر = مرحاض | 🟡 أصفر = صحي | 🔵 أزرق = أثاث/أبواب',
+      es:'Seguir el sistema de 3 colores: 🔴 Rojo = WC | 🟡 Amarillo = Sanitario | 🔵 Azul = Muebles/Puertas',
+      ru:'Соблюдать систему 3 цветов: 🔴 Красный = Туалет | 🟡 Жёлтый = Санузел | 🔵 Синий = Мебель/Двери' },
+  'Täglich frische Reinigungstücher — kein Wiederverwenden':
+    { en:'Fresh cleaning cloths daily — no reuse',
+      tr:'Her gün temiz bez — yeniden kullanmayın',
+      ar:'قطع قماش طازجة يومياً — لا إعادة استخدام',
+      es:'Paños de limpieza frescos diariamente — sin reutilizar',
+      ru:'Свежие уборочные тряпки ежедневно — не повторять использование' },
+  'Ausschließlich freigegebene Mittel der CSC GmbH werden verwendet':
+    { en:'Only CSC GmbH approved products are used',
+      tr:'Yalnızca CSC GmbH tarafından onaylanan ürünler kullanılmaktadır',
+      ar:'يتم استخدام المنتجات المعتمدة من CSC GmbH حصراً',
+      es:'Solo se utilizan productos autorizados por CSC GmbH',
+      ru:'Используются только одобренные CSC GmbH средства' },
+  'Dosierungsanweisungen des Herstellers werden strikt eingehalten':
+    { en:'Manufacturer dosage instructions are strictly followed',
+      tr:'Üretici dozaj talimatlarına kesinlikle uyulmaktadır',
+      ar:'يتم الالتزام الصارم بتعليمات جرعة الشركة المصنعة',
+      es:'Se siguen estrictamente las instrucciones de dosificación del fabricante',
+      ru:'Инструкции производителя по дозировке строго соблюдаются' },
+  'Sicherheitsdatenblätter und Betriebsanweisungen sind bekannt (verfügbar in CSC GmbH APP)':
+    { en:'Safety data sheets and operating instructions are known (available in CSC GmbH APP)',
+      tr:'Güvenlik veri sayfaları ve işletme talimatları bilinmektedir (CSC GmbH APP\'de mevcut)',
+      ar:'صحائف بيانات السلامة وتعليمات التشغيل معروفة (متوفرة في تطبيق CSC GmbH)',
+      es:'Las fichas de datos de seguridad e instrucciones de uso son conocidas (disponibles en la APP CSC GmbH)',
+      ru:'Паспорта безопасности и рабочие инструкции известны (доступны в приложении CSC GmbH)' },
+  'Bei gemeldeten Infektionshäufungen (z.B. Norovirus): erweiterte Desinfektion nach Anweisung CSC GmbH':
+    { en:'For reported infection outbreaks (e.g. Norovirus): extended disinfection per CSC GmbH instructions',
+      tr:'Bildirilen enfeksiyon salgınlarında (örn. Norovirus): CSC GmbH talimatına göre genişletilmiş dezenfeksiyon',
+      ar:'عند الإبلاغ عن تفشيات العدوى (مثل الفيروس العجلي): تعقيم موسّع وفق تعليمات CSC GmbH',
+      es:'En caso de brotes de infección notificados (p.ej. Norovirus): desinfección ampliada según instrucciones CSC GmbH',
+      ru:'При зарегистрированных вспышках инфекций (напр. Норовирус): расширенная дезинфекция по инструкции CSC GmbH' },
+  'Verwendung VAH/RKI-gelisteter Präparate mit viruzider Wirkung bei Ausbruch bekannt':
+    { en:'Use of VAH/RKI-listed preparations with virucidal activity in outbreaks is known',
+      tr:'Salgın durumunda virusidal etkiye sahip VAH/RKI listeli preparatların kullanımı bilinmektedir',
+      ar:'معروف استخدام المستحضرات المدرجة في قائمة VAH/RKI ذات التأثير الفيروسي عند تفشي الأوبئة',
+      es:'Se conoce el uso de preparados listados en VAH/RKI con efecto viricida en brotes',
+      ru:'Известно применение препаратов из списка VAH/RKI с вирулицидным действием при вспышках' },
+  'Ich habe den Hygieneplan gelesen, verstanden und verpflichte mich zur Einhaltung':
+    { en:'I have read and understood the hygiene plan and commit to complying with it',
+      tr:'Hijyen planını okudum, anladım ve uyacağımı taahhüt ediyorum',
+      ar:'لقد قرأت خطة النظافة وفهمتها وأتعهد بالامتثال لها',
+      es:'He leído y comprendido el plan de higiene y me comprometo a cumplirlo',
+      ru:'Я прочитал и понял план гигиены и обязуюсь его соблюдать' },
+
+  // ── DPD Sicherheitsunterweisung — Felder ──
+  'Warnwestenpflicht (EN ISO 20471) auf gesamtem Depot- und Hofgelände':
+    { en:'High-visibility vest mandatory (EN ISO 20471) across the entire depot and yard',
+      tr:'Tüm depo ve avlu alanında ikaz yeleği zorunludur (EN ISO 20471)',
+      ar:'سترة التحذير إلزامية (EN ISO 20471) في جميع أنحاء المستودع والفناء',
+      es:'Chaleco de alta visibilidad obligatorio (EN ISO 20471) en todo el recinto del depósito',
+      ru:'Светоотражающий жилет обязателен (EN ISO 20471) на всей территории склада' },
+  'Sicherheitsschuhe (mind. S1P/S3) im Sortier- und Umschlagbereich':
+    { en:'Safety shoes (min. S1P/S3) in the sorting and handling area',
+      tr:'Sıralama ve elleçleme alanında güvenlik ayakkabısı (en az S1P/S3)',
+      ar:'أحذية السلامة (على الأقل S1P/S3) في منطقة الفرز والمناولة',
+      es:'Calzado de seguridad (mín. S1P/S3) en la zona de clasificación y manipulación',
+      ru:'Защитная обувь (мин. S1P/S3) в зоне сортировки и погрузки' },
+  'Eng anliegende Arbeitskleidung — kein Schmuck, langes Haar sichern (Einzugsgefahr)':
+    { en:'Close-fitting work clothing — no jewellery, secure long hair (entrapment hazard)',
+      tr:'Dar iş kıyafeti — takı yok, uzun saçları sabitle (sıkışma tehlikesi)',
+      ar:'ملابس عمل ضيقة — لا مجوهرات، اربط الشعر الطويل (خطر الانجراف)',
+      es:'Ropa de trabajo ajustada — sin joyas, asegurar el pelo largo (peligro de atrapamiento)',
+      ru:'Облегающая рабочая одежда — без украшений, длинные волосы закрепить (опасность затягивания)' },
+  'Ordnung & Sauberkeit: Stolperfallen (Bänder, Folien, beschädigte Paletten) beseitigen':
+    { en:'Order & cleanliness: remove trip hazards (straps, foils, damaged pallets)',
+      tr:'Düzen & temizlik: takılma tehlikelerini giderin (bantlar, folyolar, hasarlı paletler)',
+      ar:'النظام والنظافة: إزالة مخاطر التعثر (الأشرطة والرقائق والمنصات التالفة)',
+      es:'Orden y limpieza: eliminar peligros de tropiezo (cintas, films, palés dañados)',
+      ru:'Порядок и чистота: убрать источники спотыкания (ленты, плёнки, повреждённые поддоны)' },
+  'Fußgänger nutzen ausschließlich gelb markierte Fußwege':
+    { en:'Pedestrians use only yellow-marked walkways',
+      tr:'Yayalar yalnızca sarı işaretli yaya yollarını kullanır',
+      ar:'يستخدم المشاة ممرات المشاة المحددة باللون الأصفر فقط',
+      es:'Los peatones usan exclusivamente los pasillos marcados en amarillo',
+      ru:'Пешеходы используют только дорожки, отмеченные жёлтым' },
+  'Vor Überqueren von Fahrbahnen: immer Blickkontakt mit Fahrern herstellen':
+    { en:'Before crossing lanes: always make eye contact with drivers',
+      tr:'Yolları geçmeden önce: sürücülerle daima göz teması kurun',
+      ar:'قبل عبور المسارات: تواصل دائماً بصرياً مع السائقين',
+      es:'Antes de cruzar las vías: siempre hacer contacto visual con los conductores',
+      ru:'Перед пересечением проездов: всегда устанавливать зрительный контакт с водителями' },
+  'Flurförderzeuge haben Vorrang — Schrittgeschwindigkeit (max. 6–10 km/h) einhalten':
+    { en:'Industrial trucks have right of way — maintain walking pace (max. 6–10 km/h)',
+      tr:'Forkliftlerin önceliği var — yürüyüş hızını koruyun (maks. 6–10 km/s)',
+      ar:'للرافعات الشوكية الأولوية — حافظ على سرعة المشي (بحد أقصى 6-10 كم/س)',
+      es:'Las carretillas industriales tienen prioridad — mantener velocidad de paso (máx. 6–10 km/h)',
+      ru:'Погрузчики имеют приоритет — соблюдать скорость шага (макс. 6–10 км/ч)' },
+  'Abgestellte Geräte: Gabeln absenken, Schlüssel abziehen, Fluchtwege freihalten':
+    { en:'Parked equipment: lower forks, remove key, keep escape routes clear',
+      tr:'Park edilmiş araçlar: çatalları indirin, anahtarı çekin, kaçış yollarını açık tutun',
+      ar:'المعدات المتوقفة: اخفض الأشواك، انزع المفتاح، أبقِ مسارات الإخلاء خالية',
+      es:'Equipos aparcados: bajar horquillas, retirar llave, mantener despejadas las vías de escape',
+      ru:'Припаркованная техника: опустить вилы, вынуть ключ, держать пути эвакуации свободными' },
+  'Niemals in laufende Bänder/Umlenkrollen greifen oder Bänder übersteigen/betreten':
+    { en:'Never reach into moving belts/rollers or step over/onto belts',
+      tr:'Çalışan bantlara/yönlendirme silindirlerine asla dokunmayın veya üstünden geçmeyin',
+      ar:'لا تدخل يدك أبداً في الأحزمة/البكرات المتحركة ولا تتجاوزها أو تطأها',
+      es:'Nunca introducir las manos en cintas/rodillos en movimiento ni pisarlas o cruzarlas',
+      ru:'Никогда не тянуться к движущимся лентам/роликам и не переступать через них' },
+  'Paketstaus nur durch befugtes/eingewiesenes Personal beseitigen':
+    { en:'Package jams to be cleared by authorised/trained personnel only',
+      tr:'Paket sıkışmaları yalnızca yetkili/eğitimli personel tarafından giderilir',
+      ar:'يُزيل انسداد الطرود الموظفون المعتمدون/المدرَّبون فقط',
+      es:'Los atascos de paquetes solo deben eliminarlos personal autorizado/formado',
+      ru:'Заторы пакетов устраняются только уполномоченным/обученным персоналом' },
+  'Vor Eingriffen: Anlage abschalten / Lockout-Verfahren anwenden':
+    { en:'Before interventions: switch off system / apply lockout procedure',
+      tr:'Müdahaleden önce: sistemi kapatın / kilitleme prosedürünü uygulayın',
+      ar:'قبل أي تدخل: أوقف النظام / طبّق إجراء القفل',
+      es:'Antes de intervenir: apagar el sistema / aplicar procedimiento de bloqueo',
+      ru:'Перед вмешательством: выключить систему / применить процедуру блокировки' },
+  'Schutzgitter und Verkleidungen dürfen nicht entfernt oder überbrückt werden':
+    { en:'Safety guards and covers must not be removed or bypassed',
+      tr:'Koruyucu ızgaralar ve kaplamalar kaldırılamaz veya köprülenemez',
+      ar:'لا يجوز إزالة الشبكات الواقية والأغطية أو تجاوزها',
+      es:'Las rejillas de protección y cubiertas no deben retirarse ni puentearse',
+      ru:'Защитные решётки и кожухи нельзя снимать или обходить' },
+  'Ladebrücken erst befahren nach Arretierung des Lkw (Radkeile + Feststellbremse)':
+    { en:'Loading ramps only to be driven onto after securing the lorry (wheel chocks + handbrake)',
+      tr:'Yükleme köprüleri yalnızca kamyon sabitlenmesinin ardından kullanılır (takozlar + el freni)',
+      ar:'يُسمح بالوصول إلى منصات التحميل فقط بعد تثبيت الشاحنة (أوتاد العجلات + الفرامل اليدوية)',
+      es:'Acceder a las rampas de carga solo tras asegurar el camión (cuñas + freno de mano)',
+      ru:'Въезд на погрузочные пандусы только после закрепления грузовика (колёсные упоры + ручной тормоз)' },
+  'Hallentore bei nicht angedockten Fahrzeugen geschlossen halten (Absturzgefahr)':
+    { en:'Keep hall doors closed when no vehicle is docked (fall hazard)',
+      tr:'Araç bulunmadığında hol kapıları kapalı tutulmalıdır (düşme tehlikesi)',
+      ar:'إبقاء أبواب القاعة مغلقة عند عدم رسو مركبة (خطر السقوط)',
+      es:'Mantener las puertas del hall cerradas cuando no hay vehículo acoplado (peligro de caída)',
+      ru:'Держать ворота цеха закрытыми при отсутствии пристыкованного транспортного средства (опасность падения)' },
+  'Kein Aufenthalt im unmittelbaren Rangierbereich von Lkw und Wechselbrücken':
+    { en:'No lingering in the immediate manoeuvring area of lorries and swap bodies',
+      tr:'Kamyon ve değiştirilebilir kasaların doğrudan manevra alanında durmayın',
+      ar:'لا تتواجد في منطقة المناورة المباشرة للشاحنات والجسور المتبادلة',
+      es:'No permanecer en la zona de maniobra inmediata de camiones y semirremolques intercambiables',
+      ru:'Не находиться в непосредственной зоне манёвра грузовиков и съёмных кузовов' },
+  'Standorte der Not-Aus-Taster an den Förderbändern sind bekannt':
+    { en:'Locations of emergency-stop buttons on conveyor belts are known',
+      tr:'Konveyör bantlarındaki acil durdurma düğmelerinin konumları bilinmektedir',
+      ar:'مواقع أزرار الإيقاف الطارئ على الأحزمة الناقلة معروفة',
+      es:'Se conocen las ubicaciones de los botones de paro de emergencia en las cintas transportadoras',
+      ru:'Местонахождение кнопок аварийного отключения на конвейерах известно' },
+  'Flucht- und Rettungswege sowie Sammelstelle sind bekannt':
+    { en:'Escape and rescue routes as well as the assembly point are known',
+      tr:'Kaçış ve kurtarma yolları ile toplanma noktası bilinmektedir',
+      ar:'مسارات الهروب والإنقاذ ونقطة التجمع معروفة',
+      es:'Se conocen las vías de escape y rescate así como el punto de reunión',
+      ru:'Пути эвакуации и спасения, а также место сбора известны' },
+  'Ersthelfer und Standort des Verbandkastens sind bekannt':
+    { en:'First aiders and location of the first-aid kit are known',
+      tr:'İlk yardımcılar ve ilk yardım kutusunun konumu bilinmektedir',
+      ar:'المسعفون الأوائل وموقع صندوق الإسعافات الأولية معروفان',
+      es:'Se conocen los auxiliadores y la ubicación del botiquín',
+      ru:'Первые помощники и местонахождение аптечки известны' },
+  'Ich bestätige, dass ich über die genannten Gefahren und Schutzmaßnahmen unterwiesen wurde und die Sicherheitsvorschriften einhalte':
+    { en:'I confirm that I have been instructed on the stated hazards and protective measures and will comply with the safety regulations',
+      tr:'Belirtilen tehlikeler ve koruyucu tedbirler hakkında eğitim aldığımı ve güvenlik düzenlemelerine uyacağımı teyit ediyorum',
+      ar:'أؤكد أنني تلقيت التعليمات حول المخاطر والتدابير الوقائية المذكورة وسألتزم بلوائح السلامة',
+      es:'Confirmo que he sido instruido sobre los peligros y medidas de protección indicados y cumpliré las normas de seguridad',
+      ru:'Подтверждаю, что прошёл инструктаж по указанным опасностям и защитным мерам и буду соблюдать правила безопасности' },
 };
 
 function uebersetzeFeldLabel(label, sprache) {
@@ -2380,7 +3785,8 @@ async function vtSpeichern() {
         method:'POST', headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/pdf'}, body:vtPdfFile
       });
       if (!r.ok) throw new Error(await r.text());
-      pdf_url = `${SUPABASE_URL}/storage/v1/object/public/schulung-vorlagen/${pfad}`;
+      // Speichere Pfad statt public URL
+      pdf_url = `schulung-vorlagen/${pfad}`;
     } catch(e) { msgEl.textContent='PDF-Upload Fehler: '+e.message; msgEl.classList.add('show'); return; }
     // Unterschriftsfelder
     const sigFelder = [];
@@ -2509,17 +3915,66 @@ function renderAdminZuweisungen() {
     const v=SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId), t=APP_TENANTS.find(tn=>tn.id===z.tenantId), s=berechneStatus(z);
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
-    const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (v ? escHtml(v.titel) : z.vorlagenId);
-    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : '';
-    return `<div class="schulung-item">
-      <div>
-        <div class="titel" style="${titelStyle}">${titel}</div>
-        <div class="meta">${t?escHtml(t.name):z.tenantId} • Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
+    const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+    const isBp = z.vorlagenId === BP_VORLAGE_ID;
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#1a3a5c;font-weight:700' : isBp ? 'color:#1a3a5c;font-weight:700' : '';
+
+    // Mitarbeiter dieses Tenants
+    const tenantMitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+
+    // Wer hat die Schulung abgeschlossen?
+    let abgeschlossenIds = new Set();
+    if (isPsaga) {
+      // PSAgA: aus psaga_bescheinigungen (bereits in PSAGA_BESCHEINIGUNGEN geladen falls vorhanden)
+      // Fallback: aus formulare-Cache
+    } else {
+      Object.values(formulare).forEach(f => {
+        if ((f.zuwId === z.id || f.id === z.id) && f.abgeschlossen && f.userId) abgeschlossenIds.add(f.userId);
+      });
+    }
+
+    // Mitarbeiter aufteilen
+    const ausstehend = tenantMitarbeiter.filter(m => !abgeschlossenIds.has(m.id));
+    const abgeschlossen = tenantMitarbeiter.filter(m => abgeschlossenIds.has(m.id));
+
+    // Mitarbeiter-Liste nur bei rot/gelb und wenn MA vorhanden
+    let maListeHtml = '';
+    if ((s === 'rot' || s === 'gelb') && tenantMitarbeiter.length > 0 && !isPsaga && !isLP) {
+      maListeHtml = `
+        <div style="margin-top:10px;border-top:1px solid #f0f2f5;padding-top:8px">
+          ${ausstehend.length > 0 ? `
+            <div style="font-size:.76rem;font-weight:700;color:${s==='rot'?'#dc2626':'#92400e'};margin-bottom:5px">
+              ${s==='rot'?'⚠️':'⏳'} Noch nicht abgeschlossen (${ausstehend.length}):
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px">
+              ${ausstehend.map(m=>`<span style="background:${s==='rot'?'#fef2f2':'#fffbeb'};border:1px solid ${s==='rot'?'#fca5a5':'#fde68a'};border-radius:20px;padding:2px 10px;font-size:.76rem;color:${s==='rot'?'#991b1b':'#92400e'}">${escHtml(m.name)}</span>`).join('')}
+            </div>` : ''}
+          ${abgeschlossen.length > 0 ? `
+            <div style="font-size:.76rem;font-weight:700;color:#15803d;margin-bottom:5px">✅ Abgeschlossen (${abgeschlossen.length}):</div>
+            <div style="display:flex;flex-wrap:wrap;gap:5px">
+              ${abgeschlossen.map(m=>`<span style="background:#f0fdf4;border:1px solid #86efac;border-radius:20px;padding:2px 10px;font-size:.76rem;color:#15803d">${escHtml(m.name)}</span>`).join('')}
+            </div>` : ''}
+        </div>`;
+    } else if ((s === 'rot' || s === 'gelb') && tenantMitarbeiter.length === 0 && !isPsaga && !isLP) {
+      maListeHtml = `<div style="margin-top:8px;background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:1rem">⚠️</span>
+        <span style="font-size:.78rem;font-weight:700;color:#92400e">Zuweisung an Mitarbeiter nicht erfolgt!</span>
+      </div>`;
+    }
+
+    return `<div class="schulung-item" style="display:block">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div style="flex:1;min-width:0">
+          <div class="titel" style="${titelStyle}">${titel}</div>
+          <div class="meta">${t?escHtml(t.name):z.tenantId} • Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0">
+          ${statusBadgeHtml(s)}
+          <button class="btn btn-danger btn-sm" onclick="deleteZuweisung('${z.id}')">🗑</button>
+        </div>
       </div>
-      <div class="right" style="display:flex;flex-direction:column;align-items:flex-end;gap:5px">
-        ${statusBadgeHtml(s)}
-        <button class="btn btn-danger btn-sm" onclick="deleteZuweisung('${z.id}')">🗑</button>
-      </div>
+      ${maListeHtml}
     </div>`;
   }).join('') || '<div class="empty-state"><div class="icon">📭</div><p>Keine Zuweisungen</p></div>';
   document.getElementById('admin-zuw-list').innerHTML = rows;
@@ -2575,10 +4030,10 @@ function azVorlagenListeRendern(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+    <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-weight:600;font-size:.88rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.76rem;color:#7c3aed;margin-top:2px">
         Säulen A–D &nbsp;·&nbsp; Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System &nbsp;·&nbsp; inkl. Unterschrift
       </div>
@@ -2595,12 +4050,34 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  if (!gefiltert.length && !lernpfadMatch && !psagaMatch) {
+  const hubMatch = !s || 'hub'.includes(s) || 'hubarbeit'.includes(s) || 'arbeitsbühne'.includes(s) || 'hebebühne'.includes(s) || '308'.includes(s) || '14 kapitel'.includes(s);
+  const hubHtml = hubMatch ? `
+    <div onclick="azVorlageWaehlen('${HUB_VORLAGE_ID}','🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#eff6ff"
+      onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#eff6ff'">
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)</div>
+      <div style="font-size:.76rem;color:#c2410c;margin-top:2px">
+        Module 1–4 &nbsp;·&nbsp; 10 Quizfragen · mind. 85&thinsp;% zum Bestehen &nbsp;·&nbsp; Teilnahmebescheinigung
+      </div>
+    </div>` : '';
+
+  const bpMatch = !s || 'befähigte'.includes(s) || 'leiter'.includes(s) || 'tritte'.includes(s) || '208'.includes(s) || 'betrsi'.includes(s) || 'prüfung'.includes(s);
+  const bpHtml = bpMatch ? `
+    <div onclick="azVorlageWaehlen('${BP_VORLAGE_ID}','🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#eff6ff"
+      onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🪜 Schulung: Befähigte Person Leitern & Tritte (8 Module)</div>
+      <div style="font-size:.76rem;color:#1d4ed8;margin-top:2px">
+        8 Module &nbsp;·&nbsp; 20 Quizfragen · mind. 80&thinsp;% zum Bestehen &nbsp;·&nbsp; Fachkundenachweis (BetrSichV · DGUV 208-016)
+      </div>
+    </div>` : '';
+
+  if (!gefiltert.length && !lernpfadMatch && !psagaMatch && !hubMatch && !bpMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
     return;
   }
 
-  el.innerHTML = lernpfadHtml + psagaHtml + gefiltert.map((v, i) => `
+  el.innerHTML = lernpfadHtml + psagaHtml + hubHtml + bpHtml + gefiltert.map((v, i) => `
     <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
@@ -2641,7 +4118,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (29 Kapitel)' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId === BP_VORLAGE_ID ? 'Schulung: Befähigte Person Leitern & Tritte' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -2801,6 +4278,16 @@ async function renderMitarbeiterListe() {
       }
     } catch(e) { /* ignorieren, kein Datenverlust */ }
 
+    // Hub-Unterschriften aller Mitarbeiter dieses Tenants laden (Batch)
+    try {
+      const hubRows = await SB.select('hub_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}`);
+      if (hubRows && hubRows.length) {
+        window._hubUntCache = {};
+        hubRows.forEach(r => { window._hubUntCache[r.user_id] = r; });
+      }
+    } catch(e) { window._hubUntCache = {}; }
+
     // Pro Mitarbeiter: Ampelstatus aus seinen abgeschlossenen Formularen ableiten
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
@@ -2823,7 +4310,7 @@ async function renderMitarbeiterListe() {
         const unterweisungsZeilen = maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
         const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-        const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? v.titel : z.vorlagenId);
+        const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v ? v.titel : z.vorlagenId);
         const f = formulare[z.id] || {};
         const fristDate = z.frist ? new Date(z.frist) : null;
         const heute = new Date();
@@ -2907,6 +4394,9 @@ async function renderMitarbeiterListe() {
       const btnHistorie = `<button onclick="event.stopPropagation();zeigeSchulungshistorie('${m.id}')"
           style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #bbf7d0;background:#f0fdf4;color:#16a34a;cursor:pointer;white-space:nowrap;margin-top:3px"
           title="Schulungshistorie anzeigen">📋 Historie</button>`;
+      const btnPwReset = !istArchiviert ? `<button onclick="event.stopPropagation();vorgesetzterPwReset('${m.id}','${escHtml(m.name).replace(/'/g,"\\'")}')"
+          style="font-size:.7rem;padding:3px 8px;border-radius:5px;border:1px solid #fed7aa;background:#eff6ff;color:#c2410c;cursor:pointer;white-space:nowrap;margin-top:3px"
+          title="Neues Passwort vergeben">🔑 Neues PW</button>` : '';
 
       // ── Lernpfad-Unterschrift-Status für diesen Mitarbeiter ──
       const lpUnt = lpUnterschriften[m.id];
@@ -2977,7 +4467,7 @@ async function renderMitarbeiterListe() {
           <div id="ma-detail-${m.id}" style="display:none;border-top:1px solid ${c.border}">
             <!-- Aktionsbuttons -->
             <div style="padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;background:rgba(255,255,255,.5)">
-              ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}
+              ${btnToggle}${btnArchiv}${btnQr}${btnHistorie}${btnPwReset}
             </div>
             <!-- Schulungszeilen -->
             ${gesamtZuws > 0 && !istArchiviert ? `
@@ -2986,6 +4476,66 @@ async function renderMitarbeiterListe() {
             </div>` : ''}
             <!-- Lernpfad-Block -->
             ${lpUntBlock ? `<div style="padding:0 14px 10px">${lpUntBlock}</div>` : ''}
+            <!-- Hub-Fahrauftrag-Block -->
+            ${(() => {
+              const hubZuw = zuweisungen.find(z => z.tenantId === m.tenant_id && z.vorlagenId === HUB_VORLAGE_ID);
+              if (!hubZuw) return '';
+              // Supabase-Daten aus _hubUntCache (wird beim Laden befüllt)
+              const hubUnt = (window._hubUntCache || {})[m.id];
+              if (!hubUnt || !hubUnt.unterzeichnet_am) {
+                // Quiz noch nicht bestanden
+                return `<div style="padding:0 14px 10px">
+                  <div style="padding:8px 10px;background:#dbeafe;border:1.5px solid #3b82f6;border-radius:7px;font-size:.72rem;color:#92400e">
+                    🏗️ Hubarbeitsbühnen DGUV 308-008 — Quiz noch ausstehend
+                  </div>
+                </div>`;
+              }
+              if (!hubUnt.verantwortlicher_am) {
+                // Quiz bestanden, Fahrauftrag unterzeichnet, Gegenzeichnung fehlt
+                const maDatum = new Date(hubUnt.unterzeichnet_am).toLocaleDateString('de-DE');
+                const typen = [hubUnt.buehnentyp_a && 'Gruppe A', hubUnt.buehnentyp_b && 'Gruppe B'].filter(Boolean).join(' + ') || '–';
+                return `<div style="padding:0 14px 10px">
+                  <div style="padding:8px 10px;background:#fffbeb;border:1.5px solid #fde68a;border-radius:7px">
+                    <div style="font-size:.72rem;font-weight:700;color:#92400e;margin-bottom:4px">⚠️ Hubarbeitsbühnen: Fahrauftrag unterzeichnet — Ihre Gegenzeichnung fehlt</div>
+                    <div style="font-size:.7rem;color:#374151;margin-bottom:6px">
+                      👤 <b>${escHtml(hubUnt.vollname || m.name)}</b> · ${maDatum} · ${escHtml(typen)}<br>
+                      📅 Gültig bis: <b>${hubUnt.fahrauftrag_bis || '–'}</b>
+                    </div>
+                    <button onclick="event.stopPropagation();hubGegenzeichnenOeffnen('${m.id}')"
+                      style="font-size:.75rem;padding:5px 12px;border-radius:6px;border:none;background:#1a3a5c;color:#fff;cursor:pointer;font-weight:700;width:100%">
+                      ✍️ Fahrauftrag gegenzeichnen
+                    </button>
+                  </div>
+                </div>`;
+              }
+              // Vollständig gegengezeichnet
+              const maDatum = new Date(hubUnt.unterzeichnet_am).toLocaleDateString('de-DE');
+              const vDatum  = new Date(hubUnt.verantwortlicher_am).toLocaleDateString('de-DE');
+              const typen = [hubUnt.buehnentyp_a && 'Gruppe A', hubUnt.buehnentyp_b && 'Gruppe B'].filter(Boolean).join(' + ') || '–';
+              // Ampel: Gültigkeit prüfen
+              const bisD = hubUnt.fahrauftrag_bis ? new Date(hubUnt.fahrauftrag_bis) : null;
+              const heute2 = new Date(); heute2.setHours(0,0,0,0);
+              const restTage = bisD ? Math.round((bisD-heute2)/(86400000)) : null;
+              const ampelBg = restTage === null ? '#f0fdf4' : restTage <= 0 ? '#fef2f2' : restTage <= 30 ? '#fffbeb' : '#f0fdf4';
+              const ampelBorder = restTage === null ? '#86efac' : restTage <= 0 ? '#fca5a5' : restTage <= 30 ? '#fde68a' : '#86efac';
+              const ampelText = restTage === null ? '#0f5132' : restTage <= 0 ? '#991b1b' : restTage <= 30 ? '#92400e' : '#0f5132';
+              const ampelLabel = restTage === null ? '' : restTage <= 0 ? '🔴 Abgelaufen!' : restTage <= 30 ? `🟡 Läuft ab in ${restTage} Tagen` : `🟢 Gültig bis ${hubUnt.fahrauftrag_bis}`;
+              return `<div style="padding:0 14px 10px">
+                <div style="padding:8px 10px;background:${ampelBg};border:1.5px solid ${ampelBorder};border-radius:7px">
+                  <div style="font-size:.72rem;font-weight:700;color:${ampelText};margin-bottom:4px">✅ Hubarbeitsbühnen DGUV 308-008 — Fahrauftrag vollständig</div>
+                  <div style="font-size:.7rem;color:#374151;line-height:1.6">
+                    👤 <b>${escHtml(hubUnt.vollname || m.name)}</b> · ${maDatum} · ${escHtml(typen)}<br>
+                    🧑‍💼 Gegengezeichnet: <b>${escHtml(hubUnt.verantwortlicher_name || '')}</b> · ${vDatum}<br>
+                    ${ampelLabel ? `📅 ${ampelLabel}` : ''}
+                  </div>
+                  ${hubUnt.fahrauftrag_pdf_url ? `
+                  <a href="${escHtml(hubUnt.fahrauftrag_pdf_url)}" target="_blank" onclick="event.stopPropagation()"
+                    style="display:block;margin-top:6px;font-size:.72rem;text-align:center;background:#1a3a5c;color:#fff;padding:5px;border-radius:6px;text-decoration:none;font-weight:700">
+                    📄 PDF herunterladen
+                  </a>` : ''}
+                </div>
+              </div>`;
+            })()}
           </div>
         </div>
       `;
@@ -3012,6 +4562,235 @@ function maNDetailToggle(userId) {
   if (pfeil) pfeil.textContent = offen ? '▲' : '▼';
 }
 
+// Bereiche-Modal öffnen
+function verantwBereicheModal() {
+  const modal = document.getElementById('verw-bereiche-modal');
+  if (!modal) return;
+  modal.style.display = 'block';
+  verantwBereicheRendern();
+}
+
+// Bereichsleiter: Schulungsfreigaben anzeigen
+function blSchulungsFreigabenAnzeigen() {
+  // Zeigt welche Schulungen der Verantwortliche für diesen Bereich freigegeben hat
+  const bereichZuws = zuweisungen.filter(z =>
+    z.tenantId === currentUser.tenantId &&
+    z.bereichId === currentUser.bereichId &&
+    !z.zugewiesenAn
+  );
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  const items = bereichZuws.length
+    ? bereichZuws.map(z => {
+        const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        return `<div style="padding:10px;border:1px solid #e5e7eb;border-radius:8px;margin-bottom:6px;font-size:.85rem;color:#1e3a5f">📋 ${escHtml(v?.titel||z.vorlagenId)}</div>`;
+      }).join('')
+    : '<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:16px">Keine Schulungen freigegeben.<br>Bitte Verantwortlichen kontaktieren.</div>';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <h3 style="margin:0;font-size:1rem;color:#1e3a5f">📋 Freigegebene Schulungen</h3>
+      <button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button>
+    </div>
+    ${items}
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function verantwBereicheRendern() {
+  const cont = document.getElementById('verw-bereiche-list');
+  if (!cont) return;
+  const bereiche = APP_BEREICHE.filter(b => b.tenant_id === currentUser.tenantId);
+  if (!bereiche.length) {
+    cont.innerHTML = `<div style="color:#9ca3af;font-size:.85rem;text-align:center;padding:16px">Noch keine Bereiche angelegt.<br><br>
+      <button class="btn-primary" onclick="verantwBereichNeuModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Bereich anlegen</button></div>`;
+    return;
+  }
+  cont.innerHTML = bereiche.map(b => {
+    const blListe = APP_USERS.filter(u => u.role === 'bereichsleiter' && u.bereich_id === b.id);
+    const maAnzahl = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.bereich_id === b.id && !u.archiviert).length;
+    // Ampelstatus des Bereichs
+    const maIds = APP_USERS.filter(u=>u.role==='mitarbeiter'&&u.bereich_id===b.id&&!u.archiviert).map(u=>u.id);
+    const bereichZuws = zuweisungen.filter(z => maIds.includes(z.zugewiesenAn));
+    const stati = bereichZuws.map(z=>berechneStatus(z));
+    let ampel='⚪';
+    if (stati.some(s=>s==='rot')) ampel='🔴';
+    else if (stati.some(s=>s==='gelb')) ampel='🟡';
+    else if (stati.length) ampel='🟢';
+    return `<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:.9rem;font-weight:700;color:#1e3a5f">${ampel} ${escHtml(b.name)}</div>
+          ${b.ort||b.objekt ? `<div style="font-size:.75rem;color:#6b7280">${[b.ort,b.objekt].filter(Boolean).map(escHtml).join(' — ')}</div>` : ''}
+          <div style="font-size:.75rem;color:#6b7280;margin-top:4px">
+            👤 ${blListe.length ? escHtml(blListe.map(u=>u.name).join(', ')) : '<span style="color:#dc2626">Kein Bereichsleiter</span>'}
+            &nbsp;·&nbsp; 👥 ${maAnzahl} Mitarbeiter
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
+          <button onclick="verantwBereichsleiterAnlegenModal('${b.id}')" class="btn-primary" style="font-size:.75rem;padding:6px 10px">➕ BL</button>
+          <button onclick="verantwBereichLoeschen('${b.id}','${escHtml(b.name)}')" style="background:#fee2e2;border:none;border-radius:7px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:#dc2626">🗑</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verantwBereichNeuModal() {
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:400px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">🏗 Neuen Bereich anlegen</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="nb-name" type="text" placeholder="Bereichsname * (z.B. Unterhaltsreinigung)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="nb-ort" type="text" placeholder="Ort / Standort (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="nb-objekt" type="text" placeholder="Objekt / Gebäude (optional)" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+    </div>
+    <div id="nb-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.querySelector('#nb-name')?.focus(), 100);
+}
+
+async function verantwBereichSpeichern(modalEl) {
+  const name   = modalEl.querySelector('#nb-name').value.trim();
+  const ort    = modalEl.querySelector('#nb-ort').value.trim();
+  const objekt = modalEl.querySelector('#nb-objekt').value.trim();
+  const fehEl  = modalEl.querySelector('#nb-fehler');
+  if (!name) { fehEl.textContent = 'Bereichsname ist Pflichtfeld.'; return; }
+  try {
+    const id = 'bereich_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+    await SB.post('bereiche', {
+      id, name, tenant_id: currentUser.tenantId,
+      ort: ort || null, objekt: objekt || null
+    });
+    APP_BEREICHE.push({ id, name, tenant_id: currentUser.tenantId, ort: ort||null, objekt: objekt||null });
+    await sbAudit('BEREICH_NEU', `${name} angelegt`);
+    modalEl.remove();
+    showToast(`✅ Bereich „${name}" angelegt`, '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) { fehEl.textContent = 'Fehler: ' + e.message; }
+}
+
+async function verantwBereichLoeschen(bereichId, name) {
+  const blAnzahl = APP_USERS.filter(u=>u.bereich_id===bereichId).length;
+  if (blAnzahl > 0) {
+    showToast(`⚠️ Bereich hat noch ${blAnzahl} zugeordnete Benutzer. Bitte zuerst Benutzer entfernen.`, '#d97706');
+    return;
+  }
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9500;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:380px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25)">
+    <h3 style="margin:0 0 10px;font-size:1rem;color:#dc2626">🗑 Bereich löschen</h3>
+    <p style="font-size:.88rem;color:#374151">„${escHtml(name)}" wirklich löschen?</p>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichLoeschenBestaetigen('${bereichId}');this.closest('[style*=fixed]').remove()" style="flex:2;background:#dc2626;color:#fff;border:none;padding:11px;border-radius:9px;font-weight:700;cursor:pointer">🗑 Löschen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function verantwBereichLoeschenBestaetigen(bereichId) {
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/bereiche?id=eq.${bereichId}`, { method:'DELETE', headers:SB.h });
+    APP_BEREICHE = APP_BEREICHE.filter(b=>b.id!==bereichId);
+    await sbAudit('BEREICH_GELOESCHT', bereichId);
+    showToast('✅ Bereich gelöscht', '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+// Bereichsleiter anlegen (durch Verantwortlichen)
+function verantwBereichsleiterAnlegenModal(bereichId) {
+  const bereich = APP_BEREICHE.find(b=>b.id===bereichId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:440px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:90vh;overflow-y:auto">
+    <h3 style="margin:0 0 14px;font-size:1rem;color:#1e3a5f">➕ Bereichsleiter anlegen — ${escHtml(bereich?.name||'')}</h3>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <input id="vbl-name"  type="text"  placeholder="Name *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <input id="vbl-email" type="email" placeholder="E-Mail *" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+      <div style="display:flex;gap:8px">
+        <input id="vbl-pw" type="text" placeholder="Passwort (leer = auto)" style="flex:1;padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;font-size:.88rem">
+        <button onclick="document.getElementById('vbl-pw').value=genPasswort()" style="padding:9px 12px;border:1px solid #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer">🎲</button>
+      </div>
+    </div>
+    <div id="vbl-fehler" style="color:#dc2626;font-size:.82rem;margin-top:8px;min-height:18px"></div>
+    <div style="display:flex;gap:10px;margin-top:14px">
+      <button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button>
+      <button onclick="verantwBereichsleiterSpeichern('${bereichId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">✅ Anlegen</button>
+    </div>
+  </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => modal.querySelector('#vbl-name')?.focus(), 100);
+}
+
+async function verantwBereichsleiterSpeichern(bereichId, modalEl) {
+  const name  = modalEl.querySelector('#vbl-name').value.trim();
+  const email = modalEl.querySelector('#vbl-email').value.trim().toLowerCase();
+  let   pw    = modalEl.querySelector('#vbl-pw').value.trim();
+  const fehEl = modalEl.querySelector('#vbl-fehler');
+  fehEl.textContent = '';
+  if (!name) { fehEl.textContent = 'Name ist Pflichtfeld.'; return; }
+  if (!email || !email.includes('@')) { fehEl.textContent = 'Gültige E-Mail eingeben.'; return; }
+  if (!pw) pw = genPasswort();
+  const btn = modalEl.querySelector('button.btn-primary:last-child');
+  btn.disabled = true; btn.textContent = '⏳ Wird angelegt…';
+  try {
+    const id = 'user_bl_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const hash = await hashPasswort(pw);
+    const res = await SB.post('users', {
+      id, name, email,
+      password_hash: hash,
+      role: 'bereichsleiter',
+      tenant_id: currentUser.tenantId,
+      bereich_id: bereichId,
+      aktiv: true, archiviert: false
+    });
+    if (res?.error) {
+      const msg = res.error.message || '';
+      fehEl.textContent = msg.includes('duplicate') ? 'E-Mail bereits registriert.' : 'Fehler: ' + msg;
+      btn.disabled = false; btn.textContent = '✅ Anlegen';
+      return;
+    }
+    APP_USERS.push({ id, name, email, tenant_id: currentUser.tenantId, role: 'bereichsleiter', bereich_id: bereichId, aktiv: true, archiviert: false });
+    await sbAudit('BL_ANGELEGT', `${name} (${email}) als Bereichsleiter für ${APP_BEREICHE.find(b=>b.id===bereichId)?.name}`);
+    const tenantObj = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
+    const emailOk = await sendLoginEmail({ an: email, name, rolle: 'bereichsleiter', passwort: pw, unternehmen: tenantObj?.name||'' });
+    modalEl.remove();
+    showToast(`✅ ${name} als Bereichsleiter angelegt${emailOk?' — ✉️ Zugangsdaten gesendet':' — ⚠️ E-Mail fehlgeschlagen'}`, '#0f5132');
+    verantwBereicheRendern();
+  } catch(e) {
+    fehEl.textContent = 'Fehler: ' + e.message;
+    btn.disabled = false; btn.textContent = '✅ Anlegen';
+  }
+}
+
+// Schulung an Bereich weitergeben (Verantwortlicher → Bereichsleiter)
+async function verantwSchulungAnBereichWeitergeben(vorlagenId, bereichId) {
+  const vorlage = SCHULUNG_VORLAGEN.find(v=>v.id===vorlagenId);
+  const bereich = APP_BEREICHE.find(b=>b.id===bereichId);
+  // Prüfen ob schon zugewiesen
+  const exists = zuweisungen.some(z=>z.vorlagenId===vorlagenId&&z.tenantId===currentUser.tenantId&&z.bereichId===bereichId&&!z.zugewiesenAn);
+  if (exists) { showToast('ℹ️ Schulung ist für diesen Bereich bereits freigegeben.', '#1e3a5f'); return; }
+  try {
+    const id = 'zuw_vb_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    await SB.post('zuweisungen', {
+      id, vorlage_id: vorlagenId, tenant_id: currentUser.tenantId,
+      frist: null, pflicht: false,
+      bereich_id: bereichId
+    });
+    zuweisungen.push({ id, vorlagenId, tenantId: currentUser.tenantId, frist: null, pflicht: false, bereichId });
+    await sbAudit('SCHULUNG_AN_BEREICH', `${vorlage?.titel} → Bereich ${bereich?.name}`);
+    showToast(`✅ „${vorlage?.titel}" für Bereich „${bereich?.name}" freigegeben`, '#0f5132');
+  } catch(e) { showToast('❌ ' + e.message, '#dc2626'); }
+}
+
+// ── Mitarbeiterkarte aufklappen/zuklappen (original) ─────────
 // ── Intervall einer Zuweisung ändern (Verantwortlicher) ──────
 async function zuwIntervallAendern(zuwId, wert) {
   const intervall = wert ? parseInt(wert) : null;
@@ -3169,7 +4948,10 @@ function renderSubDashboard() {
   const maBtns = document.getElementById('sub-ma-buttons');
   const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
+  const bereicheBtn = document.getElementById('sub-bereiche-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
+  // Bereiche-Button nur für Verantwortliche
+  if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma und admin sichtbar
   const kannImportieren = currentUser.role === 'firma' || currentUser.role === 'admin';
   if (maImport) maImport.style.display = kannImportieren ? '' : 'none';
@@ -3189,6 +4971,10 @@ function renderSubDashboard() {
   lernpfadInitialisieren();
   // PSAgA Schulungsmodule anzeigen
   psagaSchulungenInit();
+  // Hubarbeitsbühnen Schulung anzeigen
+  hubSchulungInit();
+  // Befähigte Person Leitern/Tritte anzeigen
+  bpSchulungInit();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
 
@@ -3201,13 +4987,15 @@ function renderSubDashboard() {
         meineZuws.map(z => {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const isHub = z.vorlagenId === HUB_VORLAGE_ID;
+          const isBp = z.vorlagenId === BP_VORLAGE_ID;
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : isBp ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
           const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
           const fristText = z.frist ? `Frist: ${datumStr(z.frist)}` : 'Kein Termin';
-          return `<div onclick="${isLP ? 'lernpfadToggle()' : `oeffneFormular('${z.id}')`}"
+          return `<div onclick="${isLP ? 'lernpfadToggle()' : isHub ? 'hubSchulungToggle()' : isBp ? 'bpSchulungToggle()' : `oeffneFormular('${z.id}')`}"
             style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
                    background:${farbe};border:1px solid ${border};border-radius:9px;cursor:pointer">
             <span style="font-size:1.1rem;flex-shrink:0">${dot}</span>
@@ -3275,7 +5063,7 @@ function oeffneFormular(zuwId) {
   oeffneFormularMitSprache(zuwId, 'de');
 }
 
-function oeffneFormularMitSprache(zuwId, sprache) {
+async function oeffneFormularMitSprache(zuwId, sprache) {
   activeZuwId = zuwId;
   if (sprache === 'de') { sigPads={}; uploadFiles={}; }
 
@@ -3324,14 +5112,23 @@ function oeffneFormularMitSprache(zuwId, sprache) {
   // PDF-Vorlage oder Felder anzeigen
   if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
     let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
-    // PDF einbetten
+    // Signierte URL generieren (5 Min gültig)
+    let pdfAnzeigeUrl = '';
+    try {
+      pdfAnzeigeUrl = await SB.signedUrl(vorlage.pdf_url, 300);
+    } catch(e) {
+      console.warn('Signed URL Fehler:', e.message);
+    }
+    const istAdmin = ['admin','firma','verantwortlicher'].includes(currentUser?.role);
     html += `
-      <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9">
+      <div style="margin-bottom:16px;border-radius:8px;overflow:hidden;border:1px solid #dde2e9;user-select:none" oncontextmenu="return false">
         <div style="background:#1a3a5c;color:#fff;padding:8px 14px;font-size:.82rem;font-weight:600">📄 ${escHtml(vorlage.titel)}</div>
-        <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(vorlage.pdf_url)}" style="width:100%;height:70vh;border:none;display:block" title="${escHtml(vorlage.titel)}" id="pdf-iframe-main"></iframe>
+        <iframe src="${pdfAnzeigeUrl ? 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(pdfAnzeigeUrl) : ''}" style="width:100%;height:70vh;border:none;display:block;pointer-events:auto" title="${escHtml(vorlage.titel)}" id="pdf-iframe-main"></iframe>
         <div style="padding:6px 14px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px">
           📄 PDF wird nicht angezeigt?
-          <a href="${vorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+          ${istAdmin
+            ? `<a href="${pdfAnzeigeUrl}" target="_blank" rel="noopener" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>`
+            : `<span style="color:#9ca3af">Bitte Seite neu laden.</span>`}
         </div>
         <div style="padding:8px 14px;background:#f8faff;font-size:.75rem;color:#6b7280">
           📄 ${escHtml(vorlage.titel)}
@@ -3386,6 +5183,7 @@ function oeffneFormularMitSprache(zuwId, sprache) {
 
 function renderFeld(feld, val, readOnly) {
   const pfl = feld.pflicht ? `<span class="pflicht-mark">*</span>` : '';
+  if (feld.typ==='info') return `<div class="form-group form-info-block">${feld.svg||''}${feld.label?`<div class="form-info-label">${escHtml(feld.label)}</div>`:''}${feld.text?`<div class="form-info-text">${escHtml(feld.text)}</div>`:''}</div>`;
   if (feld.typ==='text')     return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><input type="text" id="feld_${feld.id}" value="${escHtml(val)}" placeholder="${escHtml(feld.placeholder||'')}" ${readOnly?'readonly':''}></div>`;
   if (feld.typ==='textarea') return `<div class="form-group"><label>${escHtml(feld.label)} ${pfl}</label><textarea id="feld_${feld.id}" ${readOnly?'readonly':''}>${escHtml(val)}</textarea></div>`;
   if (feld.typ==='select') {
@@ -3507,7 +5305,11 @@ async function doAbschluss(felder) {
   }
 }
 
-function backFromFormular() { if(currentUser.role==='admin') showScreen('screen-admin'); else showScreen('screen-sub'); }
+function backFromFormular() {
+  if(currentUser.role==='admin') showScreen('screen-admin');
+  else if(currentUser.role==='bereichsleiter') showScreen('screen-bereichsleiter');
+  else showScreen('screen-sub');
+}
 function closeModal() { document.getElementById('modal-abschluss').classList.remove('active'); }
 function abschlussBestaetigt() { if(abschlussCallback) abschlussCallback(); abschlussCallback=null; }
 
@@ -3647,9 +5449,10 @@ async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
       body: pdfBlob
     });
     if (!r.ok) throw new Error(await r.text());
-    const publicUrl = `${SUPABASE_URL}/storage/v1/object/public/schulung-pdfs/${path}`;
-    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: publicUrl });
-    if (formulare[zuwId]) formulare[zuwId].pdfPath = publicUrl;
+    // Speichere Storage-Pfad statt public URL
+    const storagePath = `schulung-pdfs/${path}`;
+    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath });
+    if (formulare[zuwId]) formulare[zuwId].pdfPath = storagePath;
     showToast('🗄️ PDF gespeichert', '#0047cc');
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
@@ -3704,8 +5507,9 @@ async function syncMissingToDrive() {
 
     for (const form of missing) {
       try {
-        // PDF von Supabase Storage laden
-        const pdfResp = await fetch(form.pdf_path);
+        // PDF von Supabase Storage laden (signierte URL)
+        const signedPdfUrl = await SB.signedUrl(form.pdf_path, 120);
+        const pdfResp = await fetch(signedPdfUrl);
         if (!pdfResp.ok) throw new Error('PDF nicht ladbar');
         const pdfBlob   = await pdfResp.blob();
         const pdfBase64 = await blobToBase64(pdfBlob);
@@ -3805,6 +5609,8 @@ function nuGenerierePasswort() {
   document.getElementById('nu-passwort').value = pw;
 }
 
+// Vorlagen-Checkboxen im Anlegen-Formular befüllen — entfernt (Option B: Freigabe separat über Tab Zuweisungen)
+
 async function nuAnlegen() {
   const msgEl = document.getElementById('nu-msg');
   msgEl.textContent = '';
@@ -3813,10 +5619,11 @@ async function nuAnlegen() {
   const name     = document.getElementById('nu-name').value.trim();
   const email    = document.getElementById('nu-email').value.trim().toLowerCase();
   const kontakt  = document.getElementById('nu-kontakt').value.trim();
+  const telefon  = document.getElementById('nu-telefon')?.value.trim() || '';
   const passwort = document.getElementById('nu-passwort').value.trim();
 
   if (!name || !email || !kontakt || !passwort) {
-    msgEl.textContent = '⚠️ Bitte alle Felder ausfüllen.'; return;
+    msgEl.textContent = '⚠️ Bitte alle Pflichtfelder ausfüllen.'; return;
   }
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) {
     msgEl.textContent = '⚠️ Ungültige E-Mail-Adresse.'; return;
@@ -3858,7 +5665,7 @@ async function nuAnlegen() {
 
     // 3. User (Unternehmens-Account mit firma-Rolle) anlegen
     const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
-    const uRes = await SB.post('users', {
+    const uPayload = {
       id: userId,
       name: kontakt,
       email,
@@ -3866,8 +5673,11 @@ async function nuAnlegen() {
       role: 'firma',
       tenant_id: tenantId,
       aktiv: true,
-      archiviert: false
-    });
+      archiviert: false,
+      muss_pw_aendern: true
+    };
+    if (telefon) uPayload.telefon = telefon;
+    const uRes = await SB.post('users', uPayload);
     if (uRes && uRes.error) {
       // Rollback: Tenant wieder löschen damit keine Geisterfirma entsteht
       try { await SB.delete('tenants', `id=eq.${tenantId}`); } catch(re) { console.warn('Rollback Fehler:', re.message); }
@@ -3876,21 +5686,22 @@ async function nuAnlegen() {
 
     // 4. App-State aktualisieren
     APP_TENANTS.push({ id: tenantId, name });
-    try { await sbAudit('UNTERNEHMEN_NEU', `Unternehmen "${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
+    try { await sbAudit('UNTERNEHMEN_NEU', `Lizenznehmer „${name}" angelegt, Login: ${email}`); } catch(ae) { console.warn('Audit Fehler:', ae.message); }
 
     msgEl.style.color = '#16a34a';
     msgEl.textContent = `✅ „${name}" erfolgreich angelegt! Login: ${email} / ${passwort}`;
+    msgEl.textContent += ` — Schulungen jetzt im Tab „Zuweisungen" freischalten.`;
 
     // E-Mail mit Zugangsdaten versenden
-    const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name });
+    const emailOk = await sendLoginEmail({ an: email, name: kontakt, rolle: 'firma', passwort, unternehmen: name, telefon });
     if (emailOk) {
       msgEl.textContent += ` — ✉️ Zugangsdaten per E-Mail gesendet`;
     } else {
-      msgEl.textContent += ` — ⚠️ E-Mail konnte nicht gesendet werden (Passwort oben notieren!)`;
+      msgEl.textContent += ` — ⚠️ E-Mail konnte nicht gesendet werden (Passwort notieren!)`;
     }
 
     // Felder leeren
-    ['nu-name','nu-email','nu-kontakt','nu-passwort'].forEach(id => document.getElementById(id).value = '');
+    ['nu-name','nu-email','nu-kontakt','nu-passwort','nu-telefon'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
 
     // Listen aktualisieren
     renderAdminTenantTable();
@@ -3910,7 +5721,7 @@ function nuRenderListe() {
   if (!el) return;
   const suche = (document.getElementById('nu-filter')?.value || '').toLowerCase().trim();
   if (!APP_TENANTS.length) {
-    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Unternehmen angelegt.</p>';
+    el.innerHTML = '<p style="color:#6b7280;font-size:.85rem">Noch keine Lizenznehmer angelegt.</p>';
     return;
   }
   const gefiltert = suche ? APP_TENANTS.filter(t => t.name.toLowerCase().includes(suche)) : APP_TENANTS;
@@ -3919,18 +5730,61 @@ function nuRenderListe() {
     return;
   }
   el.innerHTML = gefiltert.map(t => {
-    const zuws = zuweisungen.filter(z => z.tenantId === t.id);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f3f4f6">
-      <div>
-        <strong>${escHtml(t.name)}</strong>
-        <span style="font-size:.78rem;color:#6b7280;margin-left:8px">${zuws.length} Zuweisung(en)</span>
+    const zuws   = zuweisungen.filter(z => z.tenantId === t.id);
+    const firmaU = APP_USERS.find(u => u.tenant_id === t.id && u.role === 'firma');
+    const aktiv  = firmaU ? firmaU.aktiv !== false : true;
+    const lpZuw  = zuws.find(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
+    return `<div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:${aktiv?'#fff':'#f9fafb'}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div>
+          <div style="font-weight:700;font-size:.95rem;color:#1e3a5f">${escHtml(t.name)}</div>
+          ${firmaU ? `<div style="font-size:.78rem;color:#6b7280;margin-top:2px">👤 ${escHtml(firmaU.name||'–')} · 📧 ${escHtml(firmaU.email||'–')}${firmaU.telefon?` · 📞 ${escHtml(firmaU.telefon)}`:''}</div>` : '<div style="font-size:.78rem;color:#dc2626">⚠️ Kein Login-User gefunden</div>'}
+          <div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap">
+            <span style="font-size:.74rem;background:${aktiv?'#dcfce7':'#fee2e2'};color:${aktiv?'#166534':'#991b1b'};border-radius:20px;padding:2px 8px">${aktiv?'✅ Aktiv':'⛔ Deaktiviert'}</span>
+            <span style="font-size:.74rem;background:#f0f9ff;color:#0369a1;border-radius:20px;padding:2px 8px">📋 ${zuws.length} Schulung(en)</span>
+            ${lpZuw ? '<span style="font-size:.74rem;background:#f0fdf4;color:#166534;border-radius:20px;padding:2px 8px">📚 Lernpfad</span>' : ''}
+          </div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">🔍 Details</button>
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuZugangsdatenSenden('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')">✉️ Zugangsdaten</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuPwZuruecksetzen('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')" title="Neues Passwort setzen und senden">🔑 PW reset</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" style="color:${aktiv?'#dc2626':'#16a34a'}" onclick="nuToggleAktiv('${firmaU.id}','${t.id}',${aktiv})">${aktiv?'⛔ Deaktiv.':'✅ Aktivieren'}</button>` : ''}
+        </div>
       </div>
-      <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">Details</button>
     </div>`;
   }).join('');
 }
 
-// Beim Öffnen des Tabs die Liste rendern — bereits in adminTab() eingebaut
+async function nuZugangsdatenSenden(userId, email, name, unternehmen) {
+  if (!email) { showToast('Keine E-Mail bekannt', '#dc2626'); return; }
+  showToast('⏳ Sende Zugangsdaten …', '#1e3a5f');
+  const ok = await sendLoginEmail({ an: email, name, rolle: 'firma', passwort: '(Ihr bisheriges Passwort)', unternehmen });
+  showToast(ok ? '✉️ Zugangsdaten erfolgreich gesendet!' : '⚠️ E-Mail-Versand fehlgeschlagen', ok ? '#0f5132' : '#dc2626');
+}
+
+async function nuPwZuruecksetzen(userId, email, name, unternehmen) {
+  const zeichen = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!#';
+  let pw = '';
+  for (let i = 0; i < 10; i++) pw += zeichen[Math.floor(Math.random() * zeichen.length)];
+  try {
+    const hash = await hashPasswort(pw);
+    await SB.patch('users', `id=eq.${userId}`, { password_hash: hash, muss_pw_aendern: true });
+    const ok = await sendLoginEmail({ an: email, name, rolle: 'firma', passwort: pw, unternehmen });
+    showToast(ok ? `🔑 Neues PW: ${pw} — ✉️ gesendet` : `🔑 Neues PW: ${pw} (E-Mail fehlgeschlagen — notieren!)`, ok ? '#0f5132' : '#b45309');
+  } catch(e) { showToast('❌ PW-Reset fehlgeschlagen: ' + e.message, '#dc2626'); }
+}
+
+async function nuToggleAktiv(userId, tenantId, istAktiv) {
+  try {
+    await SB.patch('users', `id=eq.${userId}`, { aktiv: !istAktiv });
+    const u = APP_USERS.find(u => u.id === userId);
+    if (u) u.aktiv = !istAktiv;
+    await sbAudit(istAktiv ? 'LIZENZNEHMER_DEAKTIVIERT' : 'LIZENZNEHMER_AKTIVIERT', `User ${userId}, Tenant ${tenantId}`);
+    nuRenderListe();
+    showToast(istAktiv ? '⛔ Lizenznehmer deaktiviert' : '✅ Lizenznehmer wieder aktiviert', istAktiv ? '#b45309' : '#0f5132');
+  } catch(e) { showToast('❌ Fehler: ' + e.message, '#dc2626'); }
+}
 
 function zuwListeToggle() {
   const b = document.getElementById('zuw-liste-bereich');
@@ -4162,7 +6016,7 @@ function gastFehler(msg) {
     </div>`;
 }
 
-function gastWeiter() {
+async function gastWeiter() {
   const name = document.getElementById('gast-name-input').value.trim();
   const msg  = document.getElementById('gast-name-msg');
   if (!name) { msg.textContent = '⚠️ Bitte Ihren Namen eingeben.'; return; }
@@ -4174,11 +6028,12 @@ function gastWeiter() {
   gastSigPads = {};
 
   if (gastVorlage.typ === 'pdf' && gastVorlage.pdf_url) {
-    html += `<div class="card">
-      <iframe src="https://docs.google.com/gview?embedded=true&url=${encodeURIComponent(gastVorlage.pdf_url)}" style="width:100%;height:500px;border:none;border-radius:8px;display:block"></iframe>
+    let gastPdfUrl = '';
+    try { gastPdfUrl = await SB.signedUrl(gastVorlage.pdf_url, 300); } catch(e) {}
+    html += `<div class="card" oncontextmenu="return false" style="user-select:none">
+      <iframe src="${gastPdfUrl ? 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(gastPdfUrl) : ''}" style="width:100%;height:500px;border:none;border-radius:8px;display:block"></iframe>
       <div style="padding:6px 12px;background:#f0f4ff;font-size:.75rem;color:#4b5563;display:flex;align-items:center;gap:8px;border-top:1px solid #dde2e9">
-        📄 PDF wird nicht angezeigt?
-        <a href="${gastVorlage.pdf_url}" target="_blank" style="color:#1a3a5c;font-weight:600;text-decoration:underline">Direkt öffnen ↗</a>
+        📄 PDF wird nicht angezeigt? Bitte Seite neu laden.
       </div>
     </div>`;
   }
@@ -4361,7 +6216,8 @@ function mitarbeiterEinzelnGenerierePasswort() {
 
 async function mitarbeiterEinzelnSpeichern() {
   const name     = document.getElementById('einzel-name').value.trim();
-  const email    = document.getElementById('einzel-email').value.trim().toLowerCase();
+  const handynr  = document.getElementById('einzel-email').value.trim().replace(/\s+/g, '');
+  const email    = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
   const standort = document.getElementById('einzel-standort').value.trim();
   const bereich  = document.getElementById('einzel-bereich').value.trim();
   let   pw       = document.getElementById('einzel-passwort').value.trim();
@@ -4375,8 +6231,8 @@ async function mitarbeiterEinzelnSpeichern() {
     fehlerEl.style.display = 'block';
     return;
   }
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    fehlerEl.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if (!handynr) {
+    fehlerEl.textContent = 'Bitte eine Handynummer eingeben.';
     fehlerEl.style.display = 'block';
     return;
   }
@@ -4403,7 +6259,8 @@ async function mitarbeiterEinzelnSpeichern() {
       role: 'mitarbeiter',
       tenant_id: currentUser.tenantId,
       standort: standort || null,
-      bereich:  bereich  || null
+      bereich:  bereich  || null,
+      muss_pw_aendern: true
     });
 
     if (res && res.error) {
@@ -4419,26 +6276,20 @@ async function mitarbeiterEinzelnSpeichern() {
       return;
     }
 
-    sbAudit('MITARBEITER_EINZEL', { name, email, tenantId: currentUser.tenantId });
-
-    // E-Mail mit Zugangsdaten versenden
-    const tenantObjMA = APP_TENANTS.find(t => t.id === currentUser.tenantId);
-    const mailOkMA = await sendLoginEmail({ an: email, name, rolle: 'mitarbeiter', passwort: pw, unternehmen: tenantObjMA?.name || '' });
-
-    // Mitarbeiterliste aktualisieren
-    renderMitarbeiterListe();
+    sbAudit('MITARBEITER_EINZEL', { name, handynr, tenantId: currentUser.tenantId });
 
     // Ergebnis anzeigen
     document.getElementById('einzel-formular').style.display = 'none';
     document.getElementById('einzel-ergebnis-daten').innerHTML =
       `<div style="margin-bottom:6px"><strong>Name:</strong> ${name}</div>` +
-      `<div style="margin-bottom:6px"><strong>E-Mail:</strong> ${email}</div>` +
+      `<div style="margin-bottom:6px"><strong>Handynummer:</strong> ${escHtml(handynr)}</div>` +
       (standort ? `<div style="margin-bottom:6px"><strong>Standort:</strong> ${escHtml(standort)}</div>` : '') +
       (bereich  ? `<div style="margin-bottom:6px"><strong>Bereich:</strong> ${escHtml(bereich)}</div>` : '') +
+      `<div style="margin-bottom:6px"><strong>Login:</strong> <code style="background:#f0f9ff;padding:2px 6px;border-radius:4px;font-size:.9rem">${escHtml(email)}</code></div>` +
       `<div style="margin-bottom:6px"><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>` +
-      (mailOkMA ? `<div style="color:#16a34a;margin-top:8px">✉️ Zugangsdaten wurden per E-Mail gesendet.</div>`
-                : `<div style="color:#f59e0b;margin-top:8px">⚠️ E-Mail konnte nicht gesendet werden – Passwort bitte notieren!</div>`);
+      `<div style="color:#0369a1;margin-top:8px">📱 Zugangsdaten bitte per WhatsApp/SMS an ${escHtml(handynr)} senden.</div>`;
     document.getElementById('einzel-ergebnis').style.display = 'block';
+    renderMitarbeiterListe();
 
   } catch(e) {
     fehlerEl.textContent = 'Fehler: ' + e.message;
@@ -4506,10 +6357,11 @@ function mitarbeiterImportDateiLesen(input) {
       const datenZeilen = rows.slice(1).filter(r => r[0] || r[1]); // mind. Name oder E-Mail vorhanden
 
       importDaten = datenZeilen.map((r, idx) => {
-        const name  = String(r[0] || '').trim();
-        const email = String(r[1] || '').trim().toLowerCase();
-        const pw    = String(r[2] || '').trim();
-        return { idx: idx + 2, name, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
+        const name    = String(r[0] || '').trim();
+        const handynr = String(r[1] || '').trim().replace(/\s+/g, '');
+        const email   = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
+        const pw      = String(r[2] || '').trim();
+        return { idx: idx + 2, name, handynr, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
       });
 
       document.getElementById('import-lade-msg').style.display = 'none';
@@ -4536,22 +6388,20 @@ function mitarbeiterImportZeigeVorschau() {
 
   // Validierung
   const fehler = [];
-  const emailSet = new Set();
+  const handynrSet = new Set();
   importDaten.forEach(r => {
     if (!r.name) fehler.push(`Zeile ${r.idx}: Name fehlt`);
-    if (!r.email) {
-      fehler.push(`Zeile ${r.idx}: E-Mail fehlt`);
-    } else if (!/^[^@]+@[^@]+\.[^@]+$/.test(r.email)) {
-      fehler.push(`Zeile ${r.idx}: Ungültige E-Mail „${escHtml(r.email)}"`);
-    } else if (emailSet.has(r.email)) {
-      fehler.push(`Zeile ${r.idx}: E-Mail „${escHtml(r.email)}" doppelt`);
+    if (!r.handynr) {
+      fehler.push(`Zeile ${r.idx}: Handynummer fehlt`);
+    } else if (handynrSet.has(r.handynr)) {
+      fehler.push(`Zeile ${r.idx}: Handynummer „${escHtml(r.handynr)}" doppelt`);
     }
-    emailSet.add(r.email);
+    handynrSet.add(r.handynr);
   });
 
   // Gültige Zeilen
   const gueltig = importDaten.filter(r =>
-    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+    r.name && r.handynr
   );
 
   document.getElementById('import-anzahl').textContent = gueltig.length;
@@ -4565,7 +6415,7 @@ function mitarbeiterImportZeigeVorschau() {
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f3f4f6">
         <div>
           <div style="font-weight:600">${escHtml(r.name)}</div>
-          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.email)}</div>
+          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.handynr)}</div>
         </div>
         <div style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:6px;font-family:monospace">${escHtml(r.pw)}</div>
       </div>`
@@ -4594,7 +6444,7 @@ async function mitarbeiterImportStarten() {
   btn.textContent = '⏳ Wird importiert …';
 
   const gueltig = importDaten.filter(r =>
-    r.name && r.email && /^[^@]+@[^@]+\.[^@]+$/.test(r.email)
+    r.name && r.handynr
   );
 
   let erfolg = 0, fehler = 0;
@@ -4610,23 +6460,24 @@ async function mitarbeiterImportStarten() {
         email:         r.email,
         password_hash: hash,
         role:          'mitarbeiter',
-        tenant_id:     currentUser.tenantId
+        tenant_id:     currentUser.tenantId,
+        muss_pw_aendern: true
       });
       if (res && res.error) {
         const errMsg = res.error.message || JSON.stringify(res.error);
         if (errMsg.includes('duplicate') || errMsg.includes('unique')) {
-          details.push({ name: r.name, email: r.email, status: 'skip', msg: 'Bereits vorhanden' });
+          details.push({ name: r.name, handynr: r.handynr, status: 'skip', msg: 'Bereits vorhanden' });
         } else {
-          details.push({ name: r.name, email: r.email, status: 'err', msg: errMsg });
+          details.push({ name: r.name, handynr: r.handynr, status: 'err', msg: errMsg });
           fehler++;
         }
       } else {
-        await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.email}) importiert`);
-        details.push({ name: r.name, email: r.email, status: 'ok', pw: r.pw });
+        await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.handynr}) importiert`);
+        details.push({ name: r.name, handynr: r.handynr, status: 'ok', pw: r.pw });
         erfolg++;
       }
     } catch(e) {
-      details.push({ name: r.name, email: r.email, status: 'err', msg: e.message });
+      details.push({ name: r.name, handynr: r.handynr, status: 'err', msg: e.message });
       fehler++;
     }
     // Kleine Pause um Rate-Limiting zu vermeiden
@@ -4652,9 +6503,9 @@ async function mitarbeiterImportStarten() {
 
   const detailEl = document.getElementById('import-ergebnis-details');
   detailEl.innerHTML = details.map(d => {
-    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
-    if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
-    return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.email)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
+    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
+    if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
+    return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
   }).join('');
 }
 
@@ -5188,20 +7039,23 @@ async function pruefeQrLogin() {
 
 // Hilfsfunktion: Daten laden ohne vollen initApp()-Flow
 async function initApp_loadData() {
-  const [tenants, vorlagen, zuws, users] = await Promise.all([
+  const [tenants, vorlagen, zuws, users, bereiche] = await Promise.all([
     SB.get('tenants'),
     SB.get('vorlagen'),
     SB.get('zuweisungen'),
-    SB.get('users', 'select=id,name,email,tenant_id,role,aktiv,archiviert')
+    SB.get('users', 'select=id,name,email,tenant_id,role,aktiv,archiviert,bereich_id,personalnummer'),
+    SB.get('bereiche')
   ]);
-  APP_TENANTS = tenants;
-  APP_USERS = users;
+  APP_TENANTS  = tenants;
+  APP_USERS    = users;
+  APP_BEREICHE = bereiche || [];
   SCHULUNG_VORLAGEN = vorlagen.map(v => ({
     ...v, intervallMonate: v.intervall_monate,
     abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
   }));
   zuweisungen = zuws.map(z => ({
-    id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht
+    id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id, frist: z.frist, pflicht: z.pflicht,
+    zugewiesenAn: z.zugewiesen_an || null, bereichId: z.bereich_id || null
   }));
   const forms = await SB.get('formulare');
   formulare = {};
@@ -5629,7 +7483,7 @@ async function zeigeSchulungshistorie(userId) {
         </div>
         <!-- Footer mit PDF-Button -->
         ${f.pdf_path ? `<div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb">
-          <a href="${f.pdf_path}" target="_blank" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</a>
+          <button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>
         </div>` : ''}
       </div>`;
     }).join('');
@@ -5646,7 +7500,7 @@ async function zeigeSchulungshistorie(userId) {
       lpUntHistorieBlock = `
         <div style="border:2px solid ${vDatum ? '#86efac' : '#fde68a'};border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
           <div style="background:${vDatum ? '#0f5132' : '#92400e'};padding:12px 16px">
-            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (29 Kapitel) — Unterschriften</div>
+            <div style="font-size:1rem;font-weight:700;color:#fff">📚 Lernpfad (32 Kapitel) — Unterschriften</div>
             <div style="font-size:.76rem;color:${vDatum ? '#bbf7d0' : '#fef3c7'};margin-top:3px">
               ${vDatum ? '✅ Vollständig unterzeichnet' : '⚠️ Mitarbeiter unterzeichnet — Verantwortlicher ausstehend'}
             </div>
@@ -5802,10 +7656,10 @@ function bereichsVorlagenSuche(suche) {
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
   const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
-    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (29 Kapitel)')"
+    <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
       onmouseover="this.style.background='#ede9fe'" onmouseout="this.style.background='#f5f3ff'">
-      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (29 Kapitel)</div>
+      <div style="font-weight:600;font-size:.86rem;color:#6b21a8">📚 Lernpfad (32 Kapitel)</div>
       <div style="font-size:.75rem;color:#7c3aed;margin-top:2px">Säulen A–D · Gesetzliche Basis, Chemie/GHS, DSGVO, 4-Farben-System · inkl. Unterschrift</div>
     </div>` : '';
 
@@ -5930,7 +7784,7 @@ function kalenderEintragDetail(zuwId) {
   const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
   const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
   const t = APP_TENANTS.find(tn => tn.id === z.tenantId);
-  const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : (v?.titel || z.vorlagenId);
+  const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : (v?.titel || z.vorlagenId);
   const fristAnzeige = z.frist ? datumStr(z.frist) : '–';
   const heute = new Date();
   const fristDate = z.frist ? new Date(z.frist) : null;
@@ -6259,8 +8113,8 @@ let lernpfadAktuellerDurchgang = 1; // aktuell aktiver Durchgang (der laufende o
 let lernpfadTenantKapitel = []; // { id, titel, beschreibung, reihenfolge } — von Tenant hinzugefügte Kapitel
 
 const LP_STORAGE_KEY = () => `lernpfad_${currentUser?.userId || 'anon'}_d${lernpfadAktuellerDurchgang}`;
-const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309', D: '#6b21a8' };
-const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO', D: '🎨 Säule D — Das 4-Farben-System' };
+const SAEULE_FARBEN = { A: '#1a3a5c', B: '#7c3aed', C: '#b45309', D: '#6b21a8', E: '#0f766e', F: '#b91c1c' };
+const SAEULE_LABEL  = { A: '🛡 Säule A — Gesetzliche Basis', B: '🧪 Säule B — Reinigungstechnologie', C: '🔒 Säule C — Datenschutz & DSGVO', D: '🎨 Säule D — Das 4-Farben-System', E: '💪 Säule E — Arbeitsrecht & Gesundheit', F: '🏭 Säule F — Objekt- & Subunternehmer-Unterweisungen' };
 
 // ── LERNPFAD-SPRACHE ─────────────────────────────────────────
 const LP_SPRACHEN = [
@@ -6931,7 +8785,7 @@ function renderLernpfad() {
     </div>`;
 
   // Pro Säule gruppiert
-  ['A','B','C','D'].forEach(saeule => {
+  ['A','B','C','D','E'].forEach(saeule => {
     const kapitel = LERNPFAD_KAPITEL.filter(k => k.saeule === saeule);
     const absolviert = kapitel.filter(k => lernpfadFortschritt[k.id]?.abgehakt).length;
     const farbe = SAEULE_FARBEN[saeule];
@@ -7204,8 +9058,7 @@ async function lernpfadZertifikatGenerieren() {
         tenant_id: currentUser.tenantId || '',
         user_id: currentUser.userId,
         user_name: currentUser.name,
-        datum: new Date().toISOString().slice(0,10),
-        ablauf: new Date(new Date().setFullYear(new Date().getFullYear()+1)).toISOString().slice(0,10),
+        ausstellungsdatum: new Date().toISOString().slice(0,10),
         bescheinigungs_nr: beschNr,
         pdf_url: pdfUrl,
         erstellt_am: new Date().toISOString()
@@ -7416,10 +9269,12 @@ async function firmaRenderHistorie() {
       const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === zuw?.vorlagenId);
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
-      const titel = isLP ? '📚 Lernpfad (29 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const isHub = zuw?.vorlagenId === HUB_VORLAGE_ID;
+      const isBpH = zuw?.vorlagenId === BP_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBpH ? '🪜 Schulung: Befähigte Person Leitern & Tritte' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
-        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : 'schulung',
+        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : isHub ? 'hub' : isBpH ? 'befperson' : 'schulung',
         titel,
         datum: f.abgeschlossen_am,
         pdfUrl: f.pdf_path || null,
@@ -7458,8 +9313,8 @@ async function firmaRenderHistorie() {
       gruppenMap[key].eintraege.push(e);
     });
 
-    const typColors = { lernpfad:'#6b21a8', psaga:'#166534', lernpfad_unt:'#7c3aed', schulung:'#1e3a5f' };
-    const typBg = { lernpfad:'#f5f3ff', psaga:'#f0fdf4', lernpfad_unt:'#ede9fe', schulung:'#f0f4ff' };
+    const typColors = { lernpfad:'#6b21a8', psaga:'#166534', lernpfad_unt:'#7c3aed', schulung:'#1e3a5f', hub:'#1a3a5c', befperson:'#1a3a5c' };
+    const typBg = { lernpfad:'#f5f3ff', psaga:'#f0fdf4', lernpfad_unt:'#ede9fe', schulung:'#f0f4ff', hub:'#eff6ff', befperson:'#eff6ff' };
 
     html += Object.values(gruppenMap).sort((a,b)=>a.name.localeCompare(b.name)).map(gr => `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:12px;overflow:hidden">
@@ -7469,13 +9324,13 @@ async function firmaRenderHistorie() {
         ${gr.eintraege.sort((a,b)=>new Date(b.datum)-new Date(a.datum)).map(e => `
           <div style="padding:10px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px">
             <div style="background:${typBg[e.typ]||'#f0f4ff'};border-radius:6px;padding:4px 8px;font-size:.72rem;font-weight:700;color:${typColors[e.typ]||'#1e3a5f'};white-space:nowrap">
-              ${e.typ==='psaga'?'PSAgA':e.typ==='lernpfad'?'Lernpfad':e.typ==='lernpfad_unt'?'LP-Unt.':'Schulung'}
+              ${e.typ==='psaga'?'PSAgA':e.typ==='lernpfad'?'Lernpfad':e.typ==='lernpfad_unt'?'LP-Unt.':e.typ==='hub'?'Hub-Bühne':e.typ==='befperson'?'Bef. Person':'Schulung'}
             </div>
             <div style="flex:1;min-width:0">
               <div style="font-size:.83rem;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(e.titel)}</div>
               <div style="font-size:.72rem;color:#6b7280">${e.datum ? new Date(e.datum).toLocaleDateString('de-DE') : '–'} ${e.extra ? '· '+escHtml(e.extra) : ''}</div>
             </div>
-            ${e.pdfUrl ? `<a href="${e.pdfUrl}" target="_blank" style="font-size:.72rem;padding:5px 10px;border:1px solid #3b82f6;border-radius:6px;color:#3b82f6;text-decoration:none;white-space:nowrap">📄 PDF</a>` : '<span style="font-size:.72rem;color:#9ca3af;white-space:nowrap">kein PDF</span>'}
+            ${e.pdfUrl ? `<button onclick="oeffnePdfSigniert('${e.pdfUrl}')" style="font-size:.72rem;padding:5px 10px;border:1px solid #3b82f6;border-radius:6px;color:#3b82f6;background:none;cursor:pointer;white-space:nowrap">📄 PDF</button>` : '<span style="font-size:.72rem;color:#9ca3af;white-space:nowrap">kein PDF</span>'}
           </div>`).join('')}
       </div>`).join('');
 
@@ -7738,7 +9593,7 @@ async function generiereSchulungsnachweisPDF(userId) {
 
     // Lernpfad-Block
     doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text('📚 Lernpfad (29 Kapitel)', margin, y); y += 8;
+    doc.text('📚 Lernpfad (32 Kapitel)', margin, y); y += 8;
     if (lpUnt && lpUnt.unterzeichnet_am) {
       const maDatum = new Date(lpUnt.unterzeichnet_am).toLocaleDateString('de-DE');
       doc.setFillColor(240, 253, 244);
@@ -7937,10 +9792,10 @@ function hilfeInhaltVerantwortlicher() {
         <li><strong>✅ Abschließen & PDF</strong> → Unterschriften einholen → PDF wird automatisch gespeichert</li>
       </ul>
 
-      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (29 Kapitel)</h3>
+      <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">4. Lernpfad (32 Kapitel)</h3>
       <ul style="margin:0 0 12px;padding-left:18px">
-        <li>Button <strong>📚 Lernpfad — 29 Kapitel</strong> → aufklappen</li>
-        <li>Mitarbeiter absolviert 29 Kapitel selbstständig am eigenen Gerät</li>
+        <li>Button <strong>📚 Lernpfad — 32 Kapitel</strong> → aufklappen</li>
+        <li>Mitarbeiter absolviert 32 Kapitel selbstständig am eigenen Gerät</li>
         <li>Nach Abschluss aller Kapitel: Mitarbeiter unterschreibt digital → Sie gegenzeichnen</li>
         <li>Neuer Durchgang starten: Mitarbeiterkarte → <strong>🔄 Neu starten</strong></li>
       </ul>
@@ -8499,9 +10354,10 @@ function psagaFolienOeffnen(modulId) {
   if (!psagaAktivesModul) return;
 
   // Sicherheitsprüfung: Modul gesperrt wenn Vorgänger nicht bestanden
+  // (im Admin-Vorschau-Modus übersprungen)
   const idx = PSAGA_MODULE.findIndex(m => m.id === modulId);
   const userId = currentUser?.userId || '';
-  if (idx > 0) {
+  if (idx > 0 && !window._psagaAdminModus) {
     const vorherigBestanden = !!localStorage.getItem(`psaga_bestanden_${PSAGA_MODULE[idx-1].id}_${userId}`);
     if (!vorherigBestanden) {
       showToast(`🔒 Bitte zuerst Kapitel ${idx} abschließen!`, '#92400e');
@@ -8542,20 +10398,39 @@ function psagaFolienOeffnen(modulId) {
   psagaAutoButtonUpdate();
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
+    // Modal direkt zu body verschieben damit position:fixed auch im Admin-Screen greift
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
   }
 }
 
 // TTS / Audio für PSAgA-Folien
-// Modul 00: Original-MP3 aus Supabase Storage + Auto-Durchlauf
-// Modul 01+: Web Speech API (TTS-Texte)
+// Modul 00–21: Original-MP3 aus Supabase Storage + Auto-Durchlauf
+// Sprache: 'de' (Standard) oder 'en' (Englisch — Ordner-Suffix: -en)
 let psagaTTSAktiv = false;
 let psagaTTSUtterance = null;
-let psagaAudioEl = null;     // <audio>-Element für Modul-00-MP3s
+let psagaAudioEl = null;     // <audio>-Element für MP3s
 let psagaAutoModus = false;  // Auto-Durchlauf aktiv?
 let psagaAutoPause = false;  // Pausiert (aber nicht deaktiviert)?
 let psagaAutoTimer = null;   // setTimeout-Handle für 1,5s Wartezeit
+let psagaSprache = 'de';     // Aktive Audiosprache: 'de' | 'en'
+
+function psagaSprachToggle() {
+  psagaSprachWechseln(psagaSprache === 'de' ? 'en' : 'de');
+}
+
+function psagaSprachWechseln(sprache) {
+  psagaSprache = sprache;
+  // Buttons aktualisieren: aktive Sprache blau/weiß, inaktive grau
+  const de = document.getElementById('psaga-lang-de');
+  const en = document.getElementById('psaga-lang-en');
+  if (de) { de.style.background = sprache === 'de' ? '#3b82f6' : '#374151'; de.style.color = sprache === 'de' ? '#fff' : '#9ca3af'; }
+  if (en) { en.style.background = sprache === 'en' ? '#3b82f6' : '#374151'; en.style.color = sprache === 'en' ? '#fff' : '#9ca3af'; }
+  // Laufendes Audio stoppen und mit neuer Sprache neu starten
+  psagaAudioStop();
+  if (psagaTTSAktiv) psagaTTSSprechen();
+}
 
 function psagaAudioStop() {
   if (psagaAutoTimer) { clearTimeout(psagaAutoTimer); psagaAutoTimer = null; }
@@ -8654,10 +10529,14 @@ function psagaTTSSprechen() {
   if (!psagaTTSAktiv || !psagaAktivesModul) return;
   psagaAudioStop();
 
-  // Modul mit Original-MP3-Tonspur: aus PPTX extrahierte Audio-Dateien abspielen
+  // MP3 aus Supabase Storage abspielen (DE oder EN)
   if (psagaAktivesModul.hasAudio) {
-    const nr = String(psagaAktuelleFolie).padStart(2, '0');
-    const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${psagaAktivesModul.pfad}/audio-${nr}.mp3`;
+    const nr      = String(psagaAktuelleFolie).padStart(2, '0');
+    // EN: Ordner = Modul-ID + '-en' | DE: Original-Pfad (aus PPTX)
+    const ordner  = psagaSprache === 'en'
+      ? `${psagaAktivesModul.id}-en`
+      : psagaAktivesModul.pfad;
+    const url = `${SUPABASE_URL}/storage/v1/object/public/schulung-folien/${ordner}/audio-${nr}.mp3`;
     if (!psagaAudioEl) {
       psagaAudioEl = document.createElement('audio');
       psagaAudioEl.style.display = 'none';
@@ -8674,7 +10553,7 @@ function psagaTTSSprechen() {
     return;
   }
 
-  // Modul 01+: Web Speech API
+  // Fallback: Web Speech API (falls ein Modul kein hasAudio hat)
   if (!window.speechSynthesis) return;
   const texte = PSAGA_TTS_TEXTE && PSAGA_TTS_TEXTE[psagaAktivesModul.id];
   if (!texte) return;
@@ -8693,7 +10572,13 @@ function psagaFolienAnzeigen() {
   const zaehler = document.getElementById('psaga-folien-zaehler');
   const nextBtn = document.getElementById('psaga-folien-next-btn');
   const progBar = document.getElementById('psaga-progress-bar');
-  if (bild)    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
+  if (bild) {
+    // Spinner einblenden, Bild ausblenden bis geladen
+    const spinner = document.getElementById('psaga-folien-spinner');
+    if (spinner) spinner.style.display = 'flex';
+    bild.style.opacity = '0';
+    bild.src = psagaFolienUrl(psagaAktivesModul, psagaAktuelleFolie);
+  }
   if (titel)   titel.textContent = psagaAktivesModul.titel;
   if (zaehler) zaehler.textContent = `Folie ${psagaAktuelleFolie} von ${psagaAktivesModul.folien}`;
   if (progBar) progBar.style.width = `${Math.round(psagaAktuelleFolie / psagaAktivesModul.folien * 100)}%`;
@@ -8945,14 +10830,69 @@ function psagaFolienSchliessen() {
   psagaAutoPause = false;
   psagaAudioStop();
   psagaTTSAktiv = false;
+  psagaSprache = 'de';  // Sprache bei Schließen auf DE zurücksetzen
+  window._psagaAdminModus = false;  // Admin-Modus zurücksetzen
   const btn = document.getElementById('psaga-tts-btn');
   if (btn) btn.textContent = '🔊 Ton';
+  const langBtn = document.getElementById('psaga-lang-btn');
+  if (langBtn) langBtn.textContent = '🇩🇪 DE';
   const modal = document.getElementById('psaga-folien-modal');
   if (modal) {
     modal.style.display = 'none';
     document.body.style.overflow = '';
   }
   psagaAktivesModul = null;
+}
+
+// ── PSAgA Admin-Vorschau & Als-MA-Testen ──────────────────────────────────────
+
+// Vorschau: Erstes Modul direkt öffnen ohne Sperr-Prüfung (Admin-Modus)
+function psagaAdminVorschau() {
+  const erstesModul = PSAGA_MODULE[0];
+  if (!erstesModul) return;
+  psagaAktivesModul = erstesModul;
+  psagaAktuelleFolie = 1;
+  psagaAutoModus = false;
+  psagaAutoPause = false;
+  psagaTTSAktiv = false;
+  psagaSprache = 'de';
+  const ttsBtn = document.getElementById('psaga-tts-btn');
+  if (ttsBtn) ttsBtn.textContent = '🔊 Ton';
+  // Sprachbuttons zurücksetzen
+  psagaSprachWechseln('de');
+  // Erst Modal öffnen, dann Folien rendern (DOM muss sichtbar sein)
+  // Modal zu body verschieben damit position:fixed auch im Admin-Screen greift
+  const modal = document.getElementById('psaga-folien-modal');
+  if (modal) {
+    if (modal.parentElement !== document.body) document.body.appendChild(modal);
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+  psagaAutoButtonUpdate();
+  psagaFolienAnzeigen();
+  showToast('👁 Admin-Vorschau — Modul 00', '#166534');
+}
+
+// Als MA testen: vollständige MA-Ansicht mit PSAgA-Modulübersicht
+function psagaAlsMaSpielen() {
+  // Admin-Vorschau-Flag setzen (unterdrückt Sperr-Prüfung in psagaFolienOeffnen)
+  window._psagaAdminModus = true;
+  // PSAgA-Container im MA-Bereich aufklappen
+  const cont = document.getElementById('psaga-schulungen-container');
+  const pfeil = document.getElementById('psaga-schulungen-pfeil');
+  if (cont) {
+    cont.style.display = 'block';
+    if (pfeil) pfeil.style.transform = 'rotate(180deg)';
+    psagaSchulungenRender();
+  }
+  // Zum MA-Screen wechseln
+  showScreen('screen-mitarbeiter');
+  setTimeout(() => {
+    const psagaBtn = document.getElementById('btn-psaga-toggle') ||
+                     document.querySelector('[onclick*="psagaToggle"]');
+    if (psagaBtn) psagaBtn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, 300);
+  showToast('🔍 Vorschau-Modus: PSAgA als Mitarbeiter', '#166534');
 }
 
 // Keyboard-Navigation für Folien-Viewer
@@ -9204,21 +11144,20 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
           user_id: userId,
           user_name: userName,
           tenant_id: tenantId || null,
-          datum: datum.toISOString().slice(0,10),
-          ablauf: ablauf.toISOString().slice(0,10),
+          ausstellungsdatum: datum.toISOString().slice(0,10),
           bescheinigungs_nr: zertNr,
           pdf_url: publicUrl,
           erstellt_am: new Date().toISOString()
         });
         showToast('🗄️ Bescheinigung gespeichert', '#0f5132');
       } catch(dbErr) {
-        // Tabelle existiert noch nicht → nur Audit-Log
-        await sbAudit('PSAGA_BESCHEINIGUNG', JSON.stringify({
-          user_id: userId, user_name: userName, tenant_id: tenantId,
-          datum: datum.toISOString().slice(0,10), nr: zertNr, pdf_url: publicUrl
-        })).catch(()=>{});
-        showToast('🗄️ Bescheinigung in Audit gespeichert', '#2563eb');
+        console.warn('psaga_bescheinigungen Speicherung fehlgeschlagen:', dbErr.message);
       }
+      // Audit-Eintrag IMMER schreiben (manipulationssichere Protokollierung)
+      await sbAudit('PSAGA_BESCHEINIGUNG', JSON.stringify({
+        user_id: userId, user_name: userName, tenant_id: tenantId,
+        datum: datum.toISOString().slice(0,10), nr: zertNr, pdf_url: publicUrl
+      })).catch(()=>{});
     } catch(uploadErr) {
       console.warn('Bescheinigung-Upload fehlgeschlagen:', uploadErr.message);
       showToast('⚠️ PDF geöffnet, aber Speicherung fehlgeschlagen: ' + uploadErr.message, '#b45309');
@@ -9228,3 +11167,3854 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf) {
     showToast('⚠️ Zertifikat konnte nicht erstellt werden: ' + e.message, '#7f1d1d');
   }
 }
+
+// ══════════════════════════════════════════════════════════════
+// ── HUBARBEITSBÜHNEN SCHULUNG — DGUV 308-008 ─────────────────
+// ── 14 Kapitel (4 Module) + 10-Fragen-Quiz + Bescheinigung ──
+// ══════════════════════════════════════════════════════════════
+
+// ══════════════════════════════════════════════════════════
+// HUB-SCHULUNG Übersetzungen — EN / TR / AR
+// Kapitel-Titel, Kapitel-Inhalt (plain), Quiz-Fragen, UI-Labels
+// ══════════════════════════════════════════════════════════
+
+const HUB_SPRACHEN = [
+  { code: 'de', label: 'Deutsch',  flag: '🇩🇪' },
+  { code: 'en', label: 'English',  flag: '🇬🇧' },
+  { code: 'tr', label: 'Türkçe',   flag: '🇹🇷' },
+  { code: 'ar', label: 'العربية',  flag: '🇸🇦', rtl: true },
+];
+
+let hubSprache = localStorage.getItem('hub_sprache') || 'de';
+
+// ── Kapitel-Titel ─────────────────────────────────────────
+const HUB_TITEL_I18N = {
+  'hub-01': { en: 'Legal Foundations & Duties',           tr: 'Yasal Temeller ve Yükümlülükler',       ar: 'الأسس القانونية والواجبات' },
+  'hub-02': { en: 'Responsibility & Liability',           tr: 'Sorumluluk ve Yükümlülük',              ar: 'المسؤولية والالتزام' },
+  'hub-03': { en: 'Platform Types & Categories',          tr: 'Platform Türleri ve Kategorileri',      ar: 'أنواع المنصات وفئاتها' },
+  'hub-04': { en: 'Safety Devices',                       tr: 'Güvenlik Ekipmanları',                  ar: 'أجهزة السلامة' },
+  'hub-05': { en: 'PPE — Personal Protective Equipment',  tr: 'KKD — Kişisel Koruyucu Donanım',       ar: 'معدات الحماية الشخصية' },
+  'hub-06': { en: 'Understanding the Load Chart',         tr: 'Yük Diyagramını Anlama',                ar: 'فهم مخطط الأحمال' },
+  'hub-07': { en: 'Ground & Stability',                   tr: 'Zemin ve Kararlılık',                   ar: 'الأرضية والاستقرار' },
+  'hub-08': { en: 'Wind Hazards',                         tr: 'Rüzgar Tehlikeleri',                    ar: 'مخاطر الرياح' },
+  'hub-09': { en: 'Safety Distances to Power Lines',      tr: 'Elektrik Hatlarına Güvenli Mesafe',     ar: 'مسافات الأمان من خطوط الكهرباء' },
+  'hub-10': { en: 'Daily Visual & Functional Check',      tr: 'Günlük Görsel ve Fonksiyon Kontrolü',   ar: 'الفحص اليومي البصري والوظيفي' },
+  'hub-11': { en: 'Safe Setup of the Platform',           tr: 'Platformun Güvenli Kurulumu',           ar: 'الإعداد الآمن للمنصة' },
+  'hub-12': { en: 'Prohibited Actions',                   tr: 'Yasaklanan Eylemler',                   ar: 'الإجراءات المحظورة' },
+  'hub-13': { en: 'Emergency Lowering — When All Else Fails', tr: 'Acil İniş — Her Şey Başarısız Olduğunda', ar: 'الخفض الطارئ — عند تعطل كل شيء' },
+  'hub-14': { en: 'Test & Work Order — Summary',          tr: 'Sınav ve Sürüş Emri — Özet',           ar: 'الاختبار وأمر العمل — ملخص' },
+  'hub-15': { en: 'Operating Instructions — Safe Operation', tr: 'İşletme Talimatları — Güvenli Çalışma', ar: 'تعليمات التشغيل — التشغيل الآمن' },
+};
+
+// ── Kapitel-Inhalt (plain text, wird unter den deutschen HTML-Inhalt gesetzt) ──
+const HUB_INHALT_I18N = {
+  'hub-01': {
+    en: `<p>Operating aerial work platforms is subject to strict legal requirements: <strong>§ 12 ArbSchG</strong> (duty to instruct), <strong>BetrSichV</strong> (only qualified persons may operate), <strong>DGUV 308-008</strong> (training & authorization). No driver's license is required — but the operator needs three things:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Training</div><div style="font-size:.72rem;color:#2563a8">Theory + Practice passed</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Fitness</div><div style="font-size:.72rem;color:#2563a8">Occupational health clearance</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Work Order</div><div style="font-size:.72rem;color:#2563a8">Written authorization</div></div>
+    </div>`,
+    tr: `<p>Yüksek erişim platformlarının kullanımı katı yasal gerekliliklere tabidir: <strong>§ 12 ArbSchG</strong> (eğitim yükümlülüğü), <strong>BetrSichV</strong> (sadece eğitimli kişiler kullanabilir), <strong>DGUV 308-008</strong> (eğitim ve yetkilendirme). Ehliyet gerekmez — ancak operatörün üç şeye ihtiyacı vardır:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Eğitim</div><div style="font-size:.72rem;color:#2563a8">Teori + Pratik geçildi</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-size:.72rem;color:#2563a8"><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Sağlık Uygunluğu</div>İş sağlığı muayenesi</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Sürüş Emri</div><div style="font-size:.72rem;color:#2563a8">Yazılı yetkilendirme</div></div>
+    </div>`,
+    ar: `<p>يخضع تشغيل منصات العمل الارتفاعية لمتطلبات قانونية صارمة: <strong>§ 12 ArbSchG</strong> (التزام التدريب)، <strong>BetrSichV</strong> (الأشخاص المؤهلون فقط)، <strong>DGUV 308-008</strong> (التدريب والتفويض). لا يلزم رخصة قيادة — لكن المشغّل يحتاج ثلاثة أشياء:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">📚</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">التدريب</div><div style="font-size:.72rem;color:#2563a8">نظري + عملي</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">🏥</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">اللياقة الصحية</div><div style="font-size:.72rem;color:#2563a8">الفحص الطبي المهني</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center"><div style="font-size:1.4rem">✍️</div><div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">أمر العمل</div><div style="font-size:.72rem;color:#2563a8">تفويض خطي</div></div>
+    </div>`,
+  },
+  'hub-02': {
+    en: `<p>In case of an accident, two levels of liability apply:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Employer / Supervisor</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Bears <strong>organizational responsibility</strong>: selecting qualified persons, providing safe equipment, ensuring training and authorization.</div></div>
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 Operator (You!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px">Bears <strong>operational responsibility</strong>: personal liability for gross negligence, ignoring prohibitions or alcohol at work.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ The written work order from the employer is <strong>mandatory</strong> — training alone is not sufficient!</p>`,
+    tr: `<p>Bir kaza durumunda iki düzey sorumluluk geçerlidir:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 İşveren / Amir</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>Organizasyonel sorumluluk</strong>: Nitelikli kişilerin seçimi, güvenli ekipman temini, eğitim ve yetkilendirme.</div></div>
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 Operatör (Siz!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>Uygulama sorumluluğu</strong>: Ağır ihmal, yasakları çiğneme veya işyerinde alkol durumunda kişisel sorumluluk.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ İşverenin yazılı sürüş emri <strong>zorunludur</strong> — yalnızca eğitim yeterli değildir!</p>`,
+    ar: `<p>في حالة وقوع حادث، تنطبق مستويان من المسؤولية:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 صاحب العمل / المشرف</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px"><strong>المسؤولية التنظيمية</strong>: اختيار الأشخاص المؤهلين، توفير معدات آمنة، ضمان التدريب والتفويض.</div></div>
+      <div style="background:#dbeafe;border-right:4px solid #3b82f6;border-radius:6px;padding:10px 14px"><div style="font-weight:700;font-size:.88rem;color:#1e40af">👤 المشغّل (أنت!)</div><div style="font-size:.8rem;color:#78350f;margin-top:4px"><strong>المسؤولية التنفيذية</strong>: المسؤولية الشخصية عن الإهمال الجسيم، تجاهل المحظورات، أو الكحول في العمل.</div></div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px;direction:rtl">⚠️ أمر العمل الكتابي من صاحب العمل <strong>إلزامي</strong> — التدريب وحده غير كافٍ!</p>`,
+  },
+  'hub-03': {
+    en: `<p>Aerial work platforms are categorized by their movement type:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Group A — Vertical lift</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Center of gravity always <strong>within</strong> the tipping edges. Examples: scissor lifts, personnel lifts</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Group B — Boom Lifts</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">Basket can be moved <strong>outside</strong> the tipping edges. Examples: telescopic, articulating, truck-mounted booms.<br><strong>⚠️ PPE mandatory!</strong></div></div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Drive types:</strong><br>• <strong>Type 1</strong> — Drive only in transport position (platform down)<br>• <strong>Type 3</strong> — Drive with raised platform from the basket</div>`,
+    tr: `<p>Yüksek erişim platformları hareket türlerine göre sınıflandırılır:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Grup A — Dikey Kaldırma</div><div style="font-size:.8rem;color:#075985;margin-top:4px">Ağırlık merkezi devrilme kenarları <strong>içinde</strong> kalır. Örnekler: makaslı platformlar, personel asansörleri</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Grup B — Bomlu Platformlar</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">Sepet devrilme kenarlarının <strong>dışına</strong> çıkabilir. Örnekler: teleskopik, mafsallı, kamyon üstü platformlar.<br><strong>⚠️ KKD zorunludur!</strong></div></div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem"><strong>Sürüş tipleri:</strong><br>• <strong>Tip 1</strong> — Sadece taşıma konumunda sürüş (platform aşağıda)<br>• <strong>Tip 3</strong> — Sepetten yükseltilmiş platformla sürüş</div>`,
+    ar: `<p>تُصنَّف منصات العمل الارتفاعية حسب نوع حركتها:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0;direction:rtl">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 المجموعة أ — الرفع الرأسي</div><div style="font-size:.8rem;color:#075985;margin-top:4px">مركز الثقل دائماً <strong>داخل</strong> حواف الانقلاب. أمثلة: مقصات الرفع، مصاعد الأشخاص</div></div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px"><div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 المجموعة ب — الذراع المتمددة</div><div style="font-size:.8rem;color:#2563a8;margin-top:4px">يمكن تحريك السلة <strong>خارج</strong> حواف الانقلاب.<br><strong>⚠️ معدات الحماية إلزامية!</strong></div></div>
+    </div>`,
+  },
+  'hub-04': {
+    en: `<p>These safety devices must be checked before every use:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">Emergency Stop</div><div style="font-size:.78rem;color:#166534">Immediately stops all functions — at ground AND in basket. Test both!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">Tilt Sensor</div><div style="font-size:.78rem;color:#854d0e">Acoustic/visual alarm or shutdown when platform is too tilted.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Overload Indicator</div><div style="font-size:.78rem;color:#1d4ed8">Blocks lifting function when allowable basket weight is exceeded.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">Dead Man Switch</div><div style="font-size:.78rem;color:#6b21a8">Controls only react when actively pressed — immediate stop when released.</div></div></div>
+    </div>`,
+    tr: `<p>Bu güvenlik ekipmanları her kullanımdan önce kontrol edilmelidir:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">Acil Stop</div><div style="font-size:.78rem;color:#166534">Tüm fonksiyonları anında durdurur — zeminde VE sepette. Her ikisini de test edin!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">Eğim Sensörü</div><div style="font-size:.78rem;color:#854d0e">Platform fazla eğik olduğunda sesli/görsel alarm veya kapanma.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Aşırı Yük Göstergesi</div><div style="font-size:.78rem;color:#1d4ed8">Sepetteki izin verilen ağırlık aşıldığında kaldırma fonksiyonunu bloke eder.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">Ölü Adam Anahtarı</div><div style="font-size:.78rem;color:#6b21a8">Kontroller yalnızca aktif basıldığında çalışır — bırakıldığında anında durur.</div></div></div>
+    </div>`,
+    ar: `<p>يجب فحص أجهزة السلامة هذه قبل كل استخدام:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;direction:rtl">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🔴</span><div><div style="font-weight:700;font-size:.85rem;color:#14532d">زر الإيقاف الطارئ</div><div style="font-size:.78rem;color:#166534">يوقف جميع الوظائف فوراً — في الأرض وفي السلة. اختبر كليهما!</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">📐</span><div><div style="font-weight:700;font-size:.85rem;color:#713f12">مستشعر الميل</div><div style="font-size:.78rem;color:#854d0e">إنذار صوتي/بصري أو إيقاف عند ميل المنصة أكثر من اللازم.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">⚖️</span><div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">مؤشر الحمل الزائد</div><div style="font-size:.78rem;color:#1d4ed8">يحظر وظيفة الرفع عند تجاوز الوزن المسموح به في السلة.</div></div></div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px"><span style="font-size:1.2rem;flex-shrink:0">🖐️</span><div><div style="font-weight:700;font-size:.85rem;color:#581c87">مفتاح الرجل الميت</div><div style="font-size:.78rem;color:#6b21a8">تعمل عناصر التحكم فقط عند الضغط النشط — توقف فوري عند الإفلات.</div></div></div>
+    </div>`,
+  },
+  'hub-05': {
+    en: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ MANDATORY for Group B (Boom Lifts)!</div><div style="font-size:.8rem;opacity:.9">Full body harness + short fall arrester — always wear it!</div></div>
+    <p><strong>Why PPE in aerial work platforms?</strong></p>
+    <p style="font-size:.85rem">The <strong>"whiplash effect"</strong>: On telescopic and articulating boom lifts, vibrations from uneven ground can set the long arm oscillating and catapult the operator out of the basket.</p>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Key Rules:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ Attach <strong>only</strong> to designated, marked anchor points in the basket</div><div>✅ Short restraint system — no long shock absorber in the basket</div><div>✅ Put on harness <strong>before</strong> the platform moves</div></div></div>`,
+    tr: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ Grup B (Bomlu Platformlar) için ZORUNLUDUR!</div><div style="font-size:.8rem;opacity:.9">Tam vücut emniyet kemeri + kısa düşüş önleyici — her zaman takın!</div></div>
+    <p><strong>Yüksek erişim platformlarında neden KKD?</strong></p>
+    <p style="font-size:.85rem"><strong>"Kırbaç etkisi"</strong>: Teleskopik ve mafsallı platformlarda zemin engebelerinden kaynaklanan titreşimler uzun kolu sallayabilir ve operatörü sepetten fırlatabiliricek.</p>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px"><div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Önemli Kurallar:</div><div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px"><div>✅ <strong>Yalnızca</strong> sepetteki işaretlenmiş bağlantı noktalarına bağlayın</div><div>✅ Kısa tutma sistemi — sepette uzun şok emici kullanmayın</div><div>✅ Platform hareket etmeden <strong>önce</strong> kemeri giyin</div></div></div>`,
+    ar: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ إلزامي للمجموعة ب (ذراع الرفع)!</div><div style="font-size:.8rem;opacity:.9">حزام الجسم الكامل + جهاز إيقاف السقوط القصير — ارتده دائماً!</div></div>
+    <p style="direction:rtl"><strong>لماذا معدات الحماية في منصات العمل الارتفاعية؟</strong></p>
+    <p style="font-size:.85rem;direction:rtl"><strong>"تأثير السوط"</strong>: في منصات الذراع التلسكوبية، يمكن للاهتزازات الناتجة عن الأرض الوعرة أن تجعل الذراع الطويل يتأرجح ويقذف المشغّل خارج السلة.</p>`,
+  },
+  'hub-06': {
+    en: `<p>The load chart shows: <strong>The further the arm extends, the lower the load capacity!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem"><div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Chart structure:</div><div style="display:flex;flex-direction:column;gap:4px;color:#475569"><div>📏 <strong>Y-axis (vertical)</strong> — Working height in meters</div><div>📐 <strong>X-axis (horizontal)</strong> — Lateral reach in meters</div><div>〰️ <strong>Curves</strong> — Weight zone limits: Zone 1 = 300 kg | Zone 3 = 100 kg</div></div></div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Never:</div><div style="color:#7f1d1d">• Exceed load capacity (person + tools + materials = total weight!)<br>• Load heavy parts from outside (e.g. from roof) while elevated</div></div>`,
+    tr: `<p>Yük diyagramı şunu gösterir: <strong>Kol ne kadar uzarsa, taşıma kapasitesi o kadar düşer!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem"><div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Diyagram yapısı:</div><div style="display:flex;flex-direction:column;gap:4px;color:#475569"><div>📏 <strong>Y ekseni (dikey)</strong> — Metre cinsinden çalışma yüksekliği</div><div>📐 <strong>X ekseni (yatay)</strong> — Metre cinsinden yanal erişim</div><div>〰️ <strong>Eğriler</strong> — Ağırlık bölgesi limitleri: Bölge 1 = 300 kg | Bölge 3 = 100 kg</div></div></div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Asla:</div><div style="color:#7f1d1d">• Taşıma kapasitesini aşmayın (kişi + alet + malzeme = toplam ağırlık!)<br>• Yüksekte iken dışarıdan ağır parça yüklemeyin</div></div>`,
+    ar: `<p style="direction:rtl">يُظهر مخطط الأحمال: <strong>كلما امتد الذراع أكثر، قلّت قدرة التحميل!</strong></p>
+    <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem;direction:rtl"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ لا تفعل أبداً:</div><div style="color:#7f1d1d">• تجاوز قدرة التحميل (شخص + أدوات + مواد = الوزن الإجمالي!)<br>• تحميل أجزاء ثقيلة من الخارج أثناء الارتفاع</div></div>`,
+  },
+  'hub-07': {
+    en: `<p>The ground is the foundation of safety — incorrect positioning leads directly to tipping!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Hazard sources:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Manhole covers · Fresh fill · Undermining · Underground parking ceilings · Basement entrances</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Protective measures:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• Always use <strong>outrigger pads</strong> for load distribution<br>• Strictly observe manufacturer's tilt limits<br>• Fully extend all outriggers + level platform horizontally<br>• Green indicator = safe · Red indicator = no operation!</div></div>
+    </div>`,
+    tr: `<p>Zemin güvenliğin temelidir — yanlış konumlandırma doğrudan devrilmeye yol açar!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Tehlike kaynakları:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Rögar kapakları · Taze dolgu · Zemin çökmesi · Otopark tavanları · Bodrum girişleri</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Koruyucu önlemler:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• Yük dağıtımı için her zaman <strong>dayak plakaları</strong> kullanın<br>• Üretici eğim sınırlarına kesinlikle uyun<br>• Tüm destekleri tam açın + platformu yatay hizalayın<br>• Yeşil ışık = güvenli · Kırmızı ışık = çalışma yasak!</div></div>
+    </div>`,
+    ar: `<p style="direction:rtl">الأرض هي أساس السلامة — الوضع الخاطئ يؤدي مباشرة إلى الانقلاب!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0;direction:rtl">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ مصادر الخطر:</div><div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">أغطية مجاري · تربة مردومة حديثاً · تجاويف تحت الأرض · أسقف مواقف السيارات · مداخل الأقبية</div></div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px"><div style="font-weight:700;font-size:.85rem;color:#14532d">✅ التدابير الوقائية:</div><div style="font-size:.8rem;color:#166534;margin-top:4px">• استخدم دائماً <strong>ألواح التحميل</strong> لتوزيع الحمل<br>• التزم بحدود ميل الشركة المصنعة<br>• مدّد جميع الدعائم بالكامل + تسوية المنصة أفقياً<br>• المؤشر الأخضر = آمن · المؤشر الأحمر = ممنوع التشغيل!</div></div>
+    </div>`,
+  },
+  'hub-08': {
+    en: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">💨 Max. wind speed: 12.5 m/s (Beaufort 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">If exceeded: IMMEDIATELY stop work and lower platform!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>Wind at height</strong> is significantly stronger than at ground level — always use the wind meter, not personal perception!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>Sail effect ban:</strong> No tarps, signs or boards in the basket — massively increases tipping risk!</div>
+      <div style="padding:8px 12px;background:#fffbeb;border-radius:7px">📋 <strong>Manufacturer specifications</strong> in the manual always override the standard value of 12.5 m/s!</div>
+    </div>`,
+    tr: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">💨 Maks. rüzgar hızı: 12,5 m/s (Beaufort 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Aşılırsa: HEMEN çalışmayı durdurun ve platformu indirin!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>Yüksekte rüzgar</strong> yerden çok daha güçlüdür — kişisel algı değil, her zaman rüzgar ölçerini kullanın!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>Yelken etkisi yasağı:</strong> Sepete branda, tabela veya tahta koymayın — devrilme riskini büyük ölçüde artırır!</div>
+    </div>`,
+    ar: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">💨 أقصى سرعة للرياح: 12.5 م/ث (قوة 6)</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">في حالة التجاوز: أوقف العمل فوراً وانزل بالمنصة!</div></div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px;direction:rtl">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">⚠️ <strong>الرياح في الارتفاع</strong> أشد بكثير من السطح — استخدم دائماً مقياس الرياح وليس التقدير الشخصي!</div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">❌ <strong>حظر تأثير الشراع:</strong> لا توضع ستائر أو لافتات أو ألواح في السلة — يزيد خطر الانقلاب!</div>
+    </div>`,
+  },
+  'hub-09': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">LIFE THREATENING — electric shock and arc flash!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>Up to <strong>1,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>Over 1,000 to <strong>110,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>Over 110,000 to <strong>220,000 V</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4.0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ Unknown voltage</strong></div><div style="font-weight:700;font-size:1rem">≥ 5.0 m</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">ELEKTRİK ÇARPMASI VE ELEKTRİK ARKI ÖLÜMCÜLDÜR!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>1.000 V'a kadar</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>1.000 - 110.000 V arası</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>110.000 - 220.000 V arası</div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4,0 m</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ Bilinmeyen gerilim</strong></div><div style="font-weight:700;font-size:1rem">≥ 5,0 m</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center;direction:rtl"><div style="font-size:1.5rem">⚡</div><div style="font-weight:700;font-size:.95rem">خطر مميت — صعقة كهربائية وقوس كهربائي!</div></div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem;direction:rtl">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px"><div>حتى <strong>1,000 فولت</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1.0 م</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px"><div>فوق 1,000 حتى <strong>110,000 فولت</strong></div><div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3.0 م</div></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff"><div><strong>⚠️ جهد غير معروف</strong></div><div style="font-weight:700;font-size:1rem">≥ 5.0 م</div></div>
+    </div>`,
+  },
+  'hub-10': {
+    en: `<p>Mandatory before every work shift — per DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hydraulic hoses and cylinders for leaks','Tires for damage, foreign objects and pressure','Overall condition: cracks in steel, deformations, loose bolts','Railing and basket latch intact?','Emergency stop at ground AND basket – test both','Emergency lowering device – check function','Warning devices: horn, beacon, reversing alarm','Dead man switch: responds when released?','PPE anchor points in basket undamaged?','Inspection sticker valid?','Wind speed below manufacturer limit?','Outrigger pads available and ready?'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+    tr: `<p>Her iş vardiyasından önce zorunlu — DGUV 308-008 gereği!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hidrolik hortumlar ve silindirler sızıntı için','Lastikler hasar, yabancı cisim ve basınç için','Genel durum: çelikte çatlaklar, deformasyonlar, gevşek cıvatalar','Korkuluk ve sepet kilidi sağlam mı?','Zeminde VE sepette acil stop — her ikisini test edin','Acil iniş cihazı — işlevini kontrol edin','Uyarı cihazları: korna, flaşör, geri vites alarmı','Ölü adam anahtarı: bırakıldığında tepki veriyor mu?','Sepetteki KKD bağlantı noktaları hasarsız mı?','Muayene etiketi geçerli mi?','Rüzgar hızı üretici limitinin altında mı?','Dayak plakaları mevcut ve hazır mı?'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">إلزامي قبل كل وردية عمل — وفقاً لـ DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px;direction:rtl">
+      ${['خراطيم هيدروليكية وأسطوانات للتسرب','الإطارات للتلف والأجسام الغريبة والضغط','الحالة العامة: شقوق في الفولاذ، تشوهات، براغي مفكوكة','درابزين وقفل السلة سليمان؟','زر الإيقاف الطارئ في الأرض والسلة — اختبر كليهما','جهاز الخفض الطارئ — تحقق من الوظيفة','أجهزة التحذير: البوق، الإضاءة الوامضة، إنذار التراجع','مفتاح الرجل الميت: يستجيب عند الإفلات؟','نقاط ربط معدات الحماية في السلة سليمة؟','ملصق الفحص صالح؟','سرعة الرياح أقل من حد الشركة المصنعة؟','ألواح الدعم متوفرة وجاهزة؟'].map(p=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px"><span style="color:#059669;flex-shrink:0">✓</span><span>${p}</span></div>`).join('')}
+    </div>`,
+  },
+  'hub-11': {
+    en: `<p>Correct setup is critical for stability:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[['Check surroundings','Set up barriers, assess ground load capacity (manholes, voids, slopes)'],['Lay outrigger pads','Always use large-area outrigger pads under supports — distributes point load!'],['Extend outriggers','Extend all 4 outriggers fully — never stop halfway'],['Level','Align platform exactly horizontal until green indicator lights up'],['Check release','Only begin lifting with green indicator and secure stance']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+    tr: `<p>Doğru kurulum stabilite için kritiktir:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[['Çevreyi kontrol et','Bariyerler kur, zemin taşıma kapasitesini değerlendir (rögarlar, boşluklar, eğimler)'],['Dayak plakaları yerleştir','Desteklerin altına her zaman geniş dayak plakaları koy — nokta yükü dağıtır!'],['Destekleri aç','4 desteği de tamamen aç — yarıda bırakma'],['Hizala','Yeşil gösterge yanana kadar platformu tam yatay hizala'],['Onayı kontrol et','Yeşil gösterge ve güvenli duruşla kaldırmaya başla']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">الإعداد الصحيح أمر حيوي للاستقرار:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem;direction:rtl">
+      ${[['فحص المحيط','ضع حواجز، قيّم قدرة تحمل الأرض (فتحات الصرف، التجاويف، المنحدرات)'],['وضع ألواح الدعم','استخدم دائماً ألواح دعم واسعة تحت الدعائم — لتوزيع الحمل!'],['مد الدعائم','مدّ جميع الدعائم الأربعة بالكامل — لا تتوقف في منتصف الطريق'],['التسوية','اضبط المنصة أفقياً تماماً حتى يضيء المؤشر الأخضر'],['فحص التحرير','ابدأ الرفع فقط عند المؤشر الأخضر والموقف الآمن']].map(([t,d])=>`<div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px"><span style="font-size:1rem;flex-shrink:0">✅</span><div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div></div>`).join('')}
+    </div>`,
+  },
+  'hub-12': {
+    en: `<p>These actions create immediate accident risk and are <strong>absolutely prohibited</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${['Exceeding maximum load capacity (person + tools + materials!)','Leaving or entering the basket while elevated (no climbing onto roofs/scaffolding)','Raising the standing position with ladders, crates or standing on the railing','Attaching tarps, signs or boards (sail effect → tipping risk!)','Bypassing or manipulating safety devices','Retracting outriggers with basket raised','Operating in excess wind speed','Violating minimum distances to power lines','Operating without a valid inspection sticker'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+    tr: `<p>Bu eylemler ani kaza riski yaratır ve <strong>kesinlikle yasaktır</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${['Maksimum taşıma kapasitesini aşmak (kişi + alet + malzeme!)','Yüksekte iken sepetten çıkmak veya girmek (çatılara/iskelelere geçiş yok)','Merdiven, sandık veya korkuluğa ayakta durarak yükseltmek','Branda, tabela veya tahta asmak (yelken etkisi → devrilme riski!)','Güvenlik ekipmanlarını atlatmak veya manipüle etmek','Sepet kaldırıkken destekleri geri çekmek','Rüzgar hızı aşıldığında çalışmak','Elektrik hatlarına minimum mesafeyi ihlal etmek','Geçerli muayene etiketi olmadan çalışmak'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+    ar: `<p style="direction:rtl">هذه الإجراءات تخلق خطر حادث فوري و<strong>محظورة تماماً</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem;direction:rtl">
+      ${['تجاوز الحمل الأقصى (شخص + أدوات + مواد!)','مغادرة أو دخول السلة في الارتفاع','رفع وضع الوقوف بسلالم أو صناديق','تثبيت ستائر أو لافتات أو ألواح (تأثير الشراع → خطر الانقلاب!)','تجاوز أجهزة السلامة أو التلاعب بها','سحب الدعائم مع سلة مرفوعة','التشغيل عند تجاوز سرعة الرياح','انتهاك المسافات الدنيا من خطوط الكهرباء','التشغيل بدون ملصق فحص صالح'].map(v=>`<div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-right:3px solid #dc2626;border-radius:6px"><span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span><span style="color:#7f1d1d">${v}</span></div>`).join('')}
+    </div>`,
+  },
+  'hub-13': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">🚨 EMERGENCY: Operator in basket unconscious!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Only the ground control can help now!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 Mandatory: Second trained person on the ground!</div><div style="color:#854d0e;margin-top:4px">At all times when operating aerial work platforms, a second person must be present who has been trained in emergency lowering.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ Emergency lowering procedure:</div><div style="color:#166534;margin-top:4px">1. Stay calm — do not use elevator<br>2. Open emergency lowering valve / ground control panel at machine base<br>3. Lower basket slowly and in a controlled manner<br>4. After lowering: call emergency services 112 and provide first aid</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 Emergency: 📞 112</div><div style="color:#1d4ed8;margin-top:2px">WHERE — WHAT — HOW MANY — WHO</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">🚨 ACİL DURUM: Sepetteki operatör bilinçsiz!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">Artık sadece zemin kontrolü yardımcı olabilir!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 Zorunlu: Zeminde ikinci eğitimli kişi!</div><div style="color:#854d0e;margin-top:4px">Yüksek erişim platformu çalışmalarında her zaman acil inişe eğitilmiş ikinci bir kişi bulunmalıdır.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ Acil iniş prosedürü:</div><div style="color:#166534;margin-top:4px">1. Sakin olun — asansör kullanmayın<br>2. Makine tabanındaki acil iniş vanasını / zemin kontrol panelini açın<br>3. Sepeti yavaş ve kontrollü indirin<br>4. İndirdikten sonra: 112'yi arayın ve ilk yardım yapın</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 Acil: 📞 112</div><div style="color:#1d4ed8;margin-top:2px">NEREDE — NE OLDU — KAÇ KİŞİ — KİM</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">🚨 طوارئ: المشغّل في السلة فاقد الوعي!</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">التحكم الأرضي فقط يمكنه المساعدة الآن!</div></div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem;direction:rtl">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px"><div style="font-weight:700;color:#713f12">📋 إلزامي: شخص ثانٍ مدرب على الأرض!</div><div style="color:#854d0e;margin-top:4px">يجب دائماً وجود شخص ثانٍ مُدرَّب على الخفض الطارئ.</div></div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px"><div style="font-weight:700;color:#14532d">✅ إجراء الخفض الطارئ:</div><div style="color:#166534;margin-top:4px">1. حافظ على هدوئك — لا تستخدم المصعد<br>2. افتح صمام الخفض الطارئ في قاعدة الآلة<br>3. اخفض السلة ببطء وبشكل منضبط<br>4. بعد الخفض: اتصل بـ 112 وقدّم الإسعافات الأولية</div></div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px"><div style="font-weight:700;color:#1e3a8a">💡 طوارئ: 📞 112</div></div>
+    </div>`,
+  },
+  'hub-14': {
+    en: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Ready for the quiz?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 questions · At least 70% to pass (7/10 points)</div></div>
+    <p style="font-size:.85rem"><strong>Validity of the operator's certificate:</strong><br>The certificate is valid for life — but requires an <strong>annual briefing</strong> at the workplace!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Checklist before the quiz:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ Know all 3 pillars (training, fitness, work order)</div><div>☑ Understand difference Group A / Group B</div><div>☑ Know PPE requirement for Group B</div><div>☑ Remember wind limit 12.5 m/s</div><div>☑ Know minimum distances to power lines</div><div>☑ Understand emergency lowering procedure</div></div></div>`,
+    tr: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px"><div style="font-weight:700;font-size:.95rem">✅ Quiz için hazır mısınız?</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 soru · Geçmek için en az %70 (10 üzerinden 7 puan)</div></div>
+    <p style="font-size:.85rem"><strong>Operatör sertifikasının geçerliliği:</strong><br>Sertifika ömür boyu geçerlidir — ancak işyerinde <strong>yıllık eğitim</strong> gerektirir!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Quiz öncesi kontrol listesi:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ 3 temel şartı bil (eğitim, uygunluk, sürüş emri)</div><div>☑ Grup A / Grup B farkını anla</div><div>☑ Grup B için KKD zorunluluğunu bil</div><div>☑ Rüzgar limiti 12,5 m/s'yi hatırla</div><div>☑ Elektrik hatlarına minimum mesafeleri bil</div><div>☑ Acil iniş prosedürünü anla</div></div></div>`,
+    ar: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;direction:rtl"><div style="font-weight:700;font-size:.95rem">✅ هل أنت مستعد للاختبار؟</div><div style="font-size:.8rem;opacity:.9;margin-top:4px">10 أسئلة · 70% على الأقل للنجاح</div></div>
+    <p style="font-size:.85rem;direction:rtl"><strong>صلاحية شهادة المشغّل:</strong><br>الشهادة صالحة مدى الحياة — لكنها تتطلب <strong>تدريباً سنوياً</strong> في مكان العمل!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem;direction:rtl"><div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 قائمة التحقق قبل الاختبار:</div><div style="display:flex;flex-direction:column;gap:3px;color:#166534"><div>☑ معرفة الركائز الثلاث (تدريب، لياقة، أمر عمل)</div><div>☑ فهم الفرق بين المجموعة أ/ب</div><div>☑ معرفة متطلبات معدات الحماية للمجموعة ب</div><div>☑ تذكر حد الرياح 12.5 م/ث</div><div>☑ معرفة المسافات الدنيا من خطوط الكهرباء</div><div>☑ فهم إجراء الخفض الطارئ</div></div></div>`,
+  },
+  'hub-15': {
+    en: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">Operating Instructions</div><div style="font-size:.75rem;opacity:.9">acc. § 9 BetrSichV · DGUV Rule 100-500 Ch. 2.10</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Hazards</div><div style="color:#7f1d1d">• Fall from basket (whiplash effect)<br>• Tipping due to inadequate ground or wind<br>• Crushing in slewing area<br>• Life-threatening electric shock from power lines<br>• Falling objects from basket</div></div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Protective Measures</div><div style="color:#166534">✅ Only persons with operator's certificate + written work order<br>✅ PPE (harness) for all boom lifts (Group B)<br>✅ Daily inspection before work<br>✅ Outriggers fully extended + outrigger pads + leveling<br>✅ Max. wind speed (standard 12.5 m/s)<br>✅ Min. 5 m distance to power lines (unknown voltage)</div></div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Prohibitions</div><div style="color:#7f1d1d">❌ Exceed load capacity<br>❌ Leave basket when raised<br>❌ Stand on railings or use ladders in basket<br>❌ Attach tarps/signs to basket<br>❌ Bypass safety devices<br>❌ Retract outriggers with basket raised</div></div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Emergency</div><div style="color:#78350f">⚠️ Malfunction → press emergency stop, secure machine<br>🚨 Basket control failed → ground person: activate emergency lowering!<br>📞 Emergency: 112 (WHERE – WHAT – HOW MANY – WHO)</div></div>
+    </div>`,
+    tr: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">İşletme Talimatı</div><div style="font-size:.75rem;opacity:.9">§ 9 BetrSichV · DGUV Kural 100-500 Böl. 2.10 uyarınca</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Tehlikeler</div><div style="color:#7f1d1d">• Sepetten düşme (kırbaç etkisi)<br>• Yetersiz zemin veya rüzgar nedeniyle devrilme<br>• Dönme alanında ezilme<br>• Elektrik hatlarından ölümcül elektrik çarpması<br>• Sepetten düşen nesneler</div></div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Koruyucu Önlemler</div><div style="color:#166534">✅ Sadece sertifikalı + yazılı sürüş emirli kişiler<br>✅ Tüm bomlu platformlarda KKD (emniyet kemeri)<br>✅ Çalışmadan önce günlük kontrol<br>✅ Destekler tam açık + plakalar + hizalama<br>✅ Max. rüzgar hızı (standart 12,5 m/s)<br>✅ Elektrik hatlarına min. 5 m mesafe</div></div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Yasaklar</div><div style="color:#7f1d1d">❌ Yük kapasitesini aşmak<br>❌ Sepeti kaldırıkken terk etmek<br>❌ Korkuluklara binmek veya sepette merdiven kullanmak<br>❌ Sepete branda/tabela asmak<br>❌ Güvenlik cihazlarını atlatmak<br>❌ Sepet kaldırıkken destekleri geri çekmek</div></div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Acil Durum</div><div style="color:#78350f">⚠️ Arıza → acil stop'a bas, makineyi güvenli hale getir<br>🚨 Sepet kontrolü arızalı → zemin kişisi: acil inişi etkinleştir!<br>📞 Acil: 112 (NEREDE – NE OLDU – KAÇ KİŞİ – KİM)</div></div>
+    </div>`,
+    ar: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px;direction:rtl"><span style="font-size:1.4rem">⚠️</span><div><div style="font-weight:700;font-size:.92rem">تعليمات التشغيل</div><div style="font-size:.75rem;opacity:.9">وفق § 9 BetrSichV</div></div></div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem;direction:rtl">
+      <div style="background:#fef2f2;border-right:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. المخاطر</div><div style="color:#7f1d1d">• السقوط من السلة<br>• الانقلاب بسبب الأرض أو الرياح<br>• السحق في منطقة الدوران<br>• صعقة كهربائية قاتلة من خطوط الكهرباء</div></div>
+      <div style="background:#f0fdf4;border-right:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#14532d;margin-bottom:4px">2. تدابير الحماية</div><div style="color:#166534">✅ فقط الأشخاص المعتمدون + أمر عمل خطي<br>✅ معدات الحماية لجميع منصات الذراع<br>✅ فحص يومي قبل العمل<br>✅ مد الدعائم بالكامل + ألواح + تسوية<br>✅ حد الرياح (12.5 م/ث)<br>✅ مسافة 5 م على الأقل من خطوط الكهرباء</div></div>
+      <div style="background:#fffbeb;border-right:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px"><div style="font-weight:700;color:#92400e;margin-bottom:4px">4. الطوارئ</div><div style="color:#78350f">🚨 تعطل التحكم بالسلة → الشخص الأرضي: فعّل الخفض الطارئ!<br>📞 طوارئ: 112</div></div>
+    </div>`,
+  },
+};
+
+// ── Quiz-Fragen (10 Stück) mit Übersetzungen ──────────────
+const HUB_QUIZ_I18N = [
+  {
+    richtig: 1,
+    frage: {
+      de: 'Welche drei Voraussetzungen muss ein Bediener von Hubarbeitsbühnen erfüllen?',
+      en: 'What three requirements must an aerial work platform operator fulfil?',
+      tr: 'Bir yüksek erişim platformu operatörünün karşılaması gereken üç ön koşul nedir?',
+      ar: 'ما هي الشروط الثلاثة التي يجب على مشغّل منصة العمل الارتفاعية استيفاؤها؟',
+    },
+    antworten: {
+      de: ['Amtlicher Führerschein, Mindestalter 21 Jahre, Vereinsmitgliedschaft','Ausbildung (Theorie + Praxis), arbeitsmedizinische Eignung und schriftlicher Fahrauftrag des Arbeitgebers','Nur die Schulung reicht aus — alles andere ist freiwillig','Berufserfahrung von mind. 2 Jahren und ein behördliches Zertifikat'],
+      en: ['Official driving licence, minimum age 21, club membership','Training (theory + practice), occupational health clearance and written work order from employer','Training alone is sufficient — everything else is optional','At least 2 years work experience and an official certificate'],
+      tr: ['Resmi sürücü belgesi, asgari 21 yaş, dernek üyeliği','Eğitim (teori + pratik), iş sağlığı uygunluğu ve işverenin yazılı sürüş emri','Sadece eğitim yeterlidir — diğer her şey isteğe bağlıdır','En az 2 yıl iş deneyimi ve resmi sertifika'],
+      ar: ['رخصة قيادة رسمية، الحد الأدنى للعمر 21 عاماً، عضوية نادي','التدريب (نظري + عملي)، اللياقة الطبية المهنية، وأمر عمل خطي من صاحب العمل','التدريب وحده يكفي — كل شيء آخر اختياري','خبرة عمل لا تقل عن سنتين وشهادة رسمية'],
+    },
+    erklaerung: {
+      de: 'Nach DGUV 308-008 sind alle drei Säulen zwingend: erfolgreiche Ausbildung, gesundheitliche Eignung (Höhentauglichkeit) und der schriftliche Fahrauftrag des Arbeitgebers.',
+      en: 'According to DGUV 308-008, all three pillars are mandatory: successful training, medical fitness (height suitability) and the written work order from the employer.',
+      tr: 'DGUV 308-008\'e göre üç temel zorunludur: başarılı eğitim, sağlık uygunluğu (yükseklik uygunluğu) ve işverenin yazılı sürüş emri.',
+      ar: 'وفقاً لـ DGUV 308-008، الركائز الثلاث إلزامية: التدريب الناجح، اللياقة الطبية، وأمر العمل الخطي من صاحب العمل.',
+    },
+  },
+  {
+    richtig: 1,
+    frage: {
+      de: 'Was unterscheidet Gruppe A von Gruppe B bei Hubarbeitsbühnen?',
+      en: 'What distinguishes Group A from Group B in aerial work platforms?',
+      tr: 'Yüksek erişim platformlarında Grup A ile Grup B arasındaki fark nedir?',
+      ar: 'ما الفرق بين المجموعة أ والمجموعة ب في منصات العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Gruppe A ist schwerer als Gruppe B','Bei Gruppe B (Boom-Lifts) kann der Korb außerhalb der Kippkanten bewegt werden — daher PSAgA-Pflicht','Gruppe A ist nur für den Innenbereich, Gruppe B für den Außenbereich','Der Unterschied liegt ausschließlich in der Farbgebung der Maschine'],
+      en: ['Group A is heavier than Group B','With Group B (boom lifts) the basket can be moved outside the tipping edges — hence PPE mandatory','Group A is only for indoor use, Group B for outdoor','The difference lies solely in the colour of the machine'],
+      tr: ['Grup A, Grup B\'den daha ağırdır','Grup B\'de (bomlu platformlar) sepet devrilme kenarlarının dışına çıkabilir — bu nedenle KKD zorunludur','Grup A sadece iç mekan, Grup B dış mekan içindir','Fark yalnızca makinenin rengindedir'],
+      ar: ['المجموعة أ أثقل من المجموعة ب','في المجموعة ب (الذراع المتمددة) يمكن تحريك السلة خارج حواف الانقلاب — لذا معدات الحماية إلزامية','المجموعة أ للداخل فقط، المجموعة ب للخارج','الفرق في لون الآلة فقط'],
+    },
+    erklaerung: {
+      de: 'Gruppe A (Scherenbühnen) bleibt stets innerhalb der Kippkanten. Bei Gruppe B (Teleskop-, Gelenk-, Lkw-Bühnen) kann der Schwerpunkt außerhalb liegen — daher höhere Kippgefahr und PSAgA-Pflicht.',
+      en: 'Group A (scissor lifts) always stays within the tipping edges. With Group B (telescopic, articulating, truck-mounted), the centre of gravity can be outside — hence higher tipping risk and PPE mandatory.',
+      tr: 'Grup A (makaslı platformlar) her zaman devrilme kenarları içinde kalır. Grup B\'de ağırlık merkezi dışında olabilir — bu nedenle daha yüksek devrilme riski ve KKD zorunluluğu.',
+      ar: 'المجموعة أ (مقصات الرفع) تبقى دائماً داخل حواف الانقلاب. في المجموعة ب يمكن أن يكون مركز الثقل خارجها — مما يزيد خطر الانقلاب ويجعل معدات الحماية إلزامية.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Ab welcher Windgeschwindigkeit muss der Betrieb einer Hubarbeitsbühne im Freien eingestellt werden?',
+      en: 'At what wind speed must operation of an outdoor aerial work platform be stopped?',
+      tr: 'Açık havada yüksek erişim platformunun çalışması hangi rüzgar hızında durdurulmalıdır?',
+      ar: 'عند أي سرعة رياح يجب إيقاف تشغيل منصة العمل الارتفاعية في الهواء الطلق؟',
+    },
+    antworten: {
+      de: ['Erst bei sichtbaren Sturmschäden an Gebäuden','20 m/s — das ist der gesetzliche Grenzwert','12,5 m/s (Windstärke 6) bzw. nach genauer Herstellerangabe','Der Bediener entscheidet das selbst nach eigenem Ermessen'],
+      en: ['Only when visible storm damage to buildings is visible','20 m/s — that is the legal limit','12.5 m/s (Beaufort 6) or according to exact manufacturer specification','The operator decides at their own discretion'],
+      tr: ['Ancak binalarda görünür fırtına hasarı olduğunda','20 m/s — bu yasal sınırdır','12,5 m/s (Beaufort 6) veya tam üretici spesifikasyonuna göre','Operatör kendi takdirine göre karar verir'],
+      ar: ['فقط عند ظهور أضرار العاصفة المرئية على المباني','20 م/ث — هذا هو الحد القانوني','12.5 م/ث (قوة 6) أو وفق مواصفات الشركة المصنعة بالضبط','المشغّل يقرر بنفسه وفق تقديره'],
+    },
+    erklaerung: {
+      de: 'Standard-Richtwert: 12,5 m/s (Windstärke 6). Herstellerangaben gehen immer vor. Bei Überschreitung: Arbeit sofort einstellen und Bühne absenken!',
+      en: 'Standard guideline: 12.5 m/s (Beaufort 6). Manufacturer specifications always take precedence. If exceeded: immediately stop work and lower platform!',
+      tr: 'Standart kılavuz değer: 12,5 m/s (Beaufort 6). Üretici spesifikasyonları her zaman önceliklidir. Aşılırsa: hemen çalışmayı durdurun ve platformu indirin!',
+      ar: 'القيمة الإرشادية القياسية: 12.5 م/ث (قوة 6). مواصفات الشركة المصنعة لها الأولوية دائماً. عند التجاوز: أوقف العمل فوراً وانزل بالمنصة!',
+    },
+  },
+  {
+    richtig: 3,
+    frage: {
+      de: 'Warum muss eine zweite eingewiesene Person am Boden anwesend sein?',
+      en: 'Why must a second trained person be present on the ground?',
+      tr: 'Zeminde neden ikinci bir eğitimli kişinin bulunması gerekir?',
+      ar: 'لماذا يجب أن يكون هناك شخص ثانٍ مدرب على الأرض؟',
+    },
+    antworten: {
+      de: ['Als Assistent, um Werkzeug zu reichen','Das ist nicht vorgeschrieben — nur empfohlen','Damit sie den Bediener beobachtet und Fotos macht','Um bei technischem Defekt oder Bewusstlosigkeit des Bedieners die Bühne über den Notablass sicher von unten absenken zu können'],
+      en: ['As assistant to pass tools','This is not required — only recommended','To observe the operator and take photos','To safely lower the platform via the emergency lowering device in the event of technical failure or loss of consciousness'],
+      tr: ['Alet vermek için asistan olarak','Bu zorunlu değil — sadece tavsiye edilir','Operatörü gözlemlemek ve fotoğraf çekmek için','Teknik arıza veya operatörün bilincini yitirmesi halinde platformu acil iniş cihazıyla aşağıdan güvenle indirmek için'],
+      ar: ['كمساعد لتمرير الأدوات','هذا غير مطلوب — موصى به فقط','لمراقبة المشغّل وأخذ الصور','لإنزال المنصة بأمان عبر جهاز الخفض الطارئ في حالة العطل الفني أو فقدان الوعي'],
+    },
+    erklaerung: {
+      de: 'Die zweite Person ist Pflicht und muss in die Notablass-Bedienung eingewiesen sein. Ohne „Bodenmann" ist eine Rettung aus der Höhe im Ernstfall lebensgefährlich.',
+      en: 'The second person is mandatory and must be trained in the emergency lowering procedure. Without a "ground person", rescue from height in an emergency is life-threatening.',
+      tr: 'İkinci kişi zorunludur ve acil iniş prosedürüne eğitilmiş olmalıdır. "Zemin kişisi" olmadan yüksekten kurtarma operasyonu tehlikelidir.',
+      ar: 'الشخص الثاني إلزامي ويجب أن يكون مدرباً على إجراء الخفض الطارئ. بدون "شخص أرضي" الإنقاذ من الارتفاع في حالات الطوارئ يهدد الحياة.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Welchen Mindestabstand müssen Sie zu einer Freileitung mit unbekannter Spannung einhalten?',
+      en: 'What minimum distance must you maintain from an overhead power line with unknown voltage?',
+      tr: 'Gerilimi bilinmeyen bir havai hatta asgari hangi mesafeyi korumalısınız?',
+      ar: 'ما هي المسافة الدنيا التي يجب الحفاظ عليها من خط كهربائي هوائي بجهد غير معروف؟',
+    },
+    antworten: {
+      de: ['1,0 Meter','2,0 Meter','5,0 Meter — da Spannung unbekannt immer maximalen Sicherheitsabstand wählen','10,0 Meter'],
+      en: ['1.0 metre','2.0 metres','5.0 metres — with unknown voltage always choose the maximum safety distance','10.0 metres'],
+      tr: ['1,0 metre','2,0 metre','5,0 metre — gerilim bilinmiyorsa her zaman maksimum güvenlik mesafesini seçin','10,0 metre'],
+      ar: ['1.0 متر','2.0 متر','5.0 متر — عند الجهد غير المعروف اختر دائماً أقصى مسافة أمان','10.0 متر'],
+    },
+    erklaerung: {
+      de: 'Bei unbekannter Spannung gilt der maximale Mindestabstand von 5,0 Metern. Lichtbögen können auch über größere Strecken überspringen — im Zweifel immer Energieversorger kontaktieren!',
+      en: 'With unknown voltage the maximum minimum distance of 5.0 metres applies. Arc flashes can jump over greater distances — when in doubt always contact the energy supplier!',
+      tr: 'Bilinmeyen gerilimde maksimum asgari mesafe olan 5,0 metre geçerlidir. Elektrik arkları daha büyük mesafelere atlayabilir — şüphe durumunda her zaman enerji tedarikçisine başvurun!',
+      ar: 'عند الجهد غير المعروف تنطبق المسافة الدنيا القصوى 5.0 أمتار. يمكن للقوس الكهربائي أن يقفز لمسافات أكبر — عند الشك اتصل دائماً بمزود الطاقة!',
+    },
+  },
+  {
+    richtig: 1,
+    frage: {
+      de: 'Was ist der sogenannte „Peitscheneffekt" bei Hubarbeitsbühnen?',
+      en: 'What is the so-called "whiplash effect" in aerial work platforms?',
+      tr: 'Yüksek erişim platformlarında sözde "kırbaç etkisi" nedir?',
+      ar: 'ما هو "تأثير السوط" في منصات العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Eine Bremstechnik beim Absenken der Bühne','Erschütterungen durch Bodenunebenheiten können den langen Ausleger in Schwingung versetzen und den Bediener aus dem Korb katapultieren','Ein Sicherheitsmechanismus der die Bühne automatisch absenkt','Der Geräusch beim Ausfahren der Stützen'],
+      en: ['A braking technique when lowering the platform','Vibrations from uneven ground can set the long boom oscillating and catapult the operator out of the basket','A safety mechanism that automatically lowers the platform','The noise when extending the outriggers'],
+      tr: ['Platformu indirirken kullanılan bir frenleme tekniği','Zemin engebelerinden kaynaklanan titreşimler uzun kolu sallayabilir ve operatörü sepetten fırlatabilir','Platformu otomatik olarak indiren bir güvenlik mekanizması','Destekleri açarken çıkan ses'],
+      ar: ['تقنية كبح عند إنزال المنصة','الاهتزازات الناتجة عن الأرض الوعرة يمكن أن تجعل الذراع الطويل يتأرجح ويقذف المشغّل خارج السلة','آلية أمان تخفض المنصة تلقائياً','الصوت عند مد الدعائم'],
+    },
+    erklaerung: {
+      de: 'Der Peitscheneffekt tritt besonders bei Teleskop- und Gelenkbühnen auf. Die PSAgA (Auffanggurt + kurzes Höhensicherungsgerät) schützt vor dem Herausschleudern.',
+      en: 'The whiplash effect occurs particularly with telescopic and articulating boom lifts. PPE (full body harness + short fall arrester) protects against being thrown out.',
+      tr: 'Kırbaç etkisi özellikle teleskopik ve mafsallı platformlarda görülür. KKD (tam vücut kemeri + kısa düşüş önleyici) fırlamaya karşı korur.',
+      ar: 'يحدث تأثير السوط خاصة في منصات الذراع التلسكوبية والمفصلية. معدات الحماية (حزام الجسم الكامل + جهاز إيقاف السقوط القصير) تحمي من القذف للخارج.',
+    },
+  },
+  {
+    richtig: 2,
+    frage: {
+      de: 'Was prüft die Überlastanzeige der Hubarbeitsbühne?',
+      en: 'What does the overload indicator of the aerial work platform check?',
+      tr: 'Yüksek erişim platformunun aşırı yük göstergesi neyi kontrol eder?',
+      ar: 'ماذا يفحص مؤشر الحمل الزائد في منصة العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Den Ölstand des Hydrauliksystems','Ob das zulässige Gesamtgewicht im Korb überschritten wird — und blockiert dann die Hubfunktion','Die maximale Arbeitshöhe der Bühne','Den Kraftstoffverbrauch des Motors'],
+      en: ['The oil level of the hydraulic system','Whether the permissible total weight in the basket is exceeded — and then blocks the lifting function','The maximum working height of the platform','The fuel consumption of the engine'],
+      tr: ['Hidrolik sistemin yağ seviyesini','Sepetteki izin verilen toplam ağırlığın aşılıp aşılmadığını — ve kaldırma fonksiyonunu bloke eder','Platformun maksimum çalışma yüksekliğini','Motorun yakıt tüketimini'],
+      ar: ['مستوى زيت النظام الهيدروليكي','ما إذا كان الوزن الإجمالي المسموح به في السلة متجاوزاً — ثم يحظر وظيفة الرفع','الارتفاع الأقصى للعمل في المنصة','استهلاك الوقود في المحرك'],
+    },
+    erklaerung: {
+      de: 'Die Überlastanzeige schützt vor Überlastung des gesamten Systems. Wichtig: Person + Werkzeug + Material = Gesamtgewicht — immer alle Lasten zusammenzählen!',
+      en: 'The overload indicator protects against overloading the entire system. Important: person + tools + materials = total weight — always add up all loads!',
+      tr: 'Aşırı yük göstergesi tüm sistemin aşırı yüklenmesinden korur. Önemli: kişi + alet + malzeme = toplam ağırlık — her zaman tüm yükleri toplayın!',
+      ar: 'يحمي مؤشر الحمل الزائد من زيادة تحميل النظام بأكمله. مهم: الشخص + الأدوات + المواد = الوزن الإجمالي — احسب دائماً جميع الأحمال!',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Was bedeutet die grüne Kontrollleuchte nach dem Ausnivellieren der Bühne?',
+      en: 'What does the green indicator light mean after levelling the platform?',
+      tr: 'Platformun hizalanmasından sonra yeşil kontrol lambası ne anlama gelir?',
+      ar: 'ماذا يعني ضوء التحكم الأخضر بعد تسوية المنصة؟',
+    },
+    antworten: {
+      de: ['Die Bühne steht sicher und waagerecht — Betrieb ist freigegeben','Die Bühne ist zu schräg und darf nicht benutzt werden','Der Akku ist vollständig geladen','Der Motor ist betriebsbereit'],
+      en: ['The platform is standing safely and level — operation is approved','The platform is too tilted and must not be used','The battery is fully charged','The engine is ready for operation'],
+      tr: ['Platform güvenli ve yatay duruyor — çalışma onaylandı','Platform fazla eğik ve kullanılmamalı','Akü tamamen şarjlı','Motor çalışmaya hazır'],
+      ar: ['المنصة واقفة بأمان وأفقياً — التشغيل مسموح','المنصة مائلة أكثر من اللازم ولا يجب استخدامها','البطارية مشحونة بالكامل','المحرك جاهز للتشغيل'],
+    },
+    erklaerung: {
+      de: 'Grüne Leuchte = sicherer Stand, Betrieb freigegeben. Rote Leuchte = Bühne zu schräg, Fahrt verboten! Niemals bei roter Leuchte heben!',
+      en: 'Green light = safe stance, operation approved. Red light = platform too tilted, no operation! Never lift with red light!',
+      tr: 'Yeşil ışık = güvenli duruş, çalışma onaylı. Kırmızı ışık = platform çok eğik, çalışma yasak! Kırmızı ışıkta asla kaldırmayın!',
+      ar: 'الضوء الأخضر = موقف آمن، التشغيل مسموح. الضوء الأحمر = المنصة مائلة أكثر من اللازم، ممنوع التشغيل! لا ترفع أبداً مع الضوء الأحمر!',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Wie lange ist der Bedienerausweis für Hubarbeitsbühnen gültig?',
+      en: 'How long is the aerial work platform operator\'s certificate valid?',
+      tr: 'Yüksek erişim platformu operatör sertifikası ne kadar süre geçerlidir?',
+      ar: 'كم مدة صلاحية شهادة مشغّل منصة العمل الارتفاعية؟',
+    },
+    antworten: {
+      de: ['Lebenslang — setzt aber eine jährliche Unterweisung im Betrieb voraus','5 Jahre, dann muss eine Prüfung wiederholt werden','2 Jahre, dann automatische Verlängerung','Er ist unbegrenzt gültig ohne weitere Maßnahmen'],
+      en: ['Lifelong — but requires an annual briefing at the workplace','5 years, then an examination must be repeated','2 years, then automatic renewal','It is valid indefinitely without further measures'],
+      tr: ['Ömür boyu — ancak işyerinde yıllık eğitim gerektirir','5 yıl, sonra sınav tekrarlanmalıdır','2 yıl, sonra otomatik yenileme','Başka önlemler almadan süresiz geçerlidir'],
+      ar: ['مدى الحياة — لكن يتطلب تدريباً سنوياً في مكان العمل','5 سنوات، ثم يجب تكرار الاختبار','سنتان، ثم تجديد تلقائي','صالح إلى أجل غير مسمى دون مزيد من الإجراءات'],
+    },
+    erklaerung: {
+      de: 'Der Bedienerausweis ist lebenslang gültig — aber ohne die jährliche Unterweisung erlischt die Berechtigung zum Fahren! Jedes Jahr muss der Arbeitgeber die Unterweisung dokumentieren.',
+      en: 'The operator\'s certificate is valid for life — but without the annual briefing the authorisation to operate lapses! Every year the employer must document the briefing.',
+      tr: 'Operatör sertifikası ömür boyu geçerlidir — ancak yıllık eğitim olmadan sürüş yetkisi sona erer! Her yıl işveren eğitimi belgelendirmelidir.',
+      ar: 'شهادة المشغّل صالحة مدى الحياة — لكن بدون التدريب السنوي تنتهي صلاحية التشغيل! يجب على صاحب العمل توثيق التدريب كل عام.',
+    },
+  },
+  {
+    richtig: 0,
+    frage: {
+      de: 'Welchen Mindestabstand müssen Sie zu einer Freileitung bis 1.000 Volt einhalten?',
+      en: 'What minimum distance must you maintain from an overhead power line up to 1,000 volts?',
+      tr: '1.000 Volta kadar olan bir havai hatta asgari hangi mesafeyi korumalısınız?',
+      ar: 'ما هي المسافة الدنيا الواجبة من خط كهربائي هوائي حتى 1,000 فولت؟',
+    },
+    antworten: {
+      de: ['Mindestens 1,0 Meter','Mindestens 3,0 Meter','Kein besonderer Abstand — die Leitung ist isoliert','Mindestens 0,5 Meter reicht aus'],
+      en: ['At least 1.0 metre','At least 3.0 metres','No special distance — the line is insulated','At least 0.5 metres is sufficient'],
+      tr: ['En az 1,0 metre','En az 3,0 metre','Özel mesafe yok — hat yalıtımlıdır','En az 0,5 metre yeterlidir'],
+      ar: ['مسافة 1.0 متر على الأقل','مسافة 3.0 أمتار على الأقل','لا مسافة خاصة — الخط معزول','0.5 متر على الأقل كافٍ'],
+    },
+    erklaerung: {
+      de: 'Bei Leitungen bis 1.000 Volt gilt ein Mindestabstand von 1,0 Meter. Achtung: Auch isolierte Leitungen können beschädigt sein — Abstand immer einhalten!',
+      en: 'For lines up to 1,000 volts a minimum distance of 1.0 metre applies. Note: Even insulated lines can be damaged — always maintain the distance!',
+      tr: '1.000 Volta kadar olan hatlarda asgari 1,0 metre mesafe geçerlidir. Dikkat: Yalıtımlı hatlar bile hasarlı olabilir — her zaman mesafeyi koruyun!',
+      ar: 'للخطوط حتى 1,000 فولت تنطبق مسافة دنيا 1.0 متر. تنبيه: حتى الخطوط المعزولة يمكن أن تكون تالفة — حافظ دائماً على المسافة!',
+    },
+  },
+];
+
+// ── UI-Labels ─────────────────────────────────────────────
+const HUB_UI = {
+  de: {
+    sprachwahlTitel: 'Sprache der Unterweisung wählen',
+    sprachwahlHinweis: 'Die Teilnahmebescheinigung und der Fahrauftrag werden immer auf Deutsch ausgestellt.',
+    starten: 'Unterweisung starten',
+    modul: 'Modul',
+    kapitel: 'Kapitel',
+    kapitelAbschliessen: '✓ Kapitel gelesen',
+    alleGelesen: 'Alle Kapitel gelesen',
+    quizStarten: 'Quiz starten',
+    frage: 'Frage',
+    von: 'von',
+    richtig: '✅ Richtig!',
+    falsch: '❌ Falsch',
+    bestanden: '🎉 Bestanden!',
+    nichtBestanden: '❌ Nicht bestanden',
+    nochmal: 'Nochmal versuchen',
+    erklaerung: 'Erklärung:',
+    weiter: 'Weiter',
+    bitteLesen: 'Bitte alle Kapitel lesen um das Quiz freizuschalten',
+    nochOffen: 'noch offen',
+    bescheinigungHinweis: '📄 Bescheinigung nur auf Deutsch',
+  },
+  en: {
+    sprachwahlTitel: 'Select training language',
+    sprachwahlHinweis: 'The certificate of participation and work order are always issued in German.',
+    starten: 'Start training',
+    modul: 'Module',
+    kapitel: 'Chapter',
+    kapitelAbschliessen: '✓ Chapter read',
+    alleGelesen: 'All chapters read',
+    quizStarten: 'Start quiz',
+    frage: 'Question',
+    von: 'of',
+    richtig: '✅ Correct!',
+    falsch: '❌ Incorrect',
+    bestanden: '🎉 Passed!',
+    nichtBestanden: '❌ Not passed',
+    nochmal: 'Try again',
+    erklaerung: 'Explanation:',
+    weiter: 'Continue',
+    bitteLesen: 'Please read all chapters to unlock the quiz',
+    nochOffen: 'remaining',
+    bescheinigungHinweis: '📄 Certificate in German only',
+  },
+  tr: {
+    sprachwahlTitel: 'Eğitim dilini seçin',
+    sprachwahlHinweis: 'Katılım belgesi ve sürüş emri her zaman Almanca olarak düzenlenir.',
+    starten: 'Eğitimi başlat',
+    modul: 'Modül',
+    kapitel: 'Bölüm',
+    kapitelAbschliessen: '✓ Bölüm okundu',
+    alleGelesen: 'Tüm bölümler okundu',
+    quizStarten: 'Quizi başlat',
+    frage: 'Soru',
+    von: '/',
+    richtig: '✅ Doğru!',
+    falsch: '❌ Yanlış',
+    bestanden: '🎉 Başardınız!',
+    nichtBestanden: '❌ Başarısız',
+    nochmal: 'Tekrar dene',
+    erklaerung: 'Açıklama:',
+    weiter: 'Devam et',
+    bitteLesen: 'Quizi açmak için tüm bölümleri okuyun',
+    nochOffen: 'kalan',
+    bescheinigungHinweis: '📄 Sertifika yalnızca Almanca',
+  },
+  ar: {
+    sprachwahlTitel: 'اختر لغة التدريب',
+    sprachwahlHinweis: 'تُصدر شهادة المشاركة وأمر العمل دائماً باللغة الألمانية.',
+    starten: 'بدء التدريب',
+    modul: 'وحدة',
+    kapitel: 'فصل',
+    kapitelAbschliessen: '✓ تمت قراءة الفصل',
+    alleGelesen: 'تمت قراءة جميع الفصول',
+    quizStarten: 'بدء الاختبار',
+    frage: 'سؤال',
+    von: 'من',
+    richtig: '✅ صحيح!',
+    falsch: '❌ خطأ',
+    bestanden: '🎉 نجحت!',
+    nichtBestanden: '❌ لم تنجح',
+    nochmal: 'حاول مرة أخرى',
+    erklaerung: 'الشرح:',
+    weiter: 'متابعة',
+    bitteLesen: 'اقرأ جميع الفصول لفتح الاختبار',
+    nochOffen: 'متبقية',
+    bescheinigungHinweis: '📄 الشهادة باللغة الألمانية فقط',
+  },
+};
+
+
+const HUB_KAPITEL = [
+  // ── Modul 1: Recht & Verantwortung ──
+  {
+    id: 'hub-01', modul: 1, nr: 1,
+    titel: 'Rechtliche Grundlagen & Pflichten',
+    icon: '⚖️',
+    inhalt: `<p>Der Betrieb von Hubarbeitsbühnen unterliegt strengen gesetzlichen Anforderungen:</p>
+    <ul>
+      <li><strong>§ 12 ArbSchG</strong> — Pflicht zur Unterweisung aller Mitarbeiter</li>
+      <li><strong>BetrSichV</strong> — Nur geeignete, geschulte Personen dürfen Arbeitsmittel bedienen</li>
+      <li><strong>DGUV Regel 100-500</strong> (Kap. 2.10) — Betreiben von Hebebühnen</li>
+      <li><strong>DGUV Grundsatz 308-008</strong> — Regelt Ausbildung & Beauftragung der Bediener</li>
+    </ul>
+    <p>Ein amtlicher Führerschein ist <strong>nicht</strong> erforderlich — aber der Bediener braucht drei Dinge:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">📚</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Ausbildung</div>
+        <div style="font-size:.72rem;color:#2563a8">Theorie + Praxis bestanden</div>
+      </div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">🏥</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Eignung</div>
+        <div style="font-size:.72rem;color:#2563a8">Arbeitsmedizinische Vorsorge</div>
+      </div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">✍️</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Fahrauftrag</div>
+        <div style="font-size:.72rem;color:#2563a8">Schriftliche Beauftragung</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-02', modul: 1, nr: 2,
+    titel: 'Verantwortung & Haftung',
+    icon: '🏛️',
+    inhalt: `<p>Bei einem Unfall haften zwei Ebenen:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#991b1b">🏢 Unternehmer / Vorgesetzter</div>
+        <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Trägt die <strong>Organisationsverantwortung</strong>: Auswahl geeigneter Personen, Bereitstellung sicherer Geräte, Sicherstellung der Schulung und Beauftragung.</div>
+      </div>
+      <div style="background:#dbeafe;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#92400e">👤 Bediener (Sie!)</div>
+        <div style="font-size:.8rem;color:#78350f;margin-top:4px">Trägt die <strong>Durchführungsverantwortung</strong>: Persönliche Haftung bei grober Fahrlässigkeit, Missachtung von Verboten oder Alkohol am Arbeitsplatz.</div>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:#6b7280;margin-top:8px">⚠️ Der schriftliche Fahrauftrag durch den Arbeitgeber ist <strong>zwingend erforderlich</strong> — die Schulung allein reicht nicht aus!</p>`
+  },
+  // ── Modul 2: Gerätekunde & Technik ──
+  {
+    id: 'hub-03', modul: 2, nr: 3,
+    titel: 'Bühnentypen & Kategorien',
+    icon: '🏗️',
+    inhalt: `<p>Hubarbeitsbühnen werden nach der Art ihrer Bewegung kategorisiert:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">📦 Gruppe A — Senkrechthub</div>
+        <div style="font-size:.8rem;color:#075985;margin-top:4px">Gewichtsschwerpunkt bleibt immer <strong>innerhalb</strong> der Kippkanten.<br>Beispiele: Scherenbühnen, Personenlifte</div>
+      </div>
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:8px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">💥 Gruppe B — Boom-Lifts (Auslegerbühnen)</div>
+        <div style="font-size:.8rem;color:#2563a8;margin-top:4px">Arbeitskorb kann <strong>außerhalb</strong> der Kippkanten bewegt werden.<br>Beispiele: Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Bühnen<br><strong>⚠️ PSAgA-Pflicht!</strong></div>
+      </div>
+    </div>
+    <div style="background:#f9fafb;border-radius:6px;padding:10px;margin-top:6px;font-size:.8rem">
+      <strong>Fahrtypen:</strong><br>
+      • <strong>Typ 1</strong> — Fahren nur in Transportstellung (Bühne unten)<br>
+      • <strong>Typ 3</strong> — Fahren mit angehobener Bühne vom Korb aus
+    </div>`
+  },
+  {
+    id: 'hub-04', modul: 2, nr: 4,
+    titel: 'Sicherheitseinrichtungen',
+    icon: '🛡️',
+    inhalt: `<p>Diese Sicherheitseinrichtungen müssen vor jeder Fahrt geprüft werden:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">🔴</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#14532d">Not-Aus-Schalter</div>
+        <div style="font-size:.78rem;color:#166534">Sofortige Unterbrechung aller Funktionen — am Boden UND im Korb. Beide testen!</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fef9c3;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">📐</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#713f12">Neigungswächter</div>
+        <div style="font-size:.78rem;color:#854d0e">Akustischer/optischer Alarm oder Abschaltung, wenn Bühne zu schräg steht.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#eff6ff;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">⚖️</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#1e3a8a">Überlastanzeige</div>
+        <div style="font-size:.78rem;color:#1d4ed8">Blockiert Hubfunktion, wenn zulässiges Gewicht im Korb überschritten wird.</div></div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#fdf4ff;border-radius:7px">
+        <span style="font-size:1.2rem;flex-shrink:0">🖐️</span>
+        <div><div style="font-weight:700;font-size:.85rem;color:#581c87">Totmannschalter / Fußschalter</div>
+        <div style="font-size:.78rem;color:#6b21a8">Steuerung reagiert nur wenn aktiv gedrückt — bei Loslassen sofortiger Stopp.</div></div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-05', modul: 2, nr: 5,
+    titel: 'PSAgA — Persönliche Schutzausrüstung gegen Absturz',
+    icon: '🦺',
+    inhalt: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:4px">⚠️ PFLICHT bei Gruppe B (Boom-Lifts)!</div>
+      <div style="font-size:.8rem;opacity:.9">Auffanggurt + kurzes Höhensicherungsgerät — immer anlegen!</div>
+    </div>
+    <p><strong>Warum PSAgA in Hubarbeitsbühnen?</strong></p>
+    <p style="font-size:.85rem">Der sogenannte <strong>„Peitscheneffekt"</strong> (Katapult-Effekt): Bei Teleskop- und Gelenkbühnen können Erschütterungen durch Bodenunebenheiten den langen Ausleger in Schwingung versetzen und den Bediener aus dem Korb katapultieren.</p>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px;margin-top:10px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e;margin-bottom:6px">📋 Wichtige Regeln:</div>
+      <div style="font-size:.8rem;color:#78350f;display:flex;flex-direction:column;gap:4px">
+        <div>✅ Anschlagen <strong>nur</strong> an den vorgesehenen, gekennzeichneten Haltepunkten im Korb</div>
+        <div>✅ Kurzes Rückhaltesystem — kein langer Falldämpfer im Korb</div>
+        <div>✅ Gurt anlegen <strong>bevor</strong> die Bühne bewegt wird</div>
+        <div>✅ Bei Scherenbühnen (Gruppe A) situationsabhängig — Herstellerangaben beachten</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-06', modul: 2, nr: 6,
+    titel: 'Das Lastdiagramm verstehen',
+    icon: '📊',
+    inhalt: `<p>Das Lastdiagramm zeigt: <strong>Je weiter der Arm ausgefahren ist, desto geringer ist die Traglast!</strong></p>
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px;margin:10px 0;font-size:.82rem">
+      <div style="font-weight:700;color:#1e293b;margin-bottom:6px">📊 Aufbau des Diagramms:</div>
+      <div style="display:flex;flex-direction:column;gap:4px;color:#475569">
+        <div>📏 <strong>Y-Achse (senkrecht)</strong> — Arbeitshöhe in Metern</div>
+        <div>📐 <strong>X-Achse (waagerecht)</strong> — Seitliche Reichweite (Ausladung) in Metern</div>
+        <div>〰️ <strong>Kurvenlinien</strong> — Grenzen der Gewichtszonen:<br>
+          &nbsp;&nbsp;&nbsp;Zone 1 = 300 kg (nah am Gerät) | Zone 3 = 100 kg (max. Reichweite)</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px;font-size:.82rem">
+      <div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Niemals:</div>
+      <div style="color:#7f1d1d">• Tragfähigkeit überschreiten (Person + Werkzeug + Material = Gesamtgewicht!)<br>
+      • In der Höhe schwere Bauteile von außen (z. B. vom Dach) nachladen<br>
+      • Auf automatische Sicherung verlassen — immer selber planen!</div>
+    </div>`
+  },
+  // ── Modul 3: Standsicherheit & Gefahren ──
+  {
+    id: 'hub-07', modul: 3, nr: 7,
+    titel: 'Untergrund & Standsicherheit',
+    icon: '🏔️',
+    inhalt: `<p>Der Untergrund ist das Fundament der Sicherheit — falsche Aufstellung führt direkt zum Umkippen!</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin:10px 0">
+      <div style="background:#fef2f2;border-radius:7px;padding:8px 12px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">⚠️ Gefahrenquellen:</div>
+        <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Schachtdeckel · Frisch aufgeschütteter Boden · Unterwaschungen · Tiefgaragendecken · Kellerabgänge</div>
+      </div>
+      <div style="background:#f0fdf4;border-radius:7px;padding:8px 12px">
+        <div style="font-weight:700;font-size:.85rem;color:#14532d">✅ Schutzmaßnahmen:</div>
+        <div style="font-size:.8rem;color:#166534;margin-top:4px">
+          • <strong>Unterlegplatten</strong> zur Lastverteilung immer verwenden<br>
+          • Neigungsgrenzen des Herstellers strikt einhalten<br>
+          • Stützen vollständig ausfahren + Bühne waagerecht ausnivellieren<br>
+          • Grüne Kontrollleuchte = sicher · Rote Leuchte = Fahrt verboten!
+        </div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-08', modul: 3, nr: 8,
+    titel: 'Windgefahren',
+    icon: '💨',
+    inhalt: `<div style="background:#0c4a6e;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">💨 Max. Windgeschwindigkeit: 12,5 m/s (Windstärke 6)</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">Bei Überschreitung: Arbeit SOFORT einstellen und Bühne absenken!</div>
+    </div>
+    <div style="font-size:.84rem;display:flex;flex-direction:column;gap:6px">
+      <div style="padding:8px 12px;background:#f0f9ff;border-radius:7px">
+        ⚠️ <strong>Wind in der Höhe</strong> ist deutlich stärker als am Boden — immer am Windmesser orientieren, nicht am eigenen Empfinden!
+      </div>
+      <div style="padding:8px 12px;background:#fef2f2;border-radius:7px">
+        ❌ <strong>Segeleffekt-Verbot:</strong> Keine Planen, Werbeschilder oder Platten in den Korb stellen — erhöht die Kippgefahr massiv!
+      </div>
+      <div style="padding:8px 12px;background:#fffbeb;border-radius:7px">
+        📋 <strong>Herstellerangaben</strong> im Handbuch haben immer Vorrang vor dem Standardwert 12,5 m/s!
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-09', modul: 3, nr: 9,
+    titel: 'Sicherheitsabstände zu Freileitungen',
+    icon: '⚡',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px;text-align:center">
+      <div style="font-size:1.5rem">⚡</div>
+      <div style="font-weight:700;font-size:.95rem">LEBENSGEFAHR durch Stromschlag und Lichtbögen!</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;font-size:.85rem">
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f9fafb;border-radius:7px">
+        <div>Bis <strong>1.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 1,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px">
+        <div>Über 1.000 bis <strong>110.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 3,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#fef2f2;border-radius:7px">
+        <div>Über 110.000 bis <strong>220.000 Volt</strong></div>
+        <div style="font-weight:700;color:#dc2626;font-size:1rem">≥ 4,0 m</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#7f1d1d;border-radius:7px;color:#fff">
+        <div><strong>⚠️ Unbekannte Spannung</strong></div>
+        <div style="font-weight:700;font-size:1rem">≥ 5,0 m</div>
+      </div>
+    </div>`
+  },
+  // ── Modul 4: Praxis & Notfall ──
+  {
+    id: 'hub-10', modul: 4, nr: 10,
+    titel: 'Tägliche Sicht- und Funktionsprüfung',
+    icon: '🔍',
+    inhalt: `<p>Vor jedem Arbeitsbeginn <strong>zwingend</strong> durchführen — laut DGUV 308-008!</p>
+    <div style="display:flex;flex-direction:column;gap:4px;font-size:.8rem;margin-top:8px">
+      ${['Hydraulikschläuche und Zylinder auf Leckagen', 'Reifen auf Beschädigung, Fremdkörper und Luftdruck', 'Allgemeinzustand: Risse im Stahl, Verformungen, lose Bolzen', 'Geländer und Korbverriegelung intakt?', 'Not-Aus am Boden UND im Korb testen', 'Notablass-Einrichtung auf Funktion prüfen', 'Warneinrichtungen: Hupe, Blinkleuchte, Rückfahrwarner', 'Totmannschalter: reagiert beim Loslassen?', 'PSAgA-Anschlagpunkte im Korb unbeschädigt?', 'UVV-Prüfplakette auf Gültigkeit prüfen', 'Windgeschwindigkeit unter Herstellerlimit?', 'Unterlegplatten vorhanden und einsatzbereit?'].map(p => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:6px 8px;background:#f9fafb;border-radius:6px">
+          <span style="color:#059669;flex-shrink:0">✓</span>
+          <span>${p}</span>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-11', modul: 4, nr: 11,
+    titel: 'Sicheres Aufstellen der Bühne',
+    icon: '📐',
+    inhalt: `<p>Das korrekte Aufstellen ist entscheidend für die Standsicherheit:</p>
+    <div style="counter-reset:step;display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[
+        ['Umfeld prüfen', 'Absperrungen aufstellen, Untergrund auf Tragfähigkeit beurteilen (Schächte, Hohlräume, Neigungen)'],
+        ['Unterlegplatten auslegen', 'Immer großflächige Unterlegplatten unter die Stützen legen — verteilt die Punktlast!'],
+        ['Stützen ausfahren', 'Alle 4 Stützen vollständig ausfahren — nie auf halber Strecke stoppen'],
+        ['Ausnivellieren', 'Bühne exakt waagerecht ausrichten bis grüne Kontrollleuchte leuchtet'],
+        ['Freigabe prüfen', 'Nur bei grüner Anzeige und sicherem Stand mit dem Heben beginnen']
+      ].map(([t, d]) => `
+        <div style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;background:#f0fdf4;border-radius:7px">
+          <span style="font-size:1rem;flex-shrink:0">✅</span>
+          <div><div style="font-weight:700;color:#14532d">${t}</div><div style="color:#166534;margin-top:2px">${d}</div></div>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-12', modul: 4, nr: 12,
+    titel: 'Verbote im Betrieb',
+    icon: '🚫',
+    inhalt: `<p>Diese Handlungen führen zu sofortigem Unfallrisiko und sind <strong>absolut verboten</strong>:</p>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px;font-size:.82rem">
+      ${[
+        'Überschreiten der maximalen Traglast (Person + Werkzeug + Material!)',
+        'Verlassen oder Besteigen des Korbes in angehobener Stellung (kein Umsteigen auf Dächer/Gerüste)',
+        'Erhöhen der Standposition durch Leitern, Kisten oder Stehen auf dem Geländer',
+        'Anbringen von Planen, Schildern oder Platten (Segeleffekt → Kippgefahr!)',
+        'Überbrücken oder Manipulieren von Sicherheitseinrichtungen (Not-Aus, Neigungssensoren)',
+        'Einfahren der Stützen bei angehobenem Korb',
+        'Betrieb bei überschrittener Windgeschwindigkeit',
+        'Unterschreiten der Mindestabstände zu Freileitungen',
+        'Betrieb ohne gültige UVV-Prüfplakette'
+      ].map(v => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:7px 10px;background:#fef2f2;border-left:3px solid #dc2626;border-radius:6px">
+          <span style="color:#dc2626;flex-shrink:0;font-weight:700">✗</span>
+          <span style="color:#7f1d1d">${v}</span>
+        </div>`).join('')}
+    </div>`
+  },
+  {
+    id: 'hub-13', modul: 4, nr: 13,
+    titel: 'Notablass — Wenn nichts mehr geht',
+    icon: '🚨',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">🚨 NOTFALL: Bediener im Korb bewusstlos!</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">Nur die Bodensteuerung kann noch helfen!</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;font-size:.83rem">
+      <div style="padding:10px 12px;background:#fef9c3;border-radius:7px">
+        <div style="font-weight:700;color:#713f12">📋 Pflicht: Zweite eingewiesene Person am Boden!</div>
+        <div style="color:#854d0e;margin-top:4px">Bei jeder Arbeit mit Hubarbeitsbühnen muss immer eine zweite Person vor Ort sein, die in den Notablass eingewiesen ist.</div>
+      </div>
+      <div style="padding:10px 12px;background:#f0fdf4;border-radius:7px">
+        <div style="font-weight:700;color:#14532d">✅ Ablauf Notablass:</div>
+        <div style="color:#166534;margin-top:4px">
+          1. Ruhe bewahren — keinen Aufzug nutzen<br>
+          2. Notablass-Ventil / Bodensteuerpult an der Maschinenbasis öffnen<br>
+          3. Korb langsam und kontrolliert absenken<br>
+          4. Nach Absenken: Notruf 112 absetzen und Erste Hilfe leisten
+        </div>
+      </div>
+      <div style="padding:10px 12px;background:#eff6ff;border-radius:7px">
+        <div style="font-weight:700;color:#1e3a8a">💡 Notruf: 📞 112</div>
+        <div style="color:#1d4ed8;margin-top:2px">WO — WAS — WIE VIELE — WER</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-14', modul: 4, nr: 14,
+    titel: 'Prüfung & Fahrauftrag — Zusammenfassung',
+    icon: '📋',
+    inhalt: `<div style="background:#1a3a5c;border-radius:10px;padding:12px 14px;color:#fff;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem">✅ Bereit für das Quiz?</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:4px">10 Fragen · Mindestens 85 % richtig zum Bestehen (9/10 Punkte)</div>
+      <div style="font-size:.78rem;opacity:.85;margin-top:6px;border-top:1px solid rgba(255,255,255,.2);padding-top:6px">📄 Das Ergebnis wird in der Teilnahmebescheinigung ausgewiesen.</div>
+    </div>
+    <p style="font-size:.85rem"><strong>Gültigkeitsdauer des Bedienerausweises:</strong><br>Der Bedienerausweis ist lebenslang gültig — setzt aber eine <strong>jährliche Unterweisung</strong> im Betrieb voraus!</p>
+    <div style="background:#f0fdf4;border-radius:8px;padding:10px;margin-top:10px;font-size:.82rem">
+      <div style="font-weight:700;color:#14532d;margin-bottom:6px">📋 Checkliste vor dem Quiz:</div>
+      <div style="display:flex;flex-direction:column;gap:3px;color:#166534">
+        <div>☑ Alle 3 Säulen der Erlaubnis kennen (Ausbildung, Eignung, Fahrauftrag)</div>
+        <div>☑ Unterschied Gruppe A / Gruppe B verstanden</div>
+        <div>☑ PSAgA-Pflicht bei Gruppe B bekannt</div>
+        <div>☑ Windlimit 12,5 m/s gemerkt</div>
+        <div>☑ Mindestabstände Freileitungen kennen</div>
+        <div>☑ Notablass-Ablauf verstanden</div>
+      </div>
+    </div>`
+  },
+  {
+    id: 'hub-15', modul: 4, nr: 15,
+    titel: 'Betriebsanweisung — Sicherer Betrieb von Hubarbeitsbühnen',
+    icon: '⚠️',
+    inhalt: `<div style="background:#dc2626;border-radius:10px;padding:10px 14px;color:#fff;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:1.4rem">⚠️</span>
+      <div><div style="font-weight:700;font-size:.92rem">Betriebsanweisung</div>
+      <div style="font-size:.75rem;opacity:.9">gem. § 9 BetrSichV · DGUV Regel 100-500 Kap. 2.10</div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:.82rem">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#991b1b;margin-bottom:4px">1. Gefahren für Mensch und Umwelt</div>
+        <div style="color:#7f1d1d;display:flex;flex-direction:column;gap:2px">
+          <div>• Absturz aus dem Korb (Peitscheneffekt bei Boom-Lifts)</div>
+          <div>• Umkippen durch unzureichende Tragfähigkeit oder Wind</div>
+          <div>• Quetschen im Schwenkbereich oder an Deckenkonstruktionen</div>
+          <div>• Lebensgefährlicher Stromschlag durch Freileitungen</div>
+          <div>• Herabfallende Gegenstände aus dem Korb</div>
+        </div>
+      </div>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#14532d;margin-bottom:4px">2. Schutzmaßnahmen und Verhaltensregeln</div>
+        <div style="color:#166534;display:flex;flex-direction:column;gap:2px">
+          <div>✅ Nur Personen mit Bedienerausweis (DGUV 308-008) + schriftl. Fahrauftrag</div>
+          <div>✅ PSAgA (Auffanggurt) bei allen Boom-Lifts (Gruppe B) anlegen</div>
+          <div>✅ Tägliche Sicht- und Funktionsprüfung vor Arbeitsbeginn</div>
+          <div>✅ Stützen vollständig ausfahren + Unterlegplatten + Nivellieren</div>
+          <div>✅ Max. Windgeschwindigkeit beachten (Standard 12,5 m/s)</div>
+          <div>✅ Mindestabstand 5 m zu Freileitungen (unbekannte Spannung)</div>
+          <div>✅ Gefahrenbereich unter der Bühne absperren</div>
+        </div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#991b1b;margin-bottom:4px">3. Verbote</div>
+        <div style="color:#7f1d1d;display:flex;flex-direction:column;gap:2px">
+          <div>❌ Traglast überschreiten (Person + Werkzeug + Material)</div>
+          <div>❌ Korb in angehobener Stellung verlassen / auf Dach umsteigen</div>
+          <div>❌ Standerhöhung durch Leitern oder Kisten im Korb</div>
+          <div>❌ Planen/Schilder am Korb (Segeleffekt → Kippgefahr)</div>
+          <div>❌ Sicherheitseinrichtungen überbrücken oder manipulieren</div>
+          <div>❌ Stützen bei angehobenem Korb einfahren</div>
+        </div>
+      </div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#92400e;margin-bottom:4px">4. Verhalten bei Störungen und Notfall</div>
+        <div style="color:#78350f;display:flex;flex-direction:column;gap:2px">
+          <div>⚠️ Fehlfunktion → Not-Aus drücken, Gerät sichern, Vorgesetzten informieren</div>
+          <div>🚨 Korb-Steuerung ausgefallen → Bodenmann: Notablass betätigen!</div>
+          <div>📞 Notruf: 112 (WO – WAS – WIE VIELE – WER)</div>
+          <div>🩹 Erste Hilfe unter Eigensicherung, Verbandbuch eintragen</div>
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border-left:4px solid #0ea5e9;border-radius:0 8px 8px 0;padding:10px 12px">
+        <div style="font-weight:700;color:#0c4a6e;margin-bottom:4px">5. Instandhaltung</div>
+        <div style="color:#075985;display:flex;flex-direction:column;gap:2px">
+          <div>🔧 Wartung nur durch qualifiziertes Fachpersonal (Motor aus, Hydraulik drucklos)</div>
+          <div>📋 UVV-Prüfung (Sachkundigprüfung) jährlich — Plakette kontrollieren</div>
+          <div>🛢️ Hydrauliköl-Leckage: sofort mit Bindemittel aufnehmen, Sondermüll</div>
+        </div>
+      </div>
+    </div>`
+  }
+];
+
+const HUB_QUIZ = [
+  {
+    frage: 'Welche drei Voraussetzungen muss ein Bediener von Hubarbeitsbühnen erfüllen?',
+    antworten: [
+      'Amtlicher Führerschein, Mindestalter 21 Jahre, Vereinsmitgliedschaft',
+      'Ausbildung (Theorie + Praxis), arbeitsmedizinische Eignung und schriftlicher Fahrauftrag des Arbeitgebers',
+      'Nur die Schulung reicht aus — alles andere ist freiwillig',
+      'Berufserfahrung von mind. 2 Jahren und ein behördliches Zertifikat'
+    ],
+    richtig: 1,
+    erklaerung: 'Nach DGUV 308-008 sind alle drei Säulen zwingend: erfolgreiche Ausbildung, gesundheitliche Eignung (Höhentauglichkeit) und der schriftliche Fahrauftrag des Arbeitgebers.'
+  },
+  {
+    frage: 'Was unterscheidet Gruppe A von Gruppe B bei Hubarbeitsbühnen?',
+    antworten: [
+      'Gruppe A ist schwerer als Gruppe B',
+      'Bei Gruppe B (Boom-Lifts) kann der Korb außerhalb der Kippkanten bewegt werden — daher PSAgA-Pflicht',
+      'Gruppe A ist nur für den Innenbereich, Gruppe B für den Außenbereich',
+      'Der Unterschied liegt ausschließlich in der Farbgebung der Maschine'
+    ],
+    richtig: 1,
+    erklaerung: 'Gruppe A (Scherenbühnen) bleibt stets innerhalb der Kippkanten. Bei Gruppe B (Teleskop-, Gelenk-, Lkw-Bühnen) kann der Ausleger so weit herausfahren, dass der Schwerpunkt außerhalb liegt — daher höhere Kippgefahr und PSAgA-Pflicht.'
+  },
+  {
+    frage: 'Ab welcher Windgeschwindigkeit muss der Betrieb einer Hubarbeitsbühne im Freien eingestellt werden?',
+    antworten: [
+      'Erst bei sichtbaren Sturmschäden an Gebäuden — das Gerät ist robust genug',
+      '20 m/s — das ist der gesetzliche Grenzwert',
+      '12,5 m/s (Windstärke 6) bzw. nach genauer Herstellerangabe',
+      'Der Bediener entscheidet das selbst nach eigenem Ermessen'
+    ],
+    richtig: 2,
+    erklaerung: 'Standard-Richtwert: 12,5 m/s (Windstärke 6). Herstellerangaben im Handbuch können abweichen und gehen immer vor. Bei Überschreitung: Arbeit sofort einstellen und Bühne absenken!'
+  },
+  {
+    frage: 'Warum muss eine zweite eingewiesene Person am Boden anwesend sein?',
+    antworten: [
+      'Als Assistent, um Werkzeug zu reichen',
+      'Das ist nicht vorgeschrieben — nur empfohlen',
+      'Damit sie den Bediener beobachtet und Fotos macht',
+      'Um bei technischem Defekt oder Bewusstlosigkeit des Bedieners die Bühne über den Notablass sicher von unten absenken zu können'
+    ],
+    richtig: 3,
+    erklaerung: 'Die zweite Person ist Pflicht und muss in die Notablass-Bedienung eingewiesen sein. Ohne "Bodenmann" ist eine Rettung aus der Höhe im Ernstfall lebensgefährlich und zeitkritisch.'
+  },
+  {
+    frage: 'Welchen Mindestabstand müssen Sie zu einer Freileitung mit unbekannter Spannung einhalten?',
+    antworten: [
+      '1,0 Meter — das reicht sicherlich aus',
+      '2,0 Meter bei langsamer Fahrt',
+      '5,0 Meter — da Spannung unbekannt immer maximalen Sicherheitsabstand wählen',
+      'Es gibt keinen gesetzlichen Mindestabstand'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei unbekannter Spannung immer mind. 5 Meter Abstand. Lichtbögen können über mehrere Meter springen — der Abstand rettet Leben!'
+  },
+  {
+    frage: 'Was passiert, wenn die Überlastsicherung der Hubarbeitsbühne auslöst?',
+    antworten: [
+      'Die Bühne gibt nur ein Tonsignal — Bewegungen können fortgesetzt werden',
+      'Die Hubfunktion wird blockiert und muss durch Entlasten des Korbes wieder freigegeben werden',
+      'Die Bühne fährt automatisch zurück zur Ausgangsposition',
+      'Die Sicherung kann durch Drücken des Not-Aus-Knopfs deaktiviert werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Die Überlastsicherung blockiert alle Hubbewegungen. Der Korb muss entlastet werden (Material oder Personen entfernen), bevor die Funktion wieder freigegeben wird. Nie überbrücken!'
+  },
+  {
+    frage: 'Warum ist das Anbringen von Planen oder Schildern am Arbeitskorb verboten?',
+    antworten: [
+      'Es ist nicht verboten — nur unästhetisch',
+      'Es wird als Werbung gewertet und ist damit genehmigungspflichtig',
+      'Der Segeleffekt erhöht die Windlast massiv und kann zum Umkippen der Bühne führen',
+      'Planen verdecken die Sicht des Bedieners auf die Steuerung'
+    ],
+    richtig: 2,
+    erklaerung: 'Planen und Schilder wirken wie ein Segel und multiplizieren die Windkraft auf die Bühne. Dies erhöht das Kippmoment dramatisch — selbst bei moderaten Windgeschwindigkeiten!'
+  },
+  {
+    frage: 'Wann dürfen die Stützen (Abstützung) einer Hubarbeitsbühne eingefahren werden?',
+    antworten: [
+      'Während des Betriebs, um Hindernissen seitlich auszuweichen',
+      'Wenn der Arbeitskorb sich vollständig in der untersten Transportstellung befindet',
+      'Das entscheidet der Bediener je nach Platzverhältnissen',
+      'Bei Windstärke unter 5 — dann ist das Einfahren sicher'
+    ],
+    richtig: 1,
+    erklaerung: 'Stützen dürfen ausschließlich in vollständig abgesenkter Transportstellung ein- oder ausgefahren werden. Nie bei angehobenem Korb!'
+  },
+  {
+    frage: 'Was gehört zur täglichen Sicht- und Funktionsprüfung vor Arbeitsbeginn?',
+    antworten: [
+      'Nur der Tankstand prüfen — alles andere ist Aufgabe des Herstellers',
+      'Die Prüfung ist freiwillig und nur bei sichtbaren Schäden nötig',
+      'Reifen, Hydraulik auf Dichtigkeit, Not-Aus-Funktion am Boden und im Korb, Notablass und UVV-Prüfplakette',
+      'Lediglich ein kurzer Probefahrt-Test reicht aus'
+    ],
+    richtig: 2,
+    erklaerung: 'Die tägliche Prüfung ist gesetzlich vorgeschrieben (DGUV 308-008) und umfasst: Hydraulik, Reifen, beide Not-Aus-Schalter, Notablass, Warneinrichtungen, PSAgA-Anschlagpunkte und die UVV-Plakette.'
+  },
+  {
+    frage: 'Wann ist das Tragen von PSAgA (Auffanggurt) beim Betrieb einer Hubarbeitsbühne zwingend vorgeschrieben?',
+    antworten: [
+      'Nur bei Windgeschwindigkeiten über 10 m/s',
+      'Nur wenn man höher als 20 Meter arbeitet',
+      'Grundsätzlich bei allen Arbeitsbühnen der Gruppe B (Auslegerbühnen) wegen des Peitscheneffekts',
+      'PSAgA ist in Hubarbeitsbühnen generell nicht erforderlich — der Korb bietet ausreichend Schutz'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei Gruppe B (Teleskop-, Gelenk- und Lkw-Bühnen) ist PSAgA Pflicht — unabhängig von Höhe oder Windstärke. Der Peitscheneffekt des langen Auslegers kann den Bediener auch aus geringer Höhe herauskatapultieren.'
+  }
+];
+
+// ── Zustand ──
+let hubFortschritt = {};       // { 'hub-01': true, ... }
+let hubQuizAktiv   = false;
+let hubQuizFragen  = [];
+let hubQuizIndex   = 0;
+let hubQuizPunkte  = 0;
+
+function hubSchulungInit() {
+  const wrap = document.getElementById('hub-schulung-btn-wrap');
+  if (!wrap) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser?.tenantId);
+  const hatHub = meineZuws.some(z => z.vorlagenId === HUB_VORLAGE_ID);
+  if (!hatHub) return;
+  wrap.style.display = '';
+  _hubFortschrittLaden();
+  _hubSubtitelAktualisieren();
+}
+
+function _hubFortschrittLaden() {
+  try {
+    const key = `hub_fortschritt_${currentUser?.userId || 'anon'}`;
+    const stored = localStorage.getItem(key);
+    if (stored) hubFortschritt = JSON.parse(stored);
+  } catch(e) {}
+}
+
+function _hubFortschrittSpeichern() {
+  if (_hubPreviewMode) return; // Preview: nicht speichern
+  try {
+    const key = `hub_fortschritt_${currentUser?.userId || 'anon'}`;
+    localStorage.setItem(key, JSON.stringify(hubFortschritt));
+  } catch(e) {}
+}
+
+function _hubSubtitelAktualisieren() {
+  const bestanden = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
+  const sub = document.getElementById('btn-hub-sub');
+  if (!sub) return;
+  const quizBestanden = !!localStorage.getItem(`hub_quiz_bestanden_${currentUser?.userId || 'anon'}`);
+  if (quizBestanden) {
+    sub.textContent = '✅ Quiz bestanden · Bescheinigung verfügbar';
+  } else {
+    sub.textContent = `${bestanden}/${HUB_KAPITEL.length} Kapitel · ${bestanden === HUB_KAPITEL.length ? 'Quiz verfügbar!' : 'Tippen zum Starten'}`;
+  }
+}
+
+function hubSchulungToggle() {
+  const cont  = document.getElementById('hub-schulung-container');
+  const pfeil = document.getElementById('btn-hub-pfeil');
+  if (!cont) return;
+  const open = cont.style.display === 'block';
+  cont.style.display = open ? 'none' : 'block';
+  if (pfeil) pfeil.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) hubSchulungRender();
+}
+
+function hubSchulungRender() {
+  const cont = document.getElementById('hub-schulung-container');
+  hubSchulungRenderIn(cont);
+}
+
+function hubSpracheSetzen(code) {
+  hubSprache = code;
+  localStorage.setItem('hub_sprache', code);
+  hubSchulungRender();
+  if (_hubPreviewMode && _hubPreviewContainer) hubSchulungRenderIn(_hubPreviewContainer);
+}
+
+function _hubT(key) {
+  return (HUB_UI[hubSprache] || HUB_UI.de)[key] || (HUB_UI.de)[key] || key;
+}
+
+function _hubKapitelTitel(k) {
+  if (hubSprache === 'de') return k.titel;
+  return (HUB_TITEL_I18N[k.id] || {})[hubSprache] || k.titel;
+}
+
+function _hubKapitelInhalt(k) {
+  if (hubSprache === 'de') return k.inhalt;
+  return (HUB_INHALT_I18N[k.id] || {})[hubSprache] || k.inhalt;
+}
+
+function hubSchulungRenderIn(cont) {
+  if (!cont) return;
+  // Im Preview-Mode: userId = 'preview', kein localStorage lesen
+  const userId = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+
+  // ── Sprach-Auswahl-Screen ──
+  const spracheGesetzt = !!localStorage.getItem('hub_sprache') || _hubPreviewMode;
+  if (!spracheGesetzt) {
+  let html_sprachbtn = '';
+  HUB_SPRACHEN.forEach(function(s) {
+    html_sprachbtn += '<button onclick="hubSpracheSetzen(\'' + s.code + '\')"'
+      + ' style="padding:14px 10px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:10px;cursor:pointer;font-size:.95rem;font-weight:700;color:#1a3a5c;display:flex;flex-direction:column;align-items:center;gap:4px"'
+      + ' onmouseover="this.style.borderColor=\'#1a3a5c\';this.style.background=\'#fef7ee\'"'
+      + ' onmouseout="this.style.borderColor=\'#e2e8f0\';this.style.background=\'#f8fafc\'">'
+      + '<span style="font-size:1.6rem">' + s.flag + '</span>'
+      + '<span>' + s.label + '</span>'
+      + '</button>';
+  });
+  cont.innerHTML = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:14px;background:#1a3a5c;color:#fff;text-align:center">'
+    + '<div style="font-size:1.5rem">&#127959;&#65039;</div>'
+    + '<div style="font-weight:700;font-size:.95rem;margin-top:6px">Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
+    + '</div>'
+    + '<div style="padding:16px">'
+    + '<div style="font-weight:700;font-size:.9rem;color:#1a3a5c;text-align:center;margin-bottom:14px">&#127760; Bitte Sprache wählen / Please select language / Lütfen dil seçin / اختر اللغة</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">' + html_sprachbtn + '</div>'
+    + '<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:8px;padding:10px 12px;font-size:.8rem;color:#92400e;text-align:center">'
+    + '&#9888;&#65039; Die Teilnahmebescheinigung und der Fahrauftrag werden immer auf <strong>Deutsch</strong> ausgestellt.<br>'
+    + '<span style="font-size:.75rem;opacity:.85">Certificate &amp; work order always in German &middot; Sertifika ve sürüş emri Almanca &middot; الشهادة وأمر العمل بالألمانية</span>'
+    + '</div>'
+    + '</div>'
+    + '</div>';
+  return;
+
+  }
+  const quizBestanden = _hubPreviewMode ? false : !!localStorage.getItem(`hub_quiz_bestanden_${userId}`);
+  const bestandenAnzahl = HUB_KAPITEL.filter(k => hubFortschritt[k.id]).length;
+  const alleGelesen = bestandenAnzahl === HUB_KAPITEL.length;
+  const isRTL = (HUB_SPRACHEN.find(s => s.code === hubSprache) || {}).rtl || false;
+  const hubSpracheAkt = HUB_SPRACHEN.find(s => s.code === hubSprache) || HUB_SPRACHEN[0];
+
+  // Modul-Gruppen
+  const module = [1,2,3,4];
+  const modulTitelDE = {
+    1: 'Modul 1 — Recht & Verantwortung',
+    2: 'Modul 2 — Gerätekunde & Technik',
+    3: 'Modul 3 — Standsicherheit & Gefahren',
+    4: 'Modul 4 — Praxis & Notfallmanagement'
+  };
+  const modulTitelEN = { 1:'Module 1 — Law & Responsibility', 2:'Module 2 — Equipment & Technology', 3:'Module 3 — Stability & Hazards', 4:'Module 4 — Practice & Emergency Management' };
+  const modulTitelTR = { 1:'Modül 1 — Hukuk ve Sorumluluk', 2:'Modül 2 — Ekipman ve Teknoloji', 3:'Modül 3 — Stabilite ve Tehlikeler', 4:'Modül 4 — Pratik ve Acil Yönetim' };
+  const modulTitelAR = { 1:'الوحدة 1', 2:'الوحدة 2', 3:'الوحدة 3', 4:'الوحدة 4' };
+  const modulTitelMap = { de: modulTitelDE, en: modulTitelEN, tr: modulTitelTR, ar: modulTitelAR };
+  const modulTitel = modulTitelMap[hubSprache] || modulTitelDE;
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#064e3b', 4:'#581c87' };
+
+  let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">'
+    + '<div style="display:flex;justify-content:space-between;align-items:flex-start">'
+    + '<div>'
+    + '<div style="font-weight:700;font-size:.9rem">&#127959;&#65039; Hubarbeitsbühnen &mdash; DGUV 308-008</div>'
+    + '<div style="font-size:.72rem;opacity:.8;margin-top:2px">' + bestandenAnzahl + ' ' + _hubT('von') + ' ' + HUB_KAPITEL.length + ' ' + _hubT('kapitel') + '</div>'
+    + '</div>'
+    + '<button onclick="localStorage.removeItem(\"hub_sprache\");hubSprache=\"de\";hubSchulungRender();"'
+    + ' style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 8px;font-size:.75rem;cursor:pointer;white-space:nowrap;flex-shrink:0">'
+    + hubSpracheAkt.flag + ' ' + hubSpracheAkt.label + ' ✎</button>'
+    + '</div>'
+    + '<div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">'
+    + '<div style="height:100%;background:#fbbf24;border-radius:3px;width:' + Math.round(bestandenAnzahl/HUB_KAPITEL.length*100) + '%;transition:width .4s"></div>'
+    + '</div>'
+    + '<div style="margin-top:5px;font-size:.7rem;opacity:.75">' + _hubT('bescheinigungHinweis') + '</div>'
+    + '</div>';
+
+  module.forEach(mod => {
+    const kapitelDesModuls = HUB_KAPITEL.filter(k => k.modul === mod);
+    html += `<div style="padding:8px 14px 2px;border-bottom:1px solid #f0f2f5">
+      <div style="font-size:.75rem;font-weight:700;color:${modulColor[mod]};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${modulTitel[mod]}</div>
+    </div>`;
+    kapitelDesModuls.forEach(k => {
+      const gelesen = !!hubFortschritt[k.id];
+      html += `
+        <div onclick="hubKapitelOeffnen('${k.id}')"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:${gelesen?'#f0fdf4':'#fff'};transition:background .15s"
+          onmouseover="this.style.background='${gelesen?'#dcfce7':'#fef7ee'}'"
+          onmouseout="this.style.background='${gelesen?'#f0fdf4':'#fff'}'">
+          <span style="font-size:1.5rem;flex-shrink:0">${gelesen ? '✅' : k.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.85rem;color:${gelesen?'#166534':'#1a3a5c'}">
+              ${k.nr}. ${escHtml(k.titel)}
+            </div>
+          </div>
+          <span style="font-size:1rem;color:${gelesen?'#16a34a':'#d1d5db'}">${gelesen?'✓':'›'}</span>
+        </div>`;
+    });
+  });
+
+  // Quiz-Button
+  html += `<div style="padding:12px 14px">`;
+  if (quizBestanden) {
+    const fahrauftragUnterzeichnet = !!localStorage.getItem(`hub_fahrauftrag_${userId}`);
+    const gegenzUnterzeichnet = !!localStorage.getItem(`hub_gegenz_${userId}`);
+    html += `
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:center">
+        <div style="font-size:1.5rem">${gegenzUnterzeichnet ? '🏆' : fahrauftragUnterzeichnet ? '✍️' : '✅'}</div>
+        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">
+          ${gegenzUnterzeichnet ? 'Fahrauftrag vollständig gegengezeichnet!' : fahrauftragUnterzeichnet ? 'Fahrauftrag unterzeichnet — Gegenzeichnung ausstehend' : 'Quiz bestanden!'}
+        </div>
+        <div style="font-size:.78rem;color:#166534;margin-top:2px">Ergebnis: ${localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–'}</div>
+        ${fahrauftragUnterzeichnet ? `<div style="font-size:.72rem;color:#16a34a;margin-top:4px">Gültig bis: ${localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '–'}</div>` : ''}
+      </div>
+      ${!fahrauftragUnterzeichnet ? `
+      <button onclick="hubFahrauftragOeffnen()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);margin-bottom:8px">
+        ✍️ Schritt 2: Fahrauftrag unterzeichnen →
+      </button>` : `
+      <button onclick="hubBescheinigungErstellen()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);margin-bottom:8px">
+        📄 Kombiniertes PDF herunterladen
+      </button>`}`;
+  } else if (alleGelesen) {
+    html += `
+      <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.8rem;color:#92400e">
+        <div style="font-weight:700;margin-bottom:2px">⚠️ Wichtiger Hinweis vor dem Quiz:</div>
+        <div>Mindestens <strong>85 % richtige Antworten</strong> (9 von 10) sind erforderlich.</div>
+        <div style="margin-top:3px">Das Ergebnis wird in der <strong>Teilnahmebescheinigung</strong> ausgewiesen.</div>
+      </div>
+      <button onclick="hubQuizStarten()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+        🎯 Quiz starten — 10 Fragen (mind. 85 % zum Bestehen)
+      </button>`;
+  } else {
+    html += `
+      <div style="text-align:center;color:#9ca3af;font-size:.8rem;padding:6px">
+        📖 ${_hubT('bitteLesen')}<br>
+        <span style="font-size:.75rem">(${HUB_KAPITEL.length - bestandenAnzahl} ${_hubT('nochOffen')})</span>
+      </div>`;
+  }
+  html += `</div></div>`;
+  cont.innerHTML = html;
+}
+
+function hubKapitelOeffnen(kapitelId) {
+  const k = HUB_KAPITEL.find(k => k.id === kapitelId);
+  if (!k) return;
+
+  const modal = document.getElementById('hub-kapitel-modal');
+  if (modal) {
+    document.getElementById('hub-modal-titel').textContent = `${k.nr}. ${k.titel}`;
+    document.getElementById('hub-modal-modul').textContent = `Modul ${k.modul} — DGUV 308-008`;
+    document.getElementById('hub-modal-body').innerHTML = k.inhalt;
+    const btnWeiter = document.getElementById('hub-modal-weiter');
+    if (btnWeiter) btnWeiter.onclick = () => hubKapitelAbschliessen(kapitelId);
+    modal.style.display = 'flex';
+    return;
+  }
+
+  // Fallback: inline im Container
+  hubFortschritt[kapitelId] = true;
+  _hubFortschrittSpeichern();
+  _hubSubtitelAktualisieren();
+  hubSchulungRender();
+}
+
+function hubKapitelAbschliessen(kapitelId) {
+  hubFortschritt[kapitelId] = true;
+  _hubFortschrittSpeichern();
+  _hubSubtitelAktualisieren();
+  document.getElementById('hub-kapitel-modal').style.display = 'none';
+  // Im Preview-Mode: in Preview-Container rendern
+  if (_hubPreviewMode && _hubPreviewContainer) {
+    hubSchulungRenderIn(_hubPreviewContainer);
+  } else {
+    hubSchulungRender();
+  }
+
+  // Supabase speichern — nur im echten Modus
+  if (!_hubPreviewMode && currentUser?.userId) {
+    const id = `${currentUser.userId}_${kapitelId}`;
+    SB.upsert('hub_fortschritt', {
+      id,
+      user_id: currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      kapitel_id: kapitelId,
+      abgehakt: true,
+      abgehakt_am: new Date().toISOString()
+    }).catch(() => {});
+  }
+}
+
+function hubKapitelModalSchliessen() {
+  const modal = document.getElementById('hub-kapitel-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── Quiz ──────────────────────────────────────────────────────
+
+function hubQuizStarten() {
+  hubQuizFragen = [...HUB_QUIZ].sort(() => Math.random() - 0.5);
+  hubQuizIndex  = 0;
+  hubQuizPunkte = 0;
+  hubQuizAktiv  = true;
+  hubQuizFrageZeigen();
+}
+
+function hubQuizFrageZeigen() {
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
+  if (!cont) return;
+  const q = hubQuizFragen[hubQuizIndex];
+  const nr = hubQuizIndex + 1;
+  const gesamt = hubQuizFragen.length;
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
+      <div style="padding:12px 14px;background:#1a3a5c;color:#fff">
+        <div style="font-weight:700;font-size:.88rem">🎯 Quiz — Frage ${nr} von ${gesamt}</div>
+        <div style="margin-top:6px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round((nr-1)/gesamt*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div style="font-weight:700;font-size:.92rem;color:#1e293b;margin-bottom:14px;line-height:1.45">${escHtml(q.frage)}</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          ${q.antworten.map((a, i) => `
+            <button onclick="hubQuizAntwort(${i})"
+              style="text-align:left;padding:11px 14px;background:#f9fafb;border:1.5px solid #e5e7eb;border-radius:9px;font-size:.84rem;color:#1e293b;cursor:pointer;transition:all .15s;line-height:1.4"
+              onmouseover="this.style.background='#dbeafe';this.style.borderColor='#3b82f6'"
+              onmouseout="this.style.background='#f9fafb';this.style.borderColor='#e5e7eb'"
+              id="hub-quiz-btn-${i}">
+              <span style="font-weight:700;color:#1a3a5c;margin-right:8px">${String.fromCharCode(65+i)}.</span>
+              ${escHtml(a)}
+            </button>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function hubQuizAntwort(gewaehlt) {
+  const q = hubQuizFragen[hubQuizIndex];
+  const richtig = gewaehlt === q.richtig;
+  if (richtig) hubQuizPunkte++;
+
+  // Buttons einfärben
+  for (let i = 0; i < q.antworten.length; i++) {
+    const btn = document.getElementById(`hub-quiz-btn-${i}`);
+    if (!btn) continue;
+    btn.disabled = true;
+    if (i === q.richtig) {
+      btn.style.background = '#f0fdf4';
+      btn.style.borderColor = '#22c55e';
+      btn.style.color = '#14532d';
+    } else if (i === gewaehlt && !richtig) {
+      btn.style.background = '#fef2f2';
+      btn.style.borderColor = '#ef4444';
+      btn.style.color = '#991b1b';
+    } else {
+      btn.style.opacity = '0.5';
+    }
+  }
+
+  // Erklärung + Weiter-Button
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
+  const quizBox = cont.querySelector('div[style*="overflow:hidden"]');
+  const erklaerungDiv = document.createElement('div');
+  erklaerungDiv.style.cssText = 'padding:0 16px 16px';
+  erklaerungDiv.innerHTML = `
+    <div style="background:${richtig?'#f0fdf4':'#fef2f2'};border-radius:8px;padding:10px 12px;margin-top:10px;font-size:.82rem">
+      <div style="font-weight:700;color:${richtig?'#14532d':'#991b1b'};margin-bottom:4px">${richtig?'✅ Richtig!':'❌ Leider falsch'}</div>
+      <div style="color:${richtig?'#166534':'#7f1d1d'}">${escHtml(q.erklaerung)}</div>
+    </div>
+    <button onclick="hubQuizWeiter()"
+      style="width:100%;margin-top:10px;padding:11px;background:#1a3a5c;color:#fff;border:none;border-radius:9px;font-weight:700;font-size:.88rem;cursor:pointer">
+      ${hubQuizIndex < hubQuizFragen.length - 1 ? 'Nächste Frage →' : 'Ergebnis anzeigen'}
+    </button>`;
+  quizBox.appendChild(erklaerungDiv);
+}
+
+function hubQuizWeiter() {
+  hubQuizIndex++;
+  if (hubQuizIndex < hubQuizFragen.length) {
+    hubQuizFrageZeigen();
+  } else {
+    hubQuizErgebnis();
+  }
+}
+
+function hubQuizErgebnis() {
+  const userId  = currentUser?.userId || 'anon';
+  const prozent = Math.round(hubQuizPunkte / hubQuizFragen.length * 100);
+  const bestanden = prozent >= 85;
+
+    if (bestanden) {
+    if (!_hubPreviewMode) {
+      localStorage.setItem(`hub_quiz_bestanden_${userId}`, '1');
+      localStorage.setItem(`hub_quiz_ergebnis_${userId}`, `${hubQuizPunkte}/${hubQuizFragen.length} (${prozent} %)`);
+    }
+    // Supabase — nur im echten Modus
+    if (!_hubPreviewMode && currentUser?.userId) {
+      SB.upsert('hub_unterschriften', {
+        id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
+        user_id: currentUser.userId,
+        tenant_id: currentUser.tenantId || '',
+        vollname: currentUser.name || '',
+        quiz_punkte: hubQuizPunkte,
+        quiz_gesamt: hubQuizFragen.length,
+        unterzeichnet_am: new Date().toISOString()
+      }).catch(() => {});
+    }
+  }
+
+  const cont = _hubPreviewMode && _hubPreviewContainer ? _hubPreviewContainer : document.getElementById('hub-schulung-container');
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.1);overflow:hidden">
+      <div style="padding:16px 14px;background:${bestanden?'#14532d':'#7f1d1d'};color:#fff;text-align:center">
+        <div style="font-size:2.5rem">${bestanden?'🏆':'📚'}</div>
+        <div style="font-weight:700;font-size:1.1rem;margin-top:8px">${bestanden?'Quiz bestanden!':'Nicht bestanden'}</div>
+        <div style="font-size:.82rem;opacity:.9;margin-top:4px">${hubQuizPunkte} von ${hubQuizFragen.length} Fragen richtig (${prozent} %)</div>
+        <div style="font-size:.78rem;opacity:.8;margin-top:2px">Mindestpunktzahl: 85 % (${Math.ceil(hubQuizFragen.length*0.85)}/${hubQuizFragen.length})</div>
+      </div>
+      <div style="padding:16px">
+        ${bestanden ? `
+          <div style="background:#f0fdf4;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
+            <div style="font-size:.85rem;color:#14532d;font-weight:700">✅ Quiz bestanden${_hubPreviewMode ? ' — Vorschau-Modus (kein Speichern)' : ' — Ergebnis gespeichert'}</div>
+            <div style="font-size:.78rem;color:#166534;margin-top:4px">${_hubPreviewMode ? '🔍 Du siehst jetzt wie Schritt 2 (Fahrauftrag) aussieht' : 'Jetzt Schritt 2: Fahrauftrag unterzeichnen'}</div>
+          </div>
+          <button onclick="hubFahrauftragOeffnen()"
+            style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+            ✍️ Schritt 2: Fahrauftrag unterzeichnen →
+          </button>` : `
+          <div style="background:#fef2f2;border-radius:10px;padding:12px;text-align:center;margin-bottom:12px">
+            <div style="font-size:.85rem;color:#991b1b;font-weight:700">❌ ${prozent} % — Mindestpunktzahl nicht erreicht</div>
+            <div style="font-size:.78rem;color:#7f1d1d;margin-top:4px">Bitte Kapitel wiederholen und erneut versuchen.</div>
+          </div>
+          <button onclick="hubQuizStarten()"
+            style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;margin-bottom:8px">
+            🔄 Quiz wiederholen
+          </button>`}
+        <button onclick="hubSchulungRender()"
+          style="width:100%;padding:11px;background:#f9fafb;color:#374151;border:1.5px solid #e5e7eb;border-radius:10px;font-size:.85rem;font-weight:600;cursor:pointer">
+          ← Zurück zur Übersicht
+        </button>
+      </div>
+    </div>`;
+
+  _hubSubtitelAktualisieren();
+}
+
+// ── Teilnahmebescheinigung (PDF) ─────────────────────────────
+
+async function hubBescheinigungErstellen() {
+  const userId   = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+  const userName = currentUser?.name || 'Teilnehmer';
+  const tenantId = currentUser?.tenantId || '';
+  const ergebnis = _hubPreviewMode
+    ? `${hubQuizPunkte}/${Math.max(hubQuizFragen.length,1)} (${Math.round(hubQuizPunkte/Math.max(hubQuizFragen.length,1)*100)} %)`
+    : (localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–');
+  const datum    = new Date();
+  const tenant   = APP_TENANTS?.find(t => t.id === tenantId);
+  const firmaName = tenant?.name || 'CSC GmbH';
+
+  // Fahrauftrag-Daten
+  const typA = _hubPreviewMode ? !!document.getElementById('hub-fa-typ-a')?.checked : !!localStorage.getItem(`hub_fahrauftrag_typa_${userId}`);
+  const typB = _hubPreviewMode ? !!document.getElementById('hub-fa-typ-b')?.checked : !!localStorage.getItem(`hub_fahrauftrag_typb_${userId}`);
+  const faBis = _hubPreviewMode
+    ? (() => { const d = new Date(); d.setDate(d.getDate()+364); return d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'}); })()
+    : (localStorage.getItem(`hub_fahrauftrag_bis_${userId}`) || '');
+
+  showToast('⏳ Kombiniertes PDF wird erstellt…', '#1a2d4e');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+    const ML=14, CW=182;
+    const ROT    = [26,45,78];       // Dunkelblau (wie PSAgA)
+    const ORANGE = [220,160,0];      // Gold (wie PSAgA)
+    const HELLROT= [235,244,255];    // Hellblau
+    const BLAU   = [26,45,78];       // Dunkelblau (Texte)
+    const GRAU   = [71,85,105];
+    const LINIE  = [226,232,240];
+    const WEISS  = [255,255,255];
+    const GRUEN  = [22,163,74];
+    const HELLGR = [240,253,244];
+
+    const fmtDat = d => (d instanceof Date ? d : new Date(d)).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    const heute  = fmtDat(datum);
+    const nr     = `HUB-${datum.getFullYear()}-${String(Math.floor(Math.random()*9000)+1000)}`;
+
+    // ══════════════════════════════════════════════════════════
+    // SEITE 1 — TEILNAHMEBESCHEINIGUNG
+    // ══════════════════════════════════════════════════════════
+    let y = 14;
+
+    // Header
+    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
+    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH', ML, 14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
+    doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('TEILNAHMEBESCHEINIGUNG', 210-ML, 13, {align:'right'});
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text('Hubarbeitsbühnen | DGUV Grundsatz 308-008', 210-ML, 19, {align:'right'});
+    y = 38;
+
+    // Personenbox
+    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,22,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,22,2,2,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('TEILNEHMER / IN', ML+8, y+7);
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text(userName, ML+8, y+15);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text(`Bescheinigung Nr. ${nr}`, 210-ML, y+7, {align:'right'});
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text(`Ausgestellt: ${heute}`, 210-ML, y+15, {align:'right'});
+    y += 28;
+
+    // Unternehmen + Haupttext
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text(`Unternehmen: ${firmaName}`, ML, y); y += 7;
+    doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung zum Bediener', ML, y, {maxWidth:CW}); y += 5.5;
+    doc.text('von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y); y += 5.5;
+    doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text('DGUV-Grundsatzes 308-008', ML, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('erfolgreich absolviert und das abschließende Quiz', ML+52, y); y += 5.5;
+    doc.text(`mit dem Ergebnis ${ergebnis} (Mindestpunktzahl: 85 %) bestanden hat.`, ML, y); y += 12;
+
+    // Schulungsinhalte
+    doc.setFillColor(...ORANGE); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('Schulungsinhalte (15 Kapitel)', ML+7, y+5.5); y += 11;
+
+    const kapitel = [
+      '1.  Rechtliche Grundlagen & Pflichten (ArbSchG, BetrSichV, DGUV)',
+      '2.  Verantwortung & Haftung (Organisations- und Durchführungsverantwortung)',
+      '3.  Bühnentypen: Gruppe A (Senkrechthub) und Gruppe B (Auslegerbühnen)',
+      '4.  Sicherheitseinrichtungen (Not-Aus, Neigungswächter, Totmannschalter)',
+      '5.  PSAgA-Pflicht bei Boom-Lifts — Peitscheneffekt und Anschlagpunkte',
+      '6.  Lastdiagramm — Tragfähigkeit in Abhängigkeit von Ausladung und Höhe',
+      '7.  Untergrund & Standsicherheit (Stützen, Unterlegplatten, Nivellierung)',
+      '8.  Windgefahren — Maximalwert 12,5 m/s und Segeleffekt-Verbot',
+      '9.  Sicherheitsabstände zu elektrischen Freileitungen',
+      '10. Tägliche Sicht- und Funktionsprüfung vor Arbeitsbeginn',
+      '11. Sicheres Aufstellen — Bodenvorbereitung und Aufstellablauf',
+      '12. Verbote im Betrieb (Überlast, Umsteigen, Freileitungen, Manipulation)',
+      '13. Notablass — Manuelles Absenken bei technischem Defekt oder Notfall',
+      '14. Fahrauftrag, Prüfungsablauf & Gültigkeitsdauer des Bedienerausweises',
+      '15. Betriebsanweisung gem. § 9 BetrSichV / DGUV Regel 100-500 Kap. 2.10'
+    ];
+    const tcw=(CW-6)/2, th=6.5;
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    kapitel.forEach((k,ti) => {
+      const col=ti%2, row=Math.floor(ti/2), tx=ML+col*(tcw+6), ty2=y+row*th;
+      doc.setFillColor(250,245,240); doc.roundedRect(tx,ty2-1.5,tcw,th-0.5,1,1,'F');
+      doc.setFillColor(...ORANGE); doc.rect(tx,ty2-1.5,2.5,th-0.5,'F');
+      doc.setTextColor(...GRAU); doc.text(k,tx+5,ty2+2.5,{maxWidth:tcw-7});
+    });
+    y += Math.ceil(kapitel.length/2)*th + 8;
+
+    // Trennlinie
+    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
+
+    // Hinweis
+    doc.setFontSize(7.5); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
+    doc.text('Diese Bescheinigung gilt für den theoretischen Teil. Praktische Fahrprüfung und schriftlicher Fahrauftrag sind zusätzlich erforderlich (DGUV 308-008). Siehe Seite 2.', ML, y, {maxWidth:CW}); y += 9;
+
+    // Unterschrift-Block
+    const sigH=30, halfW=(CW-4)/2;
+    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,halfW,sigH,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,sigH,2,2,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('Ausbildungsverantwortlicher', ML+8, y+7);
+    doc.setDrawColor(...ROT); doc.setLineWidth(0.5);
+    doc.line(ML+8,y+16,ML+halfW-4,y+16);
+    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
+    doc.text('gez. Thomas Schmoldt', ML+8, y+24);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(`CSC GmbH · ${heute}`, ML+8, y+29);
+
+    const rx=ML+halfW+4;
+    doc.setFillColor(...HELLGR); doc.roundedRect(rx,y,halfW,sigH,3,3,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx,y,4,sigH,2,2,'F');
+    doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(...GRUEN);
+    doc.text('Quiz bestanden', rx+halfW/2, y+10, {align:'center'});
+    // Prozentanzeige robust extrahieren: "8/10 (80 %)" → "80 %" oder direkt "≥70%"
+    const prozentMatch = ergebnis.match(/(\d+)\s*%/);
+    const prozentAnzeige = prozentMatch ? prozentMatch[1] + ' %' : '≥85%';
+    doc.setFontSize(18); doc.setFont('helvetica','bold');
+    doc.text(prozentAnzeige, rx+halfW/2, y+22, {align:'center'});
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(`Min. 85 % · ${heute}`, rx+halfW/2, y+29, {align:'center'});
+
+    // Footer Seite 1
+    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 1 von 2', 105, 293, {align:'center'});
+
+    // ══════════════════════════════════════════════════════════
+    // SEITE 2 — SCHRIFTLICHE BEAUFTRAGUNG (FAHRAUFTRAG)
+    // ══════════════════════════════════════════════════════════
+    doc.addPage();
+    y = 14;
+
+    // Header Seite 2
+    doc.setFillColor(...ROT); doc.rect(0,0,210,32,'F');
+    doc.setFillColor(...ORANGE); doc.rect(0,28,210,4,'F');
+    doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH', ML, 14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal');
+    doc.text('Gebäudereinigung · Höhentechnologie · Sicherheit', ML, 20);
+    doc.setFontSize(9); doc.setFont('helvetica','bold');
+    doc.text('SCHRIFTLICHE BEAUFTRAGUNG', 210-ML, 13, {align:'right'});
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal');
+    doc.text('Fahrauftrag nach DGUV Regel 100-500 Kap. 2.10', 210-ML, 19, {align:'right'});
+    y = 38;
+
+    // Rechtlicher Hinweis-Banner
+    doc.setFillColor(255,247,237); doc.roundedRect(ML,y,CW,10,2,2,'F');
+    doc.setFillColor(...ORANGE); doc.rect(ML,y,3,10,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(124,45,18);
+    doc.text('Rechtliche Grundlage: § 12 ArbSchG · BetrSichV · DGUV Grundsatz 308-008 · DGUV Regel 100-500 Kap. 2.10', ML+6, y+6.5, {maxWidth:CW-8});
+    y += 14;
+
+    // Bediener-Box
+    doc.setFillColor(...HELLROT); doc.roundedRect(ML,y,CW,24,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,24,2,2,'F');
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('BEAUFTRAGTER BEDIENER', ML+8, y+7);
+    doc.setFontSize(13); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text(userName, ML+8, y+14);
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text(`Unternehmen: ${firmaName}`, ML+8, y+21);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...BLAU);
+    doc.text(`Ausgestellt: ${heute}  |  Bescheinigungs-Nr.: ${nr}`, 210-ML, y+14, {align:'right'});
+    y += 28;
+
+    // Abschnitt 1: Umfang
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('1. Umfang der Beauftragung', ML+7, y+5.5); y += 11;
+
+    const typen = [];
+    if (typA) typen.push({ label:'Gruppe A — Senkrechthub', sub:'Scherenbühnen, Personenlifte (Schwerpunkt bleibt innerhalb der Kippkanten)' });
+    if (typB) typen.push({ label:'Gruppe B — Auslegerbühnen (Boom-Lifts)', sub:'Teleskopbühnen, Gelenk-Teleskopbühnen, Lkw-Arbeitsbühnen — PSAgA-Pflicht!' });
+    if (!typA && !typB) typen.push({ label:'Alle im Betrieb vorhandenen Hubarbeitsbühnen', sub:'nach erfolgter gerätespezifischer Einweisung' });
+
+    typen.forEach(t => {
+      doc.setFillColor(250,245,240); doc.roundedRect(ML,y,CW,12,2,2,'F');
+      doc.setFillColor(...ORANGE); doc.rect(ML,y,3,12,'F');
+      doc.setFontSize(9); doc.setFont('helvetica','bold'); doc.setTextColor(30,30,30);
+      doc.text('☑  '+t.label, ML+6, y+5);
+      doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+      doc.text(t.sub, ML+10, y+10);
+      y += 14;
+    });
+    y += 2;
+
+    // Abschnitt 2: Voraussetzungen
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('2. Voraussetzungen des Bedieners (alle erfüllt)', ML+7, y+5.5); y += 11;
+
+    const vorraus = [
+      '✓ Mindestalter 18 Jahre vollendet',
+      `✓ Ausbildung nach DGUV 308-008 erfolgreich abgeschlossen am ${heute}`,
+      '✓ Körperliche und geistige Eignung (Höhentauglichkeit) liegt vor',
+      '✓ Gerätespezifische Einweisung für das jeweilige Einsatzgerät wird durchgeführt'
+    ];
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    vorraus.forEach(v => { doc.text(v, ML+2, y); y += 5.5; });
+    y += 4;
+
+    // Abschnitt 3: Gültigkeitszeitraum
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('3. Gültigkeitszeitraum', ML+7, y+5.5); y += 11;
+
+    const bisDate = new Date(datum); bisDate.setDate(bisDate.getDate()+364);
+    const hw=(CW-4)/2;
+    doc.setFillColor(...HELLGR); doc.roundedRect(ML,y,hw,14,2,2,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(ML,y,3,14,1,1,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('GÜLTIG AB', ML+6, y+5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(heute, ML+6, y+11);
+
+    doc.setFillColor(...HELLGR); doc.roundedRect(ML+hw+4,y,hw,14,2,2,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(ML+hw+4,y,3,14,1,1,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('GÜLTIG BIS', ML+hw+8, y+5);
+    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(20,83,45);
+    doc.text(faBis || fmtDat(bisDate), ML+hw+8, y+11);
+    y += 18;
+
+    doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(140,140,140);
+    doc.text('Hinweis: Jährliche betriebliche Unterweisung bleibt Pflicht. Der Fahrauftrag kann jederzeit widerrufen werden.', ML, y); y += 8;
+
+    // Abschnitt 4: Pflichten
+    doc.setFillColor(...ROT); doc.rect(ML,y,4,7,'F');
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('4. Pflichten des Bedieners', ML+7, y+5.5); y += 10;
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    const pflichten = 'Der Bediener verpflichtet sich zur Einhaltung der Betriebssicherheitsverordnung, der DGUV-Unfallverhütungsvorschriften und der Herstellerbetriebsanleitungen. Vor jeder Inbetriebnahme ist die vorgeschriebene Sicht- und Funktionsprüfung durchzuführen. Festgestellte Mängel sind sofort dem Vorgesetzten zu melden. Das Tragen der PSAgA (Auffanggurt) ist Pflicht bei Gruppe B (Boom-Lifts).';
+    const plLines = doc.splitTextToSize(pflichten, CW);
+    doc.text(plLines, ML, y); y += plLines.length*4.5+6;
+
+    // Unterschriften
+    doc.setFillColor(...LINIE); doc.rect(ML,y,CW,0.8,'F'); y += 6;
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('5. Unterschriften', ML, y); y += 8;
+
+    const uh=38, uw=(CW-4)/2;
+
+    // MA-Unterschrift (links)
+    doc.setFillColor(250,245,240); doc.roundedRect(ML,y,uw,uh,3,3,'F');
+    doc.setFillColor(...ROT); doc.roundedRect(ML,y,4,uh,2,2,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('Bediener / Beauftragter', ML+8, y+6);
+    // Unterschrift-Bild aus Canvas wenn vorhanden
+    try {
+      const untCanvas = document.getElementById('hub-fa-canvas');
+      if (untCanvas && _hubFaHatStriche) {
+        doc.addImage(untCanvas.toDataURL('image/png'), 'PNG', ML+5, y+8, uw-10, 20);
+      }
+    } catch(e) {}
+    doc.setDrawColor(...ROT); doc.setLineWidth(0.4);
+    doc.line(ML+8, y+28, ML+uw-4, y+28);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
+    doc.text(userName, ML+8, y+34);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text(heute, ML+8, y+uh-3);
+
+    // Verantwortlichen-Unterschrift (rechts)
+    const rx2=ML+uw+4;
+    doc.setFillColor(240,253,244); doc.roundedRect(rx2,y,uw,uh,3,3,'F');
+    doc.setFillColor(...GRUEN); doc.roundedRect(rx2,y,4,uh,2,2,'F');
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
+    doc.text('Verantwortlicher / Vorgesetzter', rx2+8, y+6);
+    doc.setDrawColor(...GRUEN); doc.setLineWidth(0.4);
+    doc.line(rx2+8, y+28, rx2+uw-4, y+28);
+    doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
+    doc.text('gez. Thomas Schmoldt', rx2+8, y+22);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
+    doc.text('Geschäftsführer · CSC GmbH', rx2+8, y+29);
+    doc.text(heute, rx2+8, y+uh-3);
+
+    // Footer Seite 2
+    doc.setFillColor(...ROT); doc.rect(0,287,210,10,'F');
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(...WEISS);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · Seite 2 von 2', 105, 293, {align:'center'});
+
+    // ── PDF öffnen ───────────────────────────────────────────
+    const pdfBlob   = doc.output('blob');
+    const pdfUrl    = URL.createObjectURL(pdfBlob);
+    window.open(pdfUrl, '_blank');
+    if (_hubPreviewMode) { showToast('🔍 Vorschau-PDF (nicht gespeichert)', '#1a3a5c'); return; }
+    showToast('✅ PDF erstellt (Bescheinigung + Fahrauftrag)', '#14532d');
+
+    // ── Backup: Supabase Storage ─────────────────────────────
+    const pdfBytes  = doc.output('arraybuffer');
+    const fn        = `hub/${tenantId}/${userId}_${datum.getTime()}.pdf`;
+    let   pdfStored = false;
+    let   publicUrl = '';
+
+    try {
+      const uploadRes = await fetch(`${SUPABASE_URL}/storage/v1/object/psaga-bescheinigungen/${fn}`, {
+        method: 'POST',
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY,
+          'Content-Type': 'application/pdf',
+          'x-upsert': 'true'
+        },
+        body: pdfBytes
+      });
+      if (uploadRes.ok) {
+        publicUrl = `${SUPABASE_URL}/storage/v1/object/public/psaga-bescheinigungen/${fn}`;
+        pdfStored = true;
+        showToast('🗄️ PDF in Supabase gespeichert', '#0f5132');
+      } else {
+        console.warn('Supabase Upload:', uploadRes.status, await uploadRes.text());
+      }
+    } catch(uploadErr) {
+      console.warn('Supabase Storage Upload fehlgeschlagen:', uploadErr.message);
+    }
+
+    // ── Backup: Supabase-Datenbank (immer, auch ohne Storage) ─
+    try {
+      await SB.upsert('hub_unterschriften', {
+        id:               `${userId}_${tenantId}`,
+        user_id:          userId,
+        user_name:        userName,
+        tenant_id:        tenantId || null,
+        vollname:         userName,
+        ausstellungsdatum: datum.toISOString().slice(0,10),
+        fahrauftrag_von:  datum.toISOString().slice(0,10),
+        fahrauftrag_bis:  faBis || new Date(datum.getTime()+364*86400000).toISOString().slice(0,10),
+        buehnentyp_a:     typA,
+        buehnentyp_b:     typB,
+        pdf_url:          publicUrl || null,
+        fahrauftrag_pdf_url: publicUrl || null,
+        aktualisiert_am:  new Date().toISOString()
+      });
+      if (!pdfStored) showToast('🗄️ Metadaten in Datenbank gespeichert (PDF lokal)', '#2563eb');
+    } catch(dbErr) {
+      console.warn('Supabase DB Backup fehlgeschlagen:', dbErr.message);
+    }
+    // Audit-Eintrag IMMER schreiben (manipulationssichere Protokollierung)
+    await sbAudit('HUB_BESCHEINIGUNG', JSON.stringify({
+      user_id: userId, user_name: userName, tenant_id: tenantId,
+      datum: datum.toISOString().slice(0,10), nr, typA, typB, pdf_url: publicUrl
+    })).catch(()=>{});
+
+  } catch(e) {
+    console.error('Hub-PDF-Fehler:', e);
+    showToast('⚠️ Fehler: ' + e.message, '#7f1d1d');
+  }
+}
+
+
+// ══════════════════════════════════════════════════════════════
+// ── HUB FAHRAUFTRAG — Schriftliche Beauftragung nach DGUV 100-500
+// ══════════════════════════════════════════════════════════════
+
+let _hubFaCanvas = null, _hubFaCtx = null, _hubFaHatStriche = false;
+let _hubFaGegenzCanvas = null, _hubFaGegenzCtx = null, _hubFaGegenzHatStriche = false;
+
+let _hubFaGegenzUserId = null; // Für Gegenzeichnung durch Verantwortlichen
+
+function hubFahrauftragOeffnen() {
+  const userId = currentUser?.userId || 'anon';
+  const heute = new Date();
+  const bis = new Date(heute); bis.setDate(bis.getDate() + 364);
+  const fmtDat = d => d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+
+  // Tenant-Name ermitteln
+  const tenant = APP_TENANTS?.find(t => t.id === currentUser?.tenantId);
+  const firmaName = tenant?.name || 'CSC GmbH';
+
+  // Modal befüllen
+  document.getElementById('hub-fa-name').textContent = currentUser?.name || '';
+  document.getElementById('hub-fa-firma').textContent = firmaName;
+  document.getElementById('hub-fa-datum-schulung').textContent = fmtDat(heute);
+  document.getElementById('hub-fa-von').textContent = fmtDat(heute);
+  document.getElementById('hub-fa-bis').textContent = fmtDat(bis);
+
+  // Checkboxen zurücksetzen
+  document.getElementById('hub-fa-typ-a').checked = false;
+  document.getElementById('hub-fa-typ-b').checked = false;
+  document.getElementById('hub-fa-typ-fehler').style.display = 'none';
+  document.getElementById('hub-fa-label-a').style.borderColor = '#e5e7eb';
+  document.getElementById('hub-fa-label-b').style.borderColor = '#e5e7eb';
+
+  // Bestätige-Button sperren
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  btn.disabled = true;
+  btn.style.background = '#d1d5db';
+  btn.style.color = '#9ca3af';
+  btn.style.cursor = 'not-allowed';
+
+  document.getElementById('hub-fahrauftrag-modal').style.display = 'flex';
+
+  // Canvas initialisieren
+  requestAnimationFrame(() => {
+    _hubFaCanvas = document.getElementById('hub-fa-canvas');
+    _hubFaCtx = _hubFaCanvas.getContext('2d');
+    _hubFaHatStriche = false;
+    _hubFaCanvasInit();
+    _hubFaCanvasBindEvents();
+  });
+}
+
+function hubFahrauftragSchliessen() {
+  document.getElementById('hub-fahrauftrag-modal').style.display = 'none';
+  _hubFaCanvasUnbindEvents();
+  _hubFaCanvas = null; _hubFaCtx = null;
+}
+
+function hubFaTypChanged() {
+  const a = document.getElementById('hub-fa-typ-a').checked;
+  const b = document.getElementById('hub-fa-typ-b').checked;
+  document.getElementById('hub-fa-label-a').style.borderColor = a ? '#1a3a5c' : '#e5e7eb';
+  document.getElementById('hub-fa-label-b').style.borderColor = b ? '#1a3a5c' : '#e5e7eb';
+  document.getElementById('hub-fa-typ-fehler').style.display = 'none';
+  _hubFaPruefenObBereit();
+}
+
+function _hubFaPruefenObBereit() {
+  const typOk = document.getElementById('hub-fa-typ-a').checked || document.getElementById('hub-fa-typ-b').checked;
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  const bereit = typOk && _hubFaHatStriche;
+  btn.disabled = !bereit;
+  btn.style.background = bereit ? '#1a3a5c' : '#d1d5db';
+  btn.style.color = bereit ? '#fff' : '#9ca3af';
+  btn.style.cursor = bereit ? 'pointer' : 'not-allowed';
+}
+
+function _hubFaCanvasInit() {
+  if (!_hubFaCtx || !_hubFaCanvas) return;
+  _hubFaCtx.clearRect(0,0,_hubFaCanvas.width,_hubFaCanvas.height);
+  _hubFaCtx.fillStyle = '#f9fafb';
+  _hubFaCtx.fillRect(0,0,_hubFaCanvas.width,_hubFaCanvas.height);
+  _hubFaCtx.strokeStyle = '#d1d5db';
+  _hubFaCtx.lineWidth = 1;
+  _hubFaCtx.setLineDash([6,4]);
+  _hubFaCtx.beginPath();
+  _hubFaCtx.moveTo(20, _hubFaCanvas.height-24);
+  _hubFaCtx.lineTo(_hubFaCanvas.width-20, _hubFaCanvas.height-24);
+  _hubFaCtx.stroke();
+  _hubFaCtx.setLineDash([]);
+  _hubFaCtx.font = '11px sans-serif';
+  _hubFaCtx.fillStyle = '#d1d5db';
+  _hubFaCtx.textAlign = 'center';
+  _hubFaCtx.fillText('Hier unterschreiben', _hubFaCanvas.width/2, _hubFaCanvas.height-8);
+  _hubFaCtx.textAlign = 'left';
+}
+
+function hubFaCanvasLeeren() {
+  _hubFaHatStriche = false;
+  _hubFaCanvasInit();
+  document.getElementById('hub-fa-canvas-status').textContent = 'Bitte mit dem Finger unterzeichnen';
+  document.getElementById('hub-fa-canvas-status').style.color = '#9ca3af';
+  _hubFaPruefenObBereit();
+}
+
+let _hubFaZeichnet = false;
+function _hubFaGetPos(e) {
+  const rect = _hubFaCanvas.getBoundingClientRect();
+  const sx = _hubFaCanvas.width / rect.width;
+  const sy = _hubFaCanvas.height / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - rect.left)*sx, y: (src.clientY - rect.top)*sy };
+}
+function _hubFaStart(e) { e.preventDefault(); _hubFaZeichnet = true; const p = _hubFaGetPos(e); _hubFaCtx.beginPath(); _hubFaCtx.moveTo(p.x,p.y); }
+function _hubFaMove(e) {
+  if (!_hubFaZeichnet) return; e.preventDefault();
+  const p = _hubFaGetPos(e);
+  _hubFaCtx.lineWidth = 2.5; _hubFaCtx.strokeStyle = '#1e293b'; _hubFaCtx.lineCap = 'round';
+  _hubFaCtx.setLineDash([]);
+  _hubFaCtx.lineTo(p.x,p.y); _hubFaCtx.stroke(); _hubFaCtx.beginPath(); _hubFaCtx.moveTo(p.x,p.y);
+  if (!_hubFaHatStriche) {
+    _hubFaHatStriche = true;
+    document.getElementById('hub-fa-canvas-status').textContent = '✅ Unterschrift erfasst';
+    document.getElementById('hub-fa-canvas-status').style.color = '#16a34a';
+    _hubFaPruefenObBereit();
+  }
+}
+function _hubFaEnd() { _hubFaZeichnet = false; }
+function _hubFaCanvasBindEvents() {
+  if (!_hubFaCanvas) return;
+  _hubFaCanvas.addEventListener('mousedown', _hubFaStart); _hubFaCanvas.addEventListener('mousemove', _hubFaMove); _hubFaCanvas.addEventListener('mouseup', _hubFaEnd);
+  _hubFaCanvas.addEventListener('touchstart', _hubFaStart, {passive:false}); _hubFaCanvas.addEventListener('touchmove', _hubFaMove, {passive:false}); _hubFaCanvas.addEventListener('touchend', _hubFaEnd);
+}
+function _hubFaCanvasUnbindEvents() {
+  if (!_hubFaCanvas) return;
+  _hubFaCanvas.removeEventListener('mousedown', _hubFaStart); _hubFaCanvas.removeEventListener('mousemove', _hubFaMove); _hubFaCanvas.removeEventListener('mouseup', _hubFaEnd);
+  _hubFaCanvas.removeEventListener('touchstart', _hubFaStart); _hubFaCanvas.removeEventListener('touchmove', _hubFaMove); _hubFaCanvas.removeEventListener('touchend', _hubFaEnd);
+}
+
+async function hubFahrauftragBestaetigen() {
+  const typA = document.getElementById('hub-fa-typ-a').checked;
+  const typB = document.getElementById('hub-fa-typ-b').checked;
+  if (!typA && !typB) { document.getElementById('hub-fa-typ-fehler').style.display = ''; return; }
+  if (!_hubFaHatStriche) { showToast('⚠️ Bitte erst unterzeichnen', '#92400e'); return; }
+
+  const btn = document.getElementById('hub-fa-bestaetigen-btn');
+  btn.disabled = true;
+  btn.textContent = _hubPreviewMode ? '⏳ Vorschau-PDF wird erstellt…' : '⏳ Wird gespeichert…';
+
+  const userId   = currentUser?.userId || 'anon';
+  const heute    = new Date();
+  const bis      = new Date(heute); bis.setDate(bis.getDate() + 364);
+  const fmtISO   = d => d.toISOString().slice(0,10);
+  const fmtDat   = d => d.toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const untDataUrl = _hubFaCanvas.toDataURL('image/png');
+
+  // Lokal speichern — nur im echten Modus
+  if (!_hubPreviewMode) {
+    localStorage.setItem(`hub_fahrauftrag_${userId}`, '1');
+    localStorage.setItem(`hub_fahrauftrag_bis_${userId}`, fmtDat(bis));
+    localStorage.setItem(`hub_fahrauftrag_typa_${userId}`, typA ? '1' : '');
+    localStorage.setItem(`hub_fahrauftrag_typb_${userId}`, typB ? '1' : '');
+  }
+
+  // Supabase (best-effort) — nur im echten Modus
+  if (!_hubPreviewMode && currentUser?.userId) {
+    SB.upsert('hub_unterschriften', {
+      id: `${currentUser.userId}_${currentUser.tenantId || ''}`,
+      user_id: currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      vollname: currentUser.name || '',
+      buehnentyp_a: typA,
+      buehnentyp_b: typB,
+      fahrauftrag_von: fmtISO(heute),
+      fahrauftrag_bis: fmtISO(bis),
+      unt_ma_data_url: untDataUrl
+    }).catch(() => {});
+  }
+
+  hubFahrauftragSchliessen();
+  showToast('✅ Fahrauftrag unterzeichnet!', '#14532d');
+
+  // Direkt PDF erstellen
+  await hubBescheinigungErstellen();
+
+  hubSchulungRender();
+  _hubSubtitelAktualisieren();
+}
+
+// ── Gegenzeichnung durch Verantwortlichen ─────────────────────
+
+let _hubGegenzZeichnet = false;
+function _hubGegenzGetPos(e) {
+  const rect = _hubFaGegenzCanvas.getBoundingClientRect();
+  const sx = _hubFaGegenzCanvas.width / rect.width;
+  const sy = _hubFaGegenzCanvas.height / rect.height;
+  const src = e.touches ? e.touches[0] : e;
+  return { x: (src.clientX - rect.left)*sx, y: (src.clientY - rect.top)*sy };
+}
+function _hubGegenzStart(e) { e.preventDefault(); _hubGegenzZeichnet = true; const p = _hubGegenzGetPos(e); _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(p.x,p.y); }
+function _hubGegenzMove(e) {
+  if (!_hubGegenzZeichnet) return; e.preventDefault();
+  const p = _hubGegenzGetPos(e);
+  _hubFaGegenzCtx.lineWidth=2.5; _hubFaGegenzCtx.strokeStyle='#1e293b'; _hubFaGegenzCtx.lineCap='round'; _hubFaGegenzCtx.setLineDash([]);
+  _hubFaGegenzCtx.lineTo(p.x,p.y); _hubFaGegenzCtx.stroke(); _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(p.x,p.y);
+  if (!_hubFaGegenzHatStriche) {
+    _hubFaGegenzHatStriche = true;
+    document.getElementById('hub-gegenz-status').textContent = '✅ Unterschrift erfasst';
+    document.getElementById('hub-gegenz-status').style.color = '#16a34a';
+    const btn = document.getElementById('hub-gegenz-btn');
+    btn.disabled = false; btn.style.background = '#1a3a5c'; btn.style.color = '#fff'; btn.style.cursor = 'pointer';
+  }
+}
+function _hubGegenzEnd() { _hubGegenzZeichnet = false; }
+
+function hubGegenzeichnenOeffnen(userId) {
+  _hubFaGegenzUserId = userId;
+  const ma = APP_USERS.find(u => u.id === userId);
+  document.getElementById('hub-gegenz-hinweis').textContent =
+    `Verantwortlicher: ${currentUser.name}\nFür Mitarbeiter: ${ma ? ma.name : userId}`;
+
+  _hubFaGegenzHatStriche = false;
+  const status = document.getElementById('hub-gegenz-status');
+  status.textContent = 'Noch keine Unterschrift'; status.style.color = '#9ca3af';
+  const btn = document.getElementById('hub-gegenz-btn');
+  btn.disabled = true; btn.style.background = '#d1d5db'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed';
+
+  document.getElementById('hub-gegenz-modal').style.display = 'flex';
+
+  requestAnimationFrame(() => {
+    _hubFaGegenzCanvas = document.getElementById('hub-gegenz-canvas');
+    _hubFaGegenzCtx = _hubFaGegenzCanvas.getContext('2d');
+    hubGegenzCanvasLeeren();
+    _hubFaGegenzCanvas.addEventListener('mousedown', _hubGegenzStart);
+    _hubFaGegenzCanvas.addEventListener('mousemove', _hubGegenzMove);
+    _hubFaGegenzCanvas.addEventListener('mouseup', _hubGegenzEnd);
+    _hubFaGegenzCanvas.addEventListener('touchstart', _hubGegenzStart, {passive:false});
+    _hubFaGegenzCanvas.addEventListener('touchmove', _hubGegenzMove, {passive:false});
+    _hubFaGegenzCanvas.addEventListener('touchend', _hubGegenzEnd);
+  });
+}
+
+function hubGegenzCanvasLeeren() {
+  if (!_hubFaGegenzCtx || !_hubFaGegenzCanvas) return;
+  _hubFaGegenzCtx.clearRect(0,0,_hubFaGegenzCanvas.width,_hubFaGegenzCanvas.height);
+  _hubFaGegenzCtx.fillStyle = '#f9fafb'; _hubFaGegenzCtx.fillRect(0,0,_hubFaGegenzCanvas.width,_hubFaGegenzCanvas.height);
+  _hubFaGegenzCtx.strokeStyle = '#d1d5db'; _hubFaGegenzCtx.lineWidth = 1; _hubFaGegenzCtx.setLineDash([6,4]);
+  _hubFaGegenzCtx.beginPath(); _hubFaGegenzCtx.moveTo(20,_hubFaGegenzCanvas.height-24); _hubFaGegenzCtx.lineTo(_hubFaGegenzCanvas.width-20,_hubFaGegenzCanvas.height-24); _hubFaGegenzCtx.stroke();
+  _hubFaGegenzCtx.setLineDash([]);
+  _hubFaGegenzHatStriche = false;
+  document.getElementById('hub-gegenz-status').textContent = 'Noch keine Unterschrift';
+  document.getElementById('hub-gegenz-status').style.color = '#9ca3af';
+  const btn = document.getElementById('hub-gegenz-btn');
+  if (btn) { btn.disabled = true; btn.style.background = '#d1d5db'; btn.style.color = '#9ca3af'; btn.style.cursor = 'not-allowed'; }
+}
+
+async function hubGegenzBestaetigen() {
+  if (!_hubFaGegenzHatStriche) { showToast('⚠️ Bitte erst unterzeichnen', '#92400e'); return; }
+  const btn = document.getElementById('hub-gegenz-btn');
+  btn.disabled = true; btn.textContent = '⏳ Wird gespeichert…';
+
+  const userId   = _hubFaGegenzUserId;
+  const ma       = APP_USERS.find(u => u.id === userId);
+  const tenantId = ma?.tenant_id || currentUser?.tenantId || '';
+  const dataUrl  = _hubFaGegenzCanvas.toDataURL('image/png');
+
+  // Supabase (best-effort)
+  try {
+    await SB.upsert('hub_unterschriften', {
+      id: `${userId}_${tenantId}`,
+      user_id: userId,
+      tenant_id: tenantId,
+      verantwortlicher_id:   currentUser.userId,
+      verantwortlicher_name: currentUser.name,
+      verantwortlicher_am:   new Date().toISOString(),
+      unt_vera_data_url:     dataUrl
+    });
+    // localStorage für diesen MA setzen
+    localStorage.setItem(`hub_gegenz_${userId}`, '1');
+  } catch(e) {
+    console.warn('Hub Gegenzeichnung Fehler:', e);
+  }
+
+  document.getElementById('hub-gegenz-modal').style.display = 'none';
+  showToast('✅ Fahrauftrag gegengezeichnet!', '#14532d');
+  renderMitarbeiterListe();
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// BEFÄHIGTE PERSON — LEITERN & TRITTE (BetrSichV / DGUV 208-016)
+// Pseudo-Lernpfad __befperson__, analog zu __hub__
+// ════════════════════════════════════════════════════════════════
+
+const BP_KAPITEL = [
+
+  // ══════════════════════════════════════════
+  // MODUL 1 — Rechtliche Grundlagen
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-01', modul: 1, nr: 1,
+    titel: 'Rechtliche Grundlagen & Prüfpflicht',
+    icon: '⚖️',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">⚖️</div>
+      <div style="font-weight:700;font-size:1rem">Warum gibt es eine Prüfpflicht?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
+    </div>
+    <p style="font-size:.88rem;color:#374151">Die wichtigsten Rechtsgrundlagen im Überblick:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 BetrSichV § 3 — Gefährdungsbeurteilung</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Der Arbeitgeber muss vor dem Einsatz jedes Arbeitsmittels eine Gefährdungsbeurteilung durchführen. Für Leitern und Tritte bedeutet das: Welche Risiken bestehen? Wie häufig werden sie genutzt? Unter welchen Bedingungen?</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 BetrSichV § 14 — Prüfpflicht</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Drei Prüfanlässe sind gesetzlich vorgeschrieben: <strong>vor der ersten Benutzung</strong> (Erstprüfung), <strong>wiederkehrend</strong> nach Fristen und <strong>außerordentlich</strong> nach besonderen Ereignissen wie Stürzen oder Überlastung.</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 TRBS 1203 — Qualifikation der Befähigten Person</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Diese Technische Regel legt fest, welche Voraussetzungen eine Person erfüllen muss, um Leitern prüfen zu dürfen: Berufsausbildung, praktische Erfahrung und zeitnahe Tätigkeit auf dem Gebiet.</div>
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">📘 ArbSchG § 25 — Bußgelder</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Fehlt der Nachweis fachkundiger Prüfungen, drohen Bußgelder bis zu <strong>30.000 €</strong> — und im Schadensfall persönliche Haftung der Geschäftsführung.</div>
+      </div>
+    </div>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:11px 14px;margin:12px 0">
+      <div style="font-weight:700;font-size:.88rem;color:#991b1b">🚨 Haftungsrisiko im Schadensfall</div>
+      <div style="font-size:.82rem;color:#7f1d1d;margin-top:5px">Kommt es zu einem Arbeitsunfall mit einer nicht geprüften Leiter, trägt der Arbeitgeber die volle Verantwortung. Die Berufsgenossenschaft prüft nach jedem meldepflichtigen Unfall, ob die Prüfpflichten eingehalten wurden. Fehlende Dokumentation gilt dabei als Nachweis der Pflichtverletzung.</div>
+    </div>
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:11px 14px;margin:12px 0">
+      <div style="font-weight:700;font-size:.88rem;color:#14532d">✅ Gut zu wissen</div>
+      <div style="font-size:.82rem;color:#166534;margin-top:5px">Ein externer Prüfdienst ist <strong>nicht gesetzlich vorgeschrieben</strong>. Betriebe können eigene Mitarbeiter intern zur Befähigten Person qualifizieren — das spart Kosten und schafft fachkundiges Personal im Haus.</div>
+    </div>`
+  },
+
+  {
+    id: 'bp-02', modul: 1, nr: 2,
+    titel: 'Normenübersicht — Bezug zur Schulung',
+    icon: '📋',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📋</div>
+      <div style="font-weight:700;font-size:1rem">Das Regelwerk auf einen Blick</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Diese Schulung folgt strikt den geltenden deutschen und europäischen Vorschriften für Leitern und Tritte als Arbeitsmittel.</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:9px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 BetrSichV § 3 + § 14</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Gefährdungsbeurteilung, Prüfanlässe und Dokumentationspflicht — das gesetzliche Fundament</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Gilt für alle Arbeitsmittel in deutschen Betrieben. Tritt ergänzend zur DGUV-Normenwelt.</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 TRBS 1203 — Befähigte Person</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Qualifikationsanforderungen: Ausbildung + Erfahrung + zeitnahe Tätigkeit</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Definiert, wer Leitern prüfen darf. Nicht erfüllt = Prüfung rechtlich unwirksam.</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 TRBS 2121 Teil 2 — Gefährdungen</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Absturz, Umkippen, Wegrutschen — technische Regeln für sicheres Arbeiten auf Leitern</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Gibt konkrete Hinweise zur sicheren Aufstellung und Nutzung verschiedener Leitertypen.</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">📖 DGUV Information 208-016</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:3px">Praxisanleitung: Bauarten · Prüfkriterien · Prüffristen · Dokumentation (vormals BGI 6949)</div>
+        <div style="font-size:.76rem;color:#374151;margin-top:5px;border-top:1px solid #bfdbfe;padding-top:5px">Das wichtigste Praxisdokument: enthält Checklisten, Beispielprotokolle und Entscheidungshilfen für die Befähigte Person.</div>
+      </div>
+    </div>
+    <div style="background:#fef9c3;border:1.5px solid #fde047;border-radius:8px;padding:10px 13px;margin-top:12px">
+      <div style="font-weight:700;font-size:.84rem;color:#713f12">💡 Gültigkeitsdauer des Zertifikats</div>
+      <div style="font-size:.79rem;color:#92400e;margin-top:4px">Das Schulungszertifikat hat kein gesetzliches Ablaufdatum. Empfohlen wird eine Auffrischung alle <strong>3–5 Jahre</strong> — insbesondere wenn Normen geändert werden oder neue Leitertypen im Betrieb eingesetzt werden.</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 2 — Bauarten & Normen
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-03', modul: 2, nr: 3,
+    titel: 'Bauarten, Werkstoffe & Kennzeichnung',
+    icon: '🪜',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#0c4a6e,#0ea5e9);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🪜</div>
+      <div style="font-weight:700;font-size:1rem">Leiter ist nicht gleich Leiter</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Verschiedene Typen haben unterschiedliche Einsatzbereiche, Belastungsgrenzen und Prüfkriterien. Die richtige Auswahl ist bereits Teil der Gefährdungsbeurteilung.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🔷 Leitertypen im Überblick</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🪜</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Anlegeleitern</div>
+            <div style="font-size:.78rem;color:#075985">Sprossen- oder Stufenleitern, gegen Wand angelehnt</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          <strong>Aufstellwinkel:</strong> 65°–75° (optimal 70°) · <strong>Faustregel:</strong> 1 m Abstand vom Fuß pro 4 m Höhe · Nie seitlich überstrecken · Oberes Ende muss sicher aufliegen oder befestigt sein
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🔺</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Stehleitern</div>
+            <div style="font-size:.78rem;color:#075985">Freistehend, beidseitig nutzbar, mit Spreizsicherung</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          <strong>Spreize muss vollständig geöffnet und gesichert sein</strong> · Darf <em>nicht</em> als Anlegeleiter zweckentfremdet werden · Oberste Stufe / Plattform nur belasten, wenn konstruktiv dafür vorgesehen
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🔧</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Mehrzweckleitern</div>
+            <div style="font-size:.78rem;color:#075985">Mehrere Verwendungsmöglichkeiten (Anlege-, Steh-, Schiebeleiter)</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Besondere Prüfung aller Gelenke und Arretiermechanismen · Aufbau nur nach Herstelleranleitung · Unterschiedliche Maximalbelastung je nach Konfiguration beachten
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🪑</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Tritte</div>
+            <div style="font-size:.78rem;color:#075985">Tragbare Auf- und Abstiegshilfen mit max. 4 Stufen</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Ohne feste Abstützung an der Wand · Rutschfeste Standfüße pflicht · Für leichte Arbeiten in geringer Höhe, keine Dachabschlussarbeiten
+        </div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:1.6rem">🏗️</div>
+          <div>
+            <div style="font-weight:700;font-size:.9rem;color:#0c4a6e">Podestleitern & Fahrbare Treppen</div>
+            <div style="font-size:.78rem;color:#075985">Mit festem Standplatz, Handläufen oder Rollstopp</div>
+          </div>
+        </div>
+        <div style="font-size:.8rem;color:#374151;margin-top:8px;padding-top:7px;border-top:1px solid #bae6fd">
+          Breiter Standplatz für längere Tätigkeiten · Fahrrollenstopper vor Benutzung aktivieren · Geeignet für schwere Arbeitsmittel und häufige Arbeiten in gleicher Höhe
+        </div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🔩 Werkstoffe & ihre Eigenschaften</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;margin-bottom:14px">
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">🥈</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">Aluminium</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Leicht · korrosionsfest · nicht elektrisch isolierend</div>
+      </div>
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">🪵</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">Holz</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Elektrisch isolierend · witterungsempfindlich · schwerer</div>
+      </div>
+      <div style="background:#f8fafc;border:1.5px solid #cbd5e1;border-radius:8px;padding:9px 10px;text-align:center">
+        <div style="font-size:1.5rem">⚡</div>
+        <div style="font-weight:700;font-size:.78rem;color:#1a3a5c;margin-top:4px">GFK / Faserverbund</div>
+        <div style="font-size:.7rem;color:#374151;margin-top:3px">Stark isolierend · Pflicht bei Elektroarbeiten</div>
+      </div>
+    </div>
+
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e">🏷️ Pflichtangaben auf jeder Leiter</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:5px">Nach DIN EN 131 muss jede Leiter dauerhaft folgende Angaben tragen:<br>
+      <strong>Hersteller · Typ / Modell · Norm (z.B. DIN EN 131-2) · Maximale Belastung · Baujahr oder Chargencode</strong><br>
+      Fehlt diese Kennzeichnung oder ist sie unleserlich → Leiter aussondern!</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 3 — Rechte & Pflichten
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-04', modul: 3, nr: 4,
+    titel: 'Qualifikation & Bestellung der Befähigten Person',
+    icon: '🏛️',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1e3a5f,#4338ca);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🏛️</div>
+      <div style="font-weight:700;font-size:1rem">Wer darf Leitern prüfen?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Nicht jeder Mitarbeiter darf Leitern offiziell prüfen. Die TRBS 1203 legt klare Mindestanforderungen fest, die kumulativ erfüllt sein müssen.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🎓 Die drei Säulen der Qualifikation (TRBS 1203)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">🎓</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Berufsausbildung</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Einschlägige Ausbildung oder gleichwertige Kenntnisse und Erfahrungen</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">🔧</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Praxis­erfahrung</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Nachgewiesene praktische Erfahrung mit Leitern und Tritten im Betrieb</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
+        <div style="font-size:1.8rem">📅</div>
+        <div style="font-weight:700;font-size:.82rem;color:#1a3a5c;margin-top:6px">Aktualität</div>
+        <div style="font-size:.72rem;color:#1d4ed8;margin-top:4px">Zeitnahe Tätigkeit auf dem Gebiet — keine veralteten Kenntnisse</div>
+      </div>
+    </div>
+
+    <div style="background:#fef9c3;border-left:4px solid #eab308;border-radius:8px;padding:10px 13px;margin:12px 0">
+      <div style="font-weight:700;font-size:.85rem;color:#713f12">⚠️ Alle drei Kriterien müssen gleichzeitig erfüllt sein</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:4px">Wer zwar eine Ausbildung hat, aber seit Jahren nicht mehr mit Leitern gearbeitet hat, erfüllt das Kriterium „Aktualität" nicht. Diese Schulung trägt zur Aktualitätspflege bei — ersetzt aber keine fehlende Berufsausbildung.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:14px 0 8px">📝 Schriftliche Bestellung — Pflicht!</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:.83rem;color:#374151;line-height:1.65">
+        Die Befähigte Person muss vom <strong>Arbeitgeber schriftlich bestellt</strong> werden. Diese Bestellung:<br>
+        <span style="display:block;margin:6px 0 0 10px">✅ Benennt die übertragene Aufgabe (Prüfung von Leitern und Tritten)</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Bestätigt die Qualifikation des Mitarbeiters</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Ist Grundlage für rechtssichere Prüfnachweise</span>
+        <span style="display:block;margin:3px 0 0 10px">✅ Muss zusammen mit dem Schulungsnachweis aufbewahrt werden</span>
+      </div>
+    </div>
+
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#991b1b">❌ Häufiger Fehler in der Praxis</div>
+      <div style="font-size:.8rem;color:#7f1d1d;margin-top:4px">Viele Betriebe lassen Mitarbeiter Leitern prüfen, ohne sie vorher schriftlich zu bestellen. Das Prüfprotokoll ist dann <strong>rechtlich unwirksam</strong> — auch wenn die Prüfung fachlich korrekt durchgeführt wurde.</div>
+    </div>`
+  },
+
+  {
+    id: 'bp-05', modul: 3, nr: 5,
+    titel: 'Abgrenzung: Nutzer, Vorgesetzte, Befähigte Person',
+    icon: '👥',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#166534,#16a34a);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">👥</div>
+      <div style="font-weight:700;font-size:1rem">Klare Verantwortlichkeiten — weniger Haftungsrisiko</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Jeder im Betrieb trägt eine bestimmte Verantwortung für den sicheren Umgang mit Leitern. Unklare Zuständigkeiten sind ein häufiger Unfallauslöser.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">👤</div>
+          <div style="font-weight:700;font-size:.92rem;color:#14532d">Nutzer / Mitarbeiter</div>
+        </div>
+        <div style="font-size:.82rem;color:#166534;line-height:1.6">
+          <span style="display:block">✅ Sichtprüfung <strong>vor jeder Benutzung</strong> (kein schriftlicher Nachweis nötig)</span>
+          <span style="display:block">✅ Meldet Mängel sofort dem Vorgesetzten oder der Befähigten Person</span>
+          <span style="display:block">✅ Benutzt die Leiter nur bestimmungsgemäß</span>
+          <span style="display:block">❌ Führt <em>keine</em> eigenmächtige Reparatur durch</span>
+          <span style="display:block">❌ Setzt <em>keine</em> beschädigte Leiter weiter ein</span>
+        </div>
+      </div>
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">🏢</div>
+          <div style="font-weight:700;font-size:.92rem;color:#92400e">Arbeitgeber / Vorgesetzter</div>
+        </div>
+        <div style="font-size:.82rem;color:#78350f;line-height:1.6">
+          <span style="display:block">✅ Stellt geeignete und geprüfte Leitern bereit</span>
+          <span style="display:block">✅ Organisiert, dass Prüfungen rechtzeitig stattfinden</span>
+          <span style="display:block">✅ Bestellt die Befähigte Person schriftlich</span>
+          <span style="display:block">✅ Stellt sicher, dass gemeldete Mängel behoben werden</span>
+          <span style="display:block">✅ Sorgt für die Aufbewahrung der Prüfdokumente</span>
+        </div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="font-size:1.8rem">🎓</div>
+          <div style="font-weight:700;font-size:.92rem;color:#1e3a8a">Befähigte Person</div>
+        </div>
+        <div style="font-size:.82rem;color:#1d4ed8;line-height:1.6">
+          <span style="display:block">✅ Führt die fachkundige Prüfung nach Prüfplan durch</span>
+          <span style="display:block">✅ Entscheidet über Weiterverwendung, Reparatur oder Aussonderung</span>
+          <span style="display:block">✅ Dokumentiert jede Prüfung vollständig im Leiterkontrollbuch</span>
+          <span style="display:block">✅ Legt Prüffristen risikobasiert fest</span>
+          <span style="display:block">✅ Kennzeichnet ausgesonderte Leitern</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.87rem;color:#1a3a5c;margin:10px 0 6px">📣 Meldeweg bei Mängeln</div>
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 13px">
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151">
+        <span style="background:#16a34a;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">1</span>
+        <span>Nutzer erkennt Schaden → Leiter sofort <strong>nicht mehr verwenden</strong></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151;margin-top:6px">
+        <span style="background:#f59e0b;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">2</span>
+        <span>Meldung an Vorgesetzten → Leiter sichern / kennzeichnen</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#374151;margin-top:6px">
+        <span style="background:#1d4ed8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</span>
+        <span>Befähigte Person prüft und entscheidet über das weitere Vorgehen</span>
+      </div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 4 — Unfallgefahren
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-06', modul: 4, nr: 6,
+    titel: 'Unfallgefahren, Ursachen & Schutzmaßnahmen',
+    icon: '⚠️',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#991b1b,#dc2626);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">⚠️</div>
+      <div style="font-weight:700;font-size:1rem">Leitern — einer der häufigsten Unfallauslöser</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Laut Statistik der Deutschen Gesetzlichen Unfallversicherung ereignen sich jährlich mehrere Tausend meldepflichtige Unfälle an Leitern. Viele davon wären vermeidbar.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#991b1b;margin-bottom:8px">🚨 Die 5 häufigsten Unfallursachen</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">1. Falscher Aufstellwinkel (Anlegeleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Zu flach → Leiter kippt vorne weg. Zu steil → Leiter kippt hinten weg. Richtig: 65°–75°, entspricht ca. 1:4 (1 m Abstand für 4 m Höhe).</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">2. Wegrutschen des Fußes</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Auf nassem, glattem oder unebenem Untergrund. Schutz: Rutschfeste Fußkappen, Sicherungsstangen oder eine zweite Person sichert den Fuß.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">3. Nicht gesicherte Spreize (Stehleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Spreize nicht vollständig geöffnet oder nicht eingerastet. Resultat: plötzliches Zusammenklappen der Leiter. Prüfen vor jeder Benutzung!</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">4. Überstrecken zur Seite</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Der Körperschwerpunkt verlässt die Leiterbreite → Kippgefahr. Regel: Nabel immer zwischen den Holmen. Lieber umstellen!</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
+        <div style="font-weight:700;font-size:.87rem;color:#991b1b">5. Defekte oder falsche Leiter gewählt</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Gebrochene Sprossen, fehlende Fußkappen, Stehleiter als Anleigemittel. Konsequenz: Sichtprüfung vor Benutzung ist Pflicht!</div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🛡️ Die 3-Punkte-Regel</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:.84rem;color:#166534;line-height:1.65">
+        Auf der Leiter immer <strong>mindestens 3 Körperkontaktpunkte</strong> halten:<br>
+        <span style="display:block;margin-top:6px">🟢 <strong>Beide Füße + eine Hand</strong> — wenn eine Hand für Arbeit gebraucht wird</span>
+        <span style="display:block;margin-top:3px">🟢 <strong>Beide Hände + ein Fuß</strong> — beim Auf- und Absteigen</span>
+        <span style="display:block;margin-top:8px;color:#374151;font-size:.78rem">Werkzeuge und Materialien immer in einer Gürteltasche oder mit Haken gesichert transportieren — nie in der Hand tragen!</span>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🌧️ Verbotene Bedingungen</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px">
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Nässe / Eis auf Sprossen</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Windgeschwindigkeit &gt; Beaufort 6</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Oberste 3 Sprossen belasten</div>
+      <div style="background:#fef2f2;border-radius:8px;padding:8px 10px;text-align:center;font-size:.78rem;color:#991b1b">❌ Mehrere Personen gleichzeitig</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 5 — Instandhaltung
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-07', modul: 5, nr: 7,
+    titel: 'Instandhaltung, Reparatur & Aussonderung',
+    icon: '🔧',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#92400e,#d97706);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🔧</div>
+      <div style="font-weight:700;font-size:1rem">Wann reparieren — wann aussondern?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Diese Entscheidung liegt bei der Befähigten Person. Sie ist eine der wichtigsten Verantwortlichkeiten — und hat direkte Auswirkungen auf die Sicherheit aller Mitarbeiter.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">✅ Zulässige Reparaturen</div>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:11px 14px;margin-bottom:12px">
+      <div style="font-size:.82rem;color:#166534;line-height:1.6">
+        <strong>Folgende Reparaturen sind erlaubt — aber NUR durch den Hersteller oder einen autorisierten Fachbetrieb:</strong><br>
+        <span style="display:block;margin-top:6px">✅ Austausch einzelner Holmabschnitte (durch Hersteller)</span>
+        <span style="display:block">✅ Ersetzen einzelner Sprossen durch Originalteile</span>
+        <span style="display:block">✅ Erneuerung rutschfester Fußkappen (ausschließlich Originalteile)</span>
+        <span style="display:block">✅ Erneuerung der Spreizensicherung mit Originalersatzteilen</span>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#991b1b;margin-bottom:8px">🚫 Sofortige Aussonderung bei …</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Strukturelle Schäden an Holmen oder Sprossen</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Risse, Brüche, Verbiegungen, Knicke — kein Sicherheitsspielraum. Auch kleine Risse können unter Last brechen.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Defekte Spreizensicherung (Stehleiter)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Rastet nicht ein, ist verbogen oder fehlt ganz → gefährlichster Defekt bei Stehleitern.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Schwere Korrosion (Aluminium) oder Fäulnis (Holz)</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Materialverlust durch Oxidation oder Pilzbefall reduziert die Tragfähigkeit erheblich.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Nach außergewöhnlichem Ereignis</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Sturz der Leiter aus Höhe, Überlastung, Fahrzeuganfahrung — auch ohne sichtbare Schäden ist eine außerordentliche Prüfung Pflicht.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.84rem;color:#991b1b">🔴 Fehlende oder unleserliche Kennzeichnung</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Ohne Typ und Belastungsangabe kann die Leiter nicht bewertet werden → im Zweifel aussondern.</div>
+      </div>
+    </div>
+
+    <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#92400e">🏷️ Ausgesonderte Leitern richtig kennzeichnen</div>
+      <div style="font-size:.8rem;color:#78350f;margin-top:4px">Sofort ein deutliches „GESPERRT – NICHT VERWENDEN" Schild anbringen und die Leiter physisch vom Bestand trennen. Nie zur Reparatur zurückstellen ohne Kennzeichnung — andere Mitarbeiter könnten sie unwissentlich benutzen.</div>
+    </div>
+
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#14532d">💡 Praxis-Tipp: Reparatur nie selbst durchführen</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Auch wenn der Schaden klein wirkt — eigenmächtige Reparaturen (Klebeband, Draht, improvisierte Fußkappen) sind nicht zulässig und können die Haftung auf den Mitarbeiter verlagern.</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 6 — Prüffristen
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-08', modul: 6, nr: 8,
+    titel: 'Prüfanlässe & Fristen nach BetrSichV § 14',
+    icon: '📅',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📅</div>
+      <div style="font-weight:700;font-size:1rem">Wann muss geprüft werden?</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Die BetrSichV § 14 schreibt drei Prüfanlässe vor. Alle drei sind verpflichtend — und jede Prüfung muss dokumentiert werden.</div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#1d4ed8;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 1</div>
+          <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">Erstprüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#374151;line-height:1.6">
+          Vor der <strong>ersten Benutzung</strong> im Betrieb — auch für neue Leitern direkt aus dem Karton!<br>
+          <span style="font-size:.78rem;color:#1d4ed8;display:block;margin-top:5px">💡 Warum auch neue Leitern? Transportschäden, Fertigungsfehler oder Beschriftungsmängel müssen vor dem ersten Einsatz erkannt werden.</span>
+        </div>
+      </div>
+
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#1d4ed8;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 2</div>
+          <div style="font-weight:700;font-size:.9rem;color:#1a3a5c">Wiederkehrende Prüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#374151;line-height:1.6">
+          Risikobasiert durch die Befähigte Person — es gibt <strong>keine starren Jahresfristen</strong>. Die Frist richtet sich nach:<br>
+          <span style="display:block;margin-top:5px">🔹 <strong>Nutzungsintensität</strong> — täglich genutztes Arbeitsmittel = kürzere Intervalle</span>
+          <span style="display:block">🔹 <strong>Umgebungsbedingungen</strong> — Nässe, Chemikalien, Außenklima beschleunigen Verschleiß</span>
+          <span style="display:block">🔹 <strong>Vorherige Befunde</strong> — häufige Mängel = häufigere Prüfung</span>
+          <span style="display:block;margin-top:5px;color:#1d4ed8;font-size:.78rem">📌 DGUV 208-016 empfiehlt als Richtwert: maximal <strong>12 Monate</strong></span>
+        </div>
+      </div>
+
+      <div style="background:#fef2f2;border:2px solid #dc2626;border-radius:10px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+          <div style="background:#dc2626;color:#fff;border-radius:8px;padding:4px 10px;font-size:.78rem;font-weight:700">§ 14 Abs. 3</div>
+          <div style="font-weight:700;font-size:.9rem;color:#991b1b">Außerordentliche Prüfung</div>
+        </div>
+        <div style="font-size:.82rem;color:#7f1d1d;line-height:1.6">
+          Sofort erforderlich nach:<br>
+          <span style="display:block;margin-top:5px">🔴 Sturz der Leiter (aus jeder Höhe)</span>
+          <span style="display:block">🔴 Überlastung durch Überschreiten der Maximalbelastung</span>
+          <span style="display:block">🔴 Sichtbarer Beschädigung durch äußere Einwirkung</span>
+          <span style="display:block">🔴 Längerer Nichtbenutzung (z.B. nach Winterpause)</span>
+          <span style="display:block">🔴 Strukturellen Änderungen am Betrieb oder der Nutzungsart</span>
+          <span style="display:block;margin-top:5px;font-weight:700">Die Leiter darf erst wieder benutzt werden, wenn die Befähigte Person die Freigabe erteilt hat!</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 13px">
+      <div style="font-weight:700;font-size:.85rem;color:#374151">👁️ Sichtprüfung durch den Nutzer — vor jeder Benutzung</div>
+      <div style="font-size:.79rem;color:#6b7280;margin-top:4px">Diese ist <strong>nicht dokumentationspflichtig</strong>, aber absolut verpflichtend. Sie dauert nur 30 Sekunden und kann einen Unfall verhindern: Holme checken, Fußkappen kontrollieren, Sprossen prüfen, Spreize sichern — und dann kann's losgehen.</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 7 — Prüfdurchführung
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-09', modul: 7, nr: 9,
+    titel: 'Praktische Prüfung — Ablauf & Checkliste',
+    icon: '🔍',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#134e4a,#0d9488);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">🔍</div>
+      <div style="font-weight:700;font-size:1rem">Die Prüfung Schritt für Schritt</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Eine systematische Prüfung nach DGUV 208-016 schützt alle Mitarbeiter und sichert die rechtliche Position des Betriebs. Jeden Schritt sofort dokumentieren!</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📋 Prüfablauf — 8 Schritte</div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">1</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🏷️ Identifikation</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Inventarnummer, Typ, Hersteller, Baujahr. Stimmt die Leiter mit dem Prüfplan überein? Sind alle Angaben lesbar?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">2</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔩 Holme prüfen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Verbiegungen, Risse, Knicke, Korrosion (Aluminium: weißlicher Belag = Oxidation). Holz: auf Fäulnis, Risse und Splittern achten.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">3</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🪜 Sprossen / Stufen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Alle vorhanden? Fester Sitz (wackeln, drehen)? Rutschhemmende Profilierung intakt? Keine Verschleißstellen durch häufige Nutzung?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">4</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">👟 Fußkappen / Gleiter</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Beide vorhanden, vollständig, nicht abgenutzt, fest sitzend. Rutschfeste Unterseite prüfen — glatte Fußkappen sind wie Eis unter der Leiter.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">5</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔺 Spreize (nur Stehleiter)</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Spreizensicherung vollständig eingerastet? Spreize gleichmäßig geöffnet? Keine einseitige Belastung beim Test?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">6</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🔗 Verbindungselemente</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Schrauben, Nieten, Gelenkbeschläge (Mehrzweckleitern) auf Vollständigkeit, festen Sitz und Korrosion prüfen.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">7</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">📖 Sturzhistorie befragen</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Wurde die Leiter fallen gelassen oder ist gefallen? Gibt es im Leiterbuch Einträge zu Beschädigungen oder Reparaturen?</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
+        <div style="background:#1a3a5c;color:#fff;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0;margin-top:1px">8</div>
+        <div>
+          <div style="font-weight:700;font-size:.84rem;color:#1a3a5c">🧪 Funktionsprüfung</div>
+          <div style="font-size:.78rem;color:#374151;margin-top:3px">Leiter aufstellen, Spreize öffnen, Fuß sichern und vorsichtig leicht belasten. Bewegt sich etwas, knarrt es verdächtig?</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px 14px">
+      <div style="font-weight:700;font-size:.87rem;color:#14532d">✅ Sofort ins Leiterkontrollbuch!</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Jede Prüfung — auch wenn <strong>keine Mängel</strong> festgestellt wurden — muss sofort schriftlich erfasst werden. Nur was dokumentiert ist, zählt rechtlich. Nicht dokumentierte Prüfungen gelten als nicht durchgeführt.</div>
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
+  // MODUL 8 — Dokumentation
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-10', modul: 8, nr: 10,
+    titel: 'Rechtssichere Dokumentation — Leiterkontrollbuch',
+    icon: '📄',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📄</div>
+      <div style="font-weight:700;font-size:1rem">Das Leiterkontrollbuch — Ihr rechtlicher Schutz</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">Grundlage: BetrSichV § 14 Abs. 5 und DGUV Information 208-016. Das Prüfprotokoll ist der einzige Nachweis, dass die Befähigte Person ihre Aufgabe erfüllt hat.</div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📝 Pflichtangaben im Prüfprotokoll</div>
+    <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:12px 14px;margin-bottom:12px">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">①</span>
+          <span>Inventarnummer und Bezeichnung des Arbeitsmittels</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">②</span>
+          <span>Art der Prüfung: Erst- / wiederkehrend / außerordentlich</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">③</span>
+          <span>Datum der Prüfung</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">④</span>
+          <span>Prüfumfang (welche Punkte wurden geprüft)</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑤</span>
+          <span>Festgestellte Mängel und getroffene Maßnahmen</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑥</span>
+          <span>Ergebnis: Freigabe zur Weiterverwendung oder Aussonderung</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8;font-weight:600">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑦</span>
+          <span>Name und <strong>eigenhändige Unterschrift</strong> der Befähigten Person</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:#1d4ed8">
+          <span style="color:#1a3a5c;font-weight:700;width:18px;text-align:center">⑧</span>
+          <span>Termin der nächsten Prüfung</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🗂️ Aufbewahrung & Vorlage</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">📁 Mindestaufbewahrung</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Bis zur nächsten wiederkehrenden Prüfung — mindestens jedoch 2 Jahre</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">👁️ Vorlagepflicht</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Jederzeit abrufbar für BG-Kontrollen, Behörden und im Schadensfall</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">📍 Aufbewahrungsort</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Im Betrieb zugänglich, trocken, vor Verlust geschützt — digital oder analog möglich</div>
+      </div>
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 11px">
+        <div style="font-weight:700;font-size:.82rem;color:#14532d">✍️ Unterschrift</div>
+        <div style="font-size:.77rem;color:#166534;margin-top:3px">Handschriftlich oder qualifiziert digital (nicht nur Namensangabe)</div>
+      </div>
+    </div>
+
+    <div style="background:#fef9c3;border:2px solid #fde047;border-radius:10px;padding:12px 14px;margin-top:8px">
+      <div style="font-weight:700;font-size:.9rem;color:#713f12">💡 Der wichtigste Merksatz dieser Schulung:</div>
+      <div style="font-size:.84rem;color:#92400e;margin-top:6px;line-height:1.6">
+        <strong>Keine Dokumentation = kein Nachweis = keine Rechtskonformität.</strong><br>
+        Was nicht schriftlich festgehalten ist, hat rechtlich <em>nicht stattgefunden</em> — auch wenn die Prüfung fachlich einwandfrei durchgeführt wurde. Ein fehlendes Prüfprotokoll wird bei BG-Kontrollen genauso bewertet wie eine nicht durchgeführte Prüfung.
+      </div>
+    </div>
+
+    <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
+      <div style="font-weight:700;font-size:.85rem;color:#14532d">🚀 Bereit für das Abschlussquiz?</div>
+      <div style="font-size:.8rem;color:#166534;margin-top:4px">Sie haben alle 10 Module abgeschlossen. Das Quiz besteht aus 20 Fragen — zum Bestehen sind mindestens <strong>16 richtige Antworten (80 %)</strong> erforderlich. Nach erfolgreichem Abschluss erhalten Sie Ihr persönliches Schulungszertifikat.</div>
+    </div>`
+  }
+
+];
+
+const BP_QUIZ = [
+  {
+    frage: 'Welche Rechtsgrundlage verpflichtet den Arbeitgeber zur Gefährdungsbeurteilung und zur Festlegung der erforderlichen Prüfungen für Leitern und Tritte?',
+    antworten: [
+      'DGUV Information 208-016 § 1',
+      'BetrSichV § 3',
+      'TRBS 1203 Abschnitt 4',
+      'ArbSchG § 12'
+    ],
+    richtig: 1,
+    erklaerung: 'BetrSichV § 3 verpflichtet den Arbeitgeber zur Gefährdungsbeurteilung und zur Festlegung von Art, Umfang und Fristen der erforderlichen Prüfungen. § 14 BetrSichV regelt darauf aufbauend die eigentliche Prüfpflicht.'
+  },
+  {
+    frage: 'Wie hoch ist das maximale Bußgeld nach § 25 ArbSchG bei fehlender oder unzureichender Prüfung von Arbeitsmitteln?',
+    antworten: [
+      '5.000 Euro',
+      '10.000 Euro',
+      '30.000 Euro',
+      '50.000 Euro'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach § 25 ArbSchG können bei Verstößen gegen Arbeitsschutzpflichten Bußgelder bis zu 30.000 Euro verhängt werden. Zusätzlich droht eine persönliche Haftung der Geschäftsführung.'
+  },
+  {
+    frage: 'Welche drei Anforderungen muss eine Person nach TRBS 1203 erfüllen, um als Befähigte Person zur Prüfung von Leitern bestellt werden zu können?',
+    antworten: [
+      'Mindestens 5 Jahre Berufserfahrung, Meistertitel und ein behördliches Zertifikat',
+      'Berufsausbildung oder vergleichbare Kenntnisse, praktische Erfahrung und zeitnahe Tätigkeit auf dem Gebiet',
+      'Hochschulabschluss, externe Schulung und schriftlicher Antrag bei der BG',
+      'Amtlicher Sachkundenachweis, jährliche Fortbildung und Mitgliedschaft in einer Prüforganisation'
+    ],
+    richtig: 1,
+    erklaerung: 'Die TRBS 1203 fordert: (1) Berufsausbildung oder gleichwertige Kenntnisse, (2) praktische Erfahrung mit Leitern und Tritten sowie (3) zeitnahe Tätigkeit auf diesem Gebiet. Ein externer Prüfdienst ist nicht zwingend erforderlich.'
+  },
+  {
+    frage: 'Eine Leiter fällt aus 3 Metern Höhe auf den Boden. Was ist laut BetrSichV § 14 Abs. 3 als nächstes zu tun?',
+    antworten: [
+      'Die Leiter kann sofort weiterverwendet werden, wenn keine sichtbaren Schäden erkennbar sind',
+      'Die Leiter wird bis zur nächsten regulären Jahresprüfung markiert und dann geprüft',
+      'Eine außerordentliche Prüfung durch die Befähigte Person ist zwingend erforderlich, bevor die Leiter wieder verwendet wird',
+      'Es reicht eine kurze Sichtprüfung durch den nächsten Vorgesetzten'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach § 14 Abs. 3 BetrSichV ist nach außergewöhnlichen Ereignissen (Sturz, Überlast, Beschädigung) eine außerordentliche Prüfung durch die Befähigte Person erforderlich — unabhängig vom regulären Prüfintervall.'
+  },
+  {
+    frage: 'Welcher Aufstellwinkel wird für Anlegeleitern nach TRBS 2121 Teil 2 empfohlen?',
+    antworten: [
+      '45–55°',
+      '55–65°',
+      '65–75°',
+      '80–90°'
+    ],
+    richtig: 2,
+    erklaerung: 'Für Anlegeleitern gilt ein empfohlener Aufstellwinkel von 65–75°. Flacherer Winkel erhöht die Gefahr des Wegrutschen der Füße, steilerer Winkel das Risiko des Umkippens nach hinten.'
+  },
+  {
+    frage: 'Was versteht die DGUV Information 208-016 unter einer "wiederkehrenden Prüfung" für Leitern und Tritte?',
+    antworten: [
+      'Eine tägliche Prüfung durch jeden Benutzer vor der Verwendung',
+      'Eine risikobasierte Prüfung durch die Befähigte Person, bei der Nutzungsintensität und Umgebungsbedingungen berücksichtigt werden',
+      'Eine Prüfung, die ausschließlich alle zwei Jahre stattfinden muss',
+      'Eine einmalige Prüfung nach dem Kauf des Arbeitsmittels'
+    ],
+    richtig: 1,
+    erklaerung: 'Die DGUV Information 208-016 empfiehlt eine risikobasierte wiederkehrende Prüfung: Die Befähigte Person legt die Prüffrist anhand von Nutzungsintensität, Umgebungsbedingungen (Chemikalien, Feuchtigkeit) und dem bisherigen Schadensbild fest. Als Richtwert gilt ein Intervall von maximal 12 Monaten.'
+  },
+  {
+    frage: 'Welche der folgenden Maßnahmen ist bei einer Stehleiter laut TRBS 2121 Teil 2 strikt untersagt?',
+    antworten: [
+      'Die Nutzung für Arbeiten auf rutschfestem Untergrund',
+      'Das Stellen der Stehleiter auf trockenem, ebenem Untergrund',
+      'Das Öffnen der Spreize und Sichern der Verriegelung vor der Nutzung',
+      'Das Besteigen der obersten Stufe oder das seitliche Überladen'
+    ],
+    richtig: 3,
+    erklaerung: 'Die obersten Stufen einer Stehleiter sind keine Stehebene — sie fehlen stabilisierenden Abstützungen. Seitliches Überladen verlagert den Schwerpunkt und führt zum Umkippen. Beides ist nach TRBS 2121 Teil 2 verboten.'
+  },
+  {
+    frage: 'Welche Angaben sind nach BetrSichV § 14 Abs. 5 im Prüfprotokoll zwingend erforderlich?',
+    antworten: [
+      'Nur das Datum der Prüfung reicht aus',
+      'Prüfart, Prüfumfang, Ergebnis, Datum sowie Name und Unterschrift der Befähigten Person',
+      'Lediglich die Inventarnummer und eine Freizeichnung',
+      'Nur Mängel müssen dokumentiert werden — fehlerfreie Leitern brauchen keinen Eintrag'
+    ],
+    richtig: 1,
+    erklaerung: 'Das Prüfprotokoll muss gemäß BetrSichV § 14 Abs. 5 mindestens enthalten: Bezeichnung und Inventarnummer des Arbeitsmittels, Art der Prüfung, Prüfumfang, Datum, festgestellte Mängel und Maßnahmen, Ergebnis sowie Name und Unterschrift der Befähigten Person.'
+  },
+  {
+    frage: 'Welche Kriterien muss eine Leiter erfüllen, damit eine zulässige Reparatur durchgeführt werden darf?',
+    antworten: [
+      'Jeder Mitarbeiter darf mit handelsüblichem Klebeband oder Draht provisorisch reparieren',
+      'Reparaturen sind grundsätzlich verboten — defekte Leitern müssen immer komplett ersetzt werden',
+      'Reparaturen dürfen nur durch den Hersteller oder einen autorisierten Fachbetrieb mit Originalteilen durchgeführt werden',
+      'Eine Reparatur durch die Befähigte Person selbst ist immer zulässig'
+    ],
+    richtig: 2,
+    erklaerung: 'Leitern dürfen nur mit Originalteilen durch den Hersteller oder einen autorisierten Fachbetrieb repariert werden. Behelfsmäßige Reparaturen (Klebeband, Draht, Improvisation) sind strikt verboten und führen zur sofortigen Aussonderungspflicht.'
+  },
+  {
+    frage: 'Welches Werkzeug eignet sich nach DGUV Information 208-016 bei Elektroarbeiten als Pflicht-Werkstoff für Leitern?',
+    antworten: [
+      'Aluminium, da es sehr leicht ist',
+      'Holz, da es günstig und robust ist',
+      'Faserverbundwerkstoff (GFK), da er elektrisch isolierend ist',
+      'Stahl, da er am langlebigsten ist'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei Arbeiten in der Nähe elektrischer Anlagen ist der Einsatz von Leitern aus faserverstärktem Kunststoff (GFK/FVK) Pflicht, da dieser Werkstoff elektrisch nicht leitend ist. Aluminium und Stahl leiten Strom und sind daher für Elektroarbeiten ungeeignet.'
+  },
+  {
+    frage: 'Was ist laut DGUV Information 208-016 der Unterschied zwischen einer "Sichtprüfung vor jeder Benutzung" und einer "wiederkehrenden Prüfung"?',
+    antworten: [
+      'Beide Prüfungen sind identisch — es gibt keinen Unterschied',
+      'Die Sichtprüfung ist nur bei offensichtlichen Beschädigungen nötig; die wiederkehrende Prüfung nie',
+      'Die Sichtprüfung führt der Nutzer selbst durch (kein Protokoll erforderlich); die wiederkehrende Prüfung führt die Befähigte Person mit vollständiger Dokumentation durch',
+      'Die Sichtprüfung ersetzt vollständig die wiederkehrende Prüfung'
+    ],
+    richtig: 2,
+    erklaerung: 'Die Sichtprüfung ist eine kurze Inaugenscheinnahme durch den Nutzer vor jeder Benutzung — ohne formalen Protokollnachweis. Die wiederkehrende Prüfung durch die Befähigte Person ist systematisch, umfassend und vollständig zu dokumentieren.'
+  },
+  {
+    frage: 'Wie lange müssen Prüfnachweise für Leitern und Tritte mindestens aufbewahrt werden?',
+    antworten: [
+      'Für 10 Jahre nach der Prüfung',
+      'Bis zur nächsten Prüfung des jeweiligen Arbeitsmittels',
+      'Für 5 Jahre — gesetzlich vorgeschriebene Aufbewahrungsfrist',
+      'Prüfnachweise müssen nicht aufbewahrt werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Prüfnachweise müssen mindestens bis zur nächsten Prüfung aufbewahrt werden, sodass bei einer Kontrolle der Berufsgenossenschaft stets die aktuellste Prüfung nachgewiesen werden kann. Empfohlen wird eine längere Aufbewahrung (z. B. bis zur Aussonderung des Arbeitsmittels).'
+  },
+  {
+    frage: 'Welche Aussage zur schriftlichen Bestellung der Befähigten Person ist korrekt?',
+    antworten: [
+      'Eine mündliche Bestellung durch den Vorgesetzten ist ausreichend',
+      'Die Bestellung erfolgt durch die Berufsgenossenschaft automatisch nach bestandener Schulung',
+      'Die schriftliche Bestellung durch den Arbeitgeber ist erforderlich und dokumentiert die Übertragung der Prüfaufgabe',
+      'Die Befähigte Person bestellt sich selbst durch das Schulungszertifikat'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach TRBS 1203 muss die Befähigte Person schriftlich durch den Arbeitgeber bestellt werden. Diese Bestellung dokumentiert die rechtliche Übertragung der Prüfaufgabe und ist Voraussetzung für die rechtssichere Tätigkeit als Befähigte Person.'
+  },
+  {
+    frage: 'In welchem Fall ist eine außerordentliche Prüfung nach BetrSichV § 14 Abs. 3 zwingend erforderlich?',
+    antworten: [
+      'Wenn die Leiter zum ersten Mal in einem neuen Gebäude eingesetzt wird',
+      'Nur wenn ein Mitarbeiter über einen Monat krankgeschrieben war',
+      'Nach außergewöhnlichen Ereignissen wie Stürzen, Überlast, Beschädigungen oder längerer Nichtbenutzung',
+      'Einmal pro Quartal als Ergänzung zur Jahresprüfung'
+    ],
+    richtig: 2,
+    erklaerung: 'BetrSichV § 14 Abs. 3 schreibt eine außerordentliche Prüfung nach außergewöhnlichen Ereignissen vor: Stürze, Überlast, erkennbare Beschädigungen oder Situationen, die die Sicherheit des Arbeitsmittels in Frage stellen können. Auch nach längerer Nichtbenutzung ist eine Prüfung sinnvoll und erforderlich.'
+  },
+  {
+    frage: 'Was ist der entscheidende rechtliche Grundsatz für die Dokumentation von Leiterprüfungen?',
+    antworten: [
+      'Eine Dokumentation ist nur bei festgestellten Mängeln vorgeschrieben',
+      'Was nicht schriftlich festgehalten ist, hat rechtlich nicht stattgefunden — keine Dokumentation = kein Nachweis',
+      'Eine Dokumentation in der Cloud ersetzt das Leiterkontrollbuch nicht',
+      'Prüfprotokolle müssen nur bei Unfällen erstellt werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Der Grundsatz gilt uneingeschränkt: Auch fehlerfreie Leitern müssen dokumentiert werden. Prüfprotokolle sind der einzige rechtssichere Nachweis, dass die Befähigte Person ihre Pflichten erfüllt hat. Fehlende Dokumentation wird bei BG-Kontrollen wie fehlende Prüfung gewertet.'
+  },
+  {
+    frage: 'Warum ist der Einsatz von Stehleitern als Anlegeleitern verboten?',
+    antworten: [
+      'Stehleitern sind zu schwer und damit gefährlicher als Anlegeleitern',
+      'Stehleitern sind für das Anlehnen an Wände konstruktiv nicht ausgelegt — die Spreize kann zum Biegebruch führen',
+      'Es handelt sich lediglich um eine Empfehlung, kein Verbot',
+      'Stehleitern sind nur bei Nässe verboten, im Trockenen aber erlaubt'
+    ],
+    richtig: 1,
+    erklaerung: 'Stehleitern sind für den freistehenden Einsatz konstruiert. Werden sie als Anlegeleitern verwendet, werden die Holme auf Biegung beansprucht — eine Belastungsart, für die sie nicht ausgelegt sind. Dies kann zu plötzlichem Versagen führen.'
+  },
+  {
+    frage: 'Welche Information muss auf der Kennzeichnung einer normgerechten Leiter vorhanden sein?',
+    antworten: [
+      'Nur der Name des Herstellers',
+      'Nur das Herstellungsjahr',
+      'Hersteller, Typ, zugehörige DIN-Norm und zulässige Höchstbelastung',
+      'Name des Prüfers und Prüfdatum'
+    ],
+    richtig: 2,
+    erklaerung: 'Normgerechte Leitern müssen nach den einschlägigen DIN-Normen dauerhaft gekennzeichnet sein: Hersteller, Typ, angewandte Norm und zulässige Höchstbelastung. Fehlt die Kennzeichnung oder ist sie unleserlich, muss die Leiter ausgesondert werden.'
+  },
+  {
+    frage: 'Was versteht BetrSichV § 14 Abs. 1 unter der "Erstprüfung" eines Arbeitsmittels?',
+    antworten: [
+      'Die Prüfung nach dem ersten Schaden am Arbeitsmittel',
+      'Die erste Prüfung nach einer Reparatur',
+      'Die Prüfung vor der erstmaligen Benutzung im Betrieb — auch bei neuen, fabrikfrischen Arbeitsmitteln',
+      'Die Prüfung ein Jahr nach der Inbetriebnahme'
+    ],
+    richtig: 2,
+    erklaerung: 'BetrSichV § 14 Abs. 1 schreibt eine Prüfung vor der erstmaligen Verwendung vor. Das gilt auch für neue Arbeitsmittel, da Transportschäden oder Fertigungsfehler aufgedeckt werden müssen. Die Befähigte Person bestätigt die Sicherheit vor dem ersten Einsatz.'
+  },
+  {
+    frage: 'Eine Leiter hat gerissene Holmverbindungen und Anzeichen von Korrosion. Was ist die korrekte Maßnahme?',
+    antworten: [
+      'Die Leiter wird provisorisch mit Klebeband gesichert und weiterverwendet',
+      'Die Leiter wird sofort ausgesondert, als unbrauchbar gekennzeichnet und aus dem Verkehr gezogen',
+      'Die Leiter wird zur Seite gestellt und beim nächsten Jahresservice geprüft',
+      'Die Befähigte Person kann die Risse selbst mit Epoxidharz reparieren'
+    ],
+    richtig: 1,
+    erklaerung: 'Gerissene Holmverbindungen und Korrosion sind Kriterien für die sofortige Aussonderung laut DGUV Information 208-016. Die Leiter muss unverzüglich als unbrauchbar gekennzeichnet und aus dem Umlauf genommen werden — keine Weiterverwendung, keine Provisorien.'
+  },
+  {
+    frage: 'Wer darf nach TRBS 1203 die schriftliche Prüfdokumentation im Leiterkontrollbuch unterzeichnen?',
+    antworten: [
+      'Jeder Vorarbeiter oder Teamleiter des Betriebs',
+      'Nur der Geschäftsführer',
+      'Ausschließlich die vom Arbeitgeber schriftlich bestellte Befähigte Person',
+      'Jeder Mitarbeiter, der die Prüfung beobachtet hat'
+    ],
+    richtig: 2,
+    erklaerung: 'Das Prüfprotokoll muss von der bestellten Befähigten Person unterzeichnet werden. Nur so ist die Dokumentation rechtlich wirksam. Eine Unterzeichnung durch andere Personen — auch Vorgesetzte — genügt den Anforderungen der BetrSichV § 14 Abs. 5 nicht.'
+  }
+];
+
+// ── Zustand ──────────────────────────────────────────────────────
+let bpFortschritt  = {};
+let bpQuizAktiv    = false;
+let bpQuizFragen   = [];
+let bpQuizIndex    = 0;
+let bpQuizPunkte   = 0;
+let _bpPreviewMode = false;
+let _bpPreviewContainer = null;
+
+// ── BP Admin-Vorschau & Als-MA-Testen ────────────────────────────────────────
+
+function bpAdminVorschau() {
+  let modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'bp-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
+
+  modal.innerHTML = `
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🪜 Befähigte Person Leitern & Tritte</div>
+      </div>
+      <button onclick="bpPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
+        <strong>🔍 Vorschau-Modus:</strong> Alle Kapitel und das Quiz sind zugänglich — wie beim Mitarbeiter. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="bp-preview-inner"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  _bpPreviewMode = true;
+  _bpPreviewContainer = document.getElementById('bp-preview-inner');
+  bpSchulungRenderIn(_bpPreviewContainer);
+
+  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
+}
+
+function bpPreviewBeenden() {
+  _bpPreviewMode = false;
+  _bpPreviewContainer = null;
+  const modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+  showToast('✅ Vorschau beendet', '#16a34a');
+}
+
+function bpAlsMaSpielen() {
+  _bpPreviewMode = true;
+
+  let modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'bp-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
+
+  modal.innerHTML = `
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fcd34d;letter-spacing:.08em;text-transform:uppercase">🔍 Als MA testen</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🪜 Befähigte Person Leitern & Tritte</div>
+      </div>
+      <button onclick="bpPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
+        <strong>▶ Mitarbeiter-Ansicht:</strong> Alles funktioniert wie beim Mitarbeiter — Kapitel lesen, Quiz machen. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="bp-preview-inner"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+
+  _bpPreviewContainer = document.getElementById('bp-preview-inner');
+  bpSchulungRenderIn(_bpPreviewContainer);
+
+  showToast('🔍 Als MA testen: Befähigte Person', '#1a3a5c');
+}
+
+
+function bpSchulungInit() {
+  const wrap = document.getElementById('bp-schulung-btn-wrap');
+  if (!wrap) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser?.tenantId);
+  const hatBp = meineZuws.some(z => z.vorlagenId === BP_VORLAGE_ID);
+  if (!hatBp) return;
+  wrap.style.display = '';
+  _bpFortschrittLaden();
+  _bpSubtitelAktualisieren();
+}
+
+function _bpFortschrittLaden() {
+  try {
+    const key = `bp_fortschritt_${currentUser?.userId || 'anon'}`;
+    const stored = localStorage.getItem(key);
+    if (stored) bpFortschritt = JSON.parse(stored);
+  } catch(e) {}
+}
+
+function _bpFortschrittSpeichern() {
+  if (_bpPreviewMode) return;
+  try {
+    const key = `bp_fortschritt_${currentUser?.userId || 'anon'}`;
+    localStorage.setItem(key, JSON.stringify(bpFortschritt));
+  } catch(e) {}
+}
+
+function _bpSubtitelAktualisieren() {
+  const bestanden = BP_KAPITEL.filter(k => bpFortschritt[k.id]).length;
+  const sub = document.getElementById('btn-bp-sub');
+  if (!sub) return;
+  const quizBestanden = !!localStorage.getItem(`bp_quiz_bestanden_${currentUser?.userId || 'anon'}`);
+  if (quizBestanden) {
+    sub.textContent = '✅ Quiz bestanden · Fachkundenachweis verfügbar';
+  } else {
+    sub.textContent = `${bestanden}/${BP_KAPITEL.length} Module gelesen · ${bestanden === BP_KAPITEL.length ? 'Quiz verfügbar!' : 'Tippen zum Starten'}`;
+  }
+}
+
+function bpSchulungToggle() {
+  const cont  = document.getElementById('bp-schulung-container');
+  const pfeil = document.getElementById('btn-bp-pfeil');
+  if (!cont) return;
+  const open = cont.style.display === 'block';
+  cont.style.display = open ? 'none' : 'block';
+  if (pfeil) pfeil.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) bpSchulungRender();
+}
+
+function bpSchulungRender() {
+  const cont = document.getElementById('bp-schulung-container');
+  bpSchulungRenderIn(cont);
+}
+
+function bpSchulungRenderIn(cont) {
+  if (!cont) return;
+  const userId = _bpPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+  const quizBestanden = _bpPreviewMode ? false : !!localStorage.getItem(`bp_quiz_bestanden_${userId}`);
+  const bestandenAnzahl = BP_KAPITEL.filter(k => bpFortschritt[k.id]).length;
+  const alleGelesen = bestandenAnzahl === BP_KAPITEL.length;
+
+  // Modul-Gruppen (8 Module)
+  const modulTitel = {
+    1: 'Modul 1 — Rechtliche Grundlagen',
+    2: 'Modul 2 — Bauarten, Normen & Anforderungen',
+    3: 'Modul 3 — Rechte & Pflichten',
+    4: 'Modul 4 — Unfallgefahren & Schutzmaßnahmen',
+    5: 'Modul 5 — Instandhaltung & Aussonderung',
+    6: 'Modul 6 — Prüffristen & Prüfumfang',
+    7: 'Modul 7 — Praktische Prüfdurchführung',
+    8: 'Modul 8 — Dokumentation & Leiterkontrollbuch'
+  };
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#1a3a5c', 4:'#991b1b', 5:'#b45309', 6:'#1a3a5c', 7:'#166534', 8:'#1a3a5c' };
+
+  let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">'
+    + '<div style="font-weight:700;font-size:.9rem">🪜 Schulung: Befähigte Person Leitern & Tritte</div>'
+    + '<div style="font-size:.72rem;opacity:.8;margin-top:2px">BetrSichV · TRBS 1203 · TRBS 2121-2 · DGUV 208-016</div>'
+    + '<div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">'
+    + '<div style="height:100%;background:#fbbf24;border-radius:3px;width:' + Math.round(bestandenAnzahl/BP_KAPITEL.length*100) + '%;transition:width .4s"></div>'
+    + '</div>'
+    + '<div style="margin-top:5px;font-size:.7rem;opacity:.75">' + bestandenAnzahl + ' von ' + BP_KAPITEL.length + ' Modulen gelesen</div>'
+    + '</div>';
+
+  [1,2,3,4,5,6,7,8].forEach(mod => {
+    const kapitelDesModuls = BP_KAPITEL.filter(k => k.modul === mod);
+    html += `<div style="padding:8px 14px 2px;border-bottom:1px solid #f0f2f5">
+      <div style="font-size:.75rem;font-weight:700;color:${modulColor[mod]};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${modulTitel[mod]}</div>
+    </div>`;
+    kapitelDesModuls.forEach(k => {
+      const gelesen = !!bpFortschritt[k.id];
+      html += `
+        <div onclick="bpKapitelOeffnen('${k.id}')"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:${gelesen?'#f0fdf4':'#fff'};transition:background .15s"
+          onmouseover="this.style.background='${gelesen?'#dcfce7':'#eff6ff'}'"
+          onmouseout="this.style.background='${gelesen?'#f0fdf4':'#fff'}'">
+          <span style="font-size:1.5rem;flex-shrink:0">${gelesen ? '✅' : k.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.85rem;color:${gelesen?'#166534':'#1a3a5c'}">
+              ${k.nr}. ${escHtml(k.titel)}
+            </div>
+          </div>
+          <span style="font-size:1rem;color:${gelesen?'#16a34a':'#d1d5db'}">${gelesen?'✓':'›'}</span>
+        </div>`;
+    });
+  });
+
+  // Quiz-Button
+  html += `<div style="padding:12px 14px">`;
+  if (quizBestanden) {
+    html += `
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:center">
+        <div style="font-size:1.5rem">🏆</div>
+        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">Quiz bestanden — Fachkundenachweis verfügbar!</div>
+        <div style="font-size:.78rem;color:#166534;margin-top:2px">Ergebnis: ${localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–'}</div>
+      </div>
+      <button onclick="bpZertifikatErstellen()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+        📄 Fachkundenachweis als PDF herunterladen
+      </button>`;
+  } else if (alleGelesen) {
+    html += `
+      <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.8rem;color:#92400e">
+        <div style="font-weight:700;margin-bottom:2px">⚠️ Hinweis vor dem Abschlusstest:</div>
+        <div>Mindestens <strong>80 % richtige Antworten</strong> (16 von 20) sind erforderlich.</div>
+        <div style="margin-top:3px">Das Ergebnis wird im <strong>Fachkundenachweis</strong> ausgewiesen.</div>
+      </div>
+      <button onclick="bpQuizStarten()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+        🎯 Abschlusstest starten — 20 Fragen (mind. 80 % zum Bestehen)
+      </button>`;
+  } else {
+    html += `
+      <div style="text-align:center;color:#9ca3af;font-size:.8rem;padding:6px">
+        📖 Bitte zuerst alle Module lesen<br>
+        <span style="font-size:.75rem">(${BP_KAPITEL.length - bestandenAnzahl} noch offen)</span>
+      </div>`;
+  }
+  html += `</div></div>`;
+  cont.innerHTML = html;
+}
+
+function bpKapitelOeffnen(kapitelId) {
+  const k = BP_KAPITEL.find(k => k.id === kapitelId);
+  if (!k) return;
+  const modal = document.getElementById('bp-kapitel-modal');
+  if (modal) {
+    document.getElementById('bp-modal-titel').textContent = `${k.nr}. ${k.titel}`;
+    document.getElementById('bp-modal-modul').textContent = `Modul ${k.modul} — BetrSichV / DGUV 208-016`;
+    document.getElementById('bp-modal-body').innerHTML = k.inhalt;
+    const btnWeiter = document.getElementById('bp-modal-weiter');
+    if (btnWeiter) btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
+    // Im Preview-Modus über dem Preview-Modal anzeigen (z-index erhöhen)
+    modal.style.zIndex = _bpPreviewMode ? '10010' : '10001';
+    modal.style.display = 'flex';
+    return;
+  }
+  bpFortschritt[kapitelId] = true;
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  bpSchulungRender();
+}
+
+function bpKapitelAbschliessen(kapitelId) {
+  bpFortschritt[kapitelId] = true;
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  document.getElementById('bp-kapitel-modal').style.display = 'none';
+  if (_bpPreviewMode && _bpPreviewContainer) {
+    bpSchulungRenderIn(_bpPreviewContainer);
+  } else {
+    bpSchulungRender();
+  }
+  if (!_bpPreviewMode && currentUser?.userId) {
+    const id = `${currentUser.userId}_${kapitelId}`;
+    SB.upsert('bp_fortschritt', {
+      id,
+      user_id:   currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      kapitel_id: kapitelId,
+      abgehakt:   true,
+      abgehakt_am: new Date().toISOString()
+    }).catch(() => {});
+  }
+}
+
+function bpKapitelModalSchliessen() {
+  const modal = document.getElementById('bp-kapitel-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── Quiz ──────────────────────────────────────────────────────────
+
+function bpQuizStarten() {
+  bpQuizFragen = [...BP_QUIZ].sort(() => Math.random() - 0.5);
+  bpQuizIndex  = 0;
+  bpQuizPunkte = 0;
+  bpQuizAktiv  = true;
+  bpQuizFrageZeigen();
+}
+
+function bpQuizFrageZeigen() {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const q = bpQuizFragen[bpQuizIndex];
+  if (!q) { bpQuizAuswertung(); return; }
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">
+        <div style="font-weight:700;font-size:.85rem">🎯 Abschlusstest — Befähigte Person</div>
+        <div style="font-size:.72rem;opacity:.8;margin-top:2px">Frage ${bpQuizIndex + 1} von ${bpQuizFragen.length}</div>
+        <div style="margin-top:7px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round((bpQuizIndex/bpQuizFragen.length)*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:14px 14px 6px">
+        <div style="font-weight:700;font-size:.9rem;color:#1e293b;line-height:1.4;margin-bottom:12px">${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, i) => `
+          <button onclick="bpQuizAntwort(${i})"
+            style="display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:7px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:9px;cursor:pointer;font-size:.84rem;color:#1e293b;-webkit-appearance:none;box-sizing:border-box"
+            onmouseover="this.style.borderColor='#1a3a5c';this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+            <span style="font-weight:700;color:#1a3a5c;margin-right:8px">${['A','B','C','D'][i]}.</span> ${escHtml(a)}
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function bpQuizAntwort(ausgewaehlter) {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const q = bpQuizFragen[bpQuizIndex];
+  const richtig = ausgewaehlter === q.richtig;
+  if (richtig) bpQuizPunkte++;
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">
+        <div style="font-weight:700;font-size:.85rem">🎯 Abschlusstest — Befähigte Person</div>
+        <div style="font-size:.72rem;opacity:.8;margin-top:2px">Frage ${bpQuizIndex + 1} von ${bpQuizFragen.length}</div>
+        <div style="margin-top:7px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round(((bpQuizIndex+1)/bpQuizFragen.length)*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1e293b;line-height:1.4;margin-bottom:12px">${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, i) => {
+          let bg = '#f8fafc', border = '#e2e8f0', fc = '#1e293b';
+          if (i === q.richtig) { bg = '#f0fdf4'; border = '#16a34a'; fc = '#14532d'; }
+          else if (i === ausgewaehlter && !richtig) { bg = '#fef2f2'; border = '#dc2626'; fc = '#991b1b'; }
+          return `<div style="padding:11px 14px;margin-bottom:7px;background:${bg};border:2px solid ${border};border-radius:9px;font-size:.84rem;color:${fc}">
+            <span style="font-weight:700;margin-right:8px">${['A','B','C','D'][i]}.</span>${escHtml(a)}
+            ${i === q.richtig ? ' ✅' : (i === ausgewaehlter ? ' ❌' : '')}
+          </div>`;
+        }).join('')}
+        <div style="background:${richtig?'#f0fdf4':'#fef2f2'};border:1.5px solid ${richtig?'#86efac':'#fca5a5'};border-radius:10px;padding:10px 14px;margin-top:4px;font-size:.81rem;color:${richtig?'#14532d':'#991b1b'}">
+          <div style="font-weight:700;margin-bottom:3px">${richtig ? '✅ Richtig!' : '❌ Leider falsch.'}</div>
+          <div>${escHtml(q.erklaerung)}</div>
+        </div>
+        <button onclick="bpQuizWeiter()"
+          style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:10px;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none">
+          ${bpQuizIndex + 1 < bpQuizFragen.length ? '➡️ Nächste Frage' : '📊 Auswertung anzeigen'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function bpQuizWeiter() {
+  bpQuizIndex++;
+  if (bpQuizIndex < bpQuizFragen.length) {
+    bpQuizFrageZeigen();
+  } else {
+    bpQuizAuswertung();
+  }
+}
+
+function bpQuizAuswertung() {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const gesamt = bpQuizFragen.length;
+  const bestanden = bpQuizPunkte >= Math.ceil(gesamt * 0.8); // 80%
+  const prozent = Math.round((bpQuizPunkte / gesamt) * 100);
+  const userId = _bpPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+
+  if (bestanden && !_bpPreviewMode) {
+    localStorage.setItem(`bp_quiz_bestanden_${userId}`, '1');
+    localStorage.setItem(`bp_quiz_ergebnis_${userId}`, `${bpQuizPunkte}/${gesamt} (${prozent}%)`);
+    if (currentUser?.userId) {
+      SB.upsert('bp_unterschriften', {
+        id:              `${currentUser.userId}_${currentUser.tenantId || ''}`,
+        user_id:         currentUser.userId,
+        user_name:       currentUser.name,
+        tenant_id:       currentUser.tenantId || '',
+        vollname:        currentUser.name,
+        quiz_punkte:     bpQuizPunkte,
+        quiz_gesamt:     gesamt,
+        unterzeichnet_am: new Date().toISOString(),
+        ausstellungsdatum: new Date().toLocaleDateString('de-DE')
+      }).catch(() => {});
+    }
+  }
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;text-align:center">
+        <div style="font-size:2rem">${bestanden ? '🏆' : '📚'}</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:6px">${bestanden ? 'Abschlusstest bestanden!' : 'Nicht bestanden'}</div>
+        <div style="font-size:.8rem;opacity:.85;margin-top:2px">${bpQuizPunkte} von ${gesamt} Fragen richtig (${prozent}%)</div>
+      </div>
+      <div style="padding:14px">
+        <div style="background:${bestanden?'#f0fdf4':'#fef2f2'};border:1.5px solid ${bestanden?'#86efac':'#fca5a5'};border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center">
+          <div style="font-weight:700;color:${bestanden?'#14532d':'#991b1b'};font-size:.9rem">
+            ${bestanden ? '✅ Mindestgrenze (80 %) erreicht — Fachkundenachweis kann ausgestellt werden.' : `❌ Mindestgrenze nicht erreicht. Bitte die Module nochmals durcharbeiten und erneut testen.`}
+          </div>
+        </div>
+        ${bestanden ? `
+          <button onclick="bpZertifikatErstellen()"
+            style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none;margin-bottom:8px">
+            📄 Fachkundenachweis als PDF herunterladen
+          </button>` : `
+          <button onclick="bpQuizWiederholen()"
+            style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none;margin-bottom:8px">
+            🔄 Module wiederholen & erneut testen
+          </button>`}
+      </div>
+    </div>`;
+}
+
+function bpQuizWiederholen() {
+  bpQuizAktiv = false;
+  // Fortschritt zurücksetzen um nochmals zu lesen
+  bpFortschritt = {};
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  bpSchulungRender();
+}
+
+async function bpZertifikatErstellen() {
+  const userId    = currentUser?.userId || 'anon';
+  const vollname  = currentUser?.name   || 'Teilnehmer';
+  const datum     = new Date().toLocaleDateString('de-DE');
+  const ergebnis  = localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–';
+  const tenant     = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
+  const tenantName = tenant?.name || 'CSC GmbH';
+  // Unterschrift nur für CSC-eigene Mitarbeiter einbetten
+  const isCscTenant = !tenant || tenantName.toLowerCase().includes('csc');
+
+  // Befristung: 3 Jahre ab heute
+  const befristungDate = new Date();
+  befristungDate.setFullYear(befristungDate.getFullYear() + 3);
+  const befristung = befristungDate.toLocaleDateString('de-DE');
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297, ML = 20, CW = 170;
+
+    // ══════════════════════════════════════
+    // SEITE 1 — FACHKUNDENACHWEIS
+    // ══════════════════════════════════════
+
+    // Hintergrund
+    doc.setFillColor(245, 247, 250);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Navy-Blauer Header
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, 0, W, 55, 'F');
+    doc.setFillColor(37, 99, 168);
+    doc.rect(0, 52, W, 3, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('FACHKUNDENACHWEIS', W/2, 22, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Befähigte Person zur Prüfung von Leitern und Tritten', W/2, 32, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(180, 200, 230);
+    doc.text('gemäß BetrSichV · TRBS 1203 · TRBS 2121 Teil 2 · DGUV Information 208-016', W/2, 42, { align: 'center' });
+
+    // Body Seite 1 — direkt unter Header
+    const bodyStartY = 68;
+    doc.setTextColor(30, 58, 92);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text('Hiermit wird bestätigt, dass', W/2, bodyStartY, { align: 'center' });
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(26, 58, 92);
+    doc.text(vollname, W/2, bodyStartY + 16, { align: 'center' });
+
+    doc.setDrawColor(37, 99, 168);
+    doc.setLineWidth(0.8);
+    doc.line(40, bodyStartY + 20, W-40, bodyStartY + 20);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    const bodyText = [
+      'die theoretische Qualifizierung zur',
+      'Befähigten Person zur Prüfung von Leitern und Tritten',
+      'erfolgreich abgeschlossen hat.'
+    ];
+    bodyText.forEach((line, i) => {
+      const isBold = i === 1;
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setTextColor(isBold ? 26 : 55, isBold ? 58 : 65, isBold ? 92 : 81);
+      doc.text(line, W/2, bodyStartY + 32 + i * 9, { align: 'center' });
+    });
+
+    // Rechtsgrundlagen-Box
+    const normenY = bodyStartY + 62;
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(59, 130, 246);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(25, normenY, W-50, 46, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 58, 92);
+    doc.text('Rechtliche Grundlagen dieser Schulung', W/2, normenY + 9, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(29, 78, 216);
+    const normen = [
+      'BetrSichV § 3 (Gefährdungsbeurteilung) · BetrSichV § 14 (Prüfpflicht)',
+      'TRBS 1203 (Qualifikation der Befähigten Person)',
+      'TRBS 2121 Teil 2 (Gefährdungen bei der Verwendung von Leitern)',
+      'DGUV Information 208-016 (Prüfkriterien, Prüffristen, Dokumentation)'
+    ];
+    normen.forEach((n, i) => doc.text(n, W/2, normenY + 19 + i * 7.5, { align: 'center' }));
+
+    // Ergebnis-Box
+    const ergebnisY = normenY + 52;
+    doc.setFillColor(240, 253, 244);
+    doc.setDrawColor(134, 239, 172);
+    doc.roundedRect(25, ergebnisY, W-50, 26, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(20, 83, 45);
+    doc.text('✓ Abschlusstest bestanden', W/2, ergebnisY + 9, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.text(`Ergebnis: ${ergebnis} — Bestehensgrenze: 80 %`, W/2, ergebnisY + 19, { align: 'center' });
+
+    // Datum
+    const datumY = ergebnisY + 34;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Ausstellungsdatum: ${datum}`, W/2, datumY, { align: 'center' });
+
+    // Schulungsleiter-Unterschrift-Box — unter Datum
+    const slBoxY = datumY + 10;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(200, 210, 220);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ML, slBoxY, CW, 36, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('SCHULUNGSLEITER / AUSBILDER', ML+6, slBoxY+6);
+    // Unterschrift einbetten (nur CSC)
+    if (isCscTenant) {
+      try {
+        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+6, slBoxY+6, 80, 20);
+      } catch(e) {}
+    }
+    doc.setDrawColor(180, 190, 200);
+    doc.setLineWidth(0.4);
+    doc.line(ML+6, slBoxY+29, ML+85, slBoxY+29);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('T. Schmoldt · CSC GmbH · Schulungsleiter', ML+6, slBoxY+34);
+
+    // Hinweis-Text unter Unterschrift
+    const hinweisY = slBoxY + 44;
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    const hinweis = [
+      'Dieser Nachweis bescheinigt die theoretische Fachkunde als Befähigte Person gemäß TRBS 1203.',
+      'Die schriftliche Bestellung durch den Arbeitgeber erfolgt auf Seite 2 dieses Dokuments.',
+      'Empfehlung: Auffrischung alle 3–5 Jahre oder bei wesentlichen Normänderungen.'
+    ];
+    hinweis.forEach((h, i) => doc.text(h, W/2, hinweisY + i * 7, { align: 'center' }));
+
+    // Footer Seite 1
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, H-16, W, 16, 'F');
+    doc.setTextColor(180, 200, 230);
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · schulung.csc-hannover.de · Seite 1 von 2', W/2, H-6, { align: 'center' });
+
+    // ══════════════════════════════════════
+    // SEITE 2 — SCHRIFTLICHE BESTELLUNG
+    // ══════════════════════════════════════
+    doc.addPage();
+
+    // Hintergrund
+    doc.setFillColor(245, 247, 250);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Header Seite 2
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, 0, W, 38, 'F');
+    doc.setFillColor(37, 99, 168);
+    doc.rect(0, 35, W, 3, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(16);
+    doc.text('SCHRIFTLICHE BESTELLUNG', ML, 16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.text('Befähigte Person zur Prüfung von Leitern und Tritten gemäß TRBS 1203 · BetrSichV § 14', ML, 24);
+    doc.setFontSize(8);
+    doc.setTextColor(180, 200, 230);
+    doc.text('Diese Bestellung gilt als schriftlicher Nachweis gemäß BetrSichV', 210-ML, 16, { align: 'right' });
+    doc.text(`Ausstellungsdatum: ${datum}`, 210-ML, 23, { align: 'right' });
+
+    let y = 46;
+
+    // Arbeitgeber-Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(26, 58, 92);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(ML, y, CW, 32, 3, 3, 'FD');
+    doc.setFillColor(26, 58, 92);
+    doc.roundedRect(ML, y, 4, 32, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('ARBEITGEBER / AUFTRAGGEBER', ML+8, y+7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.text('CSC GmbH', ML+8, y+16);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text('Petermax-Müller-Str. 3  ·  30880 Laatzen', ML+8, y+23);
+    doc.text('Fon: 05102-9319730  ·  www.csc-hannover.de', ML+8, y+29);
+    y += 38;
+
+    // Befähigte Person Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(37, 99, 168);
+    doc.roundedRect(ML, y, CW, 32, 3, 3, 'FD');
+    doc.setFillColor(37, 99, 168);
+    doc.roundedRect(ML, y, 4, 32, 2, 2, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(37, 99, 168);
+    doc.text('BEFÄHIGTE PERSON', ML+8, y+7);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(26, 58, 92);
+    doc.text(vollname, ML+8, y+18);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Unternehmen: ${tenantName}`, ML+8, y+27);
+    y += 38;
+
+    // Prüfauftrag Box
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(59, 130, 246);
+    doc.roundedRect(ML, y, CW, 42, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(26, 58, 92);
+    doc.text('PRÜFAUFTRAG — ART DER ARBEITSMITTEL', ML+6, y+8);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(30, 58, 92);
+    const pruefpunkte = [
+      '• Anlegeleitern, Stehleitern, Mehrzweckleitern, Podestleitern',
+      '• Tritte aller Bauarten gemäß TRBS 2121 Teil 2 / DGUV Information 208-016',
+      '• Prüfumfang: Erst-, wiederkehrende und außerordentliche Prüfung nach BetrSichV § 14',
+      '• Geltungsbereich: Sämtliche Betriebsstätten des Unternehmens'
+    ];
+    pruefpunkte.forEach((p, i) => doc.text(p, ML+6, y+17 + i*6));
+    y += 48;
+
+    // Qualifikation Box
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(200, 210, 220);
+    doc.roundedRect(ML, y, CW, 24, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(26, 58, 92);
+    doc.text('QUALIFIKATIONSNACHWEIS', ML+6, y+8);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Theoretische Schulung absolviert am: ${datum}   ·   Ergebnis: ${ergebnis}`, ML+6, y+16);
+    doc.text('Nachweis: Fachkundenachweis Seite 1 dieses Dokuments (TRBS 1203, DGUV 208-016)', ML+6, y+22);
+    y += 30;
+
+    // Befristung Box
+    doc.setFillColor(254, 249, 195);
+    doc.setDrawColor(234, 179, 8);
+    doc.roundedRect(ML, y, CW, 16, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(113, 63, 18);
+    doc.text(`Befristung: Diese Bestellung gilt bis zum ${befristung} (3 Jahre ab Ausstellungsdatum).`, ML+6, y+7);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.text('Empfehlung: Auffrischung vor Ablauf bei Normänderungen. Widerruf jederzeit durch den Arbeitgeber möglich.', ML+6, y+13);
+    y += 22;
+
+    // Rechtshinweis
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Die befähigte Person ist berechtigt und verpflichtet, Leitern und Tritte des Unternehmens fachgerecht zu prüfen,', ML, y+4);
+    doc.text('das Prüfergebnis im Leiterkontrollbuch zu dokumentieren und über Weiterverwendung oder Aussonderung zu entscheiden.', ML, y+10);
+    y += 18;
+
+    // Unterschriften
+    const sigW = (CW - 8) / 2;
+    // Linke Unterschrift — Arbeitgeber
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(200, 210, 220);
+    doc.roundedRect(ML, y, sigW, 38, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('ARBEITGEBER / GESCHÄFTSFÜHRUNG', ML+4, y+6);
+    doc.setDrawColor(180, 190, 200);
+    doc.setLineWidth(0.5);
+    // Unterschrift Geschäftsführer (T. Schmoldt) — nur für CSC-Mitarbeiter
+    if (isCscTenant) {
+      try {
+        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+4, y+8, 70, 20);
+      } catch(e) {}
+    }
+    doc.line(ML+4, y+30, ML+sigW-4, y+30);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Laatzen, ' + datum, ML+4, y+35);
+    doc.text('T. Schmoldt, Geschäftsführer', ML+sigW-4, y+35, { align: 'right' });
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen', ML+4, y+41);
+
+    // Rechte Unterschrift — Befähigte Person
+    const rx = ML + sigW + 8;
+    doc.setFillColor(240, 253, 244);
+    doc.setDrawColor(134, 239, 172);
+    doc.roundedRect(rx, y, sigW, 38, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(20, 83, 45);
+    doc.text('BEFÄHIGTE PERSON (KENNTNISNAHME)', rx+4, y+6);
+    doc.setDrawColor(134, 239, 172);
+    doc.setLineWidth(0.5);
+    doc.line(rx+4, y+26, rx+sigW-4, y+26);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('Ort, Datum', rx+4, y+31);
+    doc.text('Unterschrift', rx+sigW-4, y+31, { align: 'right' });
+    doc.setFontSize(7.5);
+    doc.setTextColor(20, 83, 45);
+    doc.text(vollname, rx+4, y+37);
+
+    // Footer Seite 2
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, H-16, W, 16, 'F');
+    doc.setTextColor(180, 200, 230);
+    doc.setFontSize(7.5);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · 05102-9319730 · schulung.csc-hannover.de · Seite 2 von 2', W/2, H-6, { align: 'center' });
+
+    // Speichern
+    const filename = `Fachkundenachweis_Befaehigte_Person_${vollname.replace(/\s+/g,'_')}_${datum.replace(/\./g,'-')}.pdf`;
+    doc.save(filename);
+    showToast('✅ 2-seitiges PDF erstellt: Fachkundenachweis + Bestellungsurkunde', '#14532d');
+  } catch(e) {
+    console.error('BP Zertifikat Fehler:', e);
+    showToast('⚠️ PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
+  }
+}
+
