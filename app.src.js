@@ -20,6 +20,7 @@ const SESSION_HOURS      = 8;    // Session-Timeout: 8h Inaktivität
 const INACTIVITY_MINUTES = 8 * 60; // Minuten bis Auto-Logout
 const LERNPFAD_VORLAGE_ID = '__lernpfad__'; // Pseudo-ID für Lernpfad-Zuweisung
 const HUB_VORLAGE_ID      = '__hub__';      // Pseudo-ID für Hubarbeitsbühnen DGUV 308-008
+const BP_VORLAGE_ID       = '__befperson__'; // Pseudo-ID für Befähigte Person Leitern/Tritte
 
 // ── GLOBALER APP-ZUSTAND ─────────────────────────────────────
 let currentUser       = null;
@@ -1119,6 +1120,22 @@ async function initApp() {
       });
     }
 
+    // ── Befähigte Person Leitern/Tritte — eingebaute Vorlage ──
+    if (!SCHULUNG_VORLAGEN.some(v => v.id === BP_VORLAGE_ID)) {
+      SCHULUNG_VORLAGEN.unshift({
+        id:              BP_VORLAGE_ID,
+        titel:           'Befähigte Person — Leitern & Tritte',
+        beschreibung:    '8 Module · 20 Quizfragen · Fachkundenachweis (BetrSichV · DGUV 208-016)',
+        typ:             'befperson',
+        intervall_monate: 60,
+        intervallMonate:  60,
+        pflicht:         true,
+        abschnitte:      [],
+        _eingebaut:      true,
+        _bpModul:        true
+      });
+    }
+
     zuweisungen = zuws.map(z => ({
       id: z.id, vorlagenId: z.vorlage_id, tenantId: z.tenant_id,
       frist: z.frist, pflicht: z.pflicht,
@@ -2206,8 +2223,9 @@ function adminZeigeTenant(tenantId) {
   const zuws   = zuweisungen.filter(z=>z.tenantId===tenantId);
   const hasPsaga = zuws.some(z => z.vorlagenId === '__psaga__');
   const hasHub   = zuws.some(z => z.vorlagenId === HUB_VORLAGE_ID);
+  const hasBp    = zuws.some(z => z.vorlagenId === BP_VORLAGE_ID);
   const hasLP    = zuws.some(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
-  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID && z.vorlagenId !== HUB_VORLAGE_ID);
+  const vorlagenZuws = zuws.filter(z => z.vorlagenId !== '__psaga__' && z.vorlagenId !== LERNPFAD_VORLAGE_ID && z.vorlagenId !== HUB_VORLAGE_ID && z.vorlagenId !== BP_VORLAGE_ID);
 
   const html = `<div class="card"><div class="card-title">🏢 ${escHtml(tenant.name)}</div>
     ${zuws.map(z => {
@@ -2215,10 +2233,11 @@ function adminZeigeTenant(tenantId) {
       const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
       const isPsaga = z.vorlagenId === '__psaga__';
       const isHub = z.vorlagenId === HUB_VORLAGE_ID;
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
+      const isBp = z.vorlagenId === BP_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
       return `<div class="schulung-item" onclick="adminDetailAnzeigen('${z.id}')">
         <div>
-          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#1a3a5c;font-weight:700':''}">${titel}</div>
+          <div class="titel" style="${isLP?'color:#6b21a8;font-weight:700':isPsaga?'color:#166534;font-weight:700':isHub?'color:#1a3a5c;font-weight:700':isBp?'color:#1a3a5c;font-weight:700':''}">${titel}</div>
           <div class="meta">Frist: ${z.frist||'–'} ${z.pflicht?'• <strong>Pflicht</strong>':''}</div>
           ${f.abgeschlossen?`<div class="meta">Abgeschlossen: ${dateStr(f.abgeschlossenAm)}</div>`:''}
         </div>
@@ -2234,11 +2253,11 @@ function adminZeigeTenant(tenantId) {
 
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-user-info').textContent = currentUser.name;
-  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vorlagenZuws });
+  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws });
   showScreen('screen-admin-detail');
 }
 
-async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vorlagenZuws }) {
+async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws }) {
   const el = document.getElementById(`tenant-statistik-${tenantId}`);
   if (!el) return;
   try {
@@ -2312,6 +2331,21 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, vor
         </div>`;
     }
 
+    // ── Befähigte Person Leitern/Tritte ─────────────────
+    if (hasBp) {
+      const bpDaten = await SB.get('bp_unterschriften',
+        `tenant_id=eq.${encodeURIComponent(tenantId)}&select=user_id,unterzeichnet_am`
+      );
+      const abgeschlossen = (bpDaten||[]).filter(d => d.unterzeichnet_am).length;
+      html += `
+        <div style="margin-bottom:16px">
+          <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🪜 Befähigte Person — Leitern & Tritte</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            ${_statKachel(abgeschlossen, 'Quiz bestanden + Zertifikat', '#eff6ff','#1a3a5c')}
+          </div>
+        </div>`;
+    }
+
     // ── Unterweisungsvorlagen ──────────────────────────
     if (vorlagenZuws.length) {
       html += `<div style="margin-bottom:8px"><div style="font-weight:700;font-size:.88rem;color:#1e3a5f;margin-bottom:8px">📋 Unterweisungen</div>`;
@@ -2359,6 +2393,7 @@ function adminDetailAnzeigen(zuwId) {
   const isLP = zuw.vorlagenId === LERNPFAD_VORLAGE_ID;
   const isPsaga = zuw.vorlagenId === '__psaga__';
   const isHub = zuw.vorlagenId === HUB_VORLAGE_ID;
+  const isBp = zuw.vorlagenId === BP_VORLAGE_ID;
 
   let feldHtml='';
   if (isLP) {
@@ -2406,7 +2441,7 @@ function adminDetailAnzeigen(zuwId) {
       });
     });
   }
-  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
+  const titelAnzeige = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung (22 Module)' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008 (14 Kapitel)' : isBp ? '🪜 Befähigte Person — Leitern & Tritte (8 Module)' : (vorlage ? escHtml(vorlage.titel) : zuwId);
 
   // ── PSAgA: Mitarbeiter-Übersicht aus Bescheinigungen laden ──
   let psagaMaHtml = '';
@@ -2455,7 +2490,7 @@ function adminDetailAnzeigen(zuwId) {
 
   document.getElementById('detail-body').innerHTML = `
     <div class="card">
-    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#1a3a5c':''}">${titelAnzeige}</div>
+    <div class="card-title" style="${isLP?'color:#6b21a8':isPsaga?'color:#166534':isHub?'color:#1a3a5c':isBp?'color:#1a3a5c':''}">${titelAnzeige}</div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
         ${statusBadgeHtml(status)}
         <span class="tenant-badge">${tenant?escHtml(tenant.name):zuw.tenantId}</span>
@@ -2487,12 +2522,14 @@ function renderAdminVorlagen() {
     : liste;
 
   document.getElementById('admin-vorlagen-list').innerHTML = gefiltert.map(v=>`
-    <div class="card" style="margin-bottom:12px${v._eingebaut ? ';border-left:4px solid #1a3a5c' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
+    <div class="card" style="margin-bottom:12px${v._bpModul ? ';border-left:4px solid #1a3a5c' : v._eingebaut ? ';border-left:4px solid #1a3a5c' : v.id === '__psaga__' ? ';border-left:4px solid #166534' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px">
         <div style="flex:1;min-width:0">
-          <div class="card-title" style="margin-bottom:4px">${v._eingebaut ? '🏗️' : v.id === '__psaga__' ? '🪝' : '📄'} ${escHtml(v.titel)}</div>
+          <div class="card-title" style="margin-bottom:4px">${v._bpModul ? '🪜' : v._eingebaut ? '🏗️' : v.id === '__psaga__' ? '🪝' : '📄'} ${escHtml(v.titel)}</div>
           <div style="font-size:.84rem;color:#374151;margin-bottom:6px">${escHtml(v.beschreibung||'')}</div>
-          ${v._eingebaut
+          ${v._bpModul
+            ? `<div style="font-size:.78rem;color:#1a3a5c;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate · BetrSichV · DGUV 208-016</div>`
+            : v._eingebaut
             ? `<div style="font-size:.78rem;color:#1a3a5c;font-weight:600">🔒 Eingebautes Schulungsmodul · nicht editierbar · 🔁 ${v.intervallMonate} Monate</div>`
             : v.id === '__psaga__'
             ? `<div style="font-size:.78rem;color:#166534;font-weight:600">🔒 PSAgA-Folienviewer · 22 Module · Quiz · Teilnahmebescheinigung · nicht editierbar</div>`
@@ -2500,7 +2537,10 @@ function renderAdminVorlagen() {
           }
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
-          ${v._eingebaut
+          ${v._bpModul
+            ? `<button class="btn btn-outline btn-sm" onclick="bpAdminVorschau()" style="border-color:#1a3a5c;color:#1a3a5c">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="bpAlsMaSpielen()" style="border-color:#1a3a5c;color:#fff;background:#1a3a5c;margin-left:6px">▶ Als MA testen</button>`
+            : v._eingebaut
             ? `<button class="btn btn-outline btn-sm" onclick="hubAdminVorschau()" style="border-color:#1a3a5c;color:#1a3a5c">👁 Vorschau</button>
                <button class="btn btn-outline btn-sm" onclick="hubAlsMaSpielen()" style="border-color:#1a3a5c;color:#fff;background:#1a3a5c;margin-left:6px">▶ Als MA testen</button>`
             : v.id === '__psaga__'
@@ -2991,7 +3031,7 @@ function hubAdminVorschau() {
 
 async function vtLoeschen(id) {
   const v = SCHULUNG_VORLAGEN.find(v=>v.id===id);
-  if (v?._eingebaut) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#1a3a5c'); return; }
+  if (v?._eingebaut || v?._bpModul) { showToast('🔒 Eingebaute Vorlagen können nicht gelöscht werden.', '#1a3a5c'); return; }
   // Prüfen ob abgeschlossene Formulare existieren
   const zuws = zuweisungen.filter(z=>z.vorlagenId===id);
   const abgeschlosseneAnzahl = zuws.filter(z => formulare[z.id]?.abgeschlossen).length;
@@ -3875,8 +3915,9 @@ function renderAdminZuweisungen() {
     const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
     const isPsaga = z.vorlagenId === '__psaga__';
     const isHub = z.vorlagenId === HUB_VORLAGE_ID;
-    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (v ? escHtml(v.titel) : z.vorlagenId);
-    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#1a3a5c;font-weight:700' : '';
+    const isBp = z.vorlagenId === BP_VORLAGE_ID;
+    const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
+    const titelStyle = isLP ? 'color:#6b21a8;font-weight:700' : isPsaga ? 'color:#166534;font-weight:700' : isHub ? 'color:#1a3a5c;font-weight:700' : isBp ? 'color:#1a3a5c;font-weight:700' : '';
 
     // Mitarbeiter dieses Tenants
     const tenantMitarbeiter = APP_USERS.filter(u => u.tenant_id === z.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
@@ -4019,12 +4060,23 @@ function azVorlagenListeRendern(suche) {
       </div>
     </div>` : '';
 
-  if (!gefiltert.length && !lernpfadMatch && !psagaMatch && !hubMatch) {
+  const bpMatch = !s || 'befähigte'.includes(s) || 'leiter'.includes(s) || 'tritte'.includes(s) || '208'.includes(s) || 'betrsi'.includes(s) || 'prüfung'.includes(s);
+  const bpHtml = bpMatch ? `
+    <div onclick="azVorlageWaehlen('${BP_VORLAGE_ID}','🪜 Befähigte Person — Leitern & Tritte (8 Module)')"
+      style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#eff6ff"
+      onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+      <div style="font-weight:600;font-size:.88rem;color:#1a3a5c">🪜 Befähigte Person — Leitern & Tritte (8 Module)</div>
+      <div style="font-size:.76rem;color:#1d4ed8;margin-top:2px">
+        8 Module &nbsp;·&nbsp; 20 Quizfragen · mind. 80&thinsp;% zum Bestehen &nbsp;·&nbsp; Fachkundenachweis (BetrSichV · DGUV 208-016)
+      </div>
+    </div>` : '';
+
+  if (!gefiltert.length && !lernpfadMatch && !psagaMatch && !hubMatch && !bpMatch) {
     el.innerHTML = `<div style="padding:16px;text-align:center;color:#9ca3af;font-size:.85rem">${s ? `Keine Vorlage für „${escHtml(s)}"` : 'Keine Vorlagen vorhanden'}</div>`;
     return;
   }
 
-  el.innerHTML = lernpfadHtml + psagaHtml + hubHtml + gefiltert.map((v, i) => `
+  el.innerHTML = lernpfadHtml + psagaHtml + hubHtml + bpHtml + gefiltert.map((v, i) => `
     <div onclick="azVorlageWaehlen('${v.id}','${escHtml(v.titel).replace(/'/g,'&#39;')}')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;${i===gefiltert.length-1?'border-bottom:none':''}"
       onmouseover="this.style.background='#f0f4ff'" onmouseout="this.style.background=''">
@@ -4065,7 +4117,7 @@ async function createZuweisung() {
   try {
     await SB.post('zuweisungen', neu);
     neu.forEach(z => zuweisungen.push({ id:z.id, vorlagenId:z.vorlage_id, tenantId:z.tenant_id, frist:z.frist, pflicht:z.pflicht }));
-    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId;
+    const label = vorlagenId === LERNPFAD_VORLAGE_ID ? 'Lernpfad (32 Kapitel)' : vorlagenId === HUB_VORLAGE_ID ? 'Hubarbeitsbühnen DGUV 308-008' : vorlagenId === BP_VORLAGE_ID ? 'Befähigte Person — Leitern & Tritte' : vorlagenId;
     await sbAudit('ZUWEISUNG', `Vorlage "${label}" → ${tenants.join(',')} (Frist: ${frist})`);
     msgEl.textContent=`${tenants.length} Zuweisung(en) erstellt.`; msgEl.style.color='';
     msgEl.classList.add('show'); setTimeout(()=>msgEl.classList.remove('show'),3000);
@@ -4920,6 +4972,8 @@ function renderSubDashboard() {
   psagaSchulungenInit();
   // Hubarbeitsbühnen Schulung anzeigen
   hubSchulungInit();
+  // Befähigte Person Leitern/Tritte anzeigen
+  bpSchulungInit();
   // Mitarbeiterliste rendern (nur für Verantwortliche)
   renderMitarbeiterListe();
 
@@ -4933,13 +4987,14 @@ function renderSubDashboard() {
           const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z.vorlagenId);
           const isLP = z.vorlagenId === LERNPFAD_VORLAGE_ID;
           const isHub = z.vorlagenId === HUB_VORLAGE_ID;
-          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : (v ? escHtml(v.titel) : z.vorlagenId);
+          const isBp = z.vorlagenId === BP_VORLAGE_ID;
+          const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isHub ? '🏗️ Hubarbeitsbühnen' : isBp ? '🪜 Befähigte Person — Leitern & Tritte' : (v ? escHtml(v.titel) : z.vorlagenId);
           const s = berechneStatus(z);
           const farbe = {gruen:'#f0fdf4',gelb:'#fffbeb',rot:'#fef2f2',grau:'#f9fafb'}[s]||'#f9fafb';
           const border = {gruen:'#86efac',gelb:'#fde68a',rot:'#fca5a5',grau:'#e5e7eb'}[s]||'#e5e7eb';
           const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
           const fristText = z.frist ? `Frist: ${datumStr(z.frist)}` : 'Kein Termin';
-          return `<div onclick="${isLP ? 'lernpfadToggle()' : isHub ? 'hubSchulungToggle()' : `oeffneFormular('${z.id}')`}"
+          return `<div onclick="${isLP ? 'lernpfadToggle()' : isHub ? 'hubSchulungToggle()' : isBp ? 'bpSchulungToggle()' : `oeffneFormular('${z.id}')`}"
             style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin-bottom:6px;
                    background:${farbe};border:1px solid ${border};border-radius:9px;cursor:pointer">
             <span style="font-size:1.1rem;flex-shrink:0">${dot}</span>
@@ -9214,10 +9269,11 @@ async function firmaRenderHistorie() {
       const isLP = zuw?.vorlagenId === '__lernpfad__';
       const isPsaga = zuw?.vorlagenId === '__psaga__';
       const isHub = zuw?.vorlagenId === HUB_VORLAGE_ID;
-      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : (vorlage?.titel || zuw?.vorlagenId || f.id);
+      const isBpH = zuw?.vorlagenId === BP_VORLAGE_ID;
+      const titel = isLP ? '📚 Lernpfad (32 Kapitel)' : isPsaga ? '🪝 PSAgA-Schulung' : isHub ? '🏗️ Hubarbeitsbühnen DGUV 308-008' : isBpH ? '🪜 Befähigte Person — Leitern & Tritte' : (vorlage?.titel || zuw?.vorlagenId || f.id);
       eintraege.push({
         userId: f.abgeschlossen_von || '?',
-        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : isHub ? 'hub' : 'schulung',
+        typ: isLP ? 'lernpfad' : isPsaga ? 'psaga' : isHub ? 'hub' : isBpH ? 'befperson' : 'schulung',
         titel,
         datum: f.abgeschlossen_am,
         pdfUrl: f.pdf_path || null,
@@ -9256,8 +9312,8 @@ async function firmaRenderHistorie() {
       gruppenMap[key].eintraege.push(e);
     });
 
-    const typColors = { lernpfad:'#6b21a8', psaga:'#166534', lernpfad_unt:'#7c3aed', schulung:'#1e3a5f' };
-    const typBg = { lernpfad:'#f5f3ff', psaga:'#f0fdf4', lernpfad_unt:'#ede9fe', schulung:'#f0f4ff' };
+    const typColors = { lernpfad:'#6b21a8', psaga:'#166534', lernpfad_unt:'#7c3aed', schulung:'#1e3a5f', hub:'#1a3a5c', befperson:'#1a3a5c' };
+    const typBg = { lernpfad:'#f5f3ff', psaga:'#f0fdf4', lernpfad_unt:'#ede9fe', schulung:'#f0f4ff', hub:'#eff6ff', befperson:'#eff6ff' };
 
     html += Object.values(gruppenMap).sort((a,b)=>a.name.localeCompare(b.name)).map(gr => `
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:12px;margin-bottom:12px;overflow:hidden">
@@ -9267,7 +9323,7 @@ async function firmaRenderHistorie() {
         ${gr.eintraege.sort((a,b)=>new Date(b.datum)-new Date(a.datum)).map(e => `
           <div style="padding:10px 14px;border-bottom:1px solid #f3f4f6;display:flex;align-items:center;gap:10px">
             <div style="background:${typBg[e.typ]||'#f0f4ff'};border-radius:6px;padding:4px 8px;font-size:.72rem;font-weight:700;color:${typColors[e.typ]||'#1e3a5f'};white-space:nowrap">
-              ${e.typ==='psaga'?'PSAgA':e.typ==='lernpfad'?'Lernpfad':e.typ==='lernpfad_unt'?'LP-Unt.':'Schulung'}
+              ${e.typ==='psaga'?'PSAgA':e.typ==='lernpfad'?'Lernpfad':e.typ==='lernpfad_unt'?'LP-Unt.':e.typ==='hub'?'Hub-Bühne':e.typ==='befperson'?'Bef. Person':'Schulung'}
             </div>
             <div style="flex:1;min-width:0">
               <div style="font-size:.83rem;font-weight:600;color:#1e293b;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${escHtml(e.titel)}</div>
@@ -13299,4 +13355,961 @@ async function hubGegenzBestaetigen() {
   document.getElementById('hub-gegenz-modal').style.display = 'none';
   showToast('✅ Fahrauftrag gegengezeichnet!', '#14532d');
   renderMitarbeiterListe();
+}
+
+
+// ════════════════════════════════════════════════════════════════
+// BEFÄHIGTE PERSON — LEITERN & TRITTE (BetrSichV / DGUV 208-016)
+// Pseudo-Lernpfad __befperson__, analog zu __hub__
+// ════════════════════════════════════════════════════════════════
+
+const BP_KAPITEL = [
+  // ── Modul 1: Rechtliche Grundlagen ──
+  {
+    id: 'bp-01', modul: 1, nr: 1,
+    titel: 'Rechtliche Grundlagen & Prüfpflicht',
+    icon: '⚖️',
+    inhalt: `<p>In Betrieben, in denen Leitern und Tritte als Arbeitsmittel eingesetzt werden, greift zwingend die <strong>Betriebssicherheitsverordnung (BetrSichV)</strong>:</p>
+    <ul>
+      <li><strong>BetrSichV § 3</strong> — Gefährdungsbeurteilung: Ausgangspunkt jeder Prüfpflicht</li>
+      <li><strong>BetrSichV § 14</strong> — Prüfpflicht vor erster Verwendung, wiederkehrend und außerordentlich</li>
+      <li><strong>ArbSchG § 25</strong> — Bußgelder bis zu <strong>30.000 Euro</strong> bei fehlender oder unzureichender Prüfung</li>
+      <li><strong>TRBS 1203</strong> — Qualifikationsanforderungen an die Befähigte Person</li>
+    </ul>
+    <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:10px 14px;margin:10px 0">
+      <div style="font-weight:700;font-size:.88rem;color:#991b1b">⚠️ Haftungsrisiko</div>
+      <div style="font-size:.82rem;color:#7f1d1d;margin-top:4px">Fehlt der Nachweis der Fachkunde bei einer Kontrolle der Berufsgenossenschaft oder nach einem Arbeitsunfall, drohen Bußgelder bis zu 30.000 € sowie eine persönliche Haftung der Geschäftsführung.</div>
+    </div>
+    <p style="font-size:.83rem;color:#374151">Ein externer Prüfdienst ist rechtlich <strong>nicht erforderlich</strong> — eigene Mitarbeiter können intern zur Befähigten Person qualifiziert werden.</p>`
+  },
+  {
+    id: 'bp-02', modul: 1, nr: 2,
+    titel: 'Normenübersicht — Bezug zur Schulung',
+    icon: '📋',
+    inhalt: `<p>Die Schulungsinhalte orientieren sich strikt an folgenden Vorschriften:</p>
+    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">BetrSichV § 3 + § 14</div>
+        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Gefährdungsbeurteilung · Prüfanlässe · Dokumentation</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">TRBS 1203</div>
+        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Qualifikation der Befähigten Person (Ausbildung + Erfahrung + Aktualität)</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">TRBS 2121 Teil 2</div>
+        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Gefährdungen bei der Verwendung von Leitern — Absturz, Umkippen, Wegrutschen</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">DGUV Information 208-016</div>
+        <div style="font-size:.78rem;color:#1d4ed8;margin-top:2px">Praxisanleitung: Bauarten, Prüfkriterien, Prüffristen, Dokumentation (vormals BGI 6949)</div>
+      </div>
+    </div>
+    <p style="font-size:.78rem;color:#6b7280">Hinweis: Das Zertifikat der internen Schulung hat kein gesetzliches Ablaufdatum. Empfohlen: Auffrischung alle 3–5 Jahre bei Normenänderungen.</p>`
+  },
+  // ── Modul 2: Bauarten & Normen ──
+  {
+    id: 'bp-03', modul: 2, nr: 3,
+    titel: 'Bauarten, Normen & Anforderungen',
+    icon: '🪜',
+    inhalt: `<p>Die <strong>DGUV Information 208-016</strong> und die einschlägigen DIN-Normen unterscheiden folgende Typen:</p>
+    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Anlegeleitern</div>
+        <div style="font-size:.79rem;color:#075985;margin-top:3px">Werden gegen eine Wand oder ein Objekt angelehnt. Aufstellwinkel: 65–75°.</div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Stehleitern</div>
+        <div style="font-size:.79rem;color:#075985;margin-top:3px">Freistehend, mit Spreize. Dürfen nicht als Anleigeleitern verwendet werden.</div>
+      </div>
+      <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.88rem;color:#0c4a6e">🪜 Mehrzweck- und Podestleitern, Tritte</div>
+        <div style="font-size:.79rem;color:#075985;margin-top:3px">Verschiedene Verwendungsmöglichkeiten. Tritte: max. 4 Stufen, ohne Abstützung.</div>
+      </div>
+    </div>
+    <p><strong>Werkstoffe:</strong> Aluminium (leicht, nicht leitfähig für Wärme), Holz (isolierend, witterungsempfindlich), Faserverbund (elektrisch isolierend — Pflicht bei Elektroarbeiten).</p>
+    <p style="font-size:.82rem;color:#374151"><strong>Kennzeichnung:</strong> Jede Leiter muss nach den einschlägigen DIN-Normen gekennzeichnet sein (Hersteller, Typ, Norm, Höchstbelastung).</p>`
+  },
+  // ── Modul 3: Rechte & Pflichten ──
+  {
+    id: 'bp-04', modul: 3, nr: 4,
+    titel: 'Qualifikation & Bestellung der Befähigten Person',
+    icon: '🏛️',
+    inhalt: `<p>Die <strong>TRBS 1203</strong> definiert drei Anforderungen an die Qualifikation:</p>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">🎓</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Ausbildung</div>
+        <div style="font-size:.71rem;color:#1d4ed8">Berufsausbildung oder vergleichbare Kenntnisse</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">🔧</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Erfahrung</div>
+        <div style="font-size:.71rem;color:#1d4ed8">Praktische Erfahrung mit Leitern & Tritten</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:1.4rem">📅</div>
+        <div style="font-weight:700;font-size:.8rem;color:#1a3a5c;margin-top:4px">Aktualität</div>
+        <div style="font-size:.71rem;color:#1d4ed8">Zeitnahe Tätigkeit auf dem Gebiet</div>
+      </div>
+    </div>
+    <p><strong>Bestellung:</strong> Schriftliche Bestellung durch den Arbeitgeber. Die Befähigte Person dokumentiert die Prüfungen und entscheidet über Weiterverwendung, Reparatur oder Aussonderung.</p>
+    <p><strong>Abgrenzung:</strong> Nutzer → bestimmungsgemäßer Gebrauch, Sichtprüfung vor Benutzung. Vorgesetzte → Organisationsverantwortung. Befähigte Person → fachkundige Prüfung und Dokumentation.</p>`
+  },
+  {
+    id: 'bp-05', modul: 3, nr: 5,
+    titel: 'Abgrenzung: Nutzer, Vorgesetzte, Befähigte Person',
+    icon: '👥',
+    inhalt: `<p>Verantwortlichkeiten sind klar aufgeteilt — Überschneidungen führen zu Haftungsrisiken:</p>
+    <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
+      <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#14532d">👤 Nutzer / Mitarbeiter</div>
+        <div style="font-size:.8rem;color:#166534;margin-top:4px">Sichtprüfung vor jeder Benutzung · Meldet Mängel sofort · Keine eigenmächtige Reparatur · Bestimmungsgemäße Verwendung</div>
+      </div>
+      <div style="background:#fffbeb;border-left:4px solid #f59e0b;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#92400e">🏢 Arbeitgeber / Vorgesetzter</div>
+        <div style="font-size:.8rem;color:#78350f;margin-top:4px">Bereitstellt geeignete Arbeitsmittel · Stellt sicher, dass Prüfungen stattfinden · Schriftliche Bestellung der Befähigten Person</div>
+      </div>
+      <div style="background:#eff6ff;border-left:4px solid #3b82f6;border-radius:6px;padding:10px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#1e3a8a">🎓 Befähigte Person</div>
+        <div style="font-size:.8rem;color:#1d4ed8;margin-top:4px">Fachkundige Prüfung · Entscheidung über Weiterverwendung, Reparatur oder Aussonderung · Rechtssichere Dokumentation im Leiterkontrollbuch</div>
+      </div>
+    </div>
+    <p style="font-size:.8rem;color:#374151"><strong>Meldewege:</strong> Nutzer → Vorgesetzte → Befähigte Person. Bei akuter Gefahr: sofort aus dem Verkehr ziehen und kennzeichnen.</p>`
+  },
+  // ── Modul 4: Unfallgefahren ──
+  {
+    id: 'bp-06', modul: 4, nr: 6,
+    titel: 'Unfallgefahren & Schutzmaßnahmen',
+    icon: '⚠️',
+    inhalt: `<p>Leitern gehören zu den häufigsten Unfallursachen in Betrieben. Die <strong>TRBS 2121 Teil 2</strong> benennt die Hauptgefahren:</p>
+    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">🚨 Absturz</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Häufigste Unfallursache. Schutz: korrekte Aufstellung, drei-Punkte-Regel (immer zwei Hände + ein Fuß oder zwei Füße + eine Hand).</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">↗️ Wegrutschen</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Anlegeleitern: Fußsicherung oder Halterung. Aufstellwinkel 65–75°. Rutschfeste Füße prüfen.</div>
+      </div>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:6px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">⚡ Umkippen</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Stehleitern: Spreize vollständig öffnen und sichern. Keine seitliche Überladung.</div>
+      </div>
+    </div>
+    <p><strong>Schutzmaßnahmen:</strong> Standsicherheit prüfen · PSA nur bei besonderer Gefährdung · Keine Nutzung bei Nässe, Eis oder starkem Wind · Nie die obersten Stufen belasten.</p>`
+  },
+  // ── Modul 5: Instandhaltung ──
+  {
+    id: 'bp-07', modul: 5, nr: 7,
+    titel: 'Instandhaltung, Reparatur & Aussonderung',
+    icon: '🔧',
+    inhalt: `<p>Grundlage: <strong>DGUV Information 208-016</strong> und <strong>BetrSichV § 14 Abs. 2</strong>.</p>
+    <p><strong>Zulässige Reparaturen</strong> — nur durch Fachbetrieb oder Hersteller:</p>
+    <ul>
+      <li>Austausch einzelner Holmabschnitte durch den Hersteller</li>
+      <li>Ersetzen von Sprossen durch Originalteile</li>
+      <li>Erneuerung rutschfester Fußkappen (Originalteile)</li>
+    </ul>
+    <p><strong>Kriterien für sofortige Aussonderung:</strong></p>
+    <div style="background:#fef2f2;border-radius:8px;padding:10px 14px;margin:8px 0">
+      <ul style="margin:0;color:#7f1d1d;font-size:.82rem">
+        <li>Verbogene, gebrochene oder gerissene Holme oder Sprossen</li>
+        <li>Fehlende oder beschädigte Sicherungseinrichtungen (Spreizensicherung, Füße)</li>
+        <li>Nicht reparierbare Korrosionsschäden oder Fäulnis</li>
+        <li>Nach außergewöhnlichen Ereignissen (Sturz, Überlast)</li>
+      </ul>
+    </div>
+    <p style="font-size:.82rem;color:#374151">Ausgesonderte Leitern müssen sofort als unbrauchbar gekennzeichnet und aus dem Verkehr gezogen werden — keinesfalls zur Reparatur zurückstellen.</p>`
+  },
+  // ── Modul 6: Prüffristen ──
+  {
+    id: 'bp-08', modul: 6, nr: 8,
+    titel: 'Prüfanlässe & Fristen nach BetrSichV § 14',
+    icon: '📅',
+    inhalt: `<p><strong>BetrSichV § 14</strong> unterscheidet drei Prüfanlässe:</p>
+    <div style="display:flex;flex-direction:column;gap:7px;margin:10px 0">
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">§ 14 Abs. 1 — Erstprüfung</div>
+        <div style="font-size:.79rem;color:#1d4ed8;margin-top:3px">Vor der ersten Benutzung im Betrieb — auch bei neuen Arbeitsmitteln.</div>
+      </div>
+      <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c">§ 14 Abs. 2 — Wiederkehrende Prüfung</div>
+        <div style="font-size:.79rem;color:#1d4ed8;margin-top:3px">Risikobasiert durch die Befähigte Person. Kriterien: Nutzungsintensität, Umgebungsbedingungen (Nässe, Chemikalien), Unfallgeschehen. DGUV 208-016 empfiehlt max. 12 Monate.</div>
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #dc2626;border-radius:8px;padding:9px 13px">
+        <div style="font-weight:700;font-size:.85rem;color:#991b1b">§ 14 Abs. 3 — Außerordentliche Prüfung</div>
+        <div style="font-size:.79rem;color:#7f1d1d;margin-top:3px">Erforderlich nach außergewöhnlichen Ereignissen: Sturz der Leiter, Überlast, Beschädigungen, längerer Nichtnutzung oder Änderungen im Betrieb.</div>
+      </div>
+    </div>
+    <p style="font-size:.82rem;color:#374151">Zusätzlich: Sichtprüfung durch den Nutzer vor jeder Benutzung (kein formaler Prüfnachweis erforderlich).</p>`
+  },
+  // ── Modul 7: Prüfdurchführung ──
+  {
+    id: 'bp-09', modul: 7, nr: 9,
+    titel: 'Praktische Prüfung — Ablauf & Checkliste',
+    icon: '🔍',
+    inhalt: `<p>Grundlage der praktischen Prüfung: <strong>DGUV Information 208-016</strong> und <strong>TRBS 2121 Teil 2</strong>.</p>
+    <p><strong>Prüfablauf für Anlegeleitern und Stehleitern:</strong></p>
+    <ol style="font-size:.83rem;color:#374151;line-height:1.7">
+      <li><strong>Identifikation:</strong> Inventarnummer, Typ, Hersteller, Baujahr prüfen</li>
+      <li><strong>Holme:</strong> Verbiegungen, Risse, Korrosion, Knicke</li>
+      <li><strong>Sprossen / Stufen:</strong> Vollständigkeit, fester Sitz, Rutschsicherheit</li>
+      <li><strong>Fußkappen / Gleiter:</strong> vorhanden, nicht abgenutzt, intakt</li>
+      <li><strong>Spreize (Stehleiter):</strong> Verriegelung vollständig, funktionsfähig</li>
+      <li><strong>Verbindungsteile:</strong> Schrauben, Nieten, Gelenkbeschläge</li>
+      <li><strong>Besondere Vorkommnisse:</strong> Sturzhistorie, Reparaturen</li>
+    </ol>
+    <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:9px 13px;margin:8px 0">
+      <div style="font-weight:700;font-size:.84rem;color:#14532d">✅ Ergebnis dokumentieren</div>
+      <div style="font-size:.79rem;color:#166534;margin-top:3px">Jede Prüfung sofort im Leiterkontrollbuch festhalten — auch wenn keine Mängel festgestellt wurden.</div>
+    </div>`
+  },
+  // ── Modul 8: Dokumentation ──
+  {
+    id: 'bp-10', modul: 8, nr: 10,
+    titel: 'Rechtssichere Dokumentation — Leiterkontrollbuch',
+    icon: '📄',
+    inhalt: `<p>Grundlage: <strong>BetrSichV § 14 Abs. 5</strong> und <strong>DGUV Information 208-016</strong>.</p>
+    <p><strong>Mindestangaben im Prüfprotokoll:</strong></p>
+    <div style="background:#eff6ff;border-radius:8px;padding:10px 14px;margin:8px 0">
+      <ul style="margin:0;font-size:.82rem;color:#1d4ed8;line-height:1.7">
+        <li>Inventarnummer / Bezeichnung des Arbeitsmittels</li>
+        <li>Art der Prüfung (Erst-, wiederkehrend, außerordentlich)</li>
+        <li>Datum der Prüfung</li>
+        <li>Prüfumfang (welche Punkte wurden geprüft)</li>
+        <li>Festgestellte Mängel und getroffene Maßnahmen</li>
+        <li>Ergebnis: Freigabe zur Weiterverwendung oder Aussonderung</li>
+        <li><strong>Name und Unterschrift der Befähigten Person</strong></li>
+        <li>Termin der nächsten Prüfung</li>
+      </ul>
+    </div>
+    <p><strong>Aufbewahrung:</strong> Die Prüfnachweise sind bis zur nächsten Prüfung aufzubewahren und müssen bei einer Kontrolle der Berufsgenossenschaft vorgezeigt werden können.</p>
+    <div style="background:#fef9c3;border:1.5px solid #fde047;border-radius:8px;padding:9px 13px;margin:8px 0">
+      <div style="font-size:.8rem;color:#713f12">💡 <strong>Merksatz:</strong> Keine Dokumentation = kein Nachweis = keine Rechtskonformität. Was nicht schriftlich festgehalten ist, hat rechtlich nicht stattgefunden.</div>
+    </div>`
+  }
+];
+
+const BP_QUIZ = [
+  {
+    frage: 'Welche Rechtsgrundlage verpflichtet den Arbeitgeber zur Gefährdungsbeurteilung und zur Festlegung der erforderlichen Prüfungen für Leitern und Tritte?',
+    antworten: [
+      'DGUV Information 208-016 § 1',
+      'BetrSichV § 3',
+      'TRBS 1203 Abschnitt 4',
+      'ArbSchG § 12'
+    ],
+    richtig: 1,
+    erklaerung: 'BetrSichV § 3 verpflichtet den Arbeitgeber zur Gefährdungsbeurteilung und zur Festlegung von Art, Umfang und Fristen der erforderlichen Prüfungen. § 14 BetrSichV regelt darauf aufbauend die eigentliche Prüfpflicht.'
+  },
+  {
+    frage: 'Wie hoch ist das maximale Bußgeld nach § 25 ArbSchG bei fehlender oder unzureichender Prüfung von Arbeitsmitteln?',
+    antworten: [
+      '5.000 Euro',
+      '10.000 Euro',
+      '30.000 Euro',
+      '50.000 Euro'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach § 25 ArbSchG können bei Verstößen gegen Arbeitsschutzpflichten Bußgelder bis zu 30.000 Euro verhängt werden. Zusätzlich droht eine persönliche Haftung der Geschäftsführung.'
+  },
+  {
+    frage: 'Welche drei Anforderungen muss eine Person nach TRBS 1203 erfüllen, um als Befähigte Person zur Prüfung von Leitern bestellt werden zu können?',
+    antworten: [
+      'Mindestens 5 Jahre Berufserfahrung, Meistertitel und ein behördliches Zertifikat',
+      'Berufsausbildung oder vergleichbare Kenntnisse, praktische Erfahrung und zeitnahe Tätigkeit auf dem Gebiet',
+      'Hochschulabschluss, externe Schulung und schriftlicher Antrag bei der BG',
+      'Amtlicher Sachkundenachweis, jährliche Fortbildung und Mitgliedschaft in einer Prüforganisation'
+    ],
+    richtig: 1,
+    erklaerung: 'Die TRBS 1203 fordert: (1) Berufsausbildung oder gleichwertige Kenntnisse, (2) praktische Erfahrung mit Leitern und Tritten sowie (3) zeitnahe Tätigkeit auf diesem Gebiet. Ein externer Prüfdienst ist nicht zwingend erforderlich.'
+  },
+  {
+    frage: 'Eine Leiter fällt aus 3 Metern Höhe auf den Boden. Was ist laut BetrSichV § 14 Abs. 3 als nächstes zu tun?',
+    antworten: [
+      'Die Leiter kann sofort weiterverwendet werden, wenn keine sichtbaren Schäden erkennbar sind',
+      'Die Leiter wird bis zur nächsten regulären Jahresprüfung markiert und dann geprüft',
+      'Eine außerordentliche Prüfung durch die Befähigte Person ist zwingend erforderlich, bevor die Leiter wieder verwendet wird',
+      'Es reicht eine kurze Sichtprüfung durch den nächsten Vorgesetzten'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach § 14 Abs. 3 BetrSichV ist nach außergewöhnlichen Ereignissen (Sturz, Überlast, Beschädigung) eine außerordentliche Prüfung durch die Befähigte Person erforderlich — unabhängig vom regulären Prüfintervall.'
+  },
+  {
+    frage: 'Welcher Aufstellwinkel wird für Anlegeleitern nach TRBS 2121 Teil 2 empfohlen?',
+    antworten: [
+      '45–55°',
+      '55–65°',
+      '65–75°',
+      '80–90°'
+    ],
+    richtig: 2,
+    erklaerung: 'Für Anlegeleitern gilt ein empfohlener Aufstellwinkel von 65–75°. Flacherer Winkel erhöht die Gefahr des Wegrutschen der Füße, steilerer Winkel das Risiko des Umkippens nach hinten.'
+  },
+  {
+    frage: 'Was versteht die DGUV Information 208-016 unter einer "wiederkehrenden Prüfung" für Leitern und Tritte?',
+    antworten: [
+      'Eine tägliche Prüfung durch jeden Benutzer vor der Verwendung',
+      'Eine risikobasierte Prüfung durch die Befähigte Person, bei der Nutzungsintensität und Umgebungsbedingungen berücksichtigt werden',
+      'Eine Prüfung, die ausschließlich alle zwei Jahre stattfinden muss',
+      'Eine einmalige Prüfung nach dem Kauf des Arbeitsmittels'
+    ],
+    richtig: 1,
+    erklaerung: 'Die DGUV Information 208-016 empfiehlt eine risikobasierte wiederkehrende Prüfung: Die Befähigte Person legt die Prüffrist anhand von Nutzungsintensität, Umgebungsbedingungen (Chemikalien, Feuchtigkeit) und dem bisherigen Schadensbild fest. Als Richtwert gilt ein Intervall von maximal 12 Monaten.'
+  },
+  {
+    frage: 'Welche der folgenden Maßnahmen ist bei einer Stehleiter laut TRBS 2121 Teil 2 strikt untersagt?',
+    antworten: [
+      'Die Nutzung für Arbeiten auf rutschfestem Untergrund',
+      'Das Stellen der Stehleiter auf trockenem, ebenem Untergrund',
+      'Das Öffnen der Spreize und Sichern der Verriegelung vor der Nutzung',
+      'Das Besteigen der obersten Stufe oder das seitliche Überladen'
+    ],
+    richtig: 3,
+    erklaerung: 'Die obersten Stufen einer Stehleiter sind keine Stehebene — sie fehlen stabilisierenden Abstützungen. Seitliches Überladen verlagert den Schwerpunkt und führt zum Umkippen. Beides ist nach TRBS 2121 Teil 2 verboten.'
+  },
+  {
+    frage: 'Welche Angaben sind nach BetrSichV § 14 Abs. 5 im Prüfprotokoll zwingend erforderlich?',
+    antworten: [
+      'Nur das Datum der Prüfung reicht aus',
+      'Prüfart, Prüfumfang, Ergebnis, Datum sowie Name und Unterschrift der Befähigten Person',
+      'Lediglich die Inventarnummer und eine Freizeichnung',
+      'Nur Mängel müssen dokumentiert werden — fehlerfreie Leitern brauchen keinen Eintrag'
+    ],
+    richtig: 1,
+    erklaerung: 'Das Prüfprotokoll muss gemäß BetrSichV § 14 Abs. 5 mindestens enthalten: Bezeichnung und Inventarnummer des Arbeitsmittels, Art der Prüfung, Prüfumfang, Datum, festgestellte Mängel und Maßnahmen, Ergebnis sowie Name und Unterschrift der Befähigten Person.'
+  },
+  {
+    frage: 'Welche Kriterien muss eine Leiter erfüllen, damit eine zulässige Reparatur durchgeführt werden darf?',
+    antworten: [
+      'Jeder Mitarbeiter darf mit handelsüblichem Klebeband oder Draht provisorisch reparieren',
+      'Reparaturen sind grundsätzlich verboten — defekte Leitern müssen immer komplett ersetzt werden',
+      'Reparaturen dürfen nur durch den Hersteller oder einen autorisierten Fachbetrieb mit Originalteilen durchgeführt werden',
+      'Eine Reparatur durch die Befähigte Person selbst ist immer zulässig'
+    ],
+    richtig: 2,
+    erklaerung: 'Leitern dürfen nur mit Originalteilen durch den Hersteller oder einen autorisierten Fachbetrieb repariert werden. Behelfsmäßige Reparaturen (Klebeband, Draht, Improvisation) sind strikt verboten und führen zur sofortigen Aussonderungspflicht.'
+  },
+  {
+    frage: 'Welches Werkzeug eignet sich nach DGUV Information 208-016 bei Elektroarbeiten als Pflicht-Werkstoff für Leitern?',
+    antworten: [
+      'Aluminium, da es sehr leicht ist',
+      'Holz, da es günstig und robust ist',
+      'Faserverbundwerkstoff (GFK), da er elektrisch isolierend ist',
+      'Stahl, da er am langlebigsten ist'
+    ],
+    richtig: 2,
+    erklaerung: 'Bei Arbeiten in der Nähe elektrischer Anlagen ist der Einsatz von Leitern aus faserverstärktem Kunststoff (GFK/FVK) Pflicht, da dieser Werkstoff elektrisch nicht leitend ist. Aluminium und Stahl leiten Strom und sind daher für Elektroarbeiten ungeeignet.'
+  },
+  {
+    frage: 'Was ist laut DGUV Information 208-016 der Unterschied zwischen einer "Sichtprüfung vor jeder Benutzung" und einer "wiederkehrenden Prüfung"?',
+    antworten: [
+      'Beide Prüfungen sind identisch — es gibt keinen Unterschied',
+      'Die Sichtprüfung ist nur bei offensichtlichen Beschädigungen nötig; die wiederkehrende Prüfung nie',
+      'Die Sichtprüfung führt der Nutzer selbst durch (kein Protokoll erforderlich); die wiederkehrende Prüfung führt die Befähigte Person mit vollständiger Dokumentation durch',
+      'Die Sichtprüfung ersetzt vollständig die wiederkehrende Prüfung'
+    ],
+    richtig: 2,
+    erklaerung: 'Die Sichtprüfung ist eine kurze Inaugenscheinnahme durch den Nutzer vor jeder Benutzung — ohne formalen Protokollnachweis. Die wiederkehrende Prüfung durch die Befähigte Person ist systematisch, umfassend und vollständig zu dokumentieren.'
+  },
+  {
+    frage: 'Wie lange müssen Prüfnachweise für Leitern und Tritte mindestens aufbewahrt werden?',
+    antworten: [
+      'Für 10 Jahre nach der Prüfung',
+      'Bis zur nächsten Prüfung des jeweiligen Arbeitsmittels',
+      'Für 5 Jahre — gesetzlich vorgeschriebene Aufbewahrungsfrist',
+      'Prüfnachweise müssen nicht aufbewahrt werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Prüfnachweise müssen mindestens bis zur nächsten Prüfung aufbewahrt werden, sodass bei einer Kontrolle der Berufsgenossenschaft stets die aktuellste Prüfung nachgewiesen werden kann. Empfohlen wird eine längere Aufbewahrung (z. B. bis zur Aussonderung des Arbeitsmittels).'
+  },
+  {
+    frage: 'Welche Aussage zur schriftlichen Bestellung der Befähigten Person ist korrekt?',
+    antworten: [
+      'Eine mündliche Bestellung durch den Vorgesetzten ist ausreichend',
+      'Die Bestellung erfolgt durch die Berufsgenossenschaft automatisch nach bestandener Schulung',
+      'Die schriftliche Bestellung durch den Arbeitgeber ist erforderlich und dokumentiert die Übertragung der Prüfaufgabe',
+      'Die Befähigte Person bestellt sich selbst durch das Schulungszertifikat'
+    ],
+    richtig: 2,
+    erklaerung: 'Nach TRBS 1203 muss die Befähigte Person schriftlich durch den Arbeitgeber bestellt werden. Diese Bestellung dokumentiert die rechtliche Übertragung der Prüfaufgabe und ist Voraussetzung für die rechtssichere Tätigkeit als Befähigte Person.'
+  },
+  {
+    frage: 'In welchem Fall ist eine außerordentliche Prüfung nach BetrSichV § 14 Abs. 3 zwingend erforderlich?',
+    antworten: [
+      'Wenn die Leiter zum ersten Mal in einem neuen Gebäude eingesetzt wird',
+      'Nur wenn ein Mitarbeiter über einen Monat krankgeschrieben war',
+      'Nach außergewöhnlichen Ereignissen wie Stürzen, Überlast, Beschädigungen oder längerer Nichtbenutzung',
+      'Einmal pro Quartal als Ergänzung zur Jahresprüfung'
+    ],
+    richtig: 2,
+    erklaerung: 'BetrSichV § 14 Abs. 3 schreibt eine außerordentliche Prüfung nach außergewöhnlichen Ereignissen vor: Stürze, Überlast, erkennbare Beschädigungen oder Situationen, die die Sicherheit des Arbeitsmittels in Frage stellen können. Auch nach längerer Nichtbenutzung ist eine Prüfung sinnvoll und erforderlich.'
+  },
+  {
+    frage: 'Was ist der entscheidende rechtliche Grundsatz für die Dokumentation von Leiterprüfungen?',
+    antworten: [
+      'Eine Dokumentation ist nur bei festgestellten Mängeln vorgeschrieben',
+      'Was nicht schriftlich festgehalten ist, hat rechtlich nicht stattgefunden — keine Dokumentation = kein Nachweis',
+      'Eine Dokumentation in der Cloud ersetzt das Leiterkontrollbuch nicht',
+      'Prüfprotokolle müssen nur bei Unfällen erstellt werden'
+    ],
+    richtig: 1,
+    erklaerung: 'Der Grundsatz gilt uneingeschränkt: Auch fehlerfreie Leitern müssen dokumentiert werden. Prüfprotokolle sind der einzige rechtssichere Nachweis, dass die Befähigte Person ihre Pflichten erfüllt hat. Fehlende Dokumentation wird bei BG-Kontrollen wie fehlende Prüfung gewertet.'
+  },
+  {
+    frage: 'Warum ist der Einsatz von Stehleitern als Anlegeleitern verboten?',
+    antworten: [
+      'Stehleitern sind zu schwer und damit gefährlicher als Anlegeleitern',
+      'Stehleitern sind für das Anlehnen an Wände konstruktiv nicht ausgelegt — die Spreize kann zum Biegebruch führen',
+      'Es handelt sich lediglich um eine Empfehlung, kein Verbot',
+      'Stehleitern sind nur bei Nässe verboten, im Trockenen aber erlaubt'
+    ],
+    richtig: 1,
+    erklaerung: 'Stehleitern sind für den freistehenden Einsatz konstruiert. Werden sie als Anlegeleitern verwendet, werden die Holme auf Biegung beansprucht — eine Belastungsart, für die sie nicht ausgelegt sind. Dies kann zu plötzlichem Versagen führen.'
+  },
+  {
+    frage: 'Welche Information muss auf der Kennzeichnung einer normgerechten Leiter vorhanden sein?',
+    antworten: [
+      'Nur der Name des Herstellers',
+      'Nur das Herstellungsjahr',
+      'Hersteller, Typ, zugehörige DIN-Norm und zulässige Höchstbelastung',
+      'Name des Prüfers und Prüfdatum'
+    ],
+    richtig: 2,
+    erklaerung: 'Normgerechte Leitern müssen nach den einschlägigen DIN-Normen dauerhaft gekennzeichnet sein: Hersteller, Typ, angewandte Norm und zulässige Höchstbelastung. Fehlt die Kennzeichnung oder ist sie unleserlich, muss die Leiter ausgesondert werden.'
+  },
+  {
+    frage: 'Was versteht BetrSichV § 14 Abs. 1 unter der "Erstprüfung" eines Arbeitsmittels?',
+    antworten: [
+      'Die Prüfung nach dem ersten Schaden am Arbeitsmittel',
+      'Die erste Prüfung nach einer Reparatur',
+      'Die Prüfung vor der erstmaligen Benutzung im Betrieb — auch bei neuen, fabrikfrischen Arbeitsmitteln',
+      'Die Prüfung ein Jahr nach der Inbetriebnahme'
+    ],
+    richtig: 2,
+    erklaerung: 'BetrSichV § 14 Abs. 1 schreibt eine Prüfung vor der erstmaligen Verwendung vor. Das gilt auch für neue Arbeitsmittel, da Transportschäden oder Fertigungsfehler aufgedeckt werden müssen. Die Befähigte Person bestätigt die Sicherheit vor dem ersten Einsatz.'
+  },
+  {
+    frage: 'Eine Leiter hat gerissene Holmverbindungen und Anzeichen von Korrosion. Was ist die korrekte Maßnahme?',
+    antworten: [
+      'Die Leiter wird provisorisch mit Klebeband gesichert und weiterverwendet',
+      'Die Leiter wird sofort ausgesondert, als unbrauchbar gekennzeichnet und aus dem Verkehr gezogen',
+      'Die Leiter wird zur Seite gestellt und beim nächsten Jahresservice geprüft',
+      'Die Befähigte Person kann die Risse selbst mit Epoxidharz reparieren'
+    ],
+    richtig: 1,
+    erklaerung: 'Gerissene Holmverbindungen und Korrosion sind Kriterien für die sofortige Aussonderung laut DGUV Information 208-016. Die Leiter muss unverzüglich als unbrauchbar gekennzeichnet und aus dem Umlauf genommen werden — keine Weiterverwendung, keine Provisorien.'
+  },
+  {
+    frage: 'Wer darf nach TRBS 1203 die schriftliche Prüfdokumentation im Leiterkontrollbuch unterzeichnen?',
+    antworten: [
+      'Jeder Vorarbeiter oder Teamleiter des Betriebs',
+      'Nur der Geschäftsführer',
+      'Ausschließlich die vom Arbeitgeber schriftlich bestellte Befähigte Person',
+      'Jeder Mitarbeiter, der die Prüfung beobachtet hat'
+    ],
+    richtig: 2,
+    erklaerung: 'Das Prüfprotokoll muss von der bestellten Befähigten Person unterzeichnet werden. Nur so ist die Dokumentation rechtlich wirksam. Eine Unterzeichnung durch andere Personen — auch Vorgesetzte — genügt den Anforderungen der BetrSichV § 14 Abs. 5 nicht.'
+  }
+];
+
+// ── Zustand ──────────────────────────────────────────────────────
+let bpFortschritt  = {};
+let bpQuizAktiv    = false;
+let bpQuizFragen   = [];
+let bpQuizIndex    = 0;
+let bpQuizPunkte   = 0;
+let _bpPreviewMode = false;
+let _bpPreviewContainer = null;
+
+function bpSchulungInit() {
+  const wrap = document.getElementById('bp-schulung-btn-wrap');
+  if (!wrap) return;
+  const meineZuws = zuweisungen.filter(z => z.tenantId === currentUser?.tenantId);
+  const hatBp = meineZuws.some(z => z.vorlagenId === BP_VORLAGE_ID);
+  if (!hatBp) return;
+  wrap.style.display = '';
+  _bpFortschrittLaden();
+  _bpSubtitelAktualisieren();
+}
+
+function _bpFortschrittLaden() {
+  try {
+    const key = `bp_fortschritt_${currentUser?.userId || 'anon'}`;
+    const stored = localStorage.getItem(key);
+    if (stored) bpFortschritt = JSON.parse(stored);
+  } catch(e) {}
+}
+
+function _bpFortschrittSpeichern() {
+  if (_bpPreviewMode) return;
+  try {
+    const key = `bp_fortschritt_${currentUser?.userId || 'anon'}`;
+    localStorage.setItem(key, JSON.stringify(bpFortschritt));
+  } catch(e) {}
+}
+
+function _bpSubtitelAktualisieren() {
+  const bestanden = BP_KAPITEL.filter(k => bpFortschritt[k.id]).length;
+  const sub = document.getElementById('btn-bp-sub');
+  if (!sub) return;
+  const quizBestanden = !!localStorage.getItem(`bp_quiz_bestanden_${currentUser?.userId || 'anon'}`);
+  if (quizBestanden) {
+    sub.textContent = '✅ Quiz bestanden · Fachkundenachweis verfügbar';
+  } else {
+    sub.textContent = `${bestanden}/${BP_KAPITEL.length} Module gelesen · ${bestanden === BP_KAPITEL.length ? 'Quiz verfügbar!' : 'Tippen zum Starten'}`;
+  }
+}
+
+function bpSchulungToggle() {
+  const cont  = document.getElementById('bp-schulung-container');
+  const pfeil = document.getElementById('btn-bp-pfeil');
+  if (!cont) return;
+  const open = cont.style.display === 'block';
+  cont.style.display = open ? 'none' : 'block';
+  if (pfeil) pfeil.style.transform = open ? '' : 'rotate(180deg)';
+  if (!open) bpSchulungRender();
+}
+
+function bpSchulungRender() {
+  const cont = document.getElementById('bp-schulung-container');
+  bpSchulungRenderIn(cont);
+}
+
+function bpSchulungRenderIn(cont) {
+  if (!cont) return;
+  const userId = _bpPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+  const quizBestanden = _bpPreviewMode ? false : !!localStorage.getItem(`bp_quiz_bestanden_${userId}`);
+  const bestandenAnzahl = BP_KAPITEL.filter(k => bpFortschritt[k.id]).length;
+  const alleGelesen = bestandenAnzahl === BP_KAPITEL.length;
+
+  // Modul-Gruppen (8 Module)
+  const modulTitel = {
+    1: 'Modul 1 — Rechtliche Grundlagen',
+    2: 'Modul 2 — Bauarten, Normen & Anforderungen',
+    3: 'Modul 3 — Rechte & Pflichten',
+    4: 'Modul 4 — Unfallgefahren & Schutzmaßnahmen',
+    5: 'Modul 5 — Instandhaltung & Aussonderung',
+    6: 'Modul 6 — Prüffristen & Prüfumfang',
+    7: 'Modul 7 — Praktische Prüfdurchführung',
+    8: 'Modul 8 — Dokumentation & Leiterkontrollbuch'
+  };
+  const modulColor = { 1:'#1e3a5f', 2:'#1d4ed8', 3:'#1a3a5c', 4:'#991b1b', 5:'#b45309', 6:'#1a3a5c', 7:'#166534', 8:'#1a3a5c' };
+
+  let html = '<div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">'
+    + '<div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">'
+    + '<div style="font-weight:700;font-size:.9rem">🪜 Befähigte Person — Leitern & Tritte</div>'
+    + '<div style="font-size:.72rem;opacity:.8;margin-top:2px">BetrSichV · TRBS 1203 · TRBS 2121-2 · DGUV 208-016</div>'
+    + '<div style="margin-top:7px;height:5px;background:rgba(255,255,255,.25);border-radius:3px">'
+    + '<div style="height:100%;background:#fbbf24;border-radius:3px;width:' + Math.round(bestandenAnzahl/BP_KAPITEL.length*100) + '%;transition:width .4s"></div>'
+    + '</div>'
+    + '<div style="margin-top:5px;font-size:.7rem;opacity:.75">' + bestandenAnzahl + ' von ' + BP_KAPITEL.length + ' Modulen gelesen</div>'
+    + '</div>';
+
+  [1,2,3,4,5,6,7,8].forEach(mod => {
+    const kapitelDesModuls = BP_KAPITEL.filter(k => k.modul === mod);
+    html += `<div style="padding:8px 14px 2px;border-bottom:1px solid #f0f2f5">
+      <div style="font-size:.75rem;font-weight:700;color:${modulColor[mod]};text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">${modulTitel[mod]}</div>
+    </div>`;
+    kapitelDesModuls.forEach(k => {
+      const gelesen = !!bpFortschritt[k.id];
+      html += `
+        <div onclick="bpKapitelOeffnen('${k.id}')"
+          style="display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid #f5f5f5;cursor:pointer;background:${gelesen?'#f0fdf4':'#fff'};transition:background .15s"
+          onmouseover="this.style.background='${gelesen?'#dcfce7':'#eff6ff'}'"
+          onmouseout="this.style.background='${gelesen?'#f0fdf4':'#fff'}'">
+          <span style="font-size:1.5rem;flex-shrink:0">${gelesen ? '✅' : k.icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.85rem;color:${gelesen?'#166534':'#1a3a5c'}">
+              ${k.nr}. ${escHtml(k.titel)}
+            </div>
+          </div>
+          <span style="font-size:1rem;color:${gelesen?'#16a34a':'#d1d5db'}">${gelesen?'✓':'›'}</span>
+        </div>`;
+    });
+  });
+
+  // Quiz-Button
+  html += `<div style="padding:12px 14px">`;
+  if (quizBestanden) {
+    html += `
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:10px;text-align:center">
+        <div style="font-size:1.5rem">🏆</div>
+        <div style="font-weight:700;color:#14532d;font-size:.9rem;margin-top:4px">Quiz bestanden — Fachkundenachweis verfügbar!</div>
+        <div style="font-size:.78rem;color:#166534;margin-top:2px">Ergebnis: ${localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–'}</div>
+      </div>
+      <button onclick="bpZertifikatErstellen()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+        📄 Fachkundenachweis als PDF herunterladen
+      </button>`;
+  } else if (alleGelesen) {
+    html += `
+      <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:10px 14px;margin-bottom:8px;font-size:.8rem;color:#92400e">
+        <div style="font-weight:700;margin-bottom:2px">⚠️ Hinweis vor dem Abschlusstest:</div>
+        <div>Mindestens <strong>80 % richtige Antworten</strong> (16 von 20) sind erforderlich.</div>
+        <div style="margin-top:3px">Das Ergebnis wird im <strong>Fachkundenachweis</strong> ausgewiesen.</div>
+      </div>
+      <button onclick="bpQuizStarten()"
+        style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35)">
+        🎯 Abschlusstest starten — 20 Fragen (mind. 80 % zum Bestehen)
+      </button>`;
+  } else {
+    html += `
+      <div style="text-align:center;color:#9ca3af;font-size:.8rem;padding:6px">
+        📖 Bitte zuerst alle Module lesen<br>
+        <span style="font-size:.75rem">(${BP_KAPITEL.length - bestandenAnzahl} noch offen)</span>
+      </div>`;
+  }
+  html += `</div></div>`;
+  cont.innerHTML = html;
+}
+
+function bpKapitelOeffnen(kapitelId) {
+  const k = BP_KAPITEL.find(k => k.id === kapitelId);
+  if (!k) return;
+  const modal = document.getElementById('bp-kapitel-modal');
+  if (modal) {
+    document.getElementById('bp-modal-titel').textContent = `${k.nr}. ${k.titel}`;
+    document.getElementById('bp-modal-modul').textContent = `Modul ${k.modul} — BetrSichV / DGUV 208-016`;
+    document.getElementById('bp-modal-body').innerHTML = k.inhalt;
+    const btnWeiter = document.getElementById('bp-modal-weiter');
+    if (btnWeiter) btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
+    modal.style.display = 'flex';
+    return;
+  }
+  bpFortschritt[kapitelId] = true;
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  bpSchulungRender();
+}
+
+function bpKapitelAbschliessen(kapitelId) {
+  bpFortschritt[kapitelId] = true;
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  document.getElementById('bp-kapitel-modal').style.display = 'none';
+  if (_bpPreviewMode && _bpPreviewContainer) {
+    bpSchulungRenderIn(_bpPreviewContainer);
+  } else {
+    bpSchulungRender();
+  }
+  if (!_bpPreviewMode && currentUser?.userId) {
+    const id = `${currentUser.userId}_${kapitelId}`;
+    SB.upsert('bp_fortschritt', {
+      id,
+      user_id:   currentUser.userId,
+      tenant_id: currentUser.tenantId || '',
+      kapitel_id: kapitelId,
+      abgehakt:   true,
+      abgehakt_am: new Date().toISOString()
+    }).catch(() => {});
+  }
+}
+
+function bpKapitelModalSchliessen() {
+  const modal = document.getElementById('bp-kapitel-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+// ── Quiz ──────────────────────────────────────────────────────────
+
+function bpQuizStarten() {
+  bpQuizFragen = [...BP_QUIZ].sort(() => Math.random() - 0.5);
+  bpQuizIndex  = 0;
+  bpQuizPunkte = 0;
+  bpQuizAktiv  = true;
+  bpQuizFrageZeigen();
+}
+
+function bpQuizFrageZeigen() {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const q = bpQuizFragen[bpQuizIndex];
+  if (!q) { bpQuizAuswertung(); return; }
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">
+        <div style="font-weight:700;font-size:.85rem">🎯 Abschlusstest — Befähigte Person</div>
+        <div style="font-size:.72rem;opacity:.8;margin-top:2px">Frage ${bpQuizIndex + 1} von ${bpQuizFragen.length}</div>
+        <div style="margin-top:7px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round((bpQuizIndex/bpQuizFragen.length)*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:14px 14px 6px">
+        <div style="font-weight:700;font-size:.9rem;color:#1e293b;line-height:1.4;margin-bottom:12px">${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, i) => `
+          <button onclick="bpQuizAntwort(${i})"
+            style="display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:7px;background:#f8fafc;border:2px solid #e2e8f0;border-radius:9px;cursor:pointer;font-size:.84rem;color:#1e293b;-webkit-appearance:none;box-sizing:border-box"
+            onmouseover="this.style.borderColor='#1a3a5c';this.style.background='#eff6ff'"
+            onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#f8fafc'">
+            <span style="font-weight:700;color:#1a3a5c;margin-right:8px">${['A','B','C','D'][i]}.</span> ${escHtml(a)}
+          </button>`).join('')}
+      </div>
+    </div>`;
+}
+
+function bpQuizAntwort(ausgewaehlter) {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const q = bpQuizFragen[bpQuizIndex];
+  const richtig = ausgewaehlter === q.richtig;
+  if (richtig) bpQuizPunkte++;
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff">
+        <div style="font-weight:700;font-size:.85rem">🎯 Abschlusstest — Befähigte Person</div>
+        <div style="font-size:.72rem;opacity:.8;margin-top:2px">Frage ${bpQuizIndex + 1} von ${bpQuizFragen.length}</div>
+        <div style="margin-top:7px;height:4px;background:rgba(255,255,255,.25);border-radius:3px">
+          <div style="height:100%;background:#fbbf24;border-radius:3px;width:${Math.round(((bpQuizIndex+1)/bpQuizFragen.length)*100)}%"></div>
+        </div>
+      </div>
+      <div style="padding:14px">
+        <div style="font-weight:700;font-size:.9rem;color:#1e293b;line-height:1.4;margin-bottom:12px">${escHtml(q.frage)}</div>
+        ${q.antworten.map((a, i) => {
+          let bg = '#f8fafc', border = '#e2e8f0', fc = '#1e293b';
+          if (i === q.richtig) { bg = '#f0fdf4'; border = '#16a34a'; fc = '#14532d'; }
+          else if (i === ausgewaehlter && !richtig) { bg = '#fef2f2'; border = '#dc2626'; fc = '#991b1b'; }
+          return `<div style="padding:11px 14px;margin-bottom:7px;background:${bg};border:2px solid ${border};border-radius:9px;font-size:.84rem;color:${fc}">
+            <span style="font-weight:700;margin-right:8px">${['A','B','C','D'][i]}.</span>${escHtml(a)}
+            ${i === q.richtig ? ' ✅' : (i === ausgewaehlter ? ' ❌' : '')}
+          </div>`;
+        }).join('')}
+        <div style="background:${richtig?'#f0fdf4':'#fef2f2'};border:1.5px solid ${richtig?'#86efac':'#fca5a5'};border-radius:10px;padding:10px 14px;margin-top:4px;font-size:.81rem;color:${richtig?'#14532d':'#991b1b'}">
+          <div style="font-weight:700;margin-bottom:3px">${richtig ? '✅ Richtig!' : '❌ Leider falsch.'}</div>
+          <div>${escHtml(q.erklaerung)}</div>
+        </div>
+        <button onclick="bpQuizWeiter()"
+          style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;margin-top:10px;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none">
+          ${bpQuizIndex + 1 < bpQuizFragen.length ? '➡️ Nächste Frage' : '📊 Auswertung anzeigen'}
+        </button>
+      </div>
+    </div>`;
+}
+
+function bpQuizWeiter() {
+  bpQuizIndex++;
+  if (bpQuizIndex < bpQuizFragen.length) {
+    bpQuizFrageZeigen();
+  } else {
+    bpQuizAuswertung();
+  }
+}
+
+function bpQuizAuswertung() {
+  const cont = _bpPreviewMode && _bpPreviewContainer ? _bpPreviewContainer : document.getElementById('bp-schulung-container');
+  if (!cont) return;
+  const gesamt = bpQuizFragen.length;
+  const bestanden = bpQuizPunkte >= Math.ceil(gesamt * 0.8); // 80%
+  const prozent = Math.round((bpQuizPunkte / gesamt) * 100);
+  const userId = _bpPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
+
+  if (bestanden && !_bpPreviewMode) {
+    localStorage.setItem(`bp_quiz_bestanden_${userId}`, '1');
+    localStorage.setItem(`bp_quiz_ergebnis_${userId}`, `${bpQuizPunkte}/${gesamt} (${prozent}%)`);
+    if (currentUser?.userId) {
+      SB.upsert('bp_unterschriften', {
+        id:              `${currentUser.userId}_${currentUser.tenantId || ''}`,
+        user_id:         currentUser.userId,
+        user_name:       currentUser.name,
+        tenant_id:       currentUser.tenantId || '',
+        vollname:        currentUser.name,
+        quiz_punkte:     bpQuizPunkte,
+        quiz_gesamt:     gesamt,
+        unterzeichnet_am: new Date().toISOString(),
+        ausstellungsdatum: new Date().toLocaleDateString('de-DE')
+      }).catch(() => {});
+    }
+  }
+
+  cont.innerHTML = `
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
+      <div style="padding:12px 14px;background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;text-align:center">
+        <div style="font-size:2rem">${bestanden ? '🏆' : '📚'}</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:6px">${bestanden ? 'Abschlusstest bestanden!' : 'Nicht bestanden'}</div>
+        <div style="font-size:.8rem;opacity:.85;margin-top:2px">${bpQuizPunkte} von ${gesamt} Fragen richtig (${prozent}%)</div>
+      </div>
+      <div style="padding:14px">
+        <div style="background:${bestanden?'#f0fdf4':'#fef2f2'};border:1.5px solid ${bestanden?'#86efac':'#fca5a5'};border-radius:10px;padding:12px 14px;margin-bottom:12px;text-align:center">
+          <div style="font-weight:700;color:${bestanden?'#14532d':'#991b1b'};font-size:.9rem">
+            ${bestanden ? '✅ Mindestgrenze (80 %) erreicht — Fachkundenachweis kann ausgestellt werden.' : `❌ Mindestgrenze nicht erreicht. Bitte die Module nochmals durcharbeiten und erneut testen.`}
+          </div>
+        </div>
+        ${bestanden ? `
+          <button onclick="bpZertifikatErstellen()"
+            style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none;margin-bottom:8px">
+            📄 Fachkundenachweis als PDF herunterladen
+          </button>` : `
+          <button onclick="bpQuizWiederholen()"
+            style="width:100%;padding:12px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.35);-webkit-appearance:none;margin-bottom:8px">
+            🔄 Module wiederholen & erneut testen
+          </button>`}
+      </div>
+    </div>`;
+}
+
+function bpQuizWiederholen() {
+  bpQuizAktiv = false;
+  // Fortschritt zurücksetzen um nochmals zu lesen
+  bpFortschritt = {};
+  _bpFortschrittSpeichern();
+  _bpSubtitelAktualisieren();
+  bpSchulungRender();
+}
+
+async function bpZertifikatErstellen() {
+  const userId = currentUser?.userId || 'anon';
+  const vollname = currentUser?.name || 'Teilnehmer';
+  const datum = new Date().toLocaleDateString('de-DE');
+  const ergebnis = localStorage.getItem(`bp_quiz_ergebnis_${userId}`) || '–';
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+
+    // Hintergrund
+    doc.setFillColor(245, 247, 250);
+    doc.rect(0, 0, W, H, 'F');
+
+    // Navy-Blauer Header
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, 0, W, 55, 'F');
+
+    // Akzentlinie
+    doc.setFillColor(37, 99, 168);
+    doc.rect(0, 52, W, 3, 'F');
+
+    // Logo-Platzhalter / Titel im Header
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.text('FACHKUNDENACHWEIS', W/2, 22, { align: 'center' });
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Befähigte Person zur Prüfung von Leitern und Tritten', W/2, 32, { align: 'center' });
+    doc.setFontSize(9);
+    doc.setTextColor(180, 200, 230);
+    doc.text('gemäß BetrSichV · TRBS 1203 · TRBS 2121 Teil 2 · DGUV Information 208-016', W/2, 42, { align: 'center' });
+
+    // Zertifikat-Body
+    doc.setTextColor(30, 58, 92);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.text('Hiermit wird bestätigt, dass', W/2, 72, { align: 'center' });
+
+    // Name
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(26, 58, 92);
+    doc.text(vollname, W/2, 90, { align: 'center' });
+
+    // Linie unter Name
+    doc.setDrawColor(37, 99, 168);
+    doc.setLineWidth(0.8);
+    doc.line(40, 94, W-40, 94);
+
+    // Text
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(55, 65, 81);
+    const bodyText = [
+      'die theoretische Qualifizierung zur',
+      'Befähigten Person zur Prüfung von Leitern und Tritten',
+      'erfolgreich abgeschlossen hat.'
+    ];
+    bodyText.forEach((line, i) => {
+      const isBold = i === 1;
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setTextColor(isBold ? 26 : 55, isBold ? 58 : 65, isBold ? 92 : 81);
+      doc.text(line, W/2, 108 + i * 9, { align: 'center' });
+    });
+
+    // Rechtsgrundlagen-Box
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(59, 130, 246);
+    doc.setLineWidth(0.5);
+    doc.roundedRect(25, 128, W-50, 48, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(26, 58, 92);
+    doc.text('Rechtliche Grundlagen dieser Schulung', W/2, 137, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8.5);
+    doc.setTextColor(29, 78, 216);
+    const normen = [
+      'BetrSichV § 3 (Gefährdungsbeurteilung) · BetrSichV § 14 (Prüfpflicht)',
+      'TRBS 1203 (Qualifikation der Befähigten Person)',
+      'TRBS 2121 Teil 2 (Gefährdungen bei der Verwendung von Leitern)',
+      'DGUV Information 208-016 (Prüfkriterien, Prüffristen, Dokumentation)'
+    ];
+    normen.forEach((n, i) => doc.text(n, W/2, 147 + i * 8, { align: 'center' }));
+
+    // Ergebnis
+    doc.setFillColor(240, 253, 244);
+    doc.setDrawColor(134, 239, 172);
+    doc.roundedRect(25, 184, W-50, 22, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.setTextColor(20, 83, 45);
+    doc.text(`✓ Abschlusstest: ${ergebnis} (Bestehensgrenze: 80 %)`, W/2, 196, { align: 'center' });
+
+    // Datum + Hinweis
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(55, 65, 81);
+    doc.text(`Ausstellungsdatum: ${datum}`, W/2, 218, { align: 'center' });
+
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    const hinweis = [
+      'Dieser Nachweis bescheinigt die theoretische Fachkunde als Befähigte Person gemäß TRBS 1203.',
+      'Die schriftliche Bestellung durch den Arbeitgeber ist zusätzlich erforderlich.',
+      'Empfehlung: Auffrischung alle 3–5 Jahre oder bei wesentlichen Normänderungen.'
+    ];
+    hinweis.forEach((h, i) => doc.text(h, W/2, 232 + i * 7, { align: 'center' }));
+
+    // Footer
+    doc.setFillColor(26, 58, 92);
+    doc.rect(0, H-20, W, 20, 'F');
+    doc.setTextColor(180, 200, 230);
+    doc.setFontSize(8);
+    doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · schulung.csc-hannover.de', W/2, H-10, { align: 'center' });
+
+    const filename = `Fachkundenachweis_Befaehigte_Person_${vollname.replace(/\s+/g,'_')}_${datum.replace(/\./g,'-')}.pdf`;
+    doc.save(filename);
+    showToast('✅ Fachkundenachweis wurde erstellt!', '#14532d');
+  } catch(e) {
+    console.error('BP Zertifikat Fehler:', e);
+    showToast('⚠️ PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
+  }
+}
+
+// Admin-Vorschau
+function bpAdminVorschau() {
+  _bpPreviewMode = true;
+  bpFortschritt  = {};
+  const overlay = document.createElement('div');
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:10002;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+  overlay.onclick = (e) => { if (e.target === overlay) { document.body.removeChild(overlay); _bpPreviewMode = false; _bpPreviewContainer = null; } };
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#f0f4f8;border-radius:16px;width:100%;max-width:480px;padding:16px;margin:auto';
+  box.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <div style="font-weight:700;font-size:.95rem;color:#1a3a5c">🪜 Admin-Vorschau — Befähigte Person</div>
+    <button onclick="this.closest('.bp-overlay-root').remove();_bpPreviewMode=false;_bpPreviewContainer=null;"
+      style="background:#1a3a5c;border:none;color:#fff;border-radius:50%;width:30px;height:30px;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>
+  </div>
+  <div id="bp-preview-content"></div>`;
+  box.classList.add('bp-overlay-root');
+  overlay.classList.add('bp-overlay-root');
+  box.querySelector('button').onclick = () => { document.body.removeChild(overlay); _bpPreviewMode = false; _bpPreviewContainer = null; };
+  overlay.appendChild(box);
+  document.body.appendChild(overlay);
+  _bpPreviewContainer = box.querySelector('#bp-preview-content');
+  bpSchulungRenderIn(_bpPreviewContainer);
+}
+
+function bpAlsMaSpielen() {
+  showToast('💡 Tipp: Als Mitarbeiter einloggen und Zuweisung anlegen um das Modul zu testen.', '#1a3a5c');
 }
