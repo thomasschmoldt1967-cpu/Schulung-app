@@ -14311,5 +14311,42 @@ function bpAdminVorschau() {
 }
 
 function bpAlsMaSpielen() {
-  showToast('💡 Tipp: Als Mitarbeiter einloggen und Zuweisung anlegen um das Modul zu testen.', '#1a3a5c');
+  _bpPreviewMode = true;
+  bpFortschritt  = {};
+  document.querySelectorAll('.bp-overlay-root').forEach(el => el.remove());
+
+  let modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
+
+  modal = document.createElement('div');
+  modal.id = 'bp-preview-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10000;overflow-y:auto;padding-bottom:70px';
+
+  modal.innerHTML = `
+    <div style="background:#1a3a5c;color:#fff;padding:14px 16px;position:sticky;top:0;z-index:1;display:flex;align-items:center;gap:12px">
+      <div style="flex:1">
+        <div style="font-size:.65rem;font-weight:700;color:#fbbf24;letter-spacing:.08em;text-transform:uppercase">🔍 Admin-Vorschau — Mitarbeiter-Ansicht</div>
+        <div style="font-weight:700;font-size:.95rem;margin-top:2px">🪜 Befähigte Person — Leitern &amp; Tritte</div>
+      </div>
+      <button onclick="bpPreviewBeenden()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;padding:8px 14px;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-appearance:none;flex-shrink:0">✕ Beenden</button>
+    </div>
+    <div style="padding:14px">
+      <div style="background:#dbeafe;border:1.5px solid #3b82f6;border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:.82rem;color:#1e40af">
+        <strong>🔍 Vorschau-Modus:</strong> Alles funktioniert wie beim Mitarbeiter — Module lesen, Quiz machen, PDF ansehen. <strong>Nichts wird gespeichert.</strong>
+      </div>
+      <div id="bp-preview-inner"></div>
+    </div>`;
+
+  document.body.appendChild(modal);
+  _bpPreviewContainer = document.getElementById('bp-preview-inner');
+  bpSchulungRenderIn(_bpPreviewContainer);
+  showToast('🔍 Vorschau-Modus aktiv', '#1a3a5c');
+}
+
+function bpPreviewBeenden() {
+  _bpPreviewMode = false;
+  _bpPreviewContainer = null;
+  bpFortschritt = {};
+  const modal = document.getElementById('bp-preview-modal');
+  if (modal) modal.remove();
 }
