@@ -14206,44 +14206,21 @@ async function bpZertifikatErstellen() {
     doc.setTextColor(180, 200, 230);
     doc.text('gemäß BetrSichV · TRBS 1203 · TRBS 2121 Teil 2 · DGUV Information 208-016', W/2, 42, { align: 'center' });
 
-    // Unterschriftsfeld Schulungsleiter (Seite 1)
-    const sigLineY = 170;
-    doc.setFillColor(248, 250, 252);
-    doc.setDrawColor(200, 210, 220);
-    doc.setLineWidth(0.3);
-    doc.roundedRect(ML, sigLineY, CW, 38, 3, 3, 'FD');
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(8);
-    doc.setTextColor(26, 58, 92);
-    doc.text('SCHULUNGSLEITER / AUSBILDER', ML+6, sigLineY+7);
-    // Unterschrift einbetten (nur CSC)
-    if (isCscTenant) {
-      try {
-        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+6, sigLineY+7, 80, 22);
-      } catch(e) {}
-    }
-    doc.setDrawColor(180, 190, 200);
-    doc.setLineWidth(0.4);
-    doc.line(ML+6, sigLineY+32, ML+85, sigLineY+32);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(107, 114, 128);
-    doc.text('T. Schmoldt · CSC GmbH · Schulungsleiter', ML+6, sigLineY+37);
-
-    // Body Seite 1 — nach unten verschoben wegen Unterschriftsfeld
+    // Body Seite 1 — direkt unter Header
+    const bodyStartY = 68;
     doc.setTextColor(30, 58, 92);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    doc.text('Hiermit wird bestätigt, dass', W/2, 222, { align: 'center' });
+    doc.text('Hiermit wird bestätigt, dass', W/2, bodyStartY, { align: 'center' });
 
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(22);
     doc.setTextColor(26, 58, 92);
-    doc.text(vollname, W/2, 240, { align: 'center' });
+    doc.text(vollname, W/2, bodyStartY + 16, { align: 'center' });
 
     doc.setDrawColor(37, 99, 168);
     doc.setLineWidth(0.8);
-    doc.line(40, 244, W-40, 244);
+    doc.line(40, bodyStartY + 20, W-40, bodyStartY + 20);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
@@ -14256,18 +14233,19 @@ async function bpZertifikatErstellen() {
       const isBold = i === 1;
       doc.setFont('helvetica', isBold ? 'bold' : 'normal');
       doc.setTextColor(isBold ? 26 : 55, isBold ? 58 : 65, isBold ? 92 : 81);
-      doc.text(line, W/2, 257 + i * 9, { align: 'center' });
+      doc.text(line, W/2, bodyStartY + 32 + i * 9, { align: 'center' });
     });
 
     // Rechtsgrundlagen-Box
+    const normenY = bodyStartY + 62;
     doc.setFillColor(239, 246, 255);
     doc.setDrawColor(59, 130, 246);
     doc.setLineWidth(0.5);
-    doc.roundedRect(25, 284, W-50, 48, 3, 3, 'FD');
+    doc.roundedRect(25, normenY, W-50, 46, 3, 3, 'FD');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.setTextColor(26, 58, 92);
-    doc.text('Rechtliche Grundlagen dieser Schulung', W/2, 293, { align: 'center' });
+    doc.text('Rechtliche Grundlagen dieser Schulung', W/2, normenY + 9, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8.5);
     doc.setTextColor(29, 78, 216);
@@ -14277,26 +14255,54 @@ async function bpZertifikatErstellen() {
       'TRBS 2121 Teil 2 (Gefährdungen bei der Verwendung von Leitern)',
       'DGUV Information 208-016 (Prüfkriterien, Prüffristen, Dokumentation)'
     ];
-    normen.forEach((n, i) => doc.text(n, W/2, 302 + i * 8, { align: 'center' }));
+    normen.forEach((n, i) => doc.text(n, W/2, normenY + 19 + i * 7.5, { align: 'center' }));
 
-    // Ergebnis
+    // Ergebnis-Box
+    const ergebnisY = normenY + 52;
     doc.setFillColor(240, 253, 244);
     doc.setDrawColor(134, 239, 172);
-    doc.roundedRect(25, 340, W-50, 30, 3, 3, 'FD');
+    doc.roundedRect(25, ergebnisY, W-50, 26, 3, 3, 'FD');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(20, 83, 45);
-    doc.text('✓ Abschlusstest bestanden', W/2, 349, { align: 'center' });
+    doc.text('✓ Abschlusstest bestanden', W/2, ergebnisY + 9, { align: 'center' });
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9.5);
-    doc.text(`Ergebnis: ${ergebnis} — Bestehensgrenze: 80 %`, W/2, 359, { align: 'center' });
+    doc.text(`Ergebnis: ${ergebnis} — Bestehensgrenze: 80 %`, W/2, ergebnisY + 19, { align: 'center' });
 
-    // Datum + Hinweis
+    // Datum
+    const datumY = ergebnisY + 34;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(55, 65, 81);
-    doc.text(`Ausstellungsdatum: ${datum}`, W/2, 378, { align: 'center' });
+    doc.text(`Ausstellungsdatum: ${datum}`, W/2, datumY, { align: 'center' });
 
+    // Schulungsleiter-Unterschrift-Box — unter Datum
+    const slBoxY = datumY + 10;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(200, 210, 220);
+    doc.setLineWidth(0.3);
+    doc.roundedRect(ML, slBoxY, CW, 36, 3, 3, 'FD');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(26, 58, 92);
+    doc.text('SCHULUNGSLEITER / AUSBILDER', ML+6, slBoxY+6);
+    // Unterschrift einbetten (nur CSC)
+    if (isCscTenant) {
+      try {
+        doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML+6, slBoxY+6, 80, 20);
+      } catch(e) {}
+    }
+    doc.setDrawColor(180, 190, 200);
+    doc.setLineWidth(0.4);
+    doc.line(ML+6, slBoxY+29, ML+85, slBoxY+29);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(107, 114, 128);
+    doc.text('T. Schmoldt · CSC GmbH · Schulungsleiter', ML+6, slBoxY+34);
+
+    // Hinweis-Text unter Unterschrift
+    const hinweisY = slBoxY + 44;
     doc.setFontSize(8);
     doc.setTextColor(107, 114, 128);
     const hinweis = [
@@ -14304,7 +14310,7 @@ async function bpZertifikatErstellen() {
       'Die schriftliche Bestellung durch den Arbeitgeber erfolgt auf Seite 2 dieses Dokuments.',
       'Empfehlung: Auffrischung alle 3–5 Jahre oder bei wesentlichen Normänderungen.'
     ];
-    hinweis.forEach((h, i) => doc.text(h, W/2, 386 + i * 7, { align: 'center' }));
+    hinweis.forEach((h, i) => doc.text(h, W/2, hinweisY + i * 7, { align: 'center' }));
 
     // Footer Seite 1
     doc.setFillColor(26, 58, 92);
