@@ -14251,17 +14251,20 @@ async function bpZertifikatErstellen() {
     // Ergebnis
     doc.setFillColor(240, 253, 244);
     doc.setDrawColor(134, 239, 172);
-    doc.roundedRect(25, 184, W-50, 22, 3, 3, 'FD');
+    doc.roundedRect(25, 184, W-50, 30, 3, 3, 'FD');
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.setTextColor(20, 83, 45);
-    doc.text(`✓ Abschlusstest: ${ergebnis} (Bestehensgrenze: 80 %)`, W/2, 196, { align: 'center' });
+    doc.text(`✓ Abschlusstest bestanden`, W/2, 193, { align: 'center' });
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9.5);
+    doc.text(`Ergebnis: ${ergebnis} — Bestehensgrenze: 80 %`, W/2, 203, { align: 'center' });
 
     // Datum + Hinweis
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
     doc.setTextColor(55, 65, 81);
-    doc.text(`Ausstellungsdatum: ${datum}`, W/2, 218, { align: 'center' });
+    doc.text(`Ausstellungsdatum: ${datum}`, W/2, 226, { align: 'center' });
 
     doc.setFontSize(8);
     doc.setTextColor(107, 114, 128);
