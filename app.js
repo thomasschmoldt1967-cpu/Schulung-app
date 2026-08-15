@@ -13840,6 +13840,218 @@ const BP_KAPITEL = [
   },
 
   // ══════════════════════════════════════════
+  // MODUL 4b — Sichere Verwendung (DGUV 208-016 Kap. 5)
+  // ══════════════════════════════════════════
+  {
+    id: 'bp-06b', modul: 4, nr: 6.5,
+    titel: 'Sichere Verwendung — Was ist zu beachten?',
+    icon: '📖',
+    inhalt: `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#1e40af);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:2rem;margin-bottom:6px">📖</div>
+      <div style="font-weight:700;font-size:1rem">DGUV Information 208-016 — Kapitel 5</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">„Was ist bei der Verwendung von Leitern und Tritten zu beachten?" — Die wichtigsten Regeln für die tägliche Praxis, illustriert mit offiziellen DGUV-Abbildungen.</div>
+    </div>
+
+    <!-- 5.1 Allgemeines -->
+    <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.1 Allgemeines — Mitwirkungspflicht & Sichtprüfung</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#eff6ff;border-left:4px solid #1d4ed8;border-radius:8px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.87rem;color:#1a3a5c">👷 Mitwirkungspflicht aller Beschäftigten</div>
+        <div style="font-size:.8rem;color:#374151;margin-top:4px">Jeder Beschäftigte trägt Verantwortung für Sicherheit und Gesundheitsschutz — nicht nur der Arbeitgeber. Das schließt die korrekte Nutzung und das Melden von Mängeln ein.</div>
+      </div>
+      <div style="background:#fef9c3;border-left:4px solid #f59e0b;border-radius:8px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.87rem;color:#713f12">🔍 Sichtprüfung VOR jeder Benutzung</div>
+        <div style="font-size:.8rem;color:#92400e;margin-top:4px">Leitern und Tritte müssen <strong>vor jedem Einsatz</strong> visuell auf Schäden kontrolliert werden. Bei Auffälligkeiten: sofort außer Betrieb setzen — bis zur Freigabe durch eine befähigte Person.</div>
+      </div>
+      <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.87rem;color:#14532d">📋 Gebrauchsanleitung beachten</div>
+        <div style="font-size:.8rem;color:#166534;margin-top:4px">Die Herstelleranleitung und die Sicherheitskennzeichnung an der Leiter (Typenschild, Aufkleber) geben verbindliche Hinweise zu Belastung, Aufstellung und Einsatzbereich.</div>
+      </div>
+    </div>
+
+    <!-- 5.2 Dreipunkt-Methode -->
+    <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.2 Die Dreipunkt-Methode — Sicherer Stand & Halt</div>
+    <div style="background:#f0fdf4;border:2px solid #16a34a;border-radius:12px;padding:14px;margin-bottom:12px">
+      <div style="font-weight:700;font-size:.95rem;color:#14532d;margin-bottom:10px;text-align:center">🟢 3 Körperkontaktpunkte — immer!</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+        <div style="background:#fff;border:1.5px solid #86efac;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:1.8rem">🦶🦶✋</div>
+          <div style="font-weight:700;font-size:.82rem;color:#14532d;margin-top:4px">Beide Füße + eine Hand</div>
+          <div style="font-size:.74rem;color:#166534;margin-top:3px">Wenn eine Hand für die Arbeit gebraucht wird</div>
+        </div>
+        <div style="background:#fff;border:1.5px solid #86efac;border-radius:8px;padding:10px;text-align:center">
+          <div style="font-size:1.8rem">✋✋🦶</div>
+          <div style="font-weight:700;font-size:.82rem;color:#14532d;margin-top:4px">Beide Hände + ein Fuß</div>
+          <div style="font-size:.74rem;color:#166534;margin-top:3px">Beim Auf- und Absteigen</div>
+        </div>
+      </div>
+      <div style="background:#dcfce7;border-radius:8px;padding:8px 12px;font-size:.8rem;color:#166534">
+        <strong>Anlegeleitern:</strong> Beide Füße auf Stufen, Körper zwischen den Holmen anlehnen<br>
+        <strong>Stehleitern mit Plattform:</strong> Mindestens ein Fuß auf Plattform + Anlehnen an Haltevorrichtung<br>
+        <strong>Beidseitig besteigbar:</strong> Grätschstellung auf drittoberster Stufe + Knieschluss
+      </div>
+    </div>
+
+    <!-- Bild: Dreipunkt-Methode DGUV -->
+    <div style="text-align:center;margin:10px 0 16px">
+      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_1_Dreipunkt_Methode.jpg"
+           onerror="this.style.display='none'"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="DGUV 208-016: Dreipunkt-Methode">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. 1 — Dreipunkt-Methode · Quelle: DGUV Information 208-016 (BG BAU)</div>
+    </div>
+
+    <!-- 5.2 Allgemeine Regeln -->
+    <div style="font-weight:700;font-size:.9rem;color:#1a3a5c;margin:10px 0 8px">📋 Allgemeine Verwendungsregeln</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:14px">
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#374151">
+        <strong>⚖️ Tragfähigkeit max. 150 kg</strong> — laut Aufschrift auf der Leiter
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#374151">
+        <strong>👤 Nur eine Person</strong> gleichzeitig auf der Leiter
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#374151">
+        <strong>👟 Geschlossenes Schuhwerk</strong> — kein offenes Schuhwerk ohne Fersenriemen
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#374151">
+        <strong>🧰 Werkzeug/Material max. 10 kg</strong> mitführen — in Gürteltasche oder Behälter
+      </div>
+      <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#374151">
+        <strong>🪜 In Blickrichtung</strong> auf Stufen/Sprossen auf- und absteigen
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#991b1b">
+        <strong>❌ Nicht zu weit hinauslehnen</strong> — seitliches Hinauslehnen ist die <strong>häufigste Unfallursache</strong>!
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#991b1b">
+        <strong>❌ Keine gefährlichen Stoffe</strong> (heiße/ätzende Flüssigkeiten, Bohrhammer)
+      </div>
+      <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:8px;padding:9px 12px;font-size:.82rem;color:#991b1b">
+        <strong>❌ Keine Ersatzleitern</strong> — keine Hocker, Stühle, Kisten, Fässer
+      </div>
+    </div>
+
+    <!-- Aufstellung -->
+    <div style="font-weight:700;font-size:.9rem;color:#1a3a5c;margin:10px 0 8px">📐 Anforderungen an die Aufstellung</div>
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:.82rem;color:#374151">
+        <div>✅ Ebener, tragfähiger, <strong>rutschhemmender</strong> Untergrund</div>
+        <div>✅ Kein loser Untergrund (Schotter, Paletten, Kisten)</div>
+        <div>✅ Auf Verkehrswegen: gegen Umstoßen sichern (Absperrung, Warnposten)</div>
+        <div>❌ Nicht bei Sturm, Eis oder Schnee verwenden</div>
+        <div>❌ Nicht bei Stromgefahr (falls unvermeidbar: nichtleitende Leiter)</div>
+        <div>❌ Leiter nicht als Überbrückung zwischen zwei Ebenen benutzen</div>
+        <div>❌ Leiter während des Stehens nicht bewegen</div>
+      </div>
+    </div>
+
+    <!-- 5.3 Aufstellwinkel -->
+    <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.3 Bauartabhängige Hinweise — Anlegewinkel & Sicherung</div>
+
+    <!-- Anlegeleiter -->
+    <div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-weight:700;font-size:.9rem;color:#1e3a8a;margin-bottom:8px">🪜 Anlege- und Schiebeleitern</div>
+      <div style="background:#fff;border-radius:8px;padding:10px 12px;margin-bottom:8px">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c;margin-bottom:6px">📐 Aufstellwinkel</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.8rem;text-align:center">
+          <div style="background:#dbeafe;border-radius:8px;padding:8px">
+            <div style="font-weight:700;color:#1d4ed8;font-size:1rem">65°–75°</div>
+            <div style="color:#1e3a8a;margin-top:2px">Sprossenleiter</div>
+          </div>
+          <div style="background:#dbeafe;border-radius:8px;padding:8px">
+            <div style="font-weight:700;color:#1d4ed8;font-size:1rem">60°–70°</div>
+            <div style="color:#1e3a8a;margin-top:2px">Stufenleiter</div>
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:#374151;margin-top:8px;text-align:center">
+          💡 <strong>Ellbogenmethode:</strong> Arm ausstrecken, Hand auf Sprosse — wenn Ellbogen die Holme berührt: richtiger Winkel
+        </div>
+      </div>
+      <div style="font-size:.8rem;color:#1d4ed8;line-height:1.6">
+        ✅ Nur an sichere Flächen anlegen (keine Glasscheiben, Spanndrähte, offene Türen)<br>
+        ✅ Oberste <strong>3 Stufen/Sprossen</strong> dürfen nicht betreten werden<br>
+        ✅ Zum Übersteigen: Leiter mind. <strong>1 m überstehen</strong> lassen<br>
+        ✅ Sperrbolzen/Fallhakensicherungen vor Benutzung vollständig einrasten<br>
+        ✅ Auf nachgiebigem Boden: Stahlspitzen verwenden
+      </div>
+    </div>
+
+    <!-- Bild: Aufstellwinkel -->
+    <div style="text-align:center;margin:8px 0 14px">
+      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_2_Aufstellwinkel.jpg"
+           onerror="this.style.display='none'"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="DGUV 208-016: Aufstellwinkel Anlegeleiter">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. 2 — Richtiger Aufstellwinkel · Quelle: DGUV Information 208-016 (BG BAU)</div>
+    </div>
+
+    <!-- Stehleiter -->
+    <div style="background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 14px;margin-bottom:10px">
+      <div style="font-weight:700;font-size:.9rem;color:#78350f;margin-bottom:6px">🔺 Stehleitern</div>
+      <div style="font-size:.8rem;color:#92400e;line-height:1.65">
+        ✅ Nur bis zur <strong>drittobersten Stufe</strong> besteigen (ohne Haltevorrichtung)<br>
+        ✅ Nur mit <strong>vollständig gespannten Spreizsicherungen</strong><br>
+        ❌ <strong>Nie als Anlegeleiter</strong> verwenden<br>
+        ❌ Kein Übersteigen auf hoch gelegene Arbeitsplätze
+      </div>
+    </div>
+
+    <!-- Bild: Stehleiter Spreize -->
+    <div style="text-align:center;margin:8px 0 14px">
+      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_Stehleiter_Spreize.jpg"
+           onerror="this.style.display='none'"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="DGUV 208-016: Stehleiter Spreize korrekt">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Spreize vollständig geöffnet und gesichert · Quelle: DGUV Information 208-016 (BG BAU)</div>
+    </div>
+
+    <!-- Podest- und Gelenkleitern -->
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+      <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#14532d;margin-bottom:5px">🏗️ Podest-/Plattformleitern</div>
+        <div style="font-size:.8rem;color:#166534;line-height:1.6">
+          ✅ Vollständig ausklappen bis Plattform waagerecht steht<br>
+          ✅ Mit Stabilisator, Ballast und angezogenen Bremsen (wenn vorhanden)<br>
+          ✅ Bremsen bei fahrbaren Modellen anziehen
+        </div>
+      </div>
+      <div style="background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#4c1d95;margin-bottom:5px">🔗 Gelenk-/Teleskopleitern</div>
+        <div style="font-size:.8rem;color:#5b21b6;line-height:1.6">
+          ✅ Alle Gelenke müssen in <strong>Sperrstellung</strong> sein (Markierung O–C / O–Z)<br>
+          ✅ Sperrmechanismen vor Benutzung prüfen und verriegeln<br>
+          ❌ Hände nicht in den Scherbereich bringen beim Ausziehen
+        </div>
+      </div>
+      <div style="background:#fdf4ff;border:1.5px solid #e879f9;border-radius:10px;padding:11px 14px">
+        <div style="font-weight:700;font-size:.88rem;color:#701a75;margin-bottom:5px">🏠 Dachauflegeleitern</div>
+        <div style="font-size:.8rem;color:#86198f;line-height:1.6">
+          ✅ Mit zweiter Sprosse mittig in Dachhaken einhängen<br>
+          ✅ Nicht als Anlegeleiter verwenden<br>
+          ✅ Max. 75° Dachneigung · Nicht in Dachrinne oder Schneefang stellen
+        </div>
+      </div>
+    </div>
+
+    <!-- 5.4 Transport und Lagerung -->
+    <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.4 Transport & Lagerung</div>
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:14px">
+      <div style="display:flex;flex-direction:column;gap:7px;font-size:.82rem;color:#374151">
+        <div>🚚 Transport so, dass keine Personen gefährdet werden</div>
+        <div>👥 Schwere Leitern zu zweit tragen</div>
+        <div>🔒 Bei Fahrzeugtransport: ausreichend sichern (Spanngurte)</div>
+        <div>🏠 Lagerung: geschützt vor Witterung, Feuchte, Temperatur, Säuren/Laugen</div>
+        <div>❌ Nicht unter Spannung, nicht auf nassem Beton lagern</div>
+      </div>
+    </div>
+
+    <!-- Quellenangabe -->
+    <div style="background:#f1f5f9;border-radius:8px;padding:8px 12px;font-size:.7rem;color:#64748b;margin-top:8px;text-align:center">
+      📚 Quelle: DGUV Information 208-016 „Die Verwendung von Leitern und Tritten", Kapitel 5 · Herausgeber: BG BAU (Deutsche Gesetzliche Unfallversicherung) · Ausgabe 2021
+    </div>`
+  },
+
+  // ══════════════════════════════════════════
   // MODUL 5 — Instandhaltung
   // ══════════════════════════════════════════
   {
