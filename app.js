@@ -13893,13 +13893,12 @@ const BP_KAPITEL = [
       </div>
     </div>
 
-    <!-- Bild: Dreipunkt-Methode DGUV -->
+    <!-- Bild: Dreipunkt-Methode -->
     <div style="text-align:center;margin:10px 0 16px">
-      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_1_Dreipunkt_Methode.jpg"
-           onerror="this.style.display='none'"
-           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="DGUV 208-016: Dreipunkt-Methode">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. 1 — Dreipunkt-Methode · Quelle: DGUV Information 208-016 (BG BAU)</div>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/3_point_ladder_safety_2.svg/434px-3_point_ladder_safety_2.svg.png"
+           style="max-width:90%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="Dreipunkt-Methode auf der Leiter">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Dreipunkt-Methode (3-Punkte-Kontakt) · Quelle: Wikimedia Commons (CC BY-SA)</div>
     </div>
 
     <!-- 5.2 Allgemeine Regeln -->
@@ -13978,11 +13977,10 @@ const BP_KAPITEL = [
 
     <!-- Bild: Aufstellwinkel -->
     <div style="text-align:center;margin:8px 0 14px">
-      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_2_Aufstellwinkel.jpg"
-           onerror="this.style.display='none'"
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Anlegeleiter-Sturzkurve.svg/762px-Anlegeleiter-Sturzkurve.svg.png"
            style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="DGUV 208-016: Aufstellwinkel Anlegeleiter">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. 2 — Richtiger Aufstellwinkel · Quelle: DGUV Information 208-016 (BG BAU)</div>
+           alt="Aufstellwinkel Anlegeleiter 65-75 Grad">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Sicherheitsbereich Aufstellwinkel 65–75° · Quelle: Wikimedia Commons</div>
     </div>
 
     <!-- Stehleiter -->
@@ -13998,11 +13996,10 @@ const BP_KAPITEL = [
 
     <!-- Bild: Stehleiter Spreize -->
     <div style="text-align:center;margin:8px 0 14px">
-      <img src="https://www.bgbau-medien.de/bausteine.net/f/12340/Abb_Stehleiter_Spreize.jpg"
-           onerror="this.style.display='none'"
-           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="DGUV 208-016: Stehleiter Spreize korrekt">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Spreize vollständig geöffnet und gesichert · Quelle: DGUV Information 208-016 (BG BAU)</div>
+      <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Stehleiter.jpg"
+           style="max-width:60%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="Stehleiter mit Spreize">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Stehleiter mit vollständig geöffneter Spreize · Quelle: Wikimedia Commons (Public Domain)</div>
     </div>
 
     <!-- Podest- und Gelenkleitern -->
