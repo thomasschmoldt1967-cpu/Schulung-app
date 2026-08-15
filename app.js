@@ -2547,6 +2547,7 @@ function renderAdminVorlagen() {
             : v.id === '__psaga__'
             ? `<button class="btn btn-outline btn-sm" onclick="psagaAdminVorschau()" style="border-color:#166534;color:#166534">👁 Vorschau</button>`
             : `<button class="btn btn-outline btn-sm" onclick="vtVorschau('${v.id}')">👁 Vorschau</button>
+               <button class="btn btn-outline btn-sm" onclick="vtAlsMaSpielen('${v.id}')" style="background:#1a3a5c;color:#fff;border-color:#1a3a5c">▶ Als MA testen</button>
                <button class="btn btn-outline btn-sm" onclick="vtBearbeiten('${v.id}')">✏️ Bearbeiten</button>
                <button class="btn btn-danger btn-sm" onclick="vtLoeschen('${v.id}')">🗑 Löschen</button>`
           }
@@ -2666,6 +2667,86 @@ function vtVorschau(vorlagenId) {
   // Schließen bei Klick auf Overlay (außerhalb des Modals)
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
+}
+
+// ── Als MA testen: Formular in Vollbild-Modal öffnen (kein Speichern) ──
+function vtAlsMaSpielen(vorlagenId) {
+  const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === vorlagenId);
+  if (!vorlage) { showToast('Vorlage nicht gefunden', '#ef4444'); return; }
+
+  // Temp-Zuweisung im Speicher (wird NICHT in DB gespeichert)
+  const tempZuwId = '__preview__' + vorlagenId;
+  const tempZuw = {
+    id: tempZuwId,
+    vorlagenId: vorlagenId,
+    tenantId: currentUser.tenantId,
+    frist: null,
+    pflicht: false,
+    zugewiesenAn: null,
+    _vorschau: true
+  };
+
+  // Temp-Zuweisung und Formular in Memory-State
+  if (!zuweisungen.find(z => z.id === tempZuwId)) zuweisungen.push(tempZuw);
+  if (!formulare[tempZuwId]) formulare[tempZuwId] = { felder: {}, abgeschlossen: false };
+
+  // Vollbild-Modal
+  let modal = document.getElementById('vt-als-ma-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'vt-als-ma-modal';
+    modal.style.cssText = 'position:fixed;inset:0;background:#f1f5f9;z-index:10001;overflow-y:auto;padding-bottom:80px';
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML = `
+    <div style="background:linear-gradient(135deg,#1a3a5c,#2563eb);padding:14px 16px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:10002">
+      <button onclick="vtAlsMaBeenden()" style="background:rgba(255,255,255,.15);border:none;border-radius:8px;padding:8px 14px;color:#fff;font-size:.9rem;cursor:pointer;font-weight:600">✕ Vorschau beenden</button>
+      <div>
+        <div style="color:#fcd34d;font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase">▶ Als MA testen — Vorschau-Modus</div>
+        <div style="color:#fff;font-weight:700;font-size:.95rem">${escHtml(vorlage.titel)}</div>
+      </div>
+    </div>
+    <div style="background:#eff6ff;border-left:4px solid #2563eb;padding:10px 16px;font-size:.82rem;color:#1e3a5f">
+      🔍 <strong>Vorschau-Modus:</strong> Du siehst das Formular exakt wie ein Mitarbeiter. Eingaben werden <strong>nicht gespeichert</strong>.
+    </div>
+    <div id="vt-ma-formular-container" style="max-width:640px;margin:0 auto;padding:16px"></div>`;
+
+  modal.style.display = 'block';
+
+  // Formular rendern (echte renderFeld-Funktion nutzen)
+  const container = document.getElementById('vt-ma-formular-container');
+  if (!container) return;
+
+  let html = `<p class="pflicht-hinweis"><span>*</span> Pflichtfelder</p>`;
+  vorlage.abschnitte.forEach(ab => {
+    html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
+    if (ab.html) html += `<div class="form-section-html" style="margin:0 0 12px 0">${ab.html}</div>`;
+    (ab.felder || []).forEach(feld => {
+      html += renderFeld(feld, '', false);
+    });
+    html += '</div>';
+  });
+  html += `<div style="padding:16px 0">
+    <button onclick="vtAlsMaBeenden()" style="width:100%;padding:14px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer">✕ Vorschau beenden</button>
+  </div>`;
+  container.innerHTML = html;
+
+  // Sig-Pads initialisieren
+  sigPads = {};
+  vorlage.abschnitte.forEach(ab => {
+    ab.felder.filter(f => f.typ === 'signature').forEach(f => initSigPad(f.id, ''));
+  });
+
+  showToast('▶ Vorschau-Modus aktiv — nichts wird gespeichert', '#1a3a5c');
+}
+
+function vtAlsMaBeenden() {
+  const modal = document.getElementById('vt-als-ma-modal');
+  if (modal) modal.remove();
+  // Temp-Zuweisungen aus Memory entfernen
+  zuweisungen = zuweisungen.filter(z => !z._vorschau);
+  Object.keys(formulare).forEach(k => { if (k.startsWith('__preview__')) delete formulare[k]; });
+  showToast('✅ Vorschau beendet', '#16a34a');
 }
 
 // ── Lernpfad-Kernkapitel im Admin anzeigen ──
