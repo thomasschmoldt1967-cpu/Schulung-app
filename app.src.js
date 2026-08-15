@@ -5161,6 +5161,10 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     if (vorlage) vorlage.abschnitte.forEach(ab => {
       html += `<div class="form-section"><div class="form-section-title">${escHtml(uebersetzeAbschnitt(ab.titel, sprache))}</div>`;
+      // HTML-Erklärungsblock (Bilder, Texte, Infografiken) – direkt als innerHTML einbetten
+      if (ab.html) {
+        html += `<div class="form-section-html" style="margin:0 0 12px 0">${ab.html}</div>`;
+      }
       ab.felder.forEach(feld => {
         const label = uebersetzeFeldLabel(feld.label, sprache);
         html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
@@ -6056,6 +6060,10 @@ async function gastWeiter() {
 
   abschnitte.forEach((ab, ai) => {
     html += `<div class="card"><div class="card-title">${escHtml(ab.titel||'')}</div>`;
+    // HTML-Erklärungsblock (Bilder, Texte, Infografiken)
+    if (ab.html) {
+      html += `<div class="form-section-html" style="margin:0 0 12px 0">${ab.html}</div>`;
+    }
     (ab.felder||[]).forEach((f, fi) => {
       const fid = `gast_f_${ai}_${fi}`;
       if (f.typ==='signature') {
@@ -6068,7 +6076,8 @@ async function gastWeiter() {
           <input type="checkbox" id="${fid}" style="width:auto;margin-top:3px">
           <label for="${fid}" style="margin:0;font-weight:400">${escHtml(f.label||'')}${f.pflicht?' *':''}</label></div>`;
       } else if (f.typ==='select') {
-        const opts = (f.optionen||'').split(',').map(o=>`<option>${escHtml(o.trim())}</option>`).join('');
+        const optArr = Array.isArray(f.optionen) ? f.optionen : (f.optionen||'').split(',');
+        const opts = optArr.map(o=>`<option>${escHtml(o.trim())}</option>`).join('');
         html += `<div class="form-group"><label>${escHtml(f.label||'')}${f.pflicht?' *':''}</label>
           <select id="${fid}"><option value="">— bitte wählen —</option>${opts}</select></div>`;
       } else if (f.typ==='textarea') {
