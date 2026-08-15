@@ -13893,12 +13893,44 @@ const BP_KAPITEL = [
       </div>
     </div>
 
-    <!-- Bild: Dreipunkt-Methode -->
-    <div style="text-align:center;margin:10px 0 16px">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/3_point_ladder_safety_2.svg/434px-3_point_ladder_safety_2.svg.png"
-           style="max-width:90%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="Dreipunkt-Methode auf der Leiter">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Dreipunkt-Methode (3-Punkte-Kontakt) · Quelle: Wikimedia Commons (CC BY-SA)</div>
+    <!-- Grafik: Dreipunkt-Methode (eingebettetes SVG) -->
+    <div style="text-align:center;margin:10px 0 16px;background:#f0fdf4;border-radius:10px;padding:14px">
+      <svg viewBox="0 0 320 220" width="100%" style="max-width:300px" xmlns="http://www.w3.org/2000/svg">
+        <!-- Leiter -->
+        <line x1="90" y1="20" x2="70" y2="200" stroke="#374151" stroke-width="6" stroke-linecap="round"/>
+        <line x1="150" y1="20" x2="130" y2="200" stroke="#374151" stroke-width="6" stroke-linecap="round"/>
+        <!-- Sprossen -->
+        <line x1="88" y1="40" x2="148" y2="40" stroke="#374151" stroke-width="4"/>
+        <line x1="84" y1="70" x2="144" y2="70" stroke="#374151" stroke-width="4"/>
+        <line x1="80" y1="100" x2="140" y2="100" stroke="#374151" stroke-width="4"/>
+        <line x1="76" y1="130" x2="136" y2="130" stroke="#374151" stroke-width="4"/>
+        <line x1="72" y1="160" x2="132" y2="160" stroke="#374151" stroke-width="4"/>
+        <!-- Person -->
+        <!-- Kopf -->
+        <circle cx="190" cy="65" r="18" fill="#fbbf24" stroke="#92400e" stroke-width="2"/>
+        <!-- Körper -->
+        <line x1="190" y1="83" x2="190" y2="140" stroke="#1a3a5c" stroke-width="5" stroke-linecap="round"/>
+        <!-- Linker Arm → Leiter (HAND 1) -->
+        <line x1="190" y1="100" x2="140" y2="100" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="140" cy="100" r="7" fill="#16a34a"/>
+        <!-- Rechter Arm (frei) -->
+        <line x1="190" y1="100" x2="230" y2="115" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round"/>
+        <!-- Linkes Bein → Leiter (FUSS 1) -->
+        <line x1="190" y1="140" x2="136" y2="130" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="136" cy="130" r="7" fill="#16a34a"/>
+        <!-- Rechtes Bein → Leiter (FUSS 2) -->
+        <line x1="190" y1="140" x2="132" y2="160" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round"/>
+        <circle cx="132" cy="160" r="7" fill="#16a34a"/>
+        <!-- Labels -->
+        <text x="155" y="95" font-size="11" fill="#166534" font-weight="bold">✋</text>
+        <text x="148" y="125" font-size="11" fill="#166534" font-weight="bold">🦶</text>
+        <text x="143" y="158" font-size="11" fill="#166534" font-weight="bold">🦶</text>
+        <text x="165" y="200" font-size="12" fill="#14532d" font-weight="bold" text-anchor="middle">3 Kontaktpunkte</text>
+        <text x="270" y="120" font-size="12" fill="#6b7280" text-anchor="middle">freie</text>
+        <text x="270" y="133" font-size="12" fill="#6b7280" text-anchor="middle">Hand</text>
+      </svg>
+      <div style="font-size:.75rem;color:#166534;font-weight:600;margin-top:4px">Dreipunkt-Methode: 2 Füße + 1 Hand (oder 1 Fuß + 2 Hände)</div>
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:2px">Eigene Darstellung nach DGUV Information 208-016, Kap. 5</div>
     </div>
 
     <!-- 5.2 Allgemeine Regeln -->
@@ -13975,12 +14007,41 @@ const BP_KAPITEL = [
       </div>
     </div>
 
-    <!-- Bild: Aufstellwinkel -->
-    <div style="text-align:center;margin:8px 0 14px">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/f2/Anlegeleiter-Sturzkurve.svg/762px-Anlegeleiter-Sturzkurve.svg.png"
-           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="Aufstellwinkel Anlegeleiter 65-75 Grad">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Sicherheitsbereich Aufstellwinkel 65–75° · Quelle: Wikimedia Commons</div>
+    <!-- Grafik: Aufstellwinkel (eingebettetes SVG) -->
+    <div style="text-align:center;margin:8px 0 14px;background:#eff6ff;border-radius:10px;padding:14px">
+      <svg viewBox="0 0 300 200" width="100%" style="max-width:300px" xmlns="http://www.w3.org/2000/svg">
+        <!-- Boden -->
+        <line x1="20" y1="180" x2="280" y2="180" stroke="#6b7280" stroke-width="3"/>
+        <!-- Wand -->
+        <line x1="20" y1="20" x2="20" y2="180" stroke="#6b7280" stroke-width="3"/>
+        <!-- Leiter korrekt 70° -->
+        <line x1="40" y1="175" x2="20" y2="55" stroke="#1d4ed8" stroke-width="6" stroke-linecap="round"/>
+        <!-- Sprossen korrekt -->
+        <line x1="38" y1="145" x2="22" y2="140" stroke="#1d4ed8" stroke-width="3"/>
+        <line x1="36" y1="115" x2="21" y2="108" stroke="#1d4ed8" stroke-width="3"/>
+        <line x1="34" y1="85" x2="21" y2="77" stroke="#1d4ed8" stroke-width="3"/>
+        <!-- Winkel-Bogen -->
+        <path d="M 40 175 A 30 30 0 0 0 40 145" fill="none" stroke="#16a34a" stroke-width="2" stroke-dasharray="4"/>
+        <text x="50" y="158" font-size="11" fill="#14532d" font-weight="bold">70°</text>
+        <!-- Grünes Label -->
+        <rect x="55" y="90" width="80" height="24" rx="5" fill="#dcfce7" stroke="#16a34a"/>
+        <text x="95" y="106" font-size="11" fill="#14532d" font-weight="bold" text-anchor="middle">✅ Richtig</text>
+        <!-- Maß: 1/4 Leiterlänge -->
+        <line x1="40" y1="185" x2="20" y2="185" stroke="#f59e0b" stroke-width="2"/>
+        <text x="30" y="197" font-size="9" fill="#92400e" text-anchor="middle">1/4 L</text>
+        <!-- Leiter zu flach -->
+        <line x1="90" y1="175" x2="20" y2="100" stroke="#dc2626" stroke-width="4" stroke-linecap="round" stroke-dasharray="6,3"/>
+        <text x="115" y="135" font-size="10" fill="#991b1b">❌ zu flach</text>
+        <text x="115" y="147" font-size="10" fill="#991b1b">&lt;65°</text>
+        <!-- Leiter zu steil -->
+        <line x1="24" y1="175" x2="20" y2="60" stroke="#f59e0b" stroke-width="4" stroke-linecap="round" stroke-dasharray="6,3"/>
+        <text x="170" y="75" font-size="10" fill="#92400e">❌ zu steil</text>
+        <text x="170" y="87" font-size="10" fill="#92400e">&gt;75°</text>
+        <!-- Titel -->
+        <text x="150" y="16" font-size="12" fill="#1a3a5c" font-weight="bold" text-anchor="middle">Aufstellwinkel 65°–75°</text>
+      </svg>
+      <div style="font-size:.75rem;color:#1d4ed8;font-weight:600;margin-top:4px">Optimaler Winkel: 70° · Fußabstand = ¼ Leiterlänge</div>
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:2px">Eigene Darstellung nach DGUV Information 208-016, Kap. 5.3</div>
     </div>
 
     <!-- Stehleiter -->
@@ -13994,12 +14055,55 @@ const BP_KAPITEL = [
       </div>
     </div>
 
-    <!-- Bild: Stehleiter Spreize -->
-    <div style="text-align:center;margin:8px 0 14px">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/1/1c/Stehleiter.jpg"
-           style="max-width:60%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="Stehleiter mit Spreize">
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Stehleiter mit vollständig geöffneter Spreize · Quelle: Wikimedia Commons (Public Domain)</div>
+    <!-- Grafik: Stehleiter Spreize (eingebettetes SVG) -->
+    <div style="text-align:center;margin:8px 0 14px;background:#fef9c3;border-radius:10px;padding:14px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:300px;margin:0 auto">
+        <div>
+          <svg viewBox="0 0 120 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+            <!-- Linker Holm -->
+            <line x1="30" y1="10" x2="30" y2="130" stroke="#374151" stroke-width="5" stroke-linecap="round"/>
+            <!-- Rechter Holm -->
+            <line x1="90" y1="10" x2="90" y2="130" stroke="#374151" stroke-width="5" stroke-linecap="round"/>
+            <!-- Sprossen -->
+            <line x1="30" y1="30" x2="90" y2="30" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="55" x2="90" y2="55" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="80" x2="90" y2="80" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="105" x2="90" y2="105" stroke="#374151" stroke-width="3"/>
+            <!-- Spreize OFFEN -->
+            <line x1="30" y1="130" x2="10" y2="155" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+            <line x1="90" y1="130" x2="110" y2="155" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+            <!-- Querstab Spreize -->
+            <line x1="10" y1="155" x2="110" y2="155" stroke="#16a34a" stroke-width="4" stroke-linecap="round"/>
+            <!-- Grüner Haken -->
+            <circle cx="60" cy="145" r="10" fill="#16a34a"/>
+            <text x="60" y="150" font-size="12" fill="white" text-anchor="middle">✓</text>
+            <text x="60" y="175" font-size="11" fill="#14532d" font-weight="bold" text-anchor="middle">✅ Richtig</text>
+          </svg>
+          <div style="font-size:.72rem;color:#166534;font-weight:600">Spreize vollständig geöffnet &amp; eingerastet</div>
+        </div>
+        <div>
+          <svg viewBox="0 0 120 160" width="100%" xmlns="http://www.w3.org/2000/svg">
+            <!-- Linker Holm -->
+            <line x1="30" y1="10" x2="30" y2="130" stroke="#374151" stroke-width="5" stroke-linecap="round"/>
+            <!-- Rechter Holm -->
+            <line x1="90" y1="10" x2="90" y2="130" stroke="#374151" stroke-width="5" stroke-linecap="round"/>
+            <!-- Sprossen -->
+            <line x1="30" y1="30" x2="90" y2="30" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="55" x2="90" y2="55" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="80" x2="90" y2="80" stroke="#374151" stroke-width="3"/>
+            <line x1="30" y1="105" x2="90" y2="105" stroke="#374151" stroke-width="3"/>
+            <!-- Spreize NICHT geöffnet (nur leicht) -->
+            <line x1="30" y1="130" x2="20" y2="148" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+            <line x1="90" y1="130" x2="100" y2="148" stroke="#6b7280" stroke-width="4" stroke-linecap="round"/>
+            <!-- Rotes X -->
+            <circle cx="60" cy="145" r="10" fill="#dc2626"/>
+            <text x="60" y="150" font-size="12" fill="white" text-anchor="middle">✕</text>
+            <text x="60" y="175" font-size="11" fill="#991b1b" font-weight="bold" text-anchor="middle">❌ So nicht!</text>
+          </svg>
+          <div style="font-size:.72rem;color:#991b1b;font-weight:600">Spreize nicht vollständig geöffnet = Kippgefahr!</div>
+        </div>
+      </div>
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:6px">Eigene Darstellung nach DGUV Information 208-016, Kap. 5.3</div>
     </div>
 
     <!-- Podest- und Gelenkleitern -->
