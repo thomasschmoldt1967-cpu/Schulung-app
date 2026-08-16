@@ -13508,17 +13508,16 @@ const BP_KAPITEL = [
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
     </div>
 
-    <!-- ── SCHULUNGSVIDEO ─────────────────────────────────── -->
-    <div style="margin:0 0 16px">
-      <div style="font-weight:700;font-size:.9rem;color:#1a3a5c;margin-bottom:8px">🎬 Schulungsvideo — Sichere Leitern & TRBS 1203</div>
+    <!-- ── SCHULUNGSVIDEO CLIP 1 ─────────────────────────── -->
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-left:4px solid #0284c7;border-radius:10px;padding:12px 14px;margin:0 0 16px">
+      <div style="font-weight:700;font-size:.9rem;color:#0c4a6e;margin-bottom:8px">🎬 Einführungsvideo — Warum Leiterprüfung? (ca. 1:30 Min)</div>
       <video controls
-             style="width:100%;border-radius:10px;border:1.5px solid #cbd5e1;background:#000;max-height:260px"
-             preload="metadata"
-             poster="">
-        <source src="img/leitern-video.mp4" type="video/mp4">
+             style="width:100%;border-radius:8px;border:1px solid #7dd3fc;background:#000;max-height:240px"
+             preload="metadata">
+        <source src="img/video/clip1-einfuehrung.mp4" type="video/mp4">
         Ihr Browser unterstützt kein HTML5-Video.
       </video>
-      <div style="font-size:.7rem;color:#9ca3af;margin-top:5px;text-align:center">Laufzeit: ca. 9 Min · Quelle: DGUV Information 208-016 / TRBS 1203 · Bitte vor dem Test ansehen</div>
+      <div style="font-size:.7rem;color:#0369a1;margin-top:6px">📋 Inhalt: Unfallstatistiken · Prüfpflicht-Überblick · Warum regelmäßige Prüfung entscheidend ist · Quelle: DGUV Information 208-016</div>
     </div>
 
     <!-- Checkliste Infografik (bereinigt, kein Gemini-UI) -->
@@ -13569,6 +13568,17 @@ const BP_KAPITEL = [
     titel: 'Normenübersicht — Bezug zur Schulung',
     icon: '📋',
     inhalt: `
+    <!-- ── SCHULUNGSVIDEO CLIP 2 ─────────────────────────── -->
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-left:4px solid #0284c7;border-radius:10px;padding:12px 14px;margin:0 0 16px">
+      <div style="font-weight:700;font-size:.9rem;color:#0c4a6e;margin-bottom:8px">🎬 Video — Normen & TRBS 1203: Wer darf prüfen? (ca. 1:30 Min)</div>
+      <video controls
+             style="width:100%;border-radius:8px;border:1px solid #7dd3fc;background:#000;max-height:240px"
+             preload="metadata">
+        <source src="img/video/clip2-normen.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+      </video>
+      <div style="font-size:.7rem;color:#0369a1;margin-top:6px">📋 Inhalt: BetrSichV § 14 · TRBS 1203 · DGUV 208-016 · Qualifikation der Befähigten Person · Quelle: TRBS 1203</div>
+    </div>
     <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
       <div style="font-size:2rem;margin-bottom:6px">📋</div>
       <div style="font-weight:700;font-size:1rem">Das Regelwerk auf einen Blick</div>
@@ -13926,6 +13936,17 @@ const BP_KAPITEL = [
     titel: 'Sichere Verwendung — Was ist zu beachten?',
     icon: '📖',
     inhalt: `
+    <!-- ── SCHULUNGSVIDEO CLIP 3 ─────────────────────────── -->
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-left:4px solid #0284c7;border-radius:10px;padding:12px 14px;margin:0 0 16px">
+      <div style="font-weight:700;font-size:.9rem;color:#0c4a6e;margin-bottom:8px">🎬 Video — Sichere Verwendung & Dreipunkt-Regel (ca. 2:30 Min)</div>
+      <video controls
+             style="width:100%;border-radius:8px;border:1px solid #7dd3fc;background:#000;max-height:240px"
+             preload="metadata">
+        <source src="img/video/clip3-verwendung.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+      </video>
+      <div style="font-size:.7rem;color:#0369a1;margin-top:6px">📋 Inhalt: Dreipunkt-Regel · Aufstellwinkel · Verbotene Nutzung · Unfallursachen in der Praxis · Quelle: DGUV Information 208-016 Kap. 5</div>
+    </div>
     <!-- 5.1 Allgemeines -->
     <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.1 Allgemeines — Mitwirkungspflicht & Sichtprüfung</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
@@ -14418,6 +14439,17 @@ const BP_KAPITEL = [
     titel: 'Praktische Prüfung — Ablauf & Checkliste',
     icon: '🔍',
     inhalt: `
+    <!-- ── SCHULUNGSVIDEO CLIP 4 ─────────────────────────── -->
+    <div style="background:#f0f9ff;border:1.5px solid #bae6fd;border-left:4px solid #0284c7;border-radius:10px;padding:12px 14px;margin:0 0 16px">
+      <div style="font-weight:700;font-size:.9rem;color:#0c4a6e;margin-bottom:8px">🎬 Video — Prüfung in der Praxis & Dokumentation (ca. 3:30 Min)</div>
+      <video controls
+             style="width:100%;border-radius:8px;border:1px solid #7dd3fc;background:#000;max-height:240px"
+             preload="metadata">
+        <source src="img/video/clip4-pruefung-doku.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+      </video>
+      <div style="font-size:.7rem;color:#0369a1;margin-top:6px">📋 Inhalt: Sichtprüfung · Funktionsprüfung · Aussonderungsgründe (✓ ok / reparieren / aussondern) · Dokumentationspflicht · Quelle: DGUV Information 208-016 / BetrSichV § 14</div>
+    </div>
     <div style="background:linear-gradient(135deg,#134e4a,#0d9488);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
       <div style="font-size:2rem;margin-bottom:6px">🔍</div>
       <div style="font-weight:700;font-size:1rem">Die Prüfung Schritt für Schritt</div>
