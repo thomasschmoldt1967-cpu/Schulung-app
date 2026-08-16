@@ -8868,6 +8868,7 @@ function renderLernpfad() {
           <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
         </div>
         <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle22 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
+        <div style="font-size:.62rem;margin-top:4px;opacity:.55">🤖 KI-unterstützt erstellt · Geprüft durch CSC GmbH · Grundlage: § 12 ArbSchG · DGUV V1 · GefStoffV · DSGVO</div>
       </div>
       <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
@@ -12603,7 +12604,11 @@ function hubKapitelOeffnen(kapitelId) {
   if (modal) {
     document.getElementById('hub-modal-titel').textContent = `${k.nr}. ${k.titel}`;
     document.getElementById('hub-modal-modul').textContent = `Modul ${k.modul} — DGUV 308-008`;
-    document.getElementById('hub-modal-body').innerHTML = k.inhalt;
+    document.getElementById('hub-modal-body').innerHTML =
+      `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin:0 0 14px;display:flex;align-items:flex-start;gap:9px">
+        <span style="font-size:1rem;flex-shrink:0">🤖</span>
+        <span style="font-size:.7rem;color:#64748b;line-height:1.5"><strong style="color:#475569">KI-unterstützt erstellt</strong> · Redaktionell geprüft durch CSC GmbH · Grundlage: DGUV Grundsatz 308-008 · BetrSichV · DGUV R 100-500</span>
+      </div>` + k.inhalt;
     const btnWeiter = document.getElementById('hub-modal-weiter');
     if (btnWeiter) btnWeiter.onclick = () => hubKapitelAbschliessen(kapitelId);
     modal.style.display = 'flex';
