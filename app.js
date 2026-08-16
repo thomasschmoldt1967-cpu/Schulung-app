@@ -13891,14 +13891,6 @@ const BP_KAPITEL = [
     titel: 'Sichere Verwendung — Was ist zu beachten?',
     icon: '📖',
     inhalt: `
-    <!-- DGUV Bildtafel Gesamt -->
-    <div style="text-align:center;margin:0 0 16px">
-      <img src="img/dguv-208-016-piktogramme.jpg"
-           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
-           alt="DGUV 208-016 Piktogramme">
-      <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Abb. — Richtig ✓ und Falsch ✗ bei Leitern & Tritten · Quelle: DGUV Information 208-016</div>
-    </div>
-
     <!-- 5.1 Allgemeines -->
     <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:14px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">5.1 Allgemeines — Mitwirkungspflicht & Sichtprüfung</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
