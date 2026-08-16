@@ -13680,6 +13680,13 @@ const BP_KAPITEL = [
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Nicht jeder Mitarbeiter darf Leitern offiziell prüfen. Die TRBS 1203 legt klare Mindestanforderungen fest, die kumulativ erfüllt sein müssen.</div>
     </div>
 
+    <!-- Kachel: Befähigte Person prüft -->
+    <div style="text-align:center;margin:0 0 14px">
+      <img src="img/kachel-befaehigte-person.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #fcd34d"
+           alt="Die Befähigte Person prüft">
+    </div>
+
     <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">🎓 Die drei Säulen der Qualifikation (TRBS 1203)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0">
       <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 8px;text-align:center">
@@ -13956,6 +13963,13 @@ const BP_KAPITEL = [
       </svg>
       <div style="font-size:.75rem;color:#166534;font-weight:600;margin-top:4px">Dreipunkt-Methode: 2 Füße + 1 Hand (oder 1 Fuß + 2 Hände)</div>
       <div style="font-size:.7rem;color:#9ca3af;margin-top:2px">Eigene Darstellung nach DGUV Information 208-016, Kap. 5</div>
+    </div>
+
+    <!-- Kachel: Sicherer Stand -->
+    <div style="text-align:center;margin:8px 0 14px">
+      <img src="img/kachel-sicherer-stand.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #f97316"
+           alt="Sicherer Stand: Winkel und Kontakt">
     </div>
 
     <!-- 5.2 Allgemeine Regeln -->
@@ -14251,6 +14265,15 @@ const BP_KAPITEL = [
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Die BetrSichV § 14 schreibt drei Prüfanlässe vor. Alle drei sind verpflichtend — und jede Prüfung muss dokumentiert werden.</div>
     </div>
 
+    <!-- Kacheln: Prüfung jährlich + Sicht-Check -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px">
+      <img src="img/kachel-pruefung-jaehrlich.jpg"
+           style="width:100%;border-radius:10px;border:1.5px solid #16a34a"
+           alt="Prüfung mindestens einmal jährlich">
+      <img src="img/kachel-sicht-check.jpg"
+           style="width:100%;border-radius:10px;border:1.5px solid #2563eb"
+           alt="Sicht-Check vor jedem Einsatz">
+    </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
       <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:12px 14px">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
@@ -14411,6 +14434,13 @@ const BP_KAPITEL = [
       <div style="font-size:2rem;margin-bottom:6px">📄</div>
       <div style="font-weight:700;font-size:1rem">Das Leiterkontrollbuch — Ihr rechtlicher Schutz</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Grundlage: BetrSichV § 14 Abs. 5 und DGUV Information 208-016. Das Prüfprotokoll ist der einzige Nachweis, dass die Befähigte Person ihre Aufgabe erfüllt hat.</div>
+    </div>
+
+    <!-- Kachel: Dokumentieren + Plakette -->
+    <div style="text-align:center;margin:0 0 14px">
+      <img src="img/kachel-dokumentieren.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #dc2626"
+           alt="Dokumentieren und Plakette kleben">
     </div>
 
     <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📝 Pflichtangaben im Prüfprotokoll</div>
