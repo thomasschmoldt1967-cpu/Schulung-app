@@ -13850,7 +13850,15 @@ const BP_KAPITEL = [
     <div style="background:linear-gradient(135deg,#1a3a5c,#1e40af);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
       <div style="font-size:2rem;margin-bottom:6px">📖</div>
       <div style="font-weight:700;font-size:1rem">DGUV Information 208-016 — Kapitel 5</div>
-      <div style="font-size:.82rem;opacity:.9;margin-top:4px">„Was ist bei der Verwendung von Leitern und Tritten zu beachten?" — Die wichtigsten Regeln für die tägliche Praxis, illustriert mit offiziellen DGUV-Abbildungen.</div>
+      <div style="font-size:.82rem;opacity:.9;margin-top:4px">„Was ist bei der Verwendung von Leitern und Tritten zu beachten?" — Die wichtigsten Regeln, illustriert mit offiziellen DGUV-Piktogrammen.</div>
+    </div>
+
+    <!-- DGUV Bildtafel Gesamt -->
+    <div style="text-align:center;margin:0 0 16px">
+      <img src="img/dguv-208-016-piktogramme.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="DGUV 208-016 Piktogramme">
+      <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Abb. — Übersicht: Richtig ✓ und Falsch ✗ bei Leitern und Tritten · Quelle: DGUV Information 208-016</div>
     </div>
 
     <!-- 5.1 Allgemeines -->
@@ -14280,7 +14288,26 @@ const BP_KAPITEL = [
     <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:10px 13px">
       <div style="font-weight:700;font-size:.85rem;color:#374151">👁️ Sichtprüfung durch den Nutzer — vor jeder Benutzung</div>
       <div style="font-size:.79rem;color:#6b7280;margin-top:4px">Diese ist <strong>nicht dokumentationspflichtig</strong>, aber absolut verpflichtend. Sie dauert nur 30 Sekunden und kann einen Unfall verhindern: Holme checken, Fußkappen kontrollieren, Sprossen prüfen, Spreize sichern — und dann kann's losgehen.</div>
-    </div>`
+    </div>
+
+    <!-- Prüfaufkleber -->
+    <div style="font-weight:700;font-size:.92rem;color:#1a3a5c;margin:16px 0 8px;border-bottom:2px solid #1a3a5c;padding-bottom:4px">🏷️ Prüfkennzeichnung — der Aufkleber auf der Leiter</div>
+    <div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:12px">
+      <img src="img/pruefaufkleber-leitern-tritte.jpg"
+           style="width:90px;border-radius:8px;border:1.5px solid #d1d5db;flex-shrink:0"
+           alt="Prüfaufkleber Leitern und Tritte">
+      <div style="font-size:.82rem;color:#374151;line-height:1.7">
+        <div style="font-weight:700;color:#1a3a5c;margin-bottom:5px">Was steht drauf?</div>
+        <div>🟡 <strong>„Leitern und Tritte"</strong> — Gerätetyp</div>
+        <div>📋 <strong>Rechtsgrundlage:</strong> BetrSichV §3(3) · DGUV 208-016</div>
+        <div>🗓️ <strong>„Nächste Prüfung"</strong> — Fälligkeitsdatum</div>
+        <div>🔴 <strong>Prüfplakette</strong> — Monat/Jahr der nächsten Prüfung eingestanzt</div>
+        <div style="margin-top:8px;background:#fef9c3;border-radius:6px;padding:7px 10px;font-size:.78rem;color:#92400e">
+          💡 <strong>Wichtig:</strong> Fehlt der Aufkleber oder ist die Prüfplakette abgelaufen → Leiter sofort aus dem Verkehr ziehen und der Befähigten Person melden!
+        </div>
+      </div>
+    </div>
+    <div style="font-size:.68rem;color:#9ca3af;text-align:center">Prüfaufkleber gemäß DGUV Information 208-016 · Quelle: DGUV</div>`
   },
 
   // ══════════════════════════════════════════
