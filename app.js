@@ -13480,6 +13480,13 @@ const BP_KAPITEL = [
     titel: 'Rechtliche Grundlagen & Prüfpflicht',
     icon: '⚖️',
     inhalt: `
+    <!-- ── KI-HINWEIS ────────────────────────────────────── -->
+    <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 13px;margin:0 0 14px;display:flex;align-items:flex-start;gap:10px">
+      <div style="font-size:1.1rem;flex-shrink:0">🤖</div>
+      <div style="font-size:.72rem;color:#64748b;line-height:1.5">
+        <strong style="color:#475569">Hinweis zur Erstellung:</strong> Diese Schulung wurde in Teilen mithilfe von KI-Systemen (Google Gemini, Claude AI) erstellt und redaktionell durch die CSC GmbH geprüft. Alle Inhalte basieren auf den zum Zeitpunkt der Erstellung gültigen Vorschriften und Normen. Maßgeblich sind stets die aktuellen Fassungen von BetrSichV, TRBS 1203, TRBS 2121-2 und DGUV Information 208-016.
+      </div>
+    </div>
     <!-- ── LERNZIELE ──────────────────────────────────────── -->
     <div style="background:linear-gradient(135deg,#0f4c2a,#166534);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
       <div style="font-size:1.6rem;margin-bottom:5px">🎯</div>
@@ -14775,7 +14782,61 @@ const BP_KAPITEL = [
     <div style="text-align:center;margin:10px 0 14px">
       <img src="img/ladder-mgmt/folie_14.jpg"
            style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
-           alt="Sicherheits-Ökosystem: Zusammenfassung aller Maßnahmen">`
+           alt="Sicherheits-Ökosystem: Zusammenfassung aller Maßnahmen">
+
+    <!-- ── QUELLENANGABEN & HERSTELLER ──────────────────────────── -->
+    <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:14px 16px;margin:16px 0 4px">
+      <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:10px">📚 Quellenangaben & verwendete Normen</div>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:.78rem;color:#374151">
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #1a3a5c;border-radius:6px;padding:8px 11px">
+          <strong>DGUV Information 208-016</strong> — „Die Verwendung von Leitern und Tritten"<br>
+          <span style="color:#6b7280">Herausgeber: Deutsche Gesetzliche Unfallversicherung (DGUV), BG BAU · Stand: aktuelle Ausgabe</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #1d4ed8;border-radius:6px;padding:8px 11px">
+          <strong>TRBS 1203</strong> — „Befähigte Personen — Allgemeine Anforderungen"<br>
+          <span style="color:#6b7280">Herausgeber: Bundesministerium für Arbeit und Soziales (BMAS) · Technische Regel Betriebssicherheit</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #1d4ed8;border-radius:6px;padding:8px 11px">
+          <strong>TRBS 2121 Teil 2</strong> — „Leitern als Arbeitsplatz und Verkehrsweg"<br>
+          <span style="color:#6b7280">Herausgeber: Bundesministerium für Arbeit und Soziales (BMAS) · Technische Regel Betriebssicherheit</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #16a34a;border-radius:6px;padding:8px 11px">
+          <strong>BetrSichV</strong> — Betriebssicherheitsverordnung § 3, § 14<br>
+          <span style="color:#6b7280">Herausgeber: Bundesregierung Deutschland · BGBl. I · aktuelle Fassung</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #16a34a;border-radius:6px;padding:8px 11px">
+          <strong>ArbSchG § 12, § 25</strong> — Arbeitsschutzgesetz<br>
+          <span style="color:#6b7280">Herausgeber: Bundesregierung Deutschland · BGBl. I · aktuelle Fassung</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #d97706;border-radius:6px;padding:8px 11px">
+          <strong>DIN EN 131</strong> — Europäische Norm für Leitern (Teile 1–7)<br>
+          <span style="color:#6b7280">Herausgeber: Deutsches Institut für Normung (DIN) / CEN · aktuelle Fassung</span>
+        </div>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-left:3px solid #d97706;border-radius:6px;padding:8px 11px">
+          <strong>BGHM-Kontrollblatt Stehleitern</strong><br>
+          <span style="color:#6b7280">Herausgeber: Berufsgenossenschaft Holz und Metall (BGHM) · Prüfformular für Stehleitern</span>
+        </div>
+      </div>
+
+      <div style="margin-top:12px;padding-top:10px;border-top:1px solid #e5e7eb">
+        <div style="font-weight:700;font-size:.85rem;color:#1a3a5c;margin-bottom:8px">🏭 Verwendete Hersteller & Produkte</div>
+        <div style="font-size:.77rem;color:#374151;line-height:1.6">
+          Die in dieser Schulung genannten Hersteller, Marken und Produktbezeichnungen sind Eigentum ihrer jeweiligen Rechtsinhaber. Die Nennung dient ausschließlich zu Informations- und Schulungszwecken. Es besteht keine wirtschaftliche Verbindung zwischen der CSC GmbH und den genannten Unternehmen.<br><br>
+          Genannte Hersteller (beispielhaft, nicht abschließend):
+          <span style="display:block;margin-top:5px">
+            <strong>Hymer-Leichtmetallbau</strong> (Hymer-Werk) · <strong>Zarges</strong> · <strong>Günzburger Steigtechnik</strong> · <strong>KRAUSE</strong> · <strong>Hailo</strong> · <strong>Stabilo</strong> · <strong>Alco</strong> · <strong>Müller Leitern GmbH</strong>
+          </span>
+          <span style="display:block;margin-top:6px;color:#6b7280;font-size:.72rem">
+            Alle Markennamen sind eingetragene Warenzeichen ihrer jeweiligen Inhaber. Abgebildete Produktmerkmale dienen der Veranschaulichung der in den Normen beschriebenen Anforderungen.
+          </span>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;padding-top:8px;border-top:1px solid #e5e7eb;font-size:.7rem;color:#9ca3af;text-align:center">
+        Schulung erstellt durch CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · www.csc-hannover.de<br>
+        In Teilen mit Unterstützung von KI-Systemen (Google Gemini, Claude AI) erstellt und redaktionell geprüft. Stand: 2026
+      </div>
+    </div>`
   }
 
 ];
