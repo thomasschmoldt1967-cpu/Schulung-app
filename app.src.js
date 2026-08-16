@@ -13508,6 +13508,19 @@ const BP_KAPITEL = [
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
     </div>
 
+    <!-- ── SCHULUNGSVIDEO ─────────────────────────────────── -->
+    <div style="margin:0 0 16px">
+      <div style="font-weight:700;font-size:.9rem;color:#1a3a5c;margin-bottom:8px">🎬 Schulungsvideo — Sichere Leitern & TRBS 1203</div>
+      <video controls
+             style="width:100%;border-radius:10px;border:1.5px solid #cbd5e1;background:#000;max-height:260px"
+             preload="metadata"
+             poster="">
+        <source src="img/leitern-video.mp4" type="video/mp4">
+        Ihr Browser unterstützt kein HTML5-Video.
+      </video>
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:5px;text-align:center">Laufzeit: ca. 9 Min · Quelle: DGUV Information 208-016 / TRBS 1203 · Bitte vor dem Test ansehen</div>
+    </div>
+
     <!-- Checkliste Infografik (bereinigt, kein Gemini-UI) -->
     <div style="text-align:center;margin:0 0 14px">
       <img src="img/checkliste-infografik-clean.jpg"
