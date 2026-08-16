@@ -1699,14 +1699,26 @@ document.addEventListener('dragstart', function(e) {
 <!-- Befähigte Person Kapitel-Modal -->
 <div id="bp-kapitel-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:10002;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto">
   <div style="background:#fff;border-radius:16px;width:100%;max-width:540px;box-shadow:0 8px 40px rgba(0,0,0,.3);margin:auto">
+    <!-- Header -->
     <div style="background:linear-gradient(135deg,#1a3a5c 0%,#2563a8 100%);color:#fff;padding:16px 18px;border-radius:16px 16px 0 0;position:relative">
       <div style="font-size:.72rem;font-weight:600;color:#fbbf24;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px" id="bp-modal-modul">Modul 1</div>
-      <div style="font-weight:700;font-size:1rem;line-height:1.35" id="bp-modal-titel">Kapitel-Titel</div>
+      <div style="font-weight:700;font-size:1rem;line-height:1.35;padding-right:36px" id="bp-modal-titel">Kapitel-Titel</div>
+      <!-- Fortschritts-Dots im Header -->
+      <div id="bp-modal-dots" style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap"></div>
       <button onclick="bpKapitelModalSchliessen()" style="position:absolute;top:14px;right:14px;background:rgba(255,255,255,.15);border:none;color:#fff;font-size:1.2rem;width:32px;height:32px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-appearance:none">✕</button>
     </div>
+    <!-- Inhalt -->
     <div style="padding:18px 18px 12px;font-size:.86rem;color:#374151;line-height:1.6;max-height:60vh;overflow-y:auto" id="bp-modal-body"></div>
+    <!-- Footer Navigation -->
     <div style="padding:12px 18px 18px;border-top:1px solid #f3f4f6">
-      <button id="bp-modal-weiter" style="width:100%;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.3);-webkit-appearance:none">✅ Modul abschliessen &amp; weiter</button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <!-- Zurück-Button -->
+        <button id="bp-modal-zurueck" onclick="bpKapitelZurueck()" style="flex-shrink:0;padding:13px 16px;background:#f1f5f9;color:#1a3a5c;border:1.5px solid #e2e8f0;border-radius:10px;font-weight:700;font-size:1.1rem;cursor:pointer;-webkit-appearance:none">←</button>
+        <!-- Weiter-Button (flex:1) -->
+        <button id="bp-modal-weiter" style="flex:1;padding:13px;background:#1a3a5c;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:pointer;box-shadow:0 2px 8px rgba(26,58,92,.3);-webkit-appearance:none">✅ Gelesen &amp; weiter →</button>
+      </div>
+      <!-- Kapitel-Info -->
+      <div id="bp-modal-nav-info" style="text-align:center;font-size:.72rem;color:#9ca3af;margin-top:8px"></div>
     </div>
   </div>
 </div>

@@ -15168,30 +15168,65 @@ function bpKapitelOeffnen(kapitelId) {
   if (!k) return;
   const modal = document.getElementById('bp-kapitel-modal');
   if (modal) {
+    const idx = BP_KAPITEL.findIndex(x => x.id === kapitelId);
+    const total = BP_KAPITEL.length;
+
     document.getElementById('bp-modal-titel').textContent = `${k.nr}. ${k.titel}`;
     document.getElementById('bp-modal-modul').textContent = `Modul ${k.modul} — BetrSichV / DGUV 208-016`;
     document.getElementById('bp-modal-body').innerHTML = k.inhalt;
+
+    // ── Fortschritts-Dots ──────────────────────────────────────────────────
+    const dotsEl = document.getElementById('bp-modal-dots');
+    if (dotsEl) {
+      dotsEl.innerHTML = BP_KAPITEL.map((kap, i) => {
+        const gelesen  = !!bpFortschritt[kap.id];
+        const aktiv    = kap.id === kapitelId;
+        const bg       = aktiv  ? '#fbbf24'
+                       : gelesen ? 'rgba(255,255,255,.9)'
+                       :           'rgba(255,255,255,.3)';
+        const size = aktiv ? '10px' : '7px';
+        return `<div style="width:${size};height:${size};border-radius:50%;background:${bg};transition:all .2s;flex-shrink:0" title="${kap.nr}. ${kap.titel}"></div>`;
+      }).join('');
+    }
+
+    // ── Nav-Info (z.B. "Kapitel 3 von 10") ────────────────────────────────
+    const navInfo = document.getElementById('bp-modal-nav-info');
+    if (navInfo) {
+      const gelesen = BP_KAPITEL.filter(x => bpFortschritt[x.id]).length;
+      navInfo.textContent = `Kapitel ${idx+1} von ${total} · ${gelesen} gelesen`;
+    }
+
+    // ── Weiter-Button ──────────────────────────────────────────────────────
     const btnWeiter = document.getElementById('bp-modal-weiter');
     if (btnWeiter) {
       btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
-      // Button-Text anpassen: zeige nächstes Kapitel oder Test
-      const idx = BP_KAPITEL.findIndex(x => x.id === kapitelId);
-      if (idx >= 0 && idx < BP_KAPITEL.length - 1) {
-        const next = BP_KAPITEL[idx + 1];
-        btnWeiter.textContent = `✅ Weiter → ${next.nr}. ${next.titel}`;
-      } else {
-        btnWeiter.textContent = '🎯 Alle Module gelesen — Zum Abschlusstest!';
-      }
+      btnWeiter.textContent = idx < total - 1 ? '✅ Gelesen & weiter →' : '🎯 Letztes Kapitel — Zum Test!';
     }
-    // Im Preview-Modus über dem Preview-Modal anzeigen (z-index erhöhen)
+
+    // ── Zurück-Button ──────────────────────────────────────────────────────
+    const btnZurueck = document.getElementById('bp-modal-zurueck');
+    if (btnZurueck) {
+      btnZurueck.style.display = idx === 0 ? 'none' : '';
+      btnZurueck.setAttribute('data-prev', idx > 0 ? BP_KAPITEL[idx-1].id : '');
+    }
+
     modal.style.zIndex = _bpPreviewMode ? '10010' : '10001';
     modal.style.display = 'flex';
+    // Scroll-Reset
+    const body = document.getElementById('bp-modal-body');
+    if (body) body.scrollTop = 0;
     return;
   }
   bpFortschritt[kapitelId] = true;
   _bpFortschrittSpeichern();
   _bpSubtitelAktualisieren();
   bpSchulungRender();
+}
+
+function bpKapitelZurueck() {
+  const btn = document.getElementById('bp-modal-zurueck');
+  const prevId = btn?.getAttribute('data-prev');
+  if (prevId) bpKapitelOeffnen(prevId);
 }
 
 function bpKapitelAbschliessen(kapitelId) {
