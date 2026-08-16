@@ -13486,9 +13486,9 @@ const BP_KAPITEL = [
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
     </div>
 
-    <!-- Checkliste Infografik -->
+    <!-- Checkliste Infografik (bereinigt, kein Gemini-UI) -->
     <div style="text-align:center;margin:0 0 14px">
-      <img src="img/checkliste-leitern-tritte-infografik.jpg"
+      <img src="img/checkliste-infografik-clean.jpg"
            style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
            alt="Sicher auf Leitern & Tritten: Checkliste für Profis">
       <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Überblick: Die 5 wichtigsten Pflichten · Quelle: DGUV Information 208-016 / BetrSichV</div>
@@ -13891,18 +13891,12 @@ const BP_KAPITEL = [
     titel: 'Sichere Verwendung — Was ist zu beachten?',
     icon: '📖',
     inhalt: `
-    <div style="background:linear-gradient(135deg,#1a3a5c,#1e40af);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
-      <div style="font-size:2rem;margin-bottom:6px">📖</div>
-      <div style="font-weight:700;font-size:1rem">DGUV Information 208-016 — Kapitel 5</div>
-      <div style="font-size:.82rem;opacity:.9;margin-top:4px">„Was ist bei der Verwendung von Leitern und Tritten zu beachten?" — Die wichtigsten Regeln, illustriert mit offiziellen DGUV-Piktogrammen.</div>
-    </div>
-
     <!-- DGUV Bildtafel Gesamt -->
     <div style="text-align:center;margin:0 0 16px">
       <img src="img/dguv-208-016-piktogramme.jpg"
            style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
            alt="DGUV 208-016 Piktogramme">
-      <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Abb. — Übersicht: Richtig ✓ und Falsch ✗ bei Leitern und Tritten · Quelle: DGUV Information 208-016</div>
+      <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Abb. — Richtig ✓ und Falsch ✗ bei Leitern & Tritten · Quelle: DGUV Information 208-016</div>
     </div>
 
     <!-- 5.1 Allgemeines -->
@@ -13994,9 +13988,9 @@ const BP_KAPITEL = [
     </div>
 
     <!-- Kachel: Sicherer Stand -->
-    <div style="text-align:center;margin:8px 0 14px">
+    <div style="text-align:center;margin:8px 0 14px;overflow:hidden">
       <img src="img/kachel-sicherer-stand.jpg"
-           style="max-width:100%;border-radius:10px;border:1.5px solid #f97316"
+           style="width:100%;max-width:100%;border-radius:10px;border:1.5px solid #f97316;display:block"
            alt="Sicherer Stand: Winkel und Kontakt">
     </div>
 
