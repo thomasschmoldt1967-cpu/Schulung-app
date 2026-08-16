@@ -13480,6 +13480,28 @@ const BP_KAPITEL = [
     titel: 'Rechtliche Grundlagen & Prüfpflicht',
     icon: '⚖️',
     inhalt: `
+    <!-- ── LERNZIELE ──────────────────────────────────────── -->
+    <div style="background:linear-gradient(135deg,#0f4c2a,#166534);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
+      <div style="font-size:1.6rem;margin-bottom:5px">🎯</div>
+      <div style="font-weight:700;font-size:.95rem;margin-bottom:6px">Lernziele dieser Schulung</div>
+      <div style="font-size:.82rem;opacity:.92;line-height:1.55">
+        Nach Abschluss dieser Schulung können Sie:<br>
+        <span style="display:block;margin-top:5px">✔️ Leitern und Tritte <strong>sicher und normgerecht verwenden</strong></span>
+        <span style="display:block;margin-top:3px">✔️ Prüfpflichten nach <strong>BetrSichV § 14 und DGUV 208-016</strong> benennen</span>
+        <span style="display:block;margin-top:3px">✔️ Leitern und Tritte als <strong>Befähigte Person prüfen</strong> und dokumentieren</span>
+        <span style="display:block;margin-top:3px">✔️ Schäden und Mängel <strong>erkennen, bewerten und melden</strong></span>
+        <span style="display:block;margin-top:3px">✔️ Prüfprotokolle und Schulungsnachweise <strong>rechtssicher ausstellen</strong></span>
+      </div>
+    </div>
+    <!-- ── GÜLTIGKEIT / AUFFRISCHUNG ─────────────────────── -->
+    <div style="background:#fffbeb;border:1.5px solid #f59e0b;border-left:4px solid #d97706;border-radius:8px;padding:11px 14px;margin-bottom:14px">
+      <div style="font-weight:700;font-size:.88rem;color:#92400e">🔁 Gültigkeit & Wiederholung</div>
+      <div style="font-size:.82rem;color:#78350f;margin-top:5px;line-height:1.5">
+        Dieses Schulungszertifikat hat <strong>kein gesetzliches Ablaufdatum</strong>. Die Berufsgenossenschaft empfiehlt jedoch eine <strong>Auffrischung alle 3–5 Jahre</strong> — insbesondere wenn Normen geändert werden, neue Leitertypen eingesetzt werden oder ein Arbeitsunfall mit einer Leiter stattgefunden hat.<br>
+        <span style="display:block;margin-top:5px;font-weight:600">📋 Grundlage: DGUV Information 208-016 · BetrSichV § 14 · TRBS 1203 · TRBS 2121-2</span>
+      </div>
+    </div>
+    <!-- ── EINFÜHRUNG PRÜFPFLICHT ─────────────────────────── -->
     <div style="background:linear-gradient(135deg,#1a3a5c,#1d4ed8);border-radius:10px;padding:14px 16px;margin-bottom:14px;color:#fff">
       <div style="font-size:2rem;margin-bottom:6px">⚖️</div>
       <div style="font-weight:700;font-size:1rem">Warum gibt es eine Prüfpflicht?</div>
@@ -16094,8 +16116,8 @@ async function leiternNachweisPDF(zuwId) {
     doc.setFontSize(6.8); doc.setFont('helvetica', 'normal');
     doc.setTextColor(...C.grauText);
     doc.text(
-      'Diese Unterweisung wurde durchgeführt gem. § 12 ArbSchG i.V.m. DGUV Information 208-016 und DGUV V1 § 4. ' +
-      'Der Nachweis ist 5 Jahre aufzubewahren (§ 4 Abs. 3 BetrSichV).',
+      'Schulungsgrundlage: DGUV Information 208-016 (Leitern und Tritte) · BetrSichV § 14 · TRBS 1203 · TRBS 2121-2. ' +
+      'Durchgeführt gem. § 12 ArbSchG i.V.m. DGUV V1 § 4. Der Nachweis ist 5 Jahre aufzubewahren (§ 4 Abs. 3 BetrSichV).',
       ML + 4, y + 5, { maxWidth: CW - 8 }
     );
     doc.text(`Nachweis-Nr.: ${certNr}`, ML + 4, y + 10);
