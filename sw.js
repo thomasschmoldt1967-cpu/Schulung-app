@@ -3,7 +3,7 @@
 //  v3.2 – Vereinfacht: Network-First für alles außer Supabase
 // ============================================================
 =======
-const CACHE_NAME = 'schulung-v158';
+const CACHE_NAME = 'schulung-v159';
 
 
 // ── INSTALL: Sofort aktivieren ───────────────────────────────
