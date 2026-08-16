@@ -13485,6 +13485,15 @@ const BP_KAPITEL = [
       <div style="font-weight:700;font-size:1rem">Warum gibt es eine Prüfpflicht?</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Leitern und Tritte sind Arbeitsmittel im Sinne der BetrSichV. Arbeitgeber sind verpflichtet, diese sicher bereitzustellen — das schließt regelmäßige Prüfungen ein.</div>
     </div>
+
+    <!-- Checkliste Infografik -->
+    <div style="text-align:center;margin:0 0 14px">
+      <img src="img/checkliste-leitern-tritte-infografik.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="Sicher auf Leitern & Tritten: Checkliste für Profis">
+      <div style="font-size:.68rem;color:#9ca3af;margin-top:4px">Überblick: Die 5 wichtigsten Pflichten · Quelle: DGUV Information 208-016 / BetrSichV</div>
+    </div>
+
     <p style="font-size:.88rem;color:#374151">Die wichtigsten Rechtsgrundlagen im Überblick:</p>
     <div style="display:flex;flex-direction:column;gap:8px;margin:10px 0">
       <div style="background:#fafafa;border:1.5px solid #e5e7eb;border-left:4px solid #1a3a5c;border-radius:8px;padding:10px 13px">
