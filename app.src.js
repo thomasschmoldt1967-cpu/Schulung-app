@@ -14606,6 +14606,7 @@ const BP_KAPITEL = [
           <div style="font-weight:700;font-size:.85rem;color:#14532d">Alle Prüfpunkte abgehakt!</div>
           <div style="font-size:.78rem;color:#166534;margin-top:3px">Leiter ist geprüft. Jetzt <strong>ins Leiterkontrollbuch</strong> eintragen!</div>
         </div>
+        <button onclick="leiternPruefprotokollPDF()" style="width:100%;padding:10px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.85rem;cursor:pointer;margin-bottom:8px">📄 Prüfprotokoll als PDF erstellen</button>
         <button onclick="document.querySelectorAll('.bp09-check').forEach(c=>c.checked=false);document.getElementById('bp09-bar').style.width='0%';document.getElementById('bp09-count').textContent='0 / 13';document.getElementById('bp09-ergebnis').style.display='none';document.getElementById('pf-leiter-nr').value='';document.getElementById('pf-leiter-typ').value=''" style="width:100%;padding:9px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer">🔄 Formular zurücksetzen</button>
       </div>
     </div>
@@ -16109,5 +16110,271 @@ async function leiternNachweisPDF(zuwId) {
   } catch(e) {
     console.error('leiternNachweisPDF Fehler:', e);
     showToast('⚠️ PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  LEITERN PRÜFPROTOKOLL PDF — aus interaktivem Schulungs-Prüfformular
+//  Aufruf: leiternPruefprotokollPDF()
+// ══════════════════════════════════════════════════════════════════════════════
+async function leiternPruefprotokollPDF() {
+  try {
+    if (typeof window.jspdf === 'undefined') {
+      showToast('⚠️ PDF-Bibliothek nicht geladen', '#7f1d1d'); return;
+    }
+    const { jsPDF } = window.jspdf;
+
+    // ── Formulardaten aus dem interaktiven Formular lesen ─────────────────────
+    const leiterNr  = (document.getElementById('pf-leiter-nr')  || {}).value || '–';
+    const leiterTyp = (document.getElementById('pf-leiter-typ') || {}).value || '–';
+
+    // Alle Checkboxen auslesen
+    const checks = document.querySelectorAll('.bp09-check');
+    const ergebnisse = [];
+    checks.forEach(c => ergebnisse.push(c.checked));
+    const anzahlOk    = ergebnisse.filter(Boolean).length;
+    const anzahlGesamt = ergebnisse.length;
+    const allOk       = anzahlOk === anzahlGesamt;
+
+    // Prüfer aus aktuellem User
+    const pruefer = (typeof currentUser !== 'undefined' && currentUser?.name) ? currentUser.name : 'Befähigte Person';
+
+    // Datum / Protokoll-Nr
+    const jetzt     = new Date();
+    const datumDE   = jetzt.toLocaleDateString('de-DE', { day:'2-digit', month:'2-digit', year:'numeric' });
+    const protokollNr = `LP-${jetzt.getFullYear()}-${String(Date.now()).slice(-6)}`;
+
+    // ── PDF Setup ─────────────────────────────────────────────────────────────
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const W = 210, H = 297;
+    const ML = 14, MR = 14, CW = W - ML - MR;
+
+    const C = {
+      navy:      [26,  58,  92],
+      blau:      [37,  99, 168],
+      gruen:     [22, 163,  74],
+      rot:       [220,  38,  38],
+      gold:      [202,138,   4],
+      hellblau:  [239,246,255],
+      hellgruen: [240,253,244],
+      hellrot:   [254,242,242],
+      grauText:  [70,  80, 100],
+      grauLinie: [200,210,225],
+      grauLeicht:[245,247,251],
+      weiss:     [255,255,255],
+    };
+
+    // ── HINTERGRUND ───────────────────────────────────────────────────────────
+    doc.setFillColor(...C.grauLeicht);
+    doc.rect(0, 0, W, H, 'F');
+
+    // ── HEADER-BAND ───────────────────────────────────────────────────────────
+    const HH = 28;
+    doc.setFillColor(...C.navy);
+    doc.rect(0, 0, W, HH, 'F');
+
+    // CSC Logo links im Header
+    try {
+      doc.addImage(SIBEDA_LOGO_B64, 'JPEG', 12, (HH - 22) / 2, 54, 22);
+    } catch(e) {}
+
+    // Titel rechts im Header
+    doc.setTextColor(...C.weiss);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(11);
+    doc.text('Prüfprotokoll — Leitern & Tritte', W - MR, 11, { align:'right' });
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(8);
+    doc.text('Gemäß DGUV Information 208-016 (BGR 191) · BetrSichV § 14', W - MR, 18, { align:'right' });
+
+    // ── PROTOKOLL-INFO BOX ────────────────────────────────────────────────────
+    let y = HH + 8;
+    doc.setFillColor(...C.weiss);
+    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
+    doc.setDrawColor(...C.grauLinie);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(ML, y, CW, 22, 3, 3, 'S');
+
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(...C.navy);
+    doc.text('PROTOKOLL-NR.', ML + 5, y + 6);
+    doc.text('DATUM', ML + 60, y + 6);
+    doc.text('PRÜFER/IN', ML + 105, y + 6);
+
+    doc.setFont('helvetica','normal');
+    doc.setFontSize(9);
+    doc.setTextColor(...C.grauText);
+    doc.text(protokollNr, ML + 5, y + 14);
+    doc.text(datumDE,     ML + 60, y + 14);
+    doc.text(pruefer,     ML + 105, y + 14, { maxWidth: CW - 108 });
+
+    y += 28;
+
+    // ── LEITER-IDENTIFIKATION ─────────────────────────────────────────────────
+    doc.setFillColor(...C.navy);
+    doc.roundedRect(ML, y, CW, 8, 2, 2, 'F');
+    doc.setTextColor(...C.weiss);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(8.5);
+    doc.text('🏷️  LEITER-IDENTIFIKATION', ML + 4, y + 5.5);
+    y += 12;
+
+    doc.setFillColor(...C.weiss);
+    doc.roundedRect(ML, y, CW, 14, 2, 2, 'F');
+    doc.setDrawColor(...C.grauLinie);
+    doc.roundedRect(ML, y, CW, 14, 2, 2, 'S');
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.navy);
+    doc.text('Leiter-Nr. / Inventar:', ML + 5, y + 6);
+    doc.text('Leiter-Typ:', ML + 100, y + 6);
+    doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(...C.grauText);
+    doc.text(leiterNr,  ML + 48, y + 6);
+    doc.text(leiterTyp, ML + 120, y + 6);
+
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5); doc.setTextColor(...C.navy);
+    doc.text('Prüfnorm:', ML + 5, y + 12);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...C.grauText);
+    doc.text('DGUV Information 208-016 (BGR 191) · BetrSichV § 14 Abs. 1', ML + 28, y + 12);
+
+    y += 20;
+
+    // ── PRÜFPUNKTE (5 Abschnitte) ─────────────────────────────────────────────
+    const abschnitte = [
+      {
+        titel: '1 — Holme / Schenkel',
+        punkte: [
+          'Holme/Schenkel frei von Rissen, Verformungen und Korrosion',
+          'Keine Kerben, Einschnitte oder sonstige Beschädigungen der Holme',
+        ]
+      },
+      {
+        titel: '2 — Sprossen / Stufen',
+        punkte: [
+          'Alle Sprossen/Stufen vorhanden, keine fehlenden oder gebrochenen',
+          'Sprossen/Stufen fest verankert, kein Wackeln oder Drehen',
+          'Trittflächen frei von Verunreinigungen (Öl, Farbe, Fett, Eis)',
+        ]
+      },
+      {
+        titel: '3 — Befestigungen & Verbindungen',
+        punkte: [
+          'Schrauben und Bolzen vollständig vorhanden und fest angezogen',
+          'Gelenke zwischen Vorder- und Rückseite einwandfrei (Anlege-/Stehleiter)',
+          'Spreizesicherungen und Eckaussteifungen funktionsfähig',
+        ]
+      },
+      {
+        titel: '4 — Sicherheitseinrichtungen',
+        punkte: [
+          'Leiterfüße vorhanden und nicht abgenutzt (rutschsicherer Stand)',
+          'Führungsbügel und Klappen (falls vorhanden) einwandfrei',
+          'Verriegelungsschnapper (Stehleiter) rasten sicher ein',
+          'Sicherheitskennzeichnung (Inventar-Nr., Typenschild) lesbar vorhanden',
+        ]
+      },
+      {
+        titel: '5 — Gesamtzustand & Ergebnis',
+        punkte: [
+          'Leiter insgesamt verwendungsfähig — keine Mängel erkennbar',
+        ]
+      },
+    ];
+
+    let checkIdx = 0;
+    for (const abschn of abschnitte) {
+      // Abschnitts-Header
+      doc.setFillColor(...C.blau);
+      doc.roundedRect(ML, y, CW, 7, 1.5, 1.5, 'F');
+      doc.setTextColor(...C.weiss);
+      doc.setFont('helvetica','bold');
+      doc.setFontSize(8);
+      doc.text(abschn.titel, ML + 4, y + 5);
+      y += 9;
+
+      for (const punkt of abschn.punkte) {
+        const istOk = ergebnisse[checkIdx] === true;
+        checkIdx++;
+
+        // Zeile
+        doc.setFillColor(...C.weiss);
+        doc.rect(ML, y, CW, 9, 'F');
+        doc.setDrawColor(...C.grauLinie);
+        doc.setLineWidth(0.3);
+        doc.rect(ML, y, CW, 9, 'S');
+
+        // Status-Feld
+        const statusBg = istOk ? C.gruen : C.rot;
+        const statusTxt = istOk ? '✓  OK' : '✗  Mangel';
+        doc.setFillColor(...statusBg);
+        doc.roundedRect(ML + CW - 28, y + 1.5, 26, 6, 1.5, 1.5, 'F');
+        doc.setTextColor(...C.weiss);
+        doc.setFont('helvetica','bold');
+        doc.setFontSize(7.5);
+        doc.text(statusTxt, ML + CW - 15, y + 5.8, { align:'center' });
+
+        // Punkt-Text
+        doc.setTextColor(...C.grauText);
+        doc.setFont('helvetica','normal');
+        doc.setFontSize(7.8);
+        doc.text(punkt, ML + 4, y + 6, { maxWidth: CW - 36 });
+
+        y += 9.5;
+      }
+      y += 3; // Abstand nach Abschnitt
+    }
+
+    // ── GESAMT-ERGEBNIS ───────────────────────────────────────────────────────
+    y += 2;
+    const ergebnisColor = allOk ? C.gruen : C.rot;
+    const ergebnisText  = allOk
+      ? 'ERGEBNIS: VERWENDUNGSFÄHIG — Alle Prüfpunkte bestanden'
+      : `ERGEBNIS: MÄNGEL FESTGESTELLT — ${anzahlGesamt - anzahlOk} von ${anzahlGesamt} Punkten nicht bestanden`;
+
+    doc.setFillColor(...ergebnisColor);
+    doc.roundedRect(ML, y, CW, 10, 2, 2, 'F');
+    doc.setTextColor(...C.weiss);
+    doc.setFont('helvetica','bold');
+    doc.setFontSize(9);
+    doc.text(ergebnisText, W/2, y + 7, { align:'center' });
+    y += 16;
+
+    // ── UNTERSCHRIFT ─────────────────────────────────────────────────────────
+    const sigHalfW = (CW - 6) / 2;
+    const sigBoxH  = 24;
+    doc.setFillColor(...C.weiss);
+    doc.roundedRect(ML, y, sigHalfW, sigBoxH, 2, 2, 'F');
+    doc.setDrawColor(...C.grauLinie);
+    doc.roundedRect(ML, y, sigHalfW, sigBoxH, 2, 2, 'S');
+
+    doc.setFillColor(...C.weiss);
+    doc.roundedRect(ML + sigHalfW + 6, y, sigHalfW, sigBoxH, 2, 2, 'F');
+    doc.roundedRect(ML + sigHalfW + 6, y, sigHalfW, sigBoxH, 2, 2, 'S');
+
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...C.grauText);
+    doc.text('Unterschrift Prüfer/in (Befähigte Person)', ML + 4, y + sigBoxH - 4);
+    doc.text('Unterschrift Verantwortliche/r', ML + sigHalfW + 10, y + sigBoxH - 4);
+
+    // Unterschrift BP einfügen falls vorhanden
+    try {
+      doc.addImage(BP_SCHULUNGSLEITER_SIG, 'PNG', ML + 4, y + 4, 60, 14);
+    } catch(e) {}
+
+    y += sigBoxH + 8;
+
+    // ── FOOTER ───────────────────────────────────────────────────────────────
+    doc.setFillColor(...C.navy);
+    doc.rect(0, H - 12, W, 12, 'F');
+    doc.setFont('helvetica','normal'); doc.setFontSize(6.5); doc.setTextColor(...C.weiss);
+    doc.text(`CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · Tel. 05102-9319730`, W/2, H - 7.5, { align:'center' });
+    doc.text(`Protokoll-Nr.: ${protokollNr} · Erstellt: ${datumDE} · Norm: DGUV 208-016`, W/2, H - 3.5, { align:'center' });
+
+    // ── SPEICHERN ─────────────────────────────────────────────────────────────
+    const fname = `Pruefprotokoll_Leiter_${leiterNr !== '–' ? leiterNr.replace(/[^a-zA-Z0-9]/g,'_') : 'unbekannt'}_${jetzt.getFullYear()}${String(jetzt.getMonth()+1).padStart(2,'0')}${String(jetzt.getDate()).padStart(2,'0')}.pdf`;
+    window.open(doc.output('bloburl'), '_blank');
+    showToast('✅ Prüfprotokoll erstellt!', '#14532d');
+  } catch(e) {
+    console.error('leiternPruefprotokollPDF Fehler:', e);
+    showToast('⚠️ Protokoll-PDF konnte nicht erstellt werden: ' + e.message, '#991b1b');
   }
 }
