@@ -15172,7 +15172,17 @@ function bpKapitelOeffnen(kapitelId) {
     document.getElementById('bp-modal-modul').textContent = `Modul ${k.modul} — BetrSichV / DGUV 208-016`;
     document.getElementById('bp-modal-body').innerHTML = k.inhalt;
     const btnWeiter = document.getElementById('bp-modal-weiter');
-    if (btnWeiter) btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
+    if (btnWeiter) {
+      btnWeiter.onclick = () => bpKapitelAbschliessen(kapitelId);
+      // Button-Text anpassen: zeige nächstes Kapitel oder Test
+      const idx = BP_KAPITEL.findIndex(x => x.id === kapitelId);
+      if (idx >= 0 && idx < BP_KAPITEL.length - 1) {
+        const next = BP_KAPITEL[idx + 1];
+        btnWeiter.textContent = `✅ Weiter → ${next.nr}. ${next.titel}`;
+      } else {
+        btnWeiter.textContent = '🎯 Alle Module gelesen — Zum Abschlusstest!';
+      }
+    }
     // Im Preview-Modus über dem Preview-Modal anzeigen (z-index erhöhen)
     modal.style.zIndex = _bpPreviewMode ? '10010' : '10001';
     modal.style.display = 'flex';
@@ -15204,6 +15214,24 @@ function bpKapitelAbschliessen(kapitelId) {
       abgehakt:   true,
       abgehakt_am: new Date().toISOString()
     }).catch(() => {});
+  }
+
+  // ── Nächstes Kapitel automatisch öffnen ──────────────────────────────────
+  const idx = BP_KAPITEL.findIndex(k => k.id === kapitelId);
+  if (idx >= 0 && idx < BP_KAPITEL.length - 1) {
+    // Kleines Delay damit der Fortschritt-Update sichtbar wird
+    setTimeout(() => {
+      bpKapitelOeffnen(BP_KAPITEL[idx + 1].id);
+    }, 320);
+  } else if (idx === BP_KAPITEL.length - 1) {
+    // Letztes Kapitel abgeschlossen → direkt Quiz starten
+    const alleGelesen = BP_KAPITEL.every(k => bpFortschritt[k.id]);
+    if (alleGelesen && !_bpPreviewMode) {
+      setTimeout(() => {
+        showToast('🎯 Alle Module gelesen — Abschlusstest startet!', '#1a3a5c');
+        setTimeout(() => bpQuizStarten(), 800);
+      }, 320);
+    }
   }
 }
 
