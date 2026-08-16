@@ -14468,10 +14468,161 @@ const BP_KAPITEL = [
       </div>
     </div>
 
-    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px 14px">
+    <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:10px;padding:12px 14px;margin-bottom:14px">
       <div style="font-weight:700;font-size:.87rem;color:#14532d">✅ Sofort ins Leiterkontrollbuch!</div>
       <div style="font-size:.8rem;color:#166534;margin-top:4px">Jede Prüfung — auch wenn <strong>keine Mängel</strong> festgestellt wurden — muss sofort schriftlich erfasst werden. Nur was dokumentiert ist, zählt rechtlich. Nicht dokumentierte Prüfungen gelten als nicht durchgeführt.</div>
-    </div>`
+    </div>
+
+    <!-- ═══ INTERAKTIVES PRÜFFORMULAR (aus CSC Prüf-App) ═══ -->
+    <div style="background:linear-gradient(135deg,#7c3aed,#4f46e5);border-radius:10px;padding:14px 16px;margin-bottom:10px;color:#fff">
+      <div style="font-size:1.7rem;margin-bottom:4px">📋</div>
+      <div style="font-weight:700;font-size:1rem">Prüfformular — Leitern & Tritte</div>
+      <div style="font-size:.8rem;opacity:.9;margin-top:3px">Interaktive Checkliste gemäß DGUV Information 208-016 (BGR 191). Alle Punkte abhaken — direkt im Schulungsmodul üben!</div>
+    </div>
+
+    <div id="bp09-pruefform" style="margin-bottom:14px">
+
+      <!-- Leiter-Info -->
+      <div style="background:#f8fafc;border:1.5px solid #c7d2fe;border-radius:10px;padding:12px 14px;margin-bottom:10px">
+        <div style="font-weight:700;font-size:.85rem;color:#4f46e5;margin-bottom:8px">🏷️ Leiter-Identifikation</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div>
+            <label style="font-size:.75rem;color:#374151;font-weight:600;display:block;margin-bottom:3px">Leiter-Nr. / Inventar</label>
+            <input type="text" id="pf-leiter-nr" placeholder="z. B. L-003" style="width:100%;padding:7px 10px;border:1.5px solid #c7d2fe;border-radius:7px;font-size:.82rem;box-sizing:border-box;background:#fff">
+          </div>
+          <div>
+            <label style="font-size:.75rem;color:#374151;font-weight:600;display:block;margin-bottom:3px">Leiter-Typ</label>
+            <select id="pf-leiter-typ" style="width:100%;padding:7px 10px;border:1.5px solid #c7d2fe;border-radius:7px;font-size:.82rem;box-sizing:border-box;background:#fff">
+              <option value="">— Typ wählen —</option>
+              <option>Anlegeleiter</option>
+              <option>Stehleiter</option>
+              <option>Mehrzweckleiter</option>
+              <option>Schiebeleiter</option>
+              <option>Podestleiter</option>
+              <option>Tritt</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Abschnitt 1: Holme / Schenkel -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#1a3a5c;color:#fff;padding:9px 13px;font-weight:700;font-size:.83rem">🔩 1 — Holme / Schenkel</div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:7px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Holme/Schenkel frei von <strong>Rissen, Verformungen und Korrosion</strong></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Keine <strong>Kerben, Einschnitte</strong> oder sonstige Beschädigungen der Holme</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Abschnitt 2: Sprossen / Stufen -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#1a3a5c;color:#fff;padding:9px 13px;font-weight:700;font-size:.83rem">🪜 2 — Sprossen / Stufen</div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:7px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Alle Sprossen/Stufen <strong>vorhanden</strong>, keine fehlenden oder gebrochenen</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Sprossen/Stufen <strong>fest verankert</strong>, kein Wackeln oder Drehen</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Trittflächen frei von <strong>Verunreinigungen</strong> (Öl, Farbe, Fett, Eis)</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Abschnitt 3: Befestigungen & Verbindungen -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#1a3a5c;color:#fff;padding:9px 13px;font-weight:700;font-size:.83rem">🔗 3 — Befestigungen &amp; Verbindungen</div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:7px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Schrauben und Bolzen <strong>vollständig vorhanden</strong> und fest angezogen</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Gelenke zwischen Vorder- und Rückseite (Anlege-/Stehleiter) <strong>einwandfrei</strong></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151"><strong>Spreizesicherungen</strong> und Eckaussteifungen funktionsfähig</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Abschnitt 4: Sicherheitseinrichtungen -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:8px">
+        <div style="background:#1a3a5c;color:#fff;padding:9px 13px;font-weight:700;font-size:.83rem">🛡️ 4 — Sicherheitseinrichtungen</div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:7px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Leiterfüße vorhanden und <strong>nicht abgenutzt</strong> (rutschsicherer Stand)</span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Führungsbügel und Klappen (falls vorhanden) <strong>einwandfrei</strong></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Verriegelungsschnapper (Stehleiter) <strong>rasten sicher ein</strong></span>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" style="margin-top:2px;width:18px;height:18px;accent-color:#1a3a5c;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Sicherheitskennzeichnung (Inventar-Nr., Typenschild) <strong>lesbar vorhanden</strong></span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Abschnitt 5: Gesamtzustand -->
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:10px">
+        <div style="background:#1a3a5c;color:#fff;padding:9px 13px;font-weight:700;font-size:.83rem">✅ 5 — Gesamtzustand &amp; Ergebnis</div>
+        <div style="padding:10px 13px;display:flex;flex-direction:column;gap:7px">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer">
+            <input type="checkbox" class="bp09-check" id="bp09-check-gesamt" style="margin-top:2px;width:18px;height:18px;accent-color:#16a34a;flex-shrink:0">
+            <span style="font-size:.81rem;color:#374151">Leiter insgesamt <strong>verwendungsfähig</strong> — keine Mängel erkennbar</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Fortschrittsbalken + Reset -->
+      <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:11px 14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:.8rem;font-weight:600;color:#374151">Prüffortschritt</span>
+          <span id="bp09-count" style="font-size:.8rem;font-weight:700;color:#1a3a5c">0 / 13</span>
+        </div>
+        <div style="background:#e2e8f0;border-radius:999px;height:10px;overflow:hidden;margin-bottom:10px">
+          <div id="bp09-bar" style="background:linear-gradient(90deg,#1a3a5c,#4f46e5);height:100%;width:0%;border-radius:999px;transition:width .3s ease"></div>
+        </div>
+        <div id="bp09-ergebnis" style="display:none;background:#f0fdf4;border:2px solid #86efac;border-radius:8px;padding:10px 12px;text-align:center;margin-bottom:8px">
+          <div style="font-size:1.3rem">🎉</div>
+          <div style="font-weight:700;font-size:.85rem;color:#14532d">Alle Prüfpunkte abgehakt!</div>
+          <div style="font-size:.78rem;color:#166534;margin-top:3px">Leiter ist geprüft. Jetzt <strong>ins Leiterkontrollbuch</strong> eintragen!</div>
+        </div>
+        <button onclick="document.querySelectorAll('.bp09-check').forEach(c=>c.checked=false);document.getElementById('bp09-bar').style.width='0%';document.getElementById('bp09-count').textContent='0 / 13';document.getElementById('bp09-ergebnis').style.display='none';document.getElementById('pf-leiter-nr').value='';document.getElementById('pf-leiter-typ').value=''" style="width:100%;padding:9px;background:#1a3a5c;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:.83rem;cursor:pointer">🔄 Formular zurücksetzen</button>
+      </div>
+    </div>
+
+    <script>
+    (function() {
+      var checks = document.querySelectorAll('.bp09-check');
+      var total = checks.length;
+      function update() {
+        var done = document.querySelectorAll('.bp09-check:checked').length;
+        document.getElementById('bp09-bar').style.width = (done/total*100) + '%';
+        document.getElementById('bp09-count').textContent = done + ' / ' + total;
+        document.getElementById('bp09-ergebnis').style.display = (done === total) ? 'block' : 'none';
+      }
+      checks.forEach(function(c) { c.addEventListener('change', update); });
+    })();
+    </script>`
   },
 
   // ══════════════════════════════════════════
