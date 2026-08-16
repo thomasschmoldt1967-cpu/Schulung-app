@@ -13893,6 +13893,14 @@ const BP_KAPITEL = [
       </div>
     </div>
 
+    <!-- Offizielles DGUV-Bildtafel -->
+    <div style="text-align:center;margin:10px 0 16px">
+      <img src="img/dguv-208-016-piktogramme.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #d1d5db"
+           alt="DGUV 208-016 Piktogramme — Richtig und Falsch bei Leitern">
+      <div style="font-size:.7rem;color:#9ca3af;margin-top:4px">Abb. — Verwendungsregeln Leitern und Tritte · Quelle: DGUV Information 208-016</div>
+    </div>
+
     <!-- Grafik: Dreipunkt-Methode (eingebettetes SVG) -->
     <div style="text-align:center;margin:10px 0 16px;background:#f0fdf4;border-radius:10px;padding:14px">
       <svg viewBox="0 0 320 220" width="100%" style="max-width:300px" xmlns="http://www.w3.org/2000/svg">
