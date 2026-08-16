@@ -13520,6 +13520,12 @@ const BP_KAPITEL = [
     <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:11px 14px;margin:12px 0">
       <div style="font-weight:700;font-size:.88rem;color:#14532d">✅ Gut zu wissen</div>
       <div style="font-size:.82rem;color:#166534;margin-top:5px">Ein externer Prüfdienst ist <strong>nicht gesetzlich vorgeschrieben</strong>. Betriebe können eigene Mitarbeiter intern zur Befähigten Person qualifizieren — das spart Kosten und schafft fachkundiges Personal im Haus.</div>
+    </div>
+    <!-- Folie 7 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_07.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Prüfpflichten im Überblick: Arbeitgeber, Befähigte Person, Nutzer">
     </div>`
   },
 
@@ -13532,6 +13538,12 @@ const BP_KAPITEL = [
       <div style="font-size:2rem;margin-bottom:6px">📋</div>
       <div style="font-weight:700;font-size:1rem">Das Regelwerk auf einen Blick</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Diese Schulung folgt strikt den geltenden deutschen und europäischen Vorschriften für Leitern und Tritte als Arbeitsmittel.</div>
+    </div>
+    <!-- Folie 3 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_03.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Das Gesetz – Die Regel – Die Praxis: BetrSichV, TRBS 1203, DGUV 208-016">
     </div>
     <div style="display:flex;flex-direction:column;gap:9px;margin:10px 0">
       <div style="background:#eff6ff;border:1.5px solid #3b82f6;border-radius:10px;padding:11px 14px">
@@ -13574,7 +13586,12 @@ const BP_KAPITEL = [
       <div style="font-weight:700;font-size:1rem">Leiter ist nicht gleich Leiter</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Verschiedene Typen haben unterschiedliche Einsatzbereiche, Belastungsgrenzen und Prüfkriterien. Die richtige Auswahl ist bereits Teil der Gefährdungsbeurteilung.</div>
     </div>
-
+    <!-- Folie 4 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_04.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Leitertypen: Anlege-, Steh-, Mehrzweckleiter und Tritte im Überblick">
+    </div>
     <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin:12px 0 8px">🔷 Leitertypen im Überblick</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
       <div style="background:#f0f9ff;border:1.5px solid #0ea5e9;border-radius:10px;padding:11px 14px">
@@ -13795,7 +13812,13 @@ const BP_KAPITEL = [
         <span style="background:#1d4ed8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0">3</span>
         <span>Befähigte Person prüft und entscheidet über das weitere Vorgehen</span>
       </div>
-    </div>`
+    </div>
+
+    <!-- Folie 8 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_08.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Die Befähigte Person: Qualifikation, Aufgaben und Verantwortung">`
   },
 
   // ══════════════════════════════════════════
@@ -13811,7 +13834,12 @@ const BP_KAPITEL = [
       <div style="font-weight:700;font-size:1rem">Leitern — einer der häufigsten Unfallauslöser</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Laut Statistik der Deutschen Gesetzlichen Unfallversicherung ereignen sich jährlich mehrere Tausend meldepflichtige Unfälle an Leitern. Viele davon wären vermeidbar.</div>
     </div>
-
+    <!-- Folie 2 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_02.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Leitern: Unfallstatistik und häufigste Ursachen">
+    </div>
     <div style="font-weight:700;font-size:.88rem;color:#991b1b;margin-bottom:8px">🚨 Die 5 häufigsten Unfallursachen</div>
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
       <div style="background:#fef2f2;border-left:4px solid #dc2626;border-radius:8px;padding:10px 13px">
@@ -14248,7 +14276,20 @@ const BP_KAPITEL = [
     <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
       <div style="font-weight:700;font-size:.85rem;color:#14532d">💡 Praxis-Tipp: Reparatur nie selbst durchführen</div>
       <div style="font-size:.8rem;color:#166534;margin-top:4px">Auch wenn der Schaden klein wirkt — eigenmächtige Reparaturen (Klebeband, Draht, improvisierte Fußkappen) sind nicht zulässig und können die Haftung auf den Mitarbeiter verlagern.</div>
-    </div>`
+    </div>
+
+    <!-- Folie 11 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_11.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Instandhaltung, Reparatur und Aussonderung von Leitern">
+    </div>
+
+    <!-- Folie 13 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_13.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Mängel-Protokoll und Aussonderungs-Checkliste">`
   },
 
   // ══════════════════════════════════════════
@@ -14339,7 +14380,13 @@ const BP_KAPITEL = [
         </div>
       </div>
     </div>
-    <div style="font-size:.68rem;color:#9ca3af;text-align:center">Prüfaufkleber gemäß DGUV Information 208-016 · Quelle: DGUV</div>`
+    <div style="font-size:.68rem;color:#9ca3af;text-align:center">Prüfaufkleber gemäß DGUV Information 208-016 · Quelle: DGUV</div>
+    <!-- Folie 9 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_09.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Prüffristen: Erstprüfung, wiederkehrende Prüfung, außerordentliche Prüfung">
+    </div>`
   },
 
   // ══════════════════════════════════════════
@@ -14355,7 +14402,12 @@ const BP_KAPITEL = [
       <div style="font-weight:700;font-size:1rem">Die Prüfung Schritt für Schritt</div>
       <div style="font-size:.82rem;opacity:.9;margin-top:4px">Eine systematische Prüfung nach DGUV 208-016 schützt alle Mitarbeiter und sichert die rechtliche Position des Betriebs. Jeden Schritt sofort dokumentieren!</div>
     </div>
-
+    <!-- Folie 10 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_10.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Prüfablauf: Die systematische Leiterprüfung Schritt für Schritt">
+    </div>
     <div style="font-weight:700;font-size:.88rem;color:#1a3a5c;margin-bottom:8px">📋 Prüfablauf — 8 Schritte</div>
     <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
       <div style="display:flex;gap:10px;align-items:flex-start;background:#f8fafc;border-radius:8px;padding:9px 12px;border:1px solid #e2e8f0">
@@ -14512,7 +14564,13 @@ const BP_KAPITEL = [
     <div style="background:#f0fdf4;border-left:4px solid #16a34a;border-radius:8px;padding:10px 13px;margin-top:8px">
       <div style="font-weight:700;font-size:.85rem;color:#14532d">🚀 Bereit für das Abschlussquiz?</div>
       <div style="font-size:.8rem;color:#166534;margin-top:4px">Sie haben alle 10 Module abgeschlossen. Das Quiz besteht aus 20 Fragen — zum Bestehen sind mindestens <strong>16 richtige Antworten (80 %)</strong> erforderlich. Nach erfolgreichem Abschluss erhalten Sie Ihr persönliches Schulungszertifikat.</div>
-    </div>`
+    </div>
+
+    <!-- Folie 14 -->
+    <div style="text-align:center;margin:10px 0 14px">
+      <img src="img/ladder-mgmt/folie_14.jpg"
+           style="max-width:100%;border-radius:10px;border:1.5px solid #cbd5e1"
+           alt="Sicherheits-Ökosystem: Zusammenfassung aller Maßnahmen">`
   }
 
 ];
