@@ -93,7 +93,7 @@
       <img src="csc-logo.png" alt="SIBEDA" style="height:52px;object-fit:contain">
       <div class="user-info"><div id="admin-username"></div><div style="font-size:.68rem;opacity:.7">Administrator</div></div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
-      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
+      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" title="Passwort ändern" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4);padding:5px 8px">🔑</button>
       <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
@@ -459,7 +459,7 @@
         <div id="sub-tenantname" style="font-size:.68rem;opacity:.7"></div>
       </div>
       <button class="dark-mode-btn" onclick="toggleDarkMode()" title="Dark Mode">🌙</button>
-      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4)">🔑 PW</button>
+      <button class="btn btn-outline btn-sm" onclick="zeigePwAendern()" title="Passwort ändern" style="font-size:.72rem;color:#fff;border-color:rgba(255,255,255,.4);padding:5px 8px">🔑</button>
       <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
@@ -524,32 +524,12 @@
           onclick="lernpfadToggle()">
           <span style="font-size:1.5rem;pointer-events:none">&#128218;</span>
           <div style="flex:1;pointer-events:none">
-            <div style="font-weight:700;font-size:.9rem">Lernpfad — 29 Kapitel</div>
+            <div style="font-weight:700;font-size:.9rem">Lernpfad — 32 Kapitel</div>
             <div style="font-size:.72rem;opacity:.8;margin-top:2px" id="btn-lernpfad-sub">Tippen zum Anzeigen</div>
           </div>
           <span id="btn-lernpfad-pfeil" style="font-size:1.1rem;transition:transform .2s;pointer-events:none">▼</span>
         </button>
         <div id="lernpfad-container" style="display:none;margin-top:8px"></div>
-      </div>
-
-      <!-- Kalender -->
-      <div id="sub-kalender-buttons">
-        <button onclick="subKalenderOeffnen()"
-          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none">
-          <span style="font-size:1.8rem">&#128197;</span>
-          <div style="font-weight:700;font-size:.85rem">Kalender</div>
-          <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Schulungsfristen</div>
-        </button>
-      </div>
-
-      <!-- App-Anleitung -->
-      <div>
-        <button onclick="hilfeOeffnen('verantwortlicher')"
-          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none">
-          <span style="font-size:1.8rem">&#128214;</span>
-          <div style="font-weight:700;font-size:.85rem">App-Anleitung</div>
-          <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Schritt-für-Schritt</div>
-        </button>
       </div>
 
       <!-- Mitarbeiter anlegen -->
@@ -566,6 +546,26 @@
           <span style="font-size:1.8rem">🏗</span>
           <div style="font-weight:700;font-size:.85rem">Bereiche & Bereichsleiter</div>
           <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Bereiche verwalten</div>
+        </button>
+      </div>
+
+      <!-- Kalender -->
+      <div id="sub-kalender-buttons">
+        <button onclick="subKalenderOeffnen()"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none">
+          <span style="font-size:1.8rem">&#128197;</span>
+          <div style="font-weight:700;font-size:.85rem">Kalender</div>
+          <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Schulungsfristen</div>
+        </button>
+      </div>
+
+      <!-- App-Anleitung -->
+      <div>
+        <button onclick="hilfeOeffnen(window._currentRole || 'verantwortlicher')"
+          style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none">
+          <span style="font-size:1.8rem">&#128214;</span>
+          <div style="font-weight:700;font-size:.85rem">App-Anleitung</div>
+          <div style="font-size:.68rem;color:#6b7280;margin-top:1px">Schritt-für-Schritt</div>
         </button>
       </div>
 
@@ -620,7 +620,7 @@
       </div>
       <!-- KI-Hinweis PSAgA -->
       <div style="padding:4px 14px;background:rgba(0,0,0,.7);text-align:center;flex-shrink:0">
-        <span style="font-size:.62rem;color:rgba(255,255,255,.35)">🤖 KI-unterstützt · Geprüft durch CSC GmbH · Grundlage: DGUV R 112-198 · PSA-BV · ArbSchG</span>
+        <span style="font-size:.62rem;color:rgba(255,255,255,.35)">✅ Erstellt & freigegeben durch CSC GmbH · Grundlage: DGUV R 112-198 · PSA-BV · ArbSchG</span>
       </div>
     </div>
 
@@ -630,7 +630,7 @@
         <h3 style="font-size:1rem;font-weight:700;color:#1e3a5f;margin:0">👤 Meine Mitarbeiter</h3>
         <div style="display:flex;align-items:center;gap:8px">
           <span id="sub-mitarbeiter-count" style="font-size:.8rem;color:#6b7280"></span>
-          <span style="font-size:.68rem;color:#9ca3af" title="Ampellegende">🟢 abgeschl. &nbsp;🟡 bald fällig &nbsp;🔴 überfällig</span>
+          <span style="font-size:.68rem;color:#6b7280;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:5px;padding:2px 7px" title="Ampellegende">🟢 Abgeschlossen &nbsp;🟡 Bald fällig &nbsp;🔴 Überfällig &nbsp;⚪ Ausstehend</span>
           <button type="button" onclick="bereichsEinweisungOeffnen()"
             style="font-size:.78rem;padding:5px 12px;border-radius:7px;border:1px solid #1a3a5c;background:#1a3a5c;color:#fff;cursor:pointer;white-space:nowrap;font-weight:600">
             📋 Schulung zuweisen

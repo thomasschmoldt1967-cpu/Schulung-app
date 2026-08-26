@@ -2758,7 +2758,7 @@ function adminKernkapitelToggle() {
   if (offen) {
     container.style.display = 'none';
     icon.style.transform = '';
-    btn.querySelector('span:first-child').textContent = '📚 29 Lernpfad-Kernkapitel anzeigen';
+    btn.querySelector('span:first-child').textContent = '📚 32 Lernpfad-Kapitel anzeigen';
   } else {
     container.style.display = '';
     icon.style.transform = 'rotate(180deg)';
@@ -4121,7 +4121,7 @@ function azVorlagenListeRendern(suche) {
     : SCHULUNG_VORLAGEN;
 
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
-  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
+  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || '32 kapitel'.includes(s) || 'lernpfad gebäudereinigung'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
     <div onclick="azVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:11px 14px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .12s;background:#f5f3ff"
@@ -5016,6 +5016,8 @@ function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
   document.getElementById('sub-tenantname').textContent = tenant ? tenant.name : '';
+  // Rolle global merken für rollenbasierte Button-Aktionen (z.B. App-Anleitung)
+  window._currentRole = currentUser.role;
   // Titel je nach Rolle
   const titelEl = document.getElementById('sub-page-title');
   if (titelEl) {
@@ -7760,7 +7762,7 @@ function bereichsVorlagenSuche(suche) {
   let vorlagen = SCHULUNG_VORLAGEN;
 
   // Lernpfad-Eintrag immer oben (außer wenn Suchbegriff nicht passt)
-  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s);
+  const lernpfadMatch = !s || 'lernpfad'.includes(s) || '29 kapitel'.includes(s) || '32 kapitel'.includes(s);
   const lernpfadHtml = lernpfadMatch ? `
     <div onclick="bereichsVorlageWaehlen('${LERNPFAD_VORLAGE_ID}','📚 Lernpfad (32 Kapitel)')"
       style="padding:10px 12px;cursor:pointer;border-bottom:1px solid #f0f2f5;transition:background .1s;background:#f5f3ff"
@@ -8868,7 +8870,7 @@ function renderLernpfad() {
           <div style="background:#4ade80;height:8px;border-radius:999px;width:${pct}%;transition:width .3s"></div>
         </div>
         <div style="font-size:.72rem;margin-top:5px;opacity:.85">${pct}% abgeschlossen${alle22 ? ' — 🏆 Alle Kapitel erledigt!' : ''}</div>
-        <div style="font-size:.62rem;margin-top:4px;opacity:.55">🤖 KI-unterstützt erstellt · Geprüft durch CSC GmbH · Grundlage: § 12 ArbSchG · DGUV V1 · GefStoffV · DSGVO</div>
+        <div style="font-size:.62rem;margin-top:4px;opacity:.55">✅ Erstellt & freigegeben durch CSC GmbH · Grundlage: § 12 ArbSchG · DGUV V1 · GefStoffV · DSGVO</div>
       </div>
       <div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #e5e7eb;display:flex;gap:6px;flex-wrap:wrap;align-items:center">
         <span style="font-size:.72rem;color:#6b7280">🌐 Sprache:</span>
@@ -9792,7 +9794,7 @@ function hilfeInhaltAdmin() {
         <li>Abschnitte & Felder (Freitext, Checkbox, Unterschrift) hinzufügen</li>
         <li>Unterschriftsfelder konfigurieren (z.B. Mitarbeiter + Vorgesetzter)</li>
         <li><strong>Bestehende Vorlagen:</strong> Liste aufklappen → Vorlage bearbeiten oder löschen</li>
-        <li><strong>📚 29 Lernpfad-Kernkapitel:</strong> Liste der SIBEDA-Kernkapitel anzeigen</li>
+        <li><strong>📚 32 Lernpfad-Kapitel:</strong> Liste der SIBEDA-Kernkapitel anzeigen</li>
       </ul>
 
       <h3 style="color:#1a3a5c;font-size:.95rem;margin:14px 0 6px">📅 Tab: Zuweisungen</h3>
@@ -12607,7 +12609,7 @@ function hubKapitelOeffnen(kapitelId) {
     document.getElementById('hub-modal-body').innerHTML =
       `<div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 12px;margin:0 0 14px;display:flex;align-items:flex-start;gap:9px">
         <span style="font-size:1rem;flex-shrink:0">🤖</span>
-        <span style="font-size:.7rem;color:#64748b;line-height:1.5"><strong style="color:#475569">KI-unterstützt erstellt</strong> · Redaktionell geprüft durch CSC GmbH · Grundlage: DGUV Grundsatz 308-008 · BetrSichV · DGUV R 100-500</span>
+        <span style="font-size:.7rem;color:#64748b;line-height:1.5"><strong style="color:#475569">✅ Erstellt & freigegeben durch CSC GmbH</strong> · Grundlage: DGUV Grundsatz 308-008 · BetrSichV · DGUV R 100-500</span>
       </div>` + k.inhalt;
     const btnWeiter = document.getElementById('hub-modal-weiter');
     if (btnWeiter) btnWeiter.onclick = () => hubKapitelAbschliessen(kapitelId);
