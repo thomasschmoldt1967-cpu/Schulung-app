@@ -680,11 +680,25 @@ function pruefeCookieConsent() {
 // ══════════════════════════════════════════════════════════════
 function resetInactivityTimer() {
   clearTimeout(inactivityTimer);
+  clearTimeout(window._inactivityWarnTimer);
   if (!currentUser) return;
+  const totalMs = INACTIVITY_MINUTES * 60 * 1000;
+  const warnMs  = totalMs - 2 * 60 * 1000; // 2 Minuten vor Ablauf warnen
+
+  // Vorwarnung nach (Timeout - 2 Min)
+  if (warnMs > 0) {
+    window._inactivityWarnTimer = setTimeout(() => {
+      if (!currentUser) return;
+      showToast('⏰ Inaktivität: Automatische Abmeldung in 2 Minuten!', '#f59e0b');
+    }, warnMs);
+  }
+
+  // Eigentlicher Logout
   inactivityTimer = setTimeout(() => {
     showToast('⏰ Sie wurden wegen Inaktivität abgemeldet.', '#6b7280');
     setTimeout(doLogout, 2000);
-  }, INACTIVITY_MINUTES * 60 * 1000);
+  }, totalMs);
+
   // Ablaufzeit in Session speichern
   try {
     const s = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null');
@@ -697,6 +711,25 @@ function startInactivityWatcher() {
   );
   resetInactivityTimer();
 }
+
+// ── OFFLINE-ERKENNUNG ────────────────────────────────────────
+(function initOfflineWatcher() {
+  function zeigeOfflineBanner() {
+    if (document.getElementById('_offline_banner')) return;
+    const banner = document.createElement('div');
+    banner.id = '_offline_banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;text-align:center;padding:8px 16px;font-size:.88rem;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,.3)';
+    banner.textContent = '⚠️ Keine Internetverbindung – App arbeitet offline, Daten werden nicht synchronisiert.';
+    document.body.prepend(banner);
+  }
+  function entferneOfflineBanner() {
+    const b = document.getElementById('_offline_banner');
+    if (b) { b.remove(); showToast('✅ Verbindung wiederhergestellt', '#16a34a'); }
+  }
+  window.addEventListener('offline', zeigeOfflineBanner);
+  window.addEventListener('online',  entferneOfflineBanner);
+  if (!navigator.onLine) zeigeOfflineBanner();
+})();
 
 // ══════════════════════════════════════════════════════════════
 //  DARK MODE
@@ -714,8 +747,22 @@ function updateDarkModeBtn() {
   });
 }
 function initDarkMode() {
-  if (localStorage.getItem('schulung_darkmode') === '1') {
-    document.body.classList.add('dark-mode');
+  const gespeichert = localStorage.getItem('schulung_darkmode');
+  if (gespeichert !== null) {
+    // Explizit vom Nutzer gesetzt → immer respektieren
+    if (gespeichert === '1') document.body.classList.add('dark-mode');
+  } else {
+    // Kein gespeicherter Wert → System-Präferenz folgen
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.body.classList.add('dark-mode');
+    }
+    // System-Präferenz live verfolgen (solange kein manueller Override)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (localStorage.getItem('schulung_darkmode') === null) {
+        document.body.classList.toggle('dark-mode', e.matches);
+        updateDarkModeBtn();
+      }
+    });
   }
   updateDarkModeBtn();
 }
@@ -1353,27 +1400,48 @@ async function renderBereichsleiterDashboard() {
     else g++;
   });
   document.getElementById('bl-stats').innerHTML = `
-    <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">OK</div></div>
-    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
-    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>`;
+    <div class="stat-tile gruen" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="blStatFilter('gruen')" title="Nur OK-Mitarbeiter anzeigen"><div class="zahl">${g}</div><div class="label">OK</div></div>
+    <div class="stat-tile gelb" style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="blStatFilter('gelb')" title="Bald fällige anzeigen"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
+    <div class="stat-tile rot"  style="cursor:pointer;transition:transform .15s,box-shadow .15s" onclick="blStatFilter('rot')"  title="Überfällige anzeigen"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>`;
 
   // Mitarbeiterliste rendern
   blRenderMitarbeiterListe();
   showScreen('screen-bereichsleiter');
 }
 
+function blStatFilter(ampelFilter) {
+  // Statistikkachel-Klick: Mitarbeiterliste nach Status filtern
+  window._blAmpelFilter = ampelFilter === window._blAmpelFilter ? '' : ampelFilter; // Toggle
+  blRenderMitarbeiterListe();
+}
+
+// Ampel-Status eines Mitarbeiters für Bereichsleiter ermitteln
+function blGetMaAmpel(ma) {
+  const zuws = zuweisungen.filter(z => z.zugewiesenAn === ma.id);
+  const stati = zuws.map(z => berechneStatus(z));
+  if (!stati.length) return 'rot';
+  if (stati.some(s => s === 'rot')) return 'rot';
+  if (stati.some(s => s === 'gelb')) return 'gelb';
+  return 'gruen';
+}
+
 function blRenderMitarbeiterListe(filter='') {
   const listEl = document.getElementById('bl-mitarbeiter-list');
   if (!listEl) return;
-  const meineMitarbeiter = APP_USERS.filter(u =>
+  let meineMitarbeiter = APP_USERS.filter(u =>
     u.role === 'mitarbeiter' &&
     u.bereich_id === currentUser.bereichId &&
     !u.archiviert &&
     (!filter || u.name.toLowerCase().includes(filter.toLowerCase()))
   );
+  // Ampel-Filter aus Statistikkachel anwenden
+  const ampelFilter = window._blAmpelFilter || '';
+  if (ampelFilter) {
+    meineMitarbeiter = meineMitarbeiter.filter(ma => blGetMaAmpel(ma) === ampelFilter);
+  }
   if (!meineMitarbeiter.length) {
-    listEl.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:24px;font-size:.85rem">Noch keine Mitarbeiter in diesem Bereich.<br><br>
-      <button class="btn-primary" onclick="blMitarbeiterAnlegenModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Mitarbeiter anlegen</button></div>`;
+    const filterLabel = ampelFilter === 'gruen' ? 'OK-' : ampelFilter === 'gelb' ? 'bald fällige ' : ampelFilter === 'rot' ? 'überfällige ' : '';
+    listEl.innerHTML = `<div style="text-align:center;color:#9ca3af;padding:24px;font-size:.85rem">${ampelFilter ? `Keine ${filterLabel}Mitarbeiter gefunden.<br><br><button onclick="window._blAmpelFilter='';blRenderMitarbeiterListe()" style="font-size:.82rem;padding:6px 14px;border:1px solid #d1d5db;border-radius:7px;cursor:pointer">✖ Filter aufheben</button>` : 'Noch keine Mitarbeiter in diesem Bereich.<br><br><button class="btn-primary" onclick="blMitarbeiterAnlegenModal()" style="font-size:.85rem;padding:10px 20px">➕ Ersten Mitarbeiter anlegen</button>'}</div>`;
     return;
   }
   // 🔴 zuerst sortieren
@@ -4552,6 +4620,25 @@ async function renderMitarbeiterListe() {
               ${gesamtZuws > 0 && !istArchiviert ? `<div style="font-size:.68rem;color:#6b7280" title="Abgeschlossen · Bald fällig · Überfällig">
                 🟢 ${abgeschl} &nbsp;🟡 ${gestartet} &nbsp;🔴 ${offen}
               </div>` : ''}
+              ${(() => {
+                // Nächste offene Frist direkt in der Kopfzeile anzeigen
+                if (istArchiviert || !istAktiv) return '';
+                const naechsteFrist = maZuws
+                  .filter(z => {
+                    const f = formulare[z.id] || {};
+                    return !f.abgeschlossen && z.frist;
+                  })
+                  .map(z => new Date(z.frist))
+                  .sort((a, b) => a - b)[0];
+                if (!naechsteFrist) return '';
+                const tageRest = Math.ceil((naechsteFrist - new Date()) / 86400000);
+                const farbe = tageRest < 0 ? '#dc2626' : tageRest <= 14 ? '#d97706' : '#6b7280';
+                const label = tageRest < 0
+                  ? `⚠️ Überfällig seit ${Math.abs(tageRest)} Tagen`
+                  : tageRest === 0 ? '⚠️ Fällig: heute'
+                  : `📅 Fällig: ${naechsteFrist.toLocaleDateString('de-DE')}`;
+                return `<div style="font-size:.68rem;color:${farbe};font-weight:600">${label}</div>`;
+              })()}
               <div style="font-size:.7rem;color:#9ca3af" id="ma-pfeil-${m.id}">▼</div>
             </div>
           </div>
@@ -5032,11 +5119,21 @@ function renderSubDashboard() {
   const r=stati.filter(s=>s==='rot').length;
   const gr=stati.filter(s=>s==='grau').length;
   const isMitarbeiterStats = currentUser.role === 'mitarbeiter';
-  document.getElementById('sub-stats').innerHTML = `
-    <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
-    <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
-    <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>
-    ${isMitarbeiterStats ? '' : `<div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`}`;
+  if (meineZuws.length === 0) {
+    // Keine Zuweisungen → informativen Hinweis statt leere Nullen
+    document.getElementById('sub-stats').innerHTML = `
+      <div style="width:100%;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px 16px;font-size:.85rem;color:#0369a1;text-align:center">
+        <div style="font-size:1.4rem;margin-bottom:4px">📭</div>
+        <strong>Noch keine Schulungen zugewiesen.</strong><br>
+        <span style="font-size:.78rem;color:#0284c7">${currentUser.role === 'mitarbeiter' ? 'Ihr Vorgesetzter hat noch keine Schulungen für Sie hinterlegt.' : 'Schulungen über den Button „Neue Schulung anlegen" hinzufügen.'}</span>
+      </div>`;
+  } else {
+    document.getElementById('sub-stats').innerHTML = `
+      <div class="stat-tile gruen"><div class="zahl">${g}</div><div class="label">Abgeschlossen</div></div>
+      <div class="stat-tile gelb"><div class="zahl">${y}</div><div class="label">Bald fällig</div></div>
+      <div class="stat-tile rot"><div class="zahl">${r}</div><div class="label">Überfällig</div></div>
+      ${isMitarbeiterStats ? '' : `<div class="stat-tile grau"><div class="zahl">${gr}</div><div class="label">Ausstehend</div></div>`}`;
+  }
   // Buttons für Mitarbeiter- und Verantwortlicher-Rolle ausblenden
   const isMitarbeiter = currentUser.role === 'mitarbeiter';
   const isVerantwortlicher = currentUser.role === 'verantwortlicher';
@@ -8169,16 +8266,20 @@ async function maAbschliessen(zuwId, userId, userName) {
 
 async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
   if (!userEmail) { showToast('⚠️ Keine E-Mail-Adresse für diesen Nutzer', '#f59e0b'); return; }
-  const z = zuweisungen.find(zw => zw.id === zuwId);
-  const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z?.vorlagenId);
-  const t = APP_TENANTS.find(tn => tn.id === z?.tenantId);
-  const fristAnzeige = z?.frist ? new Date(z.frist).toLocaleDateString('de-DE') : '–';
-  const tage = z?.frist ? Math.ceil((new Date(z.frist) - new Date()) / 86400000) : null;
-  const titel = v?.titel || zuwId;
-  const tenantName = t?.name || z?.tenantId || '';
+  // Bestätigung vor E-Mail-Versand
+  showConfirmModal(
+    `📧 Erinnerungs-E-Mail an <strong>${escHtml(userName)}</strong> (${escHtml(userEmail)}) wirklich senden?`,
+    async () => {
+      const z = zuweisungen.find(zw => zw.id === zuwId);
+      const v = SCHULUNG_VORLAGEN.find(vl => vl.id === z?.vorlagenId);
+      const t = APP_TENANTS.find(tn => tn.id === z?.tenantId);
+      const fristAnzeige = z?.frist ? new Date(z.frist).toLocaleDateString('de-DE') : '–';
+      const tage = z?.frist ? Math.ceil((new Date(z.frist) - new Date()) / 86400000) : null;
+      const titel = v?.titel || zuwId;
+      const tenantName = t?.name || z?.tenantId || '';
 
-  const betreff = `📚 Erinnerung: ${titel} – ${tenantName}`;
-  const inhalt = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      const betreff = `📚 Erinnerung: ${titel} – ${tenantName}`;
+      const inhalt = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">
     <div style="background:#1a3a5c;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0">
       <h2 style="margin:0">📚 Schulungs-Erinnerung</h2>
     </div>
@@ -8196,17 +8297,20 @@ async function maErinnerungSenden(zuwId, userId, userName, userEmail) {
     </div>
   </div>`;
 
-  try {
-    const ok = await emailBenachrichtigungSenden({ an: userEmail, betreff, inhalt });
-    if (ok) {
-      await sbAudit('ERINNERUNG_GESENDET', `Erinnerung an ${userEmail} für Schulung ${titel}`);
-      showToast(`📧 Erinnerung an ${userName} gesendet`, '#1a3a5c');
-    } else {
-      showToast('⚠️ E-Mail-Versand nicht verfügbar', '#f59e0b');
-    }
-  } catch(e) {
-    showToast('❌ Fehler: ' + e.message, '#dc2626');
-  }
+      try {
+        const ok = await emailBenachrichtigungSenden({ an: userEmail, betreff, inhalt });
+        if (ok) {
+          await sbAudit('ERINNERUNG_GESENDET', `Erinnerung an ${userEmail} für Schulung ${titel}`);
+          showToast(`📧 Erinnerung an ${userName} gesendet`, '#1a3a5c');
+        } else {
+          showToast('⚠️ E-Mail-Versand nicht verfügbar', '#f59e0b');
+        }
+      } catch(e) {
+        showToast('❌ Fehler: ' + e.message, '#dc2626');
+      }
+    },
+    { jaLabel: '📧 Jetzt senden', jaColor: '#1a3a5c', neinLabel: 'Abbrechen' }
+  );
 }
 
 // ══════════════════════════════════════════════════════════════
