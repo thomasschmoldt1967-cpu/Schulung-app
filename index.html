@@ -356,7 +356,7 @@
     <div id="tab-externe-psaga" class="tab-content" style="display:none">
       <div class="card" style="margin-bottom:16px">
         <div class="card-title">🦺 Externe PSAgA-Präsenzschulung anlegen</div>
-        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Teilnehmer benötigen keinen App-Zugang. Nach dem Speichern können Bescheinigungen erzeugt und an den Firmenkontakt versendet werden.</p>
+        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">1. Firmendaten und Schulung anlegen · 2. Teilnehmerliste öffnen · 3. Schulung durchführen und Zertifikatsthemen auswählen.</p>
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
           <div class="form-group" style="margin:0"><label>Firmenname *</label><input id="eps-firma" type="text" placeholder="Musterfirma GmbH"></div>
           <div class="form-group" style="margin:0"><label>Firmenanschrift</label><input id="eps-firmenanschrift" type="text" placeholder="Straße, PLZ Ort"></div>
@@ -367,21 +367,21 @@
           <div class="form-group" style="margin:0"><label>Datum *</label><input id="eps-datum" type="date"></div>
           <div class="form-group" style="margin:0;grid-column:1/-1"><label>Thema der Schulung *</label><input id="eps-thema" type="text" value="Persönliche Schutzausrüstung gegen Absturz (PSAgA) – theoretische und praktische Unterweisung"></div>
           <div class="form-group" style="margin:0"><label>Dauer in Stunden</label><input id="eps-dauer" type="number" min="0.5" step="0.5" placeholder="z. B. 8"></div>
-          <div class="form-group" style="margin:0"><label>Schulungsleiter Vorname *</label><input id="eps-leiter-vorname" type="text" placeholder="Vorname"></div>
-          <div class="form-group" style="margin:0"><label>Schulungsleiter Nachname *</label><input id="eps-leiter-nachname" type="text" placeholder="Nachname"></div>
+          <div class="form-group" style="margin:0;grid-column:1/-1"><label>Schulungsleiter *</label><select id="eps-leiter" aria-label="Schulungsleiter auswählen"><option value="">Bitte auswählen …</option><option value="Thomas Schmoldt">Thomas Schmoldt</option><option value="Fabian Romeike">Fabian Romeike</option></select><small style="display:block;margin-top:4px;color:#64748b">Es wird nur der Name des Schulungsleiters auf der Bescheinigung angezeigt.</small></div>
         </div>
-        <div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:14px">
+        <div id="eps-inhalte-block" style="display:none;margin-top:16px;border-top:1px solid #e5e7eb;padding-top:14px">
           <div style="font-weight:700;color:#166534;margin-bottom:8px">📚 Inhalte für die Bescheinigung</div>
           <div id="eps-module" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.82rem"></div>
           <div class="form-group" style="margin:10px 0 0"><label>Zusätzliche Inhalte</label><textarea id="eps-inhalte-freitext" rows="2" placeholder="Optional: weitere praktisch behandelte Inhalte"></textarea></div>
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 Schulung speichern</button>
+          <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 1. Firmendaten speichern</button>
           <span id="eps-msg" style="font-size:.84rem"></span>
         </div>
       </div>
       <div class="card">
-        <div class="card-title">👥 Teilnehmer und Bescheinigungen</div>
+        <div class="card-title">👥 Teilnehmerliste vor Ort &amp; Bescheinigungen</div>
+        <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Nach dem Speichern der Firmendaten öffnen Sie über den Button die Teilnehmerliste. Nach der Schulung wählen Sie die tatsächlich behandelten Themen für die Zertifikate aus.</p>
         <div id="eps-liste"><div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe Schulung geladen.</p></div></div>
       </div>
     </div>
