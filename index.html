@@ -120,6 +120,7 @@
       <button class="admin-nav-btn"         data-tab="archiv"      onclick="adminTab('archiv',this)">📦 Archiv</button>
       <button class="admin-nav-btn"         data-tab="abrechnung"  onclick="adminTab('abrechnung',this)">💶 Abrechnung</button>
       <button class="admin-nav-btn"         data-tab="unternehmen" onclick="adminTab('unternehmen',this)">🏢 Unternehmen</button>
+      <button class="admin-nav-btn"         data-tab="externe-psaga" onclick="adminTab('externe-psaga',this)">🦺 Externe PSAgA</button>
       <button class="admin-nav-btn"         data-tab="audit"       onclick="adminTab('audit',this)">📋 Protokoll</button>
       <div class="admin-nav-divider"></div>
       <button class="admin-nav-btn admin-nav-sync" onclick="adminSidebarClose();syncMissingToDrive()">☁️ Drive-Sync</button>
@@ -348,6 +349,33 @@
           </div>
           <div id="admin-zuw-list"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Tab: Externe PSAgA-Präsenzschulungen -->
+    <div id="tab-externe-psaga" class="tab-content" style="display:none">
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title">🦺 Externe PSAgA-Präsenzschulung anlegen</div>
+        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Teilnehmer benötigen keinen App-Zugang. Nach dem Speichern können Bescheinigungen erzeugt und an den Firmenkontakt versendet werden.</p>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+          <div class="form-group" style="margin:0"><label>Firmenname *</label><input id="eps-firma" type="text" placeholder="Musterfirma GmbH"></div>
+          <div class="form-group" style="margin:0"><label>Ansprechpartner *</label><input id="eps-ansprechpartner" type="text" placeholder="Vorname Nachname"></div>
+          <div class="form-group" style="margin:0"><label>Telefon</label><input id="eps-telefon" type="tel" placeholder="0511 123456"></div>
+          <div class="form-group" style="margin:0"><label>E-Mail-Adresse *</label><input id="eps-email" type="email" placeholder="verantwortlich@firma.de"></div>
+          <div class="form-group" style="margin:0"><label>Ort der Schulung *</label><input id="eps-ort" type="text" placeholder="z. B. Laatzen"></div>
+          <div class="form-group" style="margin:0"><label>Datum *</label><input id="eps-datum" type="date"></div>
+          <div class="form-group" style="margin:0;grid-column:1/-1"><label>Thema der Schulung *</label><input id="eps-thema" type="text" value="Persönliche Schutzausrüstung gegen Absturz (PSAgA) – theoretische und praktische Unterweisung"></div>
+          <div class="form-group" style="margin:0"><label>Schulungsleiter Vorname *</label><input id="eps-leiter-vorname" type="text" placeholder="Vorname"></div>
+          <div class="form-group" style="margin:0"><label>Schulungsleiter Nachname *</label><input id="eps-leiter-nachname" type="text" placeholder="Nachname"></div>
+        </div>
+        <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+          <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 Schulung speichern</button>
+          <span id="eps-msg" style="font-size:.84rem"></span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">👥 Teilnehmer und Bescheinigungen</div>
+        <div id="eps-liste"><div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe Schulung geladen.</p></div></div>
       </div>
     </div>
 
