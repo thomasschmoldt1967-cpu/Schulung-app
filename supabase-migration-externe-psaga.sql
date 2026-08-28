@@ -50,6 +50,7 @@ ALTER TABLE externe_psaga_versand ENABLE ROW LEVEL SECURITY;
 ALTER TABLE externe_psaga_schulungen ADD COLUMN IF NOT EXISTS dauer_stunden NUMERIC(5,2);
 ALTER TABLE externe_psaga_schulungen ADD COLUMN IF NOT EXISTS inhalte JSONB NOT NULL DEFAULT '[]'::jsonb;
 ALTER TABLE externe_psaga_schulungen ADD COLUMN IF NOT EXISTS firmenanschrift TEXT;
+ALTER TABLE externe_psaga_schulungen ADD COLUMN IF NOT EXISTS schulungsleiter_unterschrift TEXT;
 ALTER TABLE externe_psaga_teilnehmer ADD COLUMN IF NOT EXISTS funktion TEXT;
 
 -- Die bestehende App verwendet eine eigene Login-Schicht. Der Bereich darf deshalb
