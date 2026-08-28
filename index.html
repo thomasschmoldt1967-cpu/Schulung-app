@@ -359,14 +359,21 @@
         <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Teilnehmer benötigen keinen App-Zugang. Nach dem Speichern können Bescheinigungen erzeugt und an den Firmenkontakt versendet werden.</p>
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
           <div class="form-group" style="margin:0"><label>Firmenname *</label><input id="eps-firma" type="text" placeholder="Musterfirma GmbH"></div>
+          <div class="form-group" style="margin:0"><label>Firmenanschrift</label><input id="eps-firmenanschrift" type="text" placeholder="Straße, PLZ Ort"></div>
           <div class="form-group" style="margin:0"><label>Ansprechpartner *</label><input id="eps-ansprechpartner" type="text" placeholder="Vorname Nachname"></div>
           <div class="form-group" style="margin:0"><label>Telefon</label><input id="eps-telefon" type="tel" placeholder="0511 123456"></div>
           <div class="form-group" style="margin:0"><label>E-Mail-Adresse *</label><input id="eps-email" type="email" placeholder="verantwortlich@firma.de"></div>
           <div class="form-group" style="margin:0"><label>Ort der Schulung *</label><input id="eps-ort" type="text" placeholder="z. B. Laatzen"></div>
           <div class="form-group" style="margin:0"><label>Datum *</label><input id="eps-datum" type="date"></div>
           <div class="form-group" style="margin:0;grid-column:1/-1"><label>Thema der Schulung *</label><input id="eps-thema" type="text" value="Persönliche Schutzausrüstung gegen Absturz (PSAgA) – theoretische und praktische Unterweisung"></div>
+          <div class="form-group" style="margin:0"><label>Dauer in Stunden</label><input id="eps-dauer" type="number" min="0.5" step="0.5" placeholder="z. B. 8"></div>
           <div class="form-group" style="margin:0"><label>Schulungsleiter Vorname *</label><input id="eps-leiter-vorname" type="text" placeholder="Vorname"></div>
           <div class="form-group" style="margin:0"><label>Schulungsleiter Nachname *</label><input id="eps-leiter-nachname" type="text" placeholder="Nachname"></div>
+        </div>
+        <div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:14px">
+          <div style="font-weight:700;color:#166534;margin-bottom:8px">📚 Inhalte für die Bescheinigung</div>
+          <div id="eps-module" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;font-size:.82rem"></div>
+          <div class="form-group" style="margin:10px 0 0"><label>Zusätzliche Inhalte</label><textarea id="eps-inhalte-freitext" rows="2" placeholder="Optional: weitere praktisch behandelte Inhalte"></textarea></div>
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
           <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 Schulung speichern</button>
