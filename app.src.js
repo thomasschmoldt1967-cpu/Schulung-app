@@ -16725,7 +16725,7 @@ async function externePsagaSchulungSpeichern() {
   const leiter=externeFeld('eps-leiter'); const [leiterVorname='',...leiterNachnameTeile]=leiter.split(' '); const leiterNachname=leiterNachnameTeile.join(' ');
   const d={id:externeId('eps'),firmenname:externeFeld('eps-firma'),firmenanschrift:externeFeld('eps-firmenanschrift'),ansprechpartner:externeFeld('eps-ansprechpartner'),telefon:externeFeld('eps-telefon'),email:externeFeld('eps-email').toLowerCase(),ort:externeFeld('eps-ort'),datum:externeFeld('eps-datum'),thema:externeFeld('eps-thema'),dauer_stunden:dauer,inhalte,schulungsleiter_vorname:leiterVorname,schulungsleiter_nachname:leiterNachname,erstellt_von:currentUser?.userId||''};
   const pflicht=[['eps-firma','Firmenname'],['eps-ansprechpartner','Ansprechpartner'],['eps-email','E-Mail-Adresse'],['eps-ort','Ort'],['eps-datum','Datum'],['eps-thema','Thema'],['eps-leiter','Schulungsleiter']]; const fehlt=pflicht.find(([id])=>!externeFeld(id));
-  if(fehl){msg.textContent=`${fehlt[1]} ist erforderlich.`;return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){msg.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}
+  if(fehlt){msg.textContent=`${fehlt[1]} ist erforderlich.`;return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){msg.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}
   try{await SB.post('externe_psaga_schulungen',d);await sbAudit('EXTERNE_PSAGA_NEU',`${d.firmenname} · ${externeDatum(d.datum)}`);msg.style.color='#15803d';msg.textContent='✅ Schulung gespeichert. Jetzt Teilnehmer hinzufügen.';await externePsagaRendern();}catch(e){msg.textContent='Fehler beim Speichern: '+e.message.slice(0,150);}
 }
 function externePsagaInhalteAuswaehlen(schulungId){
