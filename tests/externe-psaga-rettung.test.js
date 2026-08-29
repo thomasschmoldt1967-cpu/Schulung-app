@@ -39,6 +39,14 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /teilnehmerliste_foto_path/);
   });
 
+  test(`${file}: externe Schulungsliste bietet Suche und Akkordeon`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /externePsagaUebersichtEinrichten/);
+    assert.match(source, /externePsagaUebersichtFiltern/);
+    assert.match(source, /eps-suche/);
+    assert.match(source, /epsAccordion/);
+  });
+
   test(`${file}: Zertifikat nennt Schulungsleiter und praktische Rettungsgrundlage`, () => {
     const source = fs.readFileSync(file, 'utf8');
     assert.match(source, /doc\.text\(trainerName, ML\+8, y\+25\)/);

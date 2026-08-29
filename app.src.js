@@ -16804,6 +16804,7 @@ async function externePsagaRendern() {
     externePsagaSchulungen = await SB.get('externe_psaga_schulungen', 'order=datum.desc,erstellt_am.desc');
     for (const s of externePsagaSchulungen) externePsagaTeilnehmer[s.id] = await SB.get('externe_psaga_teilnehmer', `schulung_id=eq.${encodeURIComponent(s.id)}&order=nachname.asc,vorname.asc`);
     externePsagaListeRendern();
+    externePsagaUebersichtEinrichten();
   } catch (e) {
     el.innerHTML = `<div class="error-msg">❌ Tabelle nicht erreichbar: ${escHtml(e.message).slice(0,180)}<br><small>Bitte zuerst supabase-migration-externe-psaga.sql ausführen.</small></div>`;
   }
@@ -16813,6 +16814,39 @@ function externePsagaListeRendern() {
   if(!externePsagaSchulungen.length){el.innerHTML='<div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe PSAgA-Schulung angelegt.</p></div>';return;}
       el.innerHTML=externePsagaSchulungen.map(s=>{const teil=externePsagaTeilnehmer[s.id]||[];const themen=externePsagaZertifikatInhalte(s).length;return `<div style="border:1px solid #dbe3ee;border-left:4px solid #166534;border-radius:10px;padding:14px;margin-bottom:12px;background:#fff"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-weight:700;color:#166534">🦺 ${escHtml(s.firmenname)}</div><div style="font-size:.8rem;color:#64748b;margin-top:4px">📅 ${externeDatum(s.datum)} · 📍 ${escHtml(s.ort)} · ${teil.length} Teilnehmer</div><div style="font-size:.78rem;color:#64748b;margin-top:3px">${escHtml(s.thema)}</div><div style="font-size:.76rem;color:${themen?'#15803d':'#b45309'};margin-top:4px">${themen?`✅ ${themen} Zertifikatsthema/-themen ausgewählt`:'⏳ Themen nach der Schulung noch auswählen'}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerHinzufuegen('${s.id}')">➕ 2. Teilnehmerliste vor Ort</button><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerlisteFoto('${s.id}')">📷 Teilnehmerliste fotografieren</button>${s.teilnehmerliste_foto_path?`<button class="btn btn-outline btn-sm" onclick="oeffneStorageBild('${escHtml(s.teilnehmerliste_foto_path)}')">🖼 Liste öffnen</button>`:''}<button class="btn btn-outline btn-sm" onclick="externePsagaInhalteAuswaehlen('${s.id}')">📝 3. Schulung durchführen / Themen auswählen</button><button class="btn btn-primary btn-sm" onclick="externePsagaAlleZertifikate('${s.id}')">📄 Zertifikate erstellen &amp; speichern</button><button class="btn btn-success btn-sm" onclick="externePsagaVersandVorschau('${s.id}')">📧 An Firma senden</button></div></div><div style="margin-top:10px">${teil.length?teil.map(t=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #eef2f7;font-size:.82rem"><span>${t.teilgenommen?'✅':'⚪'} ${escHtml(externeName(t))}</span><span style="display:flex;gap:5px">${t.pdf_path?`<button class="btn btn-outline btn-sm" onclick="oeffnePdfSigniert('${escHtml(t.pdf_path)}')">📄 Öffnen</button>`:''}<button class="btn btn-outline btn-sm" onclick="externePsagaZertifikat('${s.id}','${t.id}')">${t.pdf_path?'↻ Neu erstellen':'📄 Erstellen'}</button><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerBearbeiten('${s.id}','${t.id}')">✏️ Bearbeiten</button></span></div>`).join(''):'<div style="font-size:.8rem;color:#9ca3af;margin-top:10px">Noch keine Teilnehmer erfasst.</div>'}</div></div>`;}).join('');
 }
+function externePsagaUebersichtEinrichten() {
+  const el = document.getElementById('eps-liste');
+  if (!el || !externePsagaSchulungen.length) return;
+  let toolbar = document.getElementById('eps-suche-toolbar');
+  if (!toolbar) {
+    toolbar = document.createElement('div'); toolbar.id = 'eps-suche-toolbar';
+    toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:10px';
+    toolbar.innerHTML = '<label for="eps-suche" style="font-size:.82rem;font-weight:600;color:#334155">🔎 Firma suchen</label><input id="eps-suche" type="search" placeholder="Firmenname, Ansprechpartner, Ort …" style="flex:1;min-width:220px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:8px;font-size:.84rem"><span id="eps-suche-anzahl" style="font-size:.76rem;color:#64748b"></span>';
+    el.prepend(toolbar);
+    toolbar.querySelector('#eps-suche').addEventListener('input', externePsagaUebersichtFiltern);
+  }
+  const cards = [...el.children].filter(x => x !== toolbar);
+  cards.forEach(card => {
+    card.dataset.epsSuchtext = card.textContent.toLowerCase();
+    const kopf = card.firstElementChild, inhalt = card.lastElementChild;
+    if (!kopf || !inhalt || card.dataset.epsAccordion === '1') return;
+    card.dataset.epsAccordion = '1'; inhalt.style.display = 'none';
+    kopf.style.cursor = 'pointer'; kopf.setAttribute('role','button'); kopf.setAttribute('aria-expanded','false');
+    kopf.addEventListener('click', e => { if (e.target.closest('button')) return; const offen = inhalt.style.display !== 'none'; inhalt.style.display = offen ? 'none' : 'block'; kopf.setAttribute('aria-expanded', String(!offen)); });
+  });
+  externePsagaUebersichtFiltern();
+}
+
+function externePsagaUebersichtFiltern() {
+  const el = document.getElementById('eps-liste'), input = document.getElementById('eps-suche');
+  if (!el) return;
+  const toolbar = document.getElementById('eps-suche-toolbar'), suchtext = (input?.value || '').toLowerCase().trim();
+  const cards = [...el.children].filter(x => x !== toolbar);
+  let sichtbar = 0;
+  cards.forEach(card => { const show = !suchtext || (card.dataset.epsSuchtext || card.textContent.toLowerCase()).includes(suchtext); card.style.display = show ? '' : 'none'; if (show) sichtbar++; });
+  const anzahl = document.getElementById('eps-suche-anzahl'); if (anzahl) anzahl.textContent = `${sichtbar} von ${cards.length} Schulung${cards.length===1?'':'en'}`;
+}
+
 function externePsagaModuleRendern() {
   const el=document.getElementById('eps-module'); if(!el||typeof PSAGA_MODULE==='undefined')return;
   const moduleHtml=PSAGA_MODULE.map(m=>`<label style="display:flex;gap:6px;align-items:flex-start;padding:6px 7px;background:#f0fdf4;border-radius:7px"><input type="checkbox" class="eps-mod-check" value="${escHtml(m.id)}" data-titel="${escHtml(m.titel)}"> <span>${escHtml(m.titel)}</span></label>`).join('');
