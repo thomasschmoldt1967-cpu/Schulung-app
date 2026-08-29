@@ -21,6 +21,7 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /externePsagaVersandVorschau/);
     assert.match(source, /externePsagaZertifikat\(schulungId,t\.id,false,false\)/);
     assert.match(source, /Zertifikat als PDF-Vorschau öffnen/);
+    assert.match(source, /Verbindlich an Firma senden/);
   });
 
   test(`${file}: Teilnehmernamen können nachträglich korrigiert werden`, () => {
@@ -28,4 +29,25 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /externePsagaTeilnehmerBearbeiten/);
     assert.match(source, /SB\.patch\('externe_psaga_teilnehmer'/);
   });
+
+  test(`${file}: unterschriebene Teilnehmerliste kann per Kamera geprüft und gespeichert werden`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /externePsagaTeilnehmerlisteFoto/);
+    assert.match(source, /capture='environment'/);
+    assert.match(source, /Unterschriebene Teilnehmerliste prüfen/);
+    assert.match(source, /SB\.uploadFile\(blob,path,'image\/jpeg'\)/);
+    assert.match(source, /teilnehmerliste_foto_path/);
+  });
 }
+
+test('Storage-Migration erlaubt PDF und Teilnehmerlistenbilder', () => {
+  const sql = fs.readFileSync('supabase-migration-schulung-pdfs-storage.sql', 'utf8');
+  assert.match(sql, /schulung-pdfs/);
+  assert.match(sql, /image\/jpeg/);
+  assert.match(sql, /schulung_pdfs_anlegen/);
+});
+
+test('Externe-PSAgA-Migration enthält den Speicherpfad für Teilnehmerlistenfotos', () => {
+  const sql = fs.readFileSync('supabase-migration-externe-psaga.sql', 'utf8');
+  assert.match(sql, /teilnehmerliste_foto_path/);
+});

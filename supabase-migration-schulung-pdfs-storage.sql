@@ -9,7 +9,7 @@ VALUES (
   'schulung-pdfs',
   false,
   10485760,
-  ARRAY['application/pdf']::text[]
+  ARRAY['application/pdf', 'image/jpeg', 'image/png']::text[]
 )
 ON CONFLICT (id) DO UPDATE
 SET public = EXCLUDED.public,
