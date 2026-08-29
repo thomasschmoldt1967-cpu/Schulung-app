@@ -16912,11 +16912,16 @@ async function externePsagaSchulungSpeichern() {
   const pflicht=[['eps-firma','Firmenname'],['eps-ansprechpartner','Ansprechpartner'],['eps-email','E-Mail-Adresse'],['eps-ort','Ort'],['eps-datum','Datum'],['eps-thema','Thema'],['eps-leiter','Schulungsleiter']]; const fehlt=pflicht.find(([id])=>!externeFeld(id));
   if(fehlt){msg.textContent=`${fehlt[1]} ist erforderlich.`;return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){msg.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}
   try{
-    let firmaId=d.firma_id;
-    const firma={firmenname:d.firmenname,firmenanschrift:d.firmenanschrift,ansprechpartner:d.ansprechpartner,telefon:d.telefon,email:d.email,erstellt_von:currentUser?.userId||'',aktualisiert_am:new Date().toISOString()};
-    if(firmaId) await SB.patch('externe_psaga_firmen',`id=eq.${encodeURIComponent(firmaId)}`,firma);
-    else { firmaId=externeId('epsf'); await SB.post('externe_psaga_firmen',{id:firmaId,...firma}); d.firma_id=firmaId; }
-    await SB.post('externe_psaga_schulungen',d);
+        let firmaId=d.firma_id;
+        const legacyFirmaName=externePsagaAktiveFirmaId.startsWith('legacy:')?d.firmenname:'';
+        const firma={firmenname:d.firmenname,firmenanschrift:d.firmenanschrift,ansprechpartner:d.ansprechpartner,telefon:d.telefon,email:d.email,erstellt_von:currentUser?.userId||'',aktualisiert_am:new Date().toISOString()};
+        if(firmaId) await SB.patch('externe_psaga_firmen',`id=eq.${encodeURIComponent(firmaId)}`,firma);
+        else { firmaId=externeId('epsf'); await SB.post('externe_psaga_firmen',{id:firmaId,...firma}); d.firma_id=firmaId; }
+        if(legacyFirmaName){
+          const alt=externePsagaSchulungen.filter(s=>!s.firma_id&&externePsagaFirmenSchluessel(s.firmenname)===externePsagaFirmenSchluessel(legacyFirmaName));
+          for(const s of alt) await SB.patch('externe_psaga_schulungen',`id=eq.${encodeURIComponent(s.id)}`,{firma_id:firmaId});
+        }
+await SB.post('externe_psaga_schulungen',d);
     await sbAudit('EXTERNE_PSAGA_NEU',`${d.firmenname} · ${externeDatum(d.datum)}`);
     msg.style.color='#15803d'; msg.textContent='✅ Neue Schulung gespeichert. Jetzt Teilnehmer hinzufügen.';
     await externePsagaRendern();
