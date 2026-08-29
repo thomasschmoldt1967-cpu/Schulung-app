@@ -5973,6 +5973,7 @@ function nuRenderListe() {
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
           <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();adminZeigeTenant('${t.id}')">🔍 Details</button>
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();nuFirmendatenBearbeiten('${t.id}')">✏️ Bearbeiten</button>
           ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();nuZugangsdatenSenden('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')">✉️ Zugangsdaten</button>` : ''}
           ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();nuPwZuruecksetzen('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')" title="Neues Passwort setzen und senden">🔑 PW reset</button>` : ''}
           ${firmaU ? `<button class="btn btn-outline btn-sm" style="color:${aktiv?'#dc2626':'#16a34a'}" onclick="event.stopPropagation();nuToggleAktiv('${firmaU.id}','${t.id}',${aktiv})">${aktiv?'⛔ Deaktiv.':'✅ Aktivieren'}</button>` : ''}
@@ -5980,6 +5981,51 @@ function nuRenderListe() {
       </div>
     </div>`;
   }).join('');
+}
+
+function nuFirmendatenBearbeiten(tenantId) {
+  const tenant = APP_TENANTS.find(t => t.id === tenantId);
+  const firmaU = APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'firma');
+  if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
+  const vorhanden = document.getElementById('_tenant_edit_modal');
+  if (vorhanden) vorhanden.remove();
+  const overlay = document.createElement('div');
+  overlay.id = '_tenant_edit_modal';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99998;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto';
+  overlay.innerHTML = `<div style="background:#fff;border-radius:14px;padding:22px;max-width:460px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,.25);margin:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="margin:0;color:#1e3a5f;font-size:1.05rem">✏️ Firmendaten bearbeiten</h3><button type="button" id="_tenant_edit_close" style="border:0;background:none;font-size:1.3rem;color:#6b7280;cursor:pointer">✕</button></div>
+    <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin:10px 0 4px">Firmenname *</label><input id="_te_name" type="text" value="${escHtml(tenant.name || '')}" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box">
+    <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin:10px 0 4px">Ansprechpartner *</label><input id="_te_kontakt" type="text" value="${escHtml(firmaU?.name || tenant.kontakt || '')}" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box">
+    <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin:10px 0 4px">E-Mail-Adresse / Login *</label><input id="_te_email" type="email" value="${escHtml(firmaU?.email || tenant.kontakt || '')}" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box">
+    <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin:10px 0 4px">Telefon</label><input id="_te_telefon" type="tel" value="${escHtml(firmaU?.telefon || '')}" style="width:100%;padding:10px;border:1px solid #d1d5db;border-radius:8px;box-sizing:border-box">
+    <div id="_te_msg" style="min-height:20px;margin-top:12px;font-size:.82rem;color:#dc2626"></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px"><button type="button" id="_te_cancel" class="btn btn-secondary">Abbrechen</button><button type="button" id="_te_save" class="btn btn-primary">💾 Speichern</button></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  const close = () => overlay.remove();
+  overlay.querySelector('#_tenant_edit_close').onclick = close;
+  overlay.querySelector('#_te_cancel').onclick = close;
+  overlay.onclick = e => { if (e.target === overlay) close(); };
+  overlay.querySelector('#_te_save').onclick = async () => {
+    const name = overlay.querySelector('#_te_name').value.trim();
+    const kontakt = overlay.querySelector('#_te_kontakt').value.trim();
+    const email = overlay.querySelector('#_te_email').value.trim().toLowerCase();
+    const telefon = overlay.querySelector('#_te_telefon').value.trim();
+    const msg = overlay.querySelector('#_te_msg');
+    if (!name || !kontakt || !email) { msg.textContent = 'Bitte Firmenname, Ansprechpartner und E-Mail ausfüllen.'; return; }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.'; return; }
+    if (!firmaU) { msg.textContent = 'Kein Firmen-Login zu diesem Unternehmen gefunden.'; return; }
+    const andere = APP_USERS.find(u => u.email?.toLowerCase() === email && u.id !== firmaU.id);
+    if (andere) { msg.textContent = 'Diese E-Mail-Adresse ist bereits einem anderen Benutzer zugeordnet.'; return; }
+    const btn = overlay.querySelector('#_te_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …'; msg.textContent = '';
+    try {
+      await SB.patch('tenants', `id=eq.${encodeURIComponent(tenantId)}`, { name, kontakt });
+      await SB.patch('users', `id=eq.${encodeURIComponent(firmaU.id)}`, { name: kontakt, email, telefon: telefon || null });
+      tenant.name = name; tenant.kontakt = kontakt; firmaU.name = kontakt; firmaU.email = email; firmaU.telefon = telefon || null;
+      await sbAudit('UNTERNEHMEN_BEARBEITET', `Lizenznehmer „${name}" aktualisiert`);
+      close(); nuRenderListe(); renderAdminTenantTable(); showToast('✅ Firmendaten gespeichert', '#15803d');
+    } catch (e) { msg.textContent = 'Fehler beim Speichern: ' + String(e.message || e).slice(0, 180); btn.disabled = false; btn.textContent = '💾 Speichern'; }
+  };
 }
 
 async function nuZugangsdatenSenden(userId, email, name, unternehmen) {
