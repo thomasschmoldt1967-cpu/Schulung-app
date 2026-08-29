@@ -1,6 +1,29 @@
 -- Externe PSAgA-Präsenzschulungen
 -- Nur für CSC-Admin-Verwaltung; Teilnehmer benötigen keinen App-Login.
 
+-- Firmenstammdaten (eine Firma, mehrere externe Schulungen)
+CREATE TABLE IF NOT EXISTS externe_psaga_firmen (
+  id TEXT PRIMARY KEY,
+  firmenname TEXT NOT NULL,
+  firmenanschrift TEXT,
+  ansprechpartner TEXT,
+  telefon TEXT,
+  email TEXT,
+  erstellt_von TEXT,
+  erstellt_am TIMESTAMPTZ DEFAULT now(),
+  aktualisiert_am TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE externe_psaga_firmen ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS externe_psaga_firmen_lesen ON externe_psaga_firmen;
+DROP POLICY IF EXISTS externe_psaga_firmen_schreiben ON externe_psaga_firmen;
+CREATE POLICY externe_psaga_firmen_lesen ON externe_psaga_firmen
+  FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY externe_psaga_firmen_schreiben ON externe_psaga_firmen
+  FOR ALL TO anon, authenticated USING (true) WITH CHECK (true);
+GRANT SELECT, INSERT, UPDATE, DELETE ON externe_psaga_firmen TO anon, authenticated;
+
+
 CREATE TABLE IF NOT EXISTS externe_psaga_schulungen (
   id TEXT PRIMARY KEY,
   firmenname TEXT NOT NULL,
@@ -19,6 +42,8 @@ CREATE TABLE IF NOT EXISTS externe_psaga_schulungen (
   erstellt_am TIMESTAMPTZ DEFAULT now(),
   aktualisiert_am TIMESTAMPTZ DEFAULT now()
 );
+
+ALTER TABLE externe_psaga_schulungen ADD COLUMN IF NOT EXISTS firma_id TEXT;
 
 CREATE TABLE IF NOT EXISTS externe_psaga_teilnehmer (
   id TEXT PRIMARY KEY,

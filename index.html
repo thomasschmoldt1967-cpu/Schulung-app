@@ -355,8 +355,15 @@
     <!-- Tab: Externe PSAgA-Präsenzschulungen -->
     <div id="tab-externe-psaga" class="tab-content" style="display:none">
       <div class="card" style="margin-bottom:16px">
-        <div class="card-title">🦺 Externe PSAgA-Präsenzschulung anlegen</div>
-        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">1. Firmendaten und Schulung anlegen · 2. Teilnehmerliste öffnen · 3. Schulung durchführen und Zertifikatsthemen auswählen.</p>
+        <div class="card-title">🦺 Externe PSAgA-Firmen &amp; Schulungen</div>
+        <p style="font-size:.82rem;color:#6b7280;margin:0 0 14px">Firma einmalig auswählen · bisherige Schulungen einsehen · über „Neue Schulung“ einen neuen Termin anlegen.</p>
+        <div id="eps-firmenliste" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-bottom:14px"><div style="padding:12px;color:#64748b">⏳ Firmen werden geladen …</div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+          <button class="btn btn-primary" type="button" onclick="externePsagaNeueFirma()">➕ Neue Firma</button>
+          <span id="eps-firma-status" style="font-size:.84rem;color:#475569;align-self:center"></span>
+        </div>
+        <div id="eps-schulung-form" style="display:none;border-top:1px solid #e5e7eb;padding-top:14px">
+        <div style="font-weight:700;color:#1e3a5f;margin-bottom:8px">Neue Schulung für die ausgewählte Firma</div>
         <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
           <div class="form-group" style="margin:0"><label>Firmenname *</label><input id="eps-firma" type="text" placeholder="Musterfirma GmbH"></div>
           <div class="form-group" style="margin:0"><label>Firmenanschrift</label><input id="eps-firmenanschrift" type="text" placeholder="Straße, PLZ Ort"></div>
@@ -375,13 +382,14 @@
           <div class="form-group" style="margin:10px 0 0"><label>Zusätzliche Inhalte</label><textarea id="eps-inhalte-freitext" rows="2" placeholder="Optional: weitere praktisch behandelte Inhalte"></textarea></div>
         </div>
         <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center">
-          <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 1. Firmendaten speichern</button>
+          <button class="btn btn-primary" onclick="externePsagaSchulungSpeichern()">💾 Neue Schulung speichern</button>
           <span id="eps-msg" style="font-size:.84rem"></span>
+        </div>
         </div>
       </div>
       <div class="card">
         <div class="card-title">👥 Teilnehmerliste vor Ort &amp; Bescheinigungen</div>
-        <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Nach dem Speichern der Firmendaten öffnen Sie über den Button die Teilnehmerliste. Nach der Schulung wählen Sie die tatsächlich behandelten Themen für die Zertifikate aus.</p>
+        <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Nach dem Speichern der neuen Schulung öffnen Sie über den Button die Teilnehmerliste. Frühere Schulungen und Nachweise bleiben unverändert erhalten.</p>
         <div id="eps-liste"><div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe Schulung geladen.</p></div></div>
       </div>
     </div>

@@ -39,6 +39,16 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /teilnehmerliste_foto_path/);
   });
 
+  test(`${file}: Firmenstammdaten und neue Schulung sind getrennt`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /externePsagaFirmen/);
+    assert.match(source, /externePsagaFirmaAuswaehlen/);
+    assert.match(source, /externePsagaNeueFirma/);
+    assert.match(source, /externe_psaga_firmen/);
+    assert.match(source, /firma_id/);
+    assert.match(source, /externePsagaSchulungSpeichern/);
+  });
+
   test(`${file}: externe Schulungsliste bietet Suche und Akkordeon`, () => {
     const source = fs.readFileSync(file, 'utf8');
     assert.match(source, /externePsagaUebersichtEinrichten/);
@@ -66,4 +76,12 @@ test('Storage-Migration erlaubt PDF und Teilnehmerlistenbilder', () => {
 test('Externe-PSAgA-Migration enthält den Speicherpfad für Teilnehmerlistenfotos', () => {
   const sql = fs.readFileSync('supabase-migration-externe-psaga.sql', 'utf8');
   assert.match(sql, /teilnehmerliste_foto_path/);
+});
+
+
+test('Externe-PSAgA-Migration enthält Firmenstammdaten und Schulungszuordnung', () => {
+  const sql = fs.readFileSync('supabase-migration-externe-psaga.sql', 'utf8');
+  assert.match(sql, /CREATE TABLE IF NOT EXISTS externe_psaga_firmen/);
+  assert.match(sql, /ADD COLUMN IF NOT EXISTS firma_id/);
+  assert.match(sql, /DROP POLICY IF EXISTS externe_psaga_firmen_lesen/);
 });

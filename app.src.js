@@ -16773,6 +16773,9 @@ async function leiternPruefprotokollPDF() {
 //  EXTERNE PSAgA-PRÄSENZSCHULUNGEN
 // ══════════════════════════════════════════════════════════════
 let externePsagaSchulungen = [];
+let externePsagaFirmen = [];
+let externePsagaFirmenAnzeige = [];
+let externePsagaAktiveFirmaId = '';
 let externePsagaTeilnehmer = {};
 let externePsagaSignatur = null;
 const EXTERNE_PSAGA_SIGNATUR_ID = '__schulungsleiter_unterschrift';
@@ -16795,14 +16798,61 @@ function externeFeld(id) { return document.getElementById(id)?.value.trim() || '
 function externeDatum(d) { return d ? new Date(`${d}T12:00:00`).toLocaleDateString('de-DE') : '–'; }
 function externeName(t) { return `${t.vorname || ''} ${t.nachname || ''}`.trim(); }
 
+function externePsagaFirmenSchluessel(name) {
+  return String(name || '').toLowerCase().replace(/[^a-z0-9äöüß]+/gi, ' ').trim();
+}
+function externePsagaFirmenRendern() {
+  const el = document.getElementById('eps-firmenliste');
+  if (!el) return;
+  const actual = externePsagaFirmen.map(f => ({...f, quelle:'master'}));
+  const known = new Set(actual.map(f => externePsagaFirmenSchluessel(f.firmenname)));
+  // Altbestand ohne firma_id bleibt sichtbar und wird nicht stillschweigend verändert.
+  const legacy = [];
+  const byName = new Map();
+  externePsagaSchulungen.filter(s => !s.firma_id).forEach(s => {
+    const key = externePsagaFirmenSchluessel(s.firmenname);
+    if (!key || known.has(key)) return;
+    if (!byName.has(key)) byName.set(key, {id:`legacy:${key}`,firmenname:s.firmenname,firmenanschrift:s.firmenanschrift||'',ansprechpartner:s.ansprechpartner||'',telefon:s.telefon||'',email:s.email||'',quelle:'legacy'});
+  });
+  legacy.push(...byName.values());
+  externePsagaFirmenAnzeige = [...actual, ...legacy];
+  if (!externePsagaFirmenAnzeige.length) {
+    el.innerHTML='<div style="padding:12px;color:#64748b;border:1px dashed #cbd5e1;border-radius:8px">Noch keine externe Firma angelegt. Bitte „Neue Firma“ wählen.</div>';
+    return;
+  }
+  el.innerHTML = externePsagaFirmenAnzeige.map(f => {
+    const count = externePsagaSchulungen.filter(s => f.quelle==='master' ? s.firma_id===f.id : (!s.firma_id && externePsagaFirmenSchluessel(s.firmenname)===externePsagaFirmenSchluessel(f.firmenname))).length;
+    const active = f.id === externePsagaAktiveFirmaId;
+    return `<button type="button" class="btn btn-outline" style="text-align:left;padding:12px;border:2px solid ${active?'#166534':'#dbe3ee'};background:${active?'#f0fdf4':'#fff'}" onclick="externePsagaFirmaAuswaehlen('${escHtml(f.id)}')"><strong>🏢 ${escHtml(f.firmenname)}</strong><br><small style="color:#64748b">${count} Schulung${count===1?'':'en'} · ${f.quelle==='legacy'?'Altbestand – bitte einmalig übernehmen':'Stammdaten'}</small></button>`;
+  }).join('');
+}
+function externePsagaFirmaAuswaehlen(firmaId) {
+  const f = externePsagaFirmenAnzeige.find(x => x.id === firmaId);
+  if (!f) return;
+  externePsagaAktiveFirmaId = firmaId;
+  ['firmenname','firmenanschrift','ansprechpartner','telefon','email'].forEach(k => { const el=document.getElementById(`eps-${k==='firmenname'?'firma':k}`); if(el) el.value=f[k]||''; });
+  const form=document.getElementById('eps-schulung-form'); if(form) form.style.display='block';
+  const status=document.getElementById('eps-firma-status'); if(status) status.textContent=`Ausgewählt: ${f.firmenname} · Neue Schulung anlegen`;
+  externePsagaFirmenRendern();
+}
+function externePsagaNeueFirma() {
+  externePsagaAktiveFirmaId = '';
+  ['eps-firma','eps-firmenanschrift','eps-ansprechpartner','eps-telefon','eps-email'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+  const form=document.getElementById('eps-schulung-form'); if(form) form.style.display='block';
+  const status=document.getElementById('eps-firma-status'); if(status) status.textContent='Neue Firma · Stammdaten werden beim Speichern angelegt';
+  externePsagaFirmenRendern();
+}
+
 async function externePsagaRendern() {
   const el = document.getElementById('eps-liste');
   if (!el || currentUser?.role !== 'admin') return;
   externePsagaModuleRendern();
   el.innerHTML = '<div style="padding:12px;color:#6b7280">⏳ Schulungen werden geladen…</div>';
   try {
+    try { externePsagaFirmen = await SB.get('externe_psaga_firmen', 'order=firmenname.asc'); } catch (_) { externePsagaFirmen = []; }
     externePsagaSchulungen = await SB.get('externe_psaga_schulungen', 'order=datum.desc,erstellt_am.desc');
     for (const s of externePsagaSchulungen) externePsagaTeilnehmer[s.id] = await SB.get('externe_psaga_teilnehmer', `schulung_id=eq.${encodeURIComponent(s.id)}&order=nachname.asc,vorname.asc`);
+    externePsagaFirmenRendern();
     externePsagaListeRendern();
     externePsagaUebersichtEinrichten();
   } catch (e) {
@@ -16858,10 +16908,19 @@ async function externePsagaSchulungSpeichern() {
   const inhalte=[];
   const dauer=parseFloat(externeFeld('eps-dauer'))||null;
   const leiter=externeFeld('eps-leiter'); const [leiterVorname='',...leiterNachnameTeile]=leiter.split(' '); const leiterNachname=leiterNachnameTeile.join(' ');
-  const d={id:externeId('eps'),firmenname:externeFeld('eps-firma'),firmenanschrift:externeFeld('eps-firmenanschrift'),ansprechpartner:externeFeld('eps-ansprechpartner'),telefon:externeFeld('eps-telefon'),email:externeFeld('eps-email').toLowerCase(),ort:externeFeld('eps-ort'),datum:externeFeld('eps-datum'),thema:externeFeld('eps-thema'),dauer_stunden:dauer,inhalte,schulungsleiter_vorname:leiterVorname,schulungsleiter_nachname:leiterNachname,erstellt_von:currentUser?.userId||''};
+  const d={id:externeId('eps'),firma_id:externePsagaAktiveFirmaId&&!externePsagaAktiveFirmaId.startsWith('legacy:')?externePsagaAktiveFirmaId:null,firmenname:externeFeld('eps-firma'),firmenanschrift:externeFeld('eps-firmenanschrift'),ansprechpartner:externeFeld('eps-ansprechpartner'),telefon:externeFeld('eps-telefon'),email:externeFeld('eps-email').toLowerCase(),ort:externeFeld('eps-ort'),datum:externeFeld('eps-datum'),thema:externeFeld('eps-thema'),dauer_stunden:dauer,inhalte,schulungsleiter_vorname:leiterVorname,schulungsleiter_nachname:leiterNachname,erstellt_von:currentUser?.userId||''};
   const pflicht=[['eps-firma','Firmenname'],['eps-ansprechpartner','Ansprechpartner'],['eps-email','E-Mail-Adresse'],['eps-ort','Ort'],['eps-datum','Datum'],['eps-thema','Thema'],['eps-leiter','Schulungsleiter']]; const fehlt=pflicht.find(([id])=>!externeFeld(id));
   if(fehlt){msg.textContent=`${fehlt[1]} ist erforderlich.`;return;} if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(d.email)){msg.textContent='Bitte eine gültige E-Mail-Adresse eingeben.';return;}
-  try{await SB.post('externe_psaga_schulungen',d);await sbAudit('EXTERNE_PSAGA_NEU',`${d.firmenname} · ${externeDatum(d.datum)}`);msg.style.color='#15803d';msg.textContent='✅ Schulung gespeichert. Jetzt Teilnehmer hinzufügen.';await externePsagaRendern();}catch(e){msg.textContent='Fehler beim Speichern: '+e.message.slice(0,150);}
+  try{
+    let firmaId=d.firma_id;
+    const firma={firmenname:d.firmenname,firmenanschrift:d.firmenanschrift,ansprechpartner:d.ansprechpartner,telefon:d.telefon,email:d.email,erstellt_von:currentUser?.userId||'',aktualisiert_am:new Date().toISOString()};
+    if(firmaId) await SB.patch('externe_psaga_firmen',`id=eq.${encodeURIComponent(firmaId)}`,firma);
+    else { firmaId=externeId('epsf'); await SB.post('externe_psaga_firmen',{id:firmaId,...firma}); d.firma_id=firmaId; }
+    await SB.post('externe_psaga_schulungen',d);
+    await sbAudit('EXTERNE_PSAGA_NEU',`${d.firmenname} · ${externeDatum(d.datum)}`);
+    msg.style.color='#15803d'; msg.textContent='✅ Neue Schulung gespeichert. Jetzt Teilnehmer hinzufügen.';
+    await externePsagaRendern();
+  }catch(e){msg.textContent='Fehler beim Speichern: '+e.message.slice(0,150);}
 }
 function externePsagaInhalteAuswaehlen(schulungId){
   const s=externePsagaSchulungen.find(x=>x.id===schulungId); if(!s)return;
