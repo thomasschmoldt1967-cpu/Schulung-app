@@ -1081,7 +1081,7 @@ const SB = {
       },
       body: fileBlob
     });
-    if (!r.ok) { const t = await r.text(); throw new Error(t); }
+    if (!r.ok) { const t = await r.text(); throw new Error(`HTTP ${r.status} · ${t}`); }
     return `schulung-pdfs/${path}`;
   },
   async uploadPdf(pdfBlob, path) {
@@ -1096,7 +1096,7 @@ const SB = {
       },
       body: pdfBlob
     });
-    if (!r.ok) { const t = await r.text(); throw new Error(t); }
+    if (!r.ok) { const t = await r.text(); throw new Error(`HTTP ${r.status} · ${t}`); }
     // Gibt jetzt den Storage-Pfad zurück (kein public URL mehr)
     return `schulung-pdfs/${path}`;
   },
