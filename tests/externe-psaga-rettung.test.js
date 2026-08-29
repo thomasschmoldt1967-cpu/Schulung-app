@@ -15,4 +15,17 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /const gespeicherteInhalte=\[\.\.\.inhalte,\{id:EXTERNE_PSAGA_SIGNATUR_ID,titel:signatur\}\]/);
     assert.doesNotMatch(source, /SB\.patch\('externe_psaga_schulungen',[\s\S]{0,900}schulungsleiter_unterschrift:signatur/);
   });
+
+  test(`${file}: Zertifikate können vor Versand als Vorschau erzeugt werden`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /externePsagaVersandVorschau/);
+    assert.match(source, /externePsagaZertifikat\(schulungId,t\.id,false,false\)/);
+    assert.match(source, /Zertifikat als PDF-Vorschau öffnen/);
+  });
+
+  test(`${file}: Teilnehmernamen können nachträglich korrigiert werden`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /externePsagaTeilnehmerBearbeiten/);
+    assert.match(source, /SB\.patch\('externe_psaga_teilnehmer'/);
+  });
 }
