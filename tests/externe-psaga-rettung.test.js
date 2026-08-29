@@ -38,6 +38,14 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /SB\.uploadFile\(blob,path,'image\/jpeg'\)/);
     assert.match(source, /teilnehmerliste_foto_path/);
   });
+
+  test(`${file}: Zertifikat nennt Schulungsleiter und praktische Rettungsgrundlage`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /doc\.text\(trainerName, ML\+8, y\+25\)/);
+    assert.match(source, /DGUV Regel 112-198.*DGUV Regel 112-199.*praktische Rettungsübungen durchgeführt/);
+    assert.match(source, /splitTextToSize\(modulUntertitel, CW - 14\)/);
+    assert.match(source, /ablauf\.setFullYear\(datum\.getFullYear\(\)\s*\+\s*1\)/);
+  });
 }
 
 test('Storage-Migration erlaubt PDF und Teilnehmerlistenbilder', () => {
