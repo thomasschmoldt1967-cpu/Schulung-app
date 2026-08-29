@@ -5,7 +5,7 @@ const test = require('node:test');
 for (const file of ['app.src.js', 'app.js']) {
   test(`${file}: Dreibein-Rettungsübung ist Zertifikatsthema`, () => {
     const source = fs.readFileSync(file, 'utf8');
-    assert.match(source, /Rettung aus beengten Räumen mit Dreibein nach DGUV Regel 123-004/);
+    assert.match(source, /Rettung aus beengten Räumen mit Dreibein nach DGUV Regel 113-004/);
   });
 
   test(`${file}: externe Themen-/Signaturspeicherung bleibt ohne unbekannte Spalte kompatibel`, () => {
@@ -43,8 +43,8 @@ for (const file of ['app.src.js', 'app.js']) {
     const source = fs.readFileSync(file, 'utf8');
     assert.match(source, /doc\.text\(trainerName, ML\+8, y\+25\)/);
     assert.match(source, /DGUV Regel 112-198.*DGUV Regel 112-199.*praktische Rettungsübungen durchgeführt/);
-    assert.match(source, /splitTextToSize\(modulUntertitel, CW - 14\)/);
-    assert.match(source, /ablauf\.setFullYear\(datum\.getFullYear\(\)\s*\+\s*1\)/);
+    assert.match(source, /splitTextToSize\(modulUntertitel, CW - 22\)/);
+    assert.match(source, /365 TAGE GÜLTIG BIS/);
   });
 }
 
