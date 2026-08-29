@@ -5960,7 +5960,7 @@ function nuRenderListe() {
     const firmaU = APP_USERS.find(u => u.tenant_id === t.id && u.role === 'firma');
     const aktiv  = firmaU ? firmaU.aktiv !== false : true;
     const lpZuw  = zuws.find(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
-    return `<div style="border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:${aktiv?'#fff':'#f9fafb'}">
+    return `<div role="button" tabindex="0" onclick="adminZeigeTenant('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')adminZeigeTenant('${t.id}')" style="border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:${aktiv?'#fff':'#f9fafb'};cursor:pointer">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
         <div>
           <div style="font-weight:700;font-size:.95rem;color:#1e3a5f">${escHtml(t.name)}</div>
@@ -5972,10 +5972,10 @@ function nuRenderListe() {
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0">
-          <button class="btn btn-outline btn-sm" onclick="adminZeigeTenant('${t.id}')">🔍 Details</button>
-          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuZugangsdatenSenden('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')">✉️ Zugangsdaten</button>` : ''}
-          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="nuPwZuruecksetzen('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')" title="Neues Passwort setzen und senden">🔑 PW reset</button>` : ''}
-          ${firmaU ? `<button class="btn btn-outline btn-sm" style="color:${aktiv?'#dc2626':'#16a34a'}" onclick="nuToggleAktiv('${firmaU.id}','${t.id}',${aktiv})">${aktiv?'⛔ Deaktiv.':'✅ Aktivieren'}</button>` : ''}
+          <button class="btn btn-outline btn-sm" onclick="event.stopPropagation();adminZeigeTenant('${t.id}')">🔍 Details</button>
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();nuZugangsdatenSenden('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')">✉️ Zugangsdaten</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" onclick="event.stopPropagation();nuPwZuruecksetzen('${firmaU.id}','${escHtml(firmaU.email)}','${escHtml(firmaU.name)}','${escHtml(t.name)}')" title="Neues Passwort setzen und senden">🔑 PW reset</button>` : ''}
+          ${firmaU ? `<button class="btn btn-outline btn-sm" style="color:${aktiv?'#dc2626':'#16a34a'}" onclick="event.stopPropagation();nuToggleAktiv('${firmaU.id}','${t.id}',${aktiv})">${aktiv?'⛔ Deaktiv.':'✅ Aktivieren'}</button>` : ''}
         </div>
       </div>
     </div>`;
