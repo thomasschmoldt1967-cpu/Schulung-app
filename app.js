@@ -16816,11 +16816,15 @@ function externePsagaFirmenRendern() {
   });
   legacy.push(...byName.values());
   externePsagaFirmenAnzeige = [...actual, ...legacy];
-  if (!externePsagaFirmenAnzeige.length) {
-    el.innerHTML='<div style="padding:12px;color:#64748b;border:1px dashed #cbd5e1;border-radius:8px">Noch keine externe Firma angelegt. Bitte „Neue Firma“ wählen.</div>';
+  const suchtext = (document.getElementById('eps-firmen-suche')?.value || '').toLowerCase().trim();
+  const gefiltert = externePsagaFirmenAnzeige.filter(f => !suchtext || externePsagaFirmenSchluessel(f.firmenname).includes(suchtext));
+  const anzahl = document.getElementById('eps-firmen-anzahl');
+  if (anzahl) anzahl.textContent = `${gefiltert.length} von ${externePsagaFirmenAnzeige.length} Firmen`;
+  if (!gefiltert.length) {
+    el.innerHTML='<div style="grid-column:1/-1;padding:12px;color:#64748b;border:1px dashed #cbd5e1;border-radius:8px">Keine passende Firma gefunden.</div>';
     return;
   }
-  el.innerHTML = externePsagaFirmenAnzeige.map(f => {
+  el.innerHTML = gefiltert.map(f => {
     const count = externePsagaSchulungen.filter(s => f.quelle==='master' ? s.firma_id===f.id : (!s.firma_id && externePsagaFirmenSchluessel(s.firmenname)===externePsagaFirmenSchluessel(f.firmenname))).length;
     const active = f.id === externePsagaAktiveFirmaId;
     return `<button type="button" class="btn btn-outline" style="text-align:left;padding:12px;border:2px solid ${active?'#166534':'#dbe3ee'};background:${active?'#f0fdf4':'#fff'}" onclick="externePsagaFirmaAuswaehlen('${escHtml(f.id)}')"><strong>🏢 ${escHtml(f.firmenname)}</strong><br><small style="color:#64748b">${count} Schulung${count===1?'':'en'} · ${f.quelle==='legacy'?'Altbestand – bitte einmalig übernehmen':'Stammdaten'}</small></button>`;

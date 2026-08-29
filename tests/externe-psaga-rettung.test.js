@@ -1,6 +1,8 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
+const ROOT = process.cwd();
 
 for (const file of ['app.src.js', 'app.js']) {
   test(`${file}: Dreibein-Rettungsübung ist Zertifikatsthema`, () => {
@@ -47,6 +49,13 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /externe_psaga_firmen/);
     assert.match(source, /firma_id/);
     assert.match(source, /externePsagaSchulungSpeichern/);
+  });
+
+  test('index.html: externe Firmenliste bietet eigene Suche und Trefferanzeige', () => {
+    const html = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+    assert.match(html, /id="eps-firmen-suche"/);
+    assert.match(html, /externePsagaFirmenRendern\(\)/);
+    assert.match(html, /id="eps-firmen-anzahl"/);
   });
 
   test(`${file}: externe Schulungsliste bietet Suche und Akkordeon`, () => {
