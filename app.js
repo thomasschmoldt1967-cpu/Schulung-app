@@ -2464,7 +2464,7 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, has
       html += `</div>`;
     }
 
-    // ── Externe PSAgA-Schulungen ─────────────────────────
+    // ── Praktische PSAgA-Schulungen ─────────────────────────
     // Externe Teilnehmer liegen bewusst in eigenen Tabellen und nicht in users/zuweisungen.
     // Die Zuordnung erfolgt über den Firmennamen, da ältere Datensätze firma_id = NULL haben.
     const externeSchulungen = await SB.get('externe_psaga_schulungen',
@@ -2478,7 +2478,7 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, has
       const teilgenommen = teil.filter(t => t.teilgenommen).length;
       const bescheinigungen = teil.filter(t => t.bescheinigungs_nr).length;
       html += `<div style="margin-bottom:16px">
-        <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🦺 Externe PSAgA-Schulung · ${dateStr(ext.datum)}</div>
+        <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🦺 Praktische PSAgA-Schulung · ${dateStr(ext.datum)}</div>
         <div style="font-size:.77rem;color:#64748b;margin-bottom:8px">${escHtml(ext.thema || 'PSAgA-Unterweisung')}${ext.dauer_stunden ? ` · ${ext.dauer_stunden} Stunden` : ''}</div>
         <div style="display:flex;gap:10px;flex-wrap:wrap">
           ${_statKachel(teil.length, 'Teilnehmer gesamt', '#eff6ff','#1d4ed8')}
