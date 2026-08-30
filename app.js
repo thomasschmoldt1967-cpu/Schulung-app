@@ -2348,11 +2348,11 @@ function adminZeigeTenant(tenantId) {
 
   document.getElementById('detail-body').innerHTML = html;
   document.getElementById('detail-user-info').textContent = currentUser.name;
-  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws });
+  adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws, tenantName: tenant.name });
   showScreen('screen-admin-detail');
 }
 
-async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws }) {
+async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, hasBp, vorlagenZuws, tenantName }) {
   const el = document.getElementById(`tenant-statistik-${tenantId}`);
   if (!el) return;
   try {
@@ -2462,6 +2462,30 @@ async function adminLadeTenantStatistik(tenantId, { hasPsaga, hasLP, hasHub, has
           </div>`;
       }
       html += `</div>`;
+    }
+
+    // ── Externe PSAgA-Schulungen ─────────────────────────
+    // Externe Teilnehmer liegen bewusst in eigenen Tabellen und nicht in users/zuweisungen.
+    // Die Zuordnung erfolgt über den Firmennamen, da ältere Datensätze firma_id = NULL haben.
+    const externeSchulungen = await SB.get('externe_psaga_schulungen',
+      `firmenname=eq.${encodeURIComponent(tenantName || '')}&select=id,datum,thema,dauer_stunden`
+    );
+    for (const ext of (externeSchulungen || [])) {
+      const extTeilnehmer = await SB.get('externe_psaga_teilnehmer',
+        `schulung_id=eq.${encodeURIComponent(ext.id)}&select=vorname,nachname,teilgenommen,bescheinigungs_nr&order=nachname.asc,vorname.asc`
+      );
+      const teil = extTeilnehmer || [];
+      const teilgenommen = teil.filter(t => t.teilgenommen).length;
+      const bescheinigungen = teil.filter(t => t.bescheinigungs_nr).length;
+      html += `<div style="margin-bottom:16px">
+        <div style="font-weight:700;font-size:.88rem;color:#166534;margin-bottom:8px">🦺 Externe PSAgA-Schulung · ${dateStr(ext.datum)}</div>
+        <div style="font-size:.77rem;color:#64748b;margin-bottom:8px">${escHtml(ext.thema || 'PSAgA-Unterweisung')}${ext.dauer_stunden ? ` · ${ext.dauer_stunden} Stunden` : ''}</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${_statKachel(teil.length, 'Teilnehmer gesamt', '#eff6ff','#1d4ed8')}
+          ${_statKachel(teilgenommen, 'Teilgenommen', '#f0fdf4','#16a34a')}
+          ${_statKachel(bescheinigungen, 'Bescheinigungen', '#f0fdf4','#15803d')}
+        </div>
+      </div>`;
     }
 
     if (!html) html = '<p style="color:#6b7280;font-size:.85rem">Noch keine Schulungsaktivität vorhanden.</p>';
