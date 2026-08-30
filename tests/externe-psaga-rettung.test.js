@@ -58,20 +58,40 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(html, /id="eps-firmen-anzahl"/);
   });
 
-  test(`${file}: externe Schulungsliste bietet Suche und Akkordeon`, () => {
+  test(`${file}: Firmenauswahl filtert die Schulungsliste zentral`, () => {
     const source = fs.readFileSync(file, 'utf8');
-    assert.match(source, /externePsagaUebersichtEinrichten/);
-    assert.match(source, /externePsagaUebersichtFiltern/);
-    assert.match(source, /eps-suche/);
-    assert.match(source, /epsAccordion/);
+    assert.match(source, /externePsagaSchulungPasstZuAktiverFirma/);
+    assert.match(source, /externePsagaSchulungen\.filter\(externePsagaSchulungPasstZuAktiverFirma\)/);
+    assert.doesNotMatch(source, /externePsagaUebersichtEinrichten|externePsagaUebersichtFiltern|eps-suche-toolbar|id=\\?['"]eps-suche/);
   });
 
   test(`${file}: Zertifikat nennt Schulungsleiter und praktische Rettungsgrundlage`, () => {
     const source = fs.readFileSync(file, 'utf8');
     assert.match(source, /doc\.text\(trainerName, ML\+8, y\+25\)/);
     assert.match(source, /DGUV Regel 112-198.*DGUV Regel 112-199.*praktische Rettungsübungen durchgeführt/);
-    assert.match(source, /splitTextToSize\(modulUntertitel, CW - 22\)/);
+    assert.match(source, /modulUntertitelZeilen/);
     assert.match(source, /365 TAGE GÜLTIG BIS/);
+  });
+
+  test(`${file}: externes Zertifikat enthält Ort, Anschrift, Logos und beide DGUV-Regeln`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /ort:s\.ort/);
+    assert.match(source, /SCHULUNGSORT/);
+    assert.match(source, /Petermax-Müller-Str\. 3, 30880 Laatzen/);
+    assert.match(source, /DGUV 112-198 \+ 112-199/);
+    assert.match(source, /cscLogoDataUrl/);
+    assert.match(source, /csc-logo-transparent\.png/);
+    assert.match(source, /doc\.addImage\(FISAT_LOGO_B64, 'PNG'/);
+    assert.match(source, /FISAT MITGLIED/);
+    assert.match(source, /CSC GmbH\s+·\s+Petermax-Müller-Str\. 3, 30880 Laatzen/);
+    assert.match(source, /sibeLogoTransparent/);
+  });
+
+  test(`${file}: langer externer Schulungstitel wird mehrzeilig dargestellt`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /modulTitelZeilen/);
+    assert.match(source, /modulUntertitelZeilen/);
+    assert.match(source, /modulBoxH/);
   });
 }
 

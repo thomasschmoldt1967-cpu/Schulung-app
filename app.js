@@ -11198,6 +11198,15 @@ const ISO14001_LOGO_B64 = "iVBORw0KGgoAAAANSUhEUgAAASsAAADkCAIAAABPD5U2AAAAAXNSR
 
 // SIBEDA-JPEG für das PDF in ein transparentes PNG umwandeln, damit kein weißer Kasten erscheint.
 let sibeLogoTransparentCache = null;
+let cscLogoDataUrlCache = null;
+async function cscLogoDataUrl() {
+  if (cscLogoDataUrlCache) return cscLogoDataUrlCache;
+  const img = new Image(); img.src = 'csc-logo-transparent.png';
+  await new Promise((resolve, reject) => { img.onload = resolve; img.onerror = reject; });
+  const canvas = document.createElement('canvas'); canvas.width = img.naturalWidth; canvas.height = img.naturalHeight;
+  canvas.getContext('2d').drawImage(img, 0, 0); cscLogoDataUrlCache = canvas.toDataURL('image/png');
+  return cscLogoDataUrlCache;
+}
 async function sibeLogoTransparent() {
   if (sibeLogoTransparentCache) return sibeLogoTransparentCache;
   const img = new Image(); img.src = 'data:image/jpeg;base64,' + SIBEDA_LOGO_B64;
@@ -11253,13 +11262,18 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf, opti
     // Blaue Trennlinie unten
     doc.setFillColor(...BLAU); doc.rect(0, HH - 1, W, 1, 'F');
 
-    // SIBEDA-Logo — links, proportional skaliert auf Höhe 24mm
+    // CSC GmbH-Logo oberhalb des SIBEDA-Logos
+    try {
+      doc.addImage(await cscLogoDataUrl(), 'PNG', 10, 3, 38, 10.3);
+    } catch(e) {}
+
+    // SIBEDA-Logo — links, proportional skaliert auf Höhe 22mm
     // Original SIBEDA-Logo ist Querformat → Breite berechnen aus Seitenverhältnis ~3:1
     try {
-      const sibeH = 24;
+      const sibeH = 22;
       const sibeW = Math.round(sibeH * 3.0); // Querformat ca. 3:1 → 72mm breit wäre zu viel
       // Sicherer Wert: 58mm breit bei 24mm hoch (gemessen am Original)
-      doc.addImage(await sibeLogoTransparent(), 'PNG', 10, (HH - sibeH) / 2, 58, sibeH);
+      doc.addImage(await sibeLogoTransparent(), 'PNG', 10, 19, 53, sibeH);
     } catch(e) {}
 
     // Titel — vertikal zentriert in oberer Hälfte, links neben ISO-Siegeln
@@ -11310,37 +11324,54 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf, opti
     doc.text('✓', ML+CW-8, y+14.5, {align:'center'});
     y += 30;
 
-    // ── Datum-Zeile ───────────────────────────────────────────────────────────
-    const colW2 = (CW - 4) / 2;
+    // ── Datum / Schulungsort / Gültigkeit ─────────────────────────────────────
+    const colW3 = (CW - 8) / 3, infoH = 21;
     // Schulungsdatum
     doc.setFillColor(...HELLBLAU);
-    doc.roundedRect(ML, y, colW2, 16, 3, 3, 'F');
-    doc.setFillColor(...BLAU); doc.roundedRect(ML, y, 4, 16, 2, 2, 'F');
+    doc.roundedRect(ML, y, colW3, infoH, 3, 3, 'F');
+    doc.setFillColor(...BLAU); doc.roundedRect(ML, y, 4, infoH, 2, 2, 'F');
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
     doc.text('SCHULUNGSDATUM', ML+8, y+6);
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
     doc.text(fmtDat(datum), ML+8, y+13);
+
+    // Schulungsort direkt neben dem Schulungsdatum
+    const ortX = ML + colW3 + 4;
+    doc.setFillColor(...HELLBLAU);
+    doc.roundedRect(ortX, y, colW3, infoH, 3, 3, 'F');
+    doc.setFillColor(...CYAN); doc.roundedRect(ortX, y, 4, infoH, 2, 2, 'F');
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...BLAU);
+    doc.text('SCHULUNGSORT', ortX+8, y+6);
+    doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    const ortText = optionen.ort || optionen.firmenanschrift || '–';
+    doc.text(doc.splitTextToSize(ortText, colW3 - 12), ortX+8, y+13, {lineHeightFactor: 1.1});
+
     // Gültig bis
+    const validX = ML + (colW3 + 4) * 2;
     doc.setFillColor(...HELLGOLD);
-    doc.roundedRect(ML+colW2+4, y, colW2, 16, 3, 3, 'F');
-    doc.setFillColor(...GOLD); doc.roundedRect(ML+colW2+4, y, 4, 16, 2, 2, 'F');
+    doc.roundedRect(validX, y, colW3, infoH, 3, 3, 'F');
+    doc.setFillColor(...GOLD); doc.roundedRect(validX, y, 4, infoH, 2, 2, 'F');
     doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(...GOLD);
-    doc.text('365 TAGE GÜLTIG BIS', ML+colW2+12, y+6);
-    doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
-    doc.text(fmtDat(ablauf), ML+colW2+12, y+13);
-    y += 22;
+    doc.text('365 TAGE GÜLTIG BIS', validX+8, y+6);
+    doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(...DUNKELBLAU);
+    doc.text(fmtDat(ablauf), validX+8, y+13);
+    y += 27;
 
     // ── Modul-Box ─────────────────────────────────────────────────────────────
     doc.setFillColor(...DUNKELBLAU);
-    doc.roundedRect(ML, y, CW, 22, 3, 3, 'F');
-    doc.setFillColor(...CYAN); doc.roundedRect(ML, y, 4, 22, 2, 2, 'F');
+    const modulTitel = modul.titel || 'PSAgA Schulung nach DGUV 112-198';
+    const modulTitelZeilen = doc.splitTextToSize(modulTitel, CW - 22);
+    const modulUntertitel = modul.untertitel || 'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz';
+    const modulUntertitelZeilen = doc.splitTextToSize(modulUntertitel, CW - 22);
+    const modulBoxH = Math.max(22, 8 + modulTitelZeilen.length * 5.5 + modulUntertitelZeilen.length * 3.8);
+    doc.roundedRect(ML, y, CW, modulBoxH, 3, 3, 'F');
+    doc.setFillColor(...CYAN); doc.roundedRect(ML, y, 4, modulBoxH, 2, 2, 'F');
     doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(255,255,255);
-    doc.text(modul.titel || 'PSAgA Schulung nach DGUV 112-198', ML+8, y+7);
+    doc.text(modulTitelZeilen, ML+8, y+7, {lineHeightFactor: 1.05});
     doc.setFontSize(5.8); doc.setFont('helvetica','normal');
     doc.setTextColor(180, 210, 240);
-    const modulUntertitel = modul.untertitel || 'Modul 01 — Rechtliche Grundlagen persönlicher Schutzausrüstung gegen Absturz';
-    doc.text(doc.splitTextToSize(modulUntertitel, CW - 22), ML+8, y+14, {lineHeightFactor: 1.1});
-    y += 26;
+    doc.text(modulUntertitelZeilen, ML+8, y+7 + modulTitelZeilen.length * 5.5, {lineHeightFactor: 1.1});
+    y += modulBoxH + 4;
 
     // ── Schulungsinhalte — dynamisch aus PSAGA_MODULE ─────────────────────────
     doc.setFillColor(...GRUEN); doc.rect(ML, y, 4, 8, 'F');
@@ -11401,7 +11432,7 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf, opti
       doc.text('gez. ' + trainerName, ML+8, y+25);
     }
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(120,120,120);
-    doc.text('CSC GmbH  ·  ' + fmtDat(datum), ML+8, y+32);
+    doc.text('CSC GmbH  ·  Petermax-Müller-Str. 3, 30880 Laatzen  ·  ' + fmtDat(datum), ML+8, y+32);
 
     // Rechts: FISAT zentriert
     const rx = ML + halfW + 4;
@@ -11422,7 +11453,7 @@ async function psagaZertifikatPDF(modul, userName, tenantId, datum, ablauf, opti
     doc.setFillColor(...HELLGRUEN);
     doc.roundedRect(ML, y, CW, 10, 2, 2, 'F');
     doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(...GRUEN);
-    doc.text('Rechtsgrundlagen: ArbSchG § 12  ·  PSA-BV  ·  DGUV 112-198  ·  EU-VO 2016/425  ·  DIN EN 361', W/2, y+6.5, {align:'center'});
+    doc.text('Rechtsgrundlagen: ArbSchG § 12  ·  PSA-BV  ·  DGUV 112-198 + 112-199  ·  EU-VO 2016/425  ·  DIN EN 361', W/2, y+6.5, {align:'center', maxWidth:CW-8});
     y += 14;
 
     // ── Footer ────────────────────────────────────────────────────────────────
@@ -16838,6 +16869,7 @@ function externePsagaFirmaAuswaehlen(firmaId) {
   const form=document.getElementById('eps-schulung-form'); if(form) form.style.display='block';
   const status=document.getElementById('eps-firma-status'); if(status) status.textContent=`Ausgewählt: ${f.firmenname} · Neue Schulung anlegen`;
   externePsagaFirmenRendern();
+  externePsagaListeRendern();
 }
 function externePsagaNeueFirma() {
   externePsagaAktiveFirmaId = '';
@@ -16858,49 +16890,28 @@ async function externePsagaRendern() {
     for (const s of externePsagaSchulungen) externePsagaTeilnehmer[s.id] = await SB.get('externe_psaga_teilnehmer', `schulung_id=eq.${encodeURIComponent(s.id)}&order=nachname.asc,vorname.asc`);
     externePsagaFirmenRendern();
     externePsagaListeRendern();
-    externePsagaUebersichtEinrichten();
   } catch (e) {
     el.innerHTML = `<div class="error-msg">❌ Tabelle nicht erreichbar: ${escHtml(e.message).slice(0,180)}<br><small>Bitte zuerst supabase-migration-externe-psaga.sql ausführen.</small></div>`;
   }
 }
+function externePsagaSchulungPasstZuAktiverFirma(s) {
+  const firmaId = externePsagaAktiveFirmaId;
+  if (!firmaId) return false;
+  if (firmaId.startsWith('legacy:')) {
+    const firma = externePsagaFirmenAnzeige.find(f => f.id === firmaId);
+    return !!firma && !s.firma_id && externePsagaFirmenSchluessel(s.firmenname) === externePsagaFirmenSchluessel(firma.firmenname);
+  }
+  return s.firma_id === firmaId;
+}
 function externePsagaListeRendern() {
   const el=document.getElementById('eps-liste'); if(!el)return;
-  if(!externePsagaSchulungen.length){el.innerHTML='<div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe PSAgA-Schulung angelegt.</p></div>';return;}
-      el.innerHTML=externePsagaSchulungen.map(s=>{const teil=externePsagaTeilnehmer[s.id]||[];const themen=externePsagaZertifikatInhalte(s).length;return `<div style="border:1px solid #dbe3ee;border-left:4px solid #166534;border-radius:10px;padding:14px;margin-bottom:12px;background:#fff"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-weight:700;color:#166534">🦺 ${escHtml(s.firmenname)}</div><div style="font-size:.8rem;color:#64748b;margin-top:4px">📅 ${externeDatum(s.datum)} · 📍 ${escHtml(s.ort)} · ${teil.length} Teilnehmer</div><div style="font-size:.78rem;color:#64748b;margin-top:3px">${escHtml(s.thema)}</div><div style="font-size:.76rem;color:${themen?'#15803d':'#b45309'};margin-top:4px">${themen?`✅ ${themen} Zertifikatsthema/-themen ausgewählt`:'⏳ Themen nach der Schulung noch auswählen'}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerHinzufuegen('${s.id}')">➕ 2. Teilnehmerliste vor Ort</button><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerlisteFoto('${s.id}')">📷 Teilnehmerliste fotografieren</button>${s.teilnehmerliste_foto_path?`<button class="btn btn-outline btn-sm" onclick="oeffneStorageBild('${escHtml(s.teilnehmerliste_foto_path)}')">🖼 Liste öffnen</button>`:''}<button class="btn btn-outline btn-sm" onclick="externePsagaInhalteAuswaehlen('${s.id}')">📝 3. Schulung durchführen / Themen auswählen</button><button class="btn btn-primary btn-sm" onclick="externePsagaAlleZertifikate('${s.id}')">📄 Zertifikate erstellen &amp; speichern</button><button class="btn btn-success btn-sm" onclick="externePsagaVersandVorschau('${s.id}')">📧 An Firma senden</button></div></div><div style="margin-top:10px">${teil.length?teil.map(t=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #eef2f7;font-size:.82rem"><span>${t.teilgenommen?'✅':'⚪'} ${escHtml(externeName(t))}</span><span style="display:flex;gap:5px">${t.pdf_path?`<button class="btn btn-outline btn-sm" onclick="oeffnePdfSigniert('${escHtml(t.pdf_path)}')">📄 Öffnen</button>`:''}<button class="btn btn-outline btn-sm" onclick="externePsagaZertifikat('${s.id}','${t.id}')">${t.pdf_path?'↻ Neu erstellen':'📄 Erstellen'}</button><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerBearbeiten('${s.id}','${t.id}')">✏️ Bearbeiten</button></span></div>`).join(''):'<div style="font-size:.8rem;color:#9ca3af;margin-top:10px">Noch keine Teilnehmer erfasst.</div>'}</div></div>`;}).join('');
+  if (!externePsagaAktiveFirmaId) { el.innerHTML='<div class="empty-state"><div class="icon">🔍</div><p>Bitte oben eine Firma auswählen, um deren Schulungen anzuzeigen.</p></div>'; return; }
+  const firma = externePsagaFirmenAnzeige.find(f => f.id === externePsagaAktiveFirmaId);
+  const schulungen = externePsagaSchulungen.filter(externePsagaSchulungPasstZuAktiverFirma);
+  const kopf = `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px"><strong style="color:#166534">Schulungen von ${escHtml(firma?.firmenname || 'ausgewählter Firma')}</strong><span style="font-size:.76rem;color:#64748b">${schulungen.length} Schulung${schulungen.length===1?'':'en'}</span></div>`;
+  if(!schulungen.length){el.innerHTML=kopf+'<div class="empty-state"><div class="icon">🦺</div><p>Noch keine externe PSAgA-Schulung für diese Firma angelegt.</p></div>';return;}
+  el.innerHTML=kopf+schulungen.map(s=>{const teil=externePsagaTeilnehmer[s.id]||[];const themen=externePsagaZertifikatInhalte(s).length;return `<div style="border:1px solid #dbe3ee;border-left:4px solid #166534;border-radius:10px;padding:14px;margin-bottom:12px;background:#fff"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start"><div><div style="font-weight:700;color:#166534">🦺 ${escHtml(s.firmenname)}</div><div style="font-size:.8rem;color:#64748b;margin-top:4px">📅 ${externeDatum(s.datum)} · 📍 ${escHtml(s.ort)} · ${teil.length} Teilnehmer</div><div style="font-size:.78rem;color:#64748b;margin-top:3px">${escHtml(s.thema)}</div><div style="font-size:.76rem;color:${themen?'#15803d':'#b45309'};margin-top:4px">${themen?`✅ ${themen} Zertifikatsthema/-themen ausgewählt`:'⏳ Themen nach der Schulung noch auswählen'}</div></div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerHinzufuegen('${s.id}')">➕ 2. Teilnehmerliste vor Ort</button><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerlisteFoto('${s.id}')">📷 Teilnehmerliste fotografieren</button>${s.teilnehmerliste_foto_path?`<button class="btn btn-outline btn-sm" onclick="oeffneStorageBild('${escHtml(s.teilnehmerliste_foto_path)}')">🖼 Liste öffnen</button>`:''}<button class="btn btn-outline btn-sm" onclick="externePsagaInhalteAuswaehlen('${s.id}')">📝 3. Schulung durchführen / Themen auswählen</button><button class="btn btn-primary btn-sm" onclick="externePsagaAlleZertifikate('${s.id}')">📄 Zertifikate erstellen &amp; speichern</button><button class="btn btn-success btn-sm" onclick="externePsagaVersandVorschau('${s.id}')">📧 An Firma senden</button></div></div><div style="margin-top:10px">${teil.length?teil.map(t=>`<div style="display:flex;justify-content:space-between;gap:8px;align-items:center;padding:7px 0;border-top:1px solid #eef2f7;font-size:.82rem"><span>${t.teilgenommen?'✅':'⚠️'} ${escHtml(externeName(t))}${t.funktion?` · ${escHtml(t.funktion)}`:''}</span><span style="display:flex;gap:5px;flex-wrap:wrap"><button class="btn btn-outline btn-sm" onclick="externePsagaTeilnehmerBearbeiten('${s.id}','${t.id}')">✏️</button>${t.pdf_path?`<button class="btn btn-outline btn-sm" onclick="oeffneStoragePdf('${escHtml(t.pdf_path)}')">📄 PDF</button>`:''}</span></div>`).join(''):'<div style="padding:10px 0;color:#9a3412;font-size:.82rem">Noch keine Teilnehmer erfasst.</div>'}</div></div>`;}).join('');
 }
-function externePsagaUebersichtEinrichten() {
-  const el = document.getElementById('eps-liste');
-  if (!el || !externePsagaSchulungen.length) return;
-  let toolbar = document.getElementById('eps-suche-toolbar');
-  if (!toolbar) {
-    toolbar = document.createElement('div'); toolbar.id = 'eps-suche-toolbar';
-    toolbar.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 12px;padding:10px 12px;background:#f8fafc;border:1px solid #dbe3ee;border-radius:10px';
-    toolbar.innerHTML = '<label for="eps-suche" style="font-size:.82rem;font-weight:600;color:#334155">🔎 Firma suchen</label><input id="eps-suche" type="search" placeholder="Firmenname, Ansprechpartner, Ort …" style="flex:1;min-width:220px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:8px;font-size:.84rem"><span id="eps-suche-anzahl" style="font-size:.76rem;color:#64748b"></span>';
-    el.prepend(toolbar);
-    toolbar.querySelector('#eps-suche').addEventListener('input', externePsagaUebersichtFiltern);
-  }
-  const cards = [...el.children].filter(x => x !== toolbar);
-  cards.forEach(card => {
-    card.dataset.epsSuchtext = card.textContent.toLowerCase();
-    const kopf = card.firstElementChild, inhalt = card.lastElementChild;
-    if (!kopf || !inhalt || card.dataset.epsAccordion === '1') return;
-    card.dataset.epsAccordion = '1'; inhalt.style.display = 'none';
-    kopf.style.cursor = 'pointer'; kopf.setAttribute('role','button'); kopf.setAttribute('aria-expanded','false');
-    kopf.addEventListener('click', e => { if (e.target.closest('button')) return; const offen = inhalt.style.display !== 'none'; inhalt.style.display = offen ? 'none' : 'block'; kopf.setAttribute('aria-expanded', String(!offen)); });
-  });
-  externePsagaUebersichtFiltern();
-}
-
-function externePsagaUebersichtFiltern() {
-  const el = document.getElementById('eps-liste'), input = document.getElementById('eps-suche');
-  if (!el) return;
-  const toolbar = document.getElementById('eps-suche-toolbar'), suchtext = (input?.value || '').toLowerCase().trim();
-  const cards = [...el.children].filter(x => x !== toolbar);
-  let sichtbar = 0;
-  cards.forEach(card => { const show = !suchtext || (card.dataset.epsSuchtext || card.textContent.toLowerCase()).includes(suchtext); card.style.display = show ? '' : 'none'; if (show) sichtbar++; });
-  const anzahl = document.getElementById('eps-suche-anzahl'); if (anzahl) anzahl.textContent = `${sichtbar} von ${cards.length} Schulung${cards.length===1?'':'en'}`;
-}
-
 function externePsagaModuleRendern() {
   const el=document.getElementById('eps-module'); if(!el||typeof PSAGA_MODULE==='undefined')return;
   const moduleHtml=PSAGA_MODULE.map(m=>`<label style="display:flex;gap:6px;align-items:flex-start;padding:6px 7px;background:#f0fdf4;border-radius:7px"><input type="checkbox" class="eps-mod-check" value="${escHtml(m.id)}" data-titel="${escHtml(m.titel)}"> <span>${escHtml(m.titel)}</span></label>`).join('');
@@ -16925,7 +16936,8 @@ async function externePsagaSchulungSpeichern() {
           const alt=externePsagaSchulungen.filter(s=>!s.firma_id&&externePsagaFirmenSchluessel(s.firmenname)===externePsagaFirmenSchluessel(legacyFirmaName));
           for(const s of alt) await SB.patch('externe_psaga_schulungen',`id=eq.${encodeURIComponent(s.id)}`,{firma_id:firmaId});
         }
-await SB.post('externe_psaga_schulungen',d);
+    await SB.post('externe_psaga_schulungen',d);
+    externePsagaAktiveFirmaId = firmaId;
     await sbAudit('EXTERNE_PSAGA_NEU',`${d.firmenname} · ${externeDatum(d.datum)}`);
     msg.style.color='#15803d'; msg.textContent='✅ Neue Schulung gespeichert. Jetzt Teilnehmer hinzufügen.';
     await externePsagaRendern();
@@ -16976,7 +16988,7 @@ async function externePsagaFotoSpeichern(){const p=externePsagaFotoPuffer,msg=do
 
 function externePdfBlob(d){if(typeof window.jspdf==='undefined')throw new Error('PDF-Bibliothek nicht geladen.');const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'mm',format:'a4'}),W=210,ML=18,CW=174;doc.setFillColor(26,58,92);doc.rect(0,0,W,35,'F');doc.setTextColor(255,255,255);doc.setFont('helvetica','bold');doc.setFontSize(9);doc.text('CSC SCHULUNGSMANAGEMENT',ML,12);doc.setFontSize(17);doc.text('Teilnahmebescheinigung',ML,25);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.text('PSAgA · externe Präsenzschulung',W-ML,12,{align:'right'});let y=54;doc.setTextColor(26,58,92);doc.setFont('helvetica','bold');doc.setFontSize(13);doc.text('Hiermit wird bestätigt, dass',W/2,y,{align:'center'});y+=15;doc.setFontSize(21);doc.text(externeName(d.teilnehmer),W/2,y,{align:'center'});y+=15;doc.setDrawColor(37,99,168);doc.setLineWidth(.7);doc.line(ML,y,W-ML,y);y+=14;doc.setTextColor(45,55,72);doc.setFont('helvetica','normal');doc.setFontSize(10);[`an der Schulung „${d.schulung.thema}“`,`für das Unternehmen ${d.schulung.firmenname}`,`am ${externeDatum(d.schulung.datum)} in ${d.schulung.ort}`].forEach(z=>{doc.text(z,W/2,y,{align:'center'});y+=8;});y+=10;doc.setFillColor(239,246,255);doc.roundedRect(ML,y,CW,35,2,2,'F');doc.setTextColor(26,58,92);doc.setFont('helvetica','bold');doc.setFontSize(10);doc.text('Schulungsgrundlage',ML+7,y+10);doc.setFont('helvetica','normal');doc.setFontSize(8.5);doc.text('DGUV Regel 112-198 · PSA-Benutzungsverordnung',ML+7,y+19);doc.text('Theoretische und praktische Unterweisung zur sicheren Benutzung von PSAgA.',ML+7,y+27);y+=52;doc.setTextColor(80,80,80);doc.setFontSize(9);doc.text(`Schulungsleiter: ${d.schulung.schulungsleiter_vorname} ${d.schulung.schulungsleiter_nachname}`,ML,y);y+=32;try{doc.addImage(BP_SCHULUNGSLEITER_SIG,'PNG',ML,y-27,62,21);}catch(e){}doc.setDrawColor(120,120,120);doc.setLineWidth(.25);doc.line(ML,y,W-ML,y);doc.setFontSize(7.5);doc.text(`${d.schulung.schulungsleiter_vorname} ${d.schulung.schulungsleiter_nachname} · Schulungsleitung`,ML,y+5);doc.text(`Bescheinigungs-Nr.: ${d.teilnehmer.bescheinigungs_nr}`,W-ML,y+5,{align:'right'});doc.setFillColor(26,58,92);doc.rect(0,273,W,15,'F');doc.setTextColor(255,255,255);doc.setFontSize(7);doc.text('CSC GmbH · Petermax-Müller-Str. 3 · 30880 Laatzen · Tel. 05102-9319730',W/2,281,{align:'center'});return doc;}
 function externeBlobBase64(blob){return new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=reject;r.readAsDataURL(blob);});}
-    async function externePsagaZertifikat(schulungId,teilnehmerId,download=true,persist=true){const s=externePsagaSchulungen.find(x=>x.id===schulungId),t=(externePsagaTeilnehmer[schulungId]||[]).find(x=>x.id===teilnehmerId);const zertifikatInhalte=externePsagaZertifikatInhalte(s);if(!s||!t||!t.teilgenommen){showToast('⚠️ Nur teilgenommene Teilnehmer erhalten eine Bescheinigung.','#f59e0b');return null;}if(!zertifikatInhalte.length){showToast('⚠️ Bitte zuerst die Schulung durchführen und die Zertifikatsthemen auswählen.','#f59e0b');return null;}try{if(!t.bescheinigungs_nr)t.bescheinigungs_nr=`PSAGA-E-${new Date(s.datum).getFullYear()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;const datum=new Date(`${s.datum}T12:00:00`);const ablauf=new Date(datum);ablauf.setFullYear(datum.getFullYear()+1);const doc=await psagaZertifikatPDF({titel:s.thema,untertitel:'Externe PSAgA-Präsenzschulung'},externeName(t),null,datum,ablauf,{extern:true,firma:s.firmenname,firmenanschrift:s.firmenanschrift||s.ort,inhalte:zertifikatInhalte,schulungsleiter:`${s.schulungsleiter_vorname} ${s.schulungsleiter_nachname}`,schulungsleiterUnterschrift:externePsagaSignaturAusSchulung(s),bescheinigungsNr:t.bescheinigungs_nr});if(!doc)throw new Error('PDF-Erstellung abgebrochen. Bitte Themen, Teilnehmerdaten und Unterschrift prüfen.');const blob=doc.output('blob'),filename=`PSAgA_Teilnahmebescheinigung_${t.vorname}_${t.nachname}_${s.datum}.pdf`.replace(/[^a-zA-Z0-9_.-]+/g,'_');if(!persist){if(download)doc.save(filename);return{blob,filename};}const pdfPath=await SB.uploadPdf(blob,`externe-psaga/${schulungId}/${teilnehmerId}_${t.bescheinigungs_nr}.pdf`);await SB.patch('externe_psaga_teilnehmer',`id=eq.${encodeURIComponent(teilnehmerId)}`,{bescheinigungs_nr:t.bescheinigungs_nr,pdf_path:pdfPath});if(download)doc.save(filename);t.pdf_path=pdfPath;return{blob,filename};}catch(e){const detail=String(e?.message||'');const storageHinweis=/Bucket not found|NoSuchBucket|row violates row-level security|AccessDenied|Unauthorized/i.test(detail)?' Supabase-Storage nicht eingerichtet: Bitte supabase-migration-schulung-pdfs-storage.sql im SQL-Editor ausführen.':'';showToast('❌ Zertifikat konnte nicht erstellt/gespeichert werden: '+detail.slice(0,140)+storageHinweis,'#dc2626');console.error('Externe PSAgA-Zertifikat/Storage-Fehler:',e);return null;}}
+    async function externePsagaZertifikat(schulungId,teilnehmerId,download=true,persist=true){const s=externePsagaSchulungen.find(x=>x.id===schulungId),t=(externePsagaTeilnehmer[schulungId]||[]).find(x=>x.id===teilnehmerId);const zertifikatInhalte=externePsagaZertifikatInhalte(s);if(!s||!t||!t.teilgenommen){showToast('⚠️ Nur teilgenommene Teilnehmer erhalten eine Bescheinigung.','#f59e0b');return null;}if(!zertifikatInhalte.length){showToast('⚠️ Bitte zuerst die Schulung durchführen und die Zertifikatsthemen auswählen.','#f59e0b');return null;}try{if(!t.bescheinigungs_nr)t.bescheinigungs_nr=`PSAGA-E-${new Date(s.datum).getFullYear()}-${Math.random().toString(36).slice(2,8).toUpperCase()}`;const datum=new Date(`${s.datum}T12:00:00`);const ablauf=new Date(datum);ablauf.setFullYear(datum.getFullYear()+1);const doc=await psagaZertifikatPDF({titel:s.thema,untertitel:'Externe PSAgA-Präsenzschulung'},externeName(t),null,datum,ablauf,{extern:true,firma:s.firmenname,firmenanschrift:s.firmenanschrift||s.ort,ort:s.ort,inhalte:zertifikatInhalte,schulungsleiter:`${s.schulungsleiter_vorname} ${s.schulungsleiter_nachname}`,schulungsleiterUnterschrift:externePsagaSignaturAusSchulung(s),bescheinigungsNr:t.bescheinigungs_nr});if(!doc)throw new Error('PDF-Erstellung abgebrochen. Bitte Themen, Teilnehmerdaten und Unterschrift prüfen.');const blob=doc.output('blob'),filename=`PSAgA_Teilnahmebescheinigung_${t.vorname}_${t.nachname}_${s.datum}.pdf`.replace(/[^a-zA-Z0-9_.-]+/g,'_');if(!persist){if(download)doc.save(filename);return{blob,filename};}const pdfPath=await SB.uploadPdf(blob,`externe-psaga/${schulungId}/${teilnehmerId}_${t.bescheinigungs_nr}.pdf`);await SB.patch('externe_psaga_teilnehmer',`id=eq.${encodeURIComponent(teilnehmerId)}`,{bescheinigungs_nr:t.bescheinigungs_nr,pdf_path:pdfPath});if(download)doc.save(filename);t.pdf_path=pdfPath;return{blob,filename};}catch(e){const detail=String(e?.message||'');const storageHinweis=/Bucket not found|NoSuchBucket|row violates row-level security|AccessDenied|Unauthorized/i.test(detail)?' Supabase-Storage nicht eingerichtet: Bitte supabase-migration-schulung-pdfs-storage.sql im SQL-Editor ausführen.':'';showToast('❌ Zertifikat konnte nicht erstellt/gespeichert werden: '+detail.slice(0,140)+storageHinweis,'#dc2626');console.error('Externe PSAgA-Zertifikat/Storage-Fehler:',e);return null;}}
 function externePsagaVersandFreigeben(cb){const b=document.getElementById('eps-versand-verbindlich');if(b)b.disabled=!cb.checked;}
 async function externePsagaVersandVorschau(schulungId){const s=externePsagaSchulungen.find(x=>x.id===schulungId),teil=(externePsagaTeilnehmer[schulungId]||[]).filter(t=>t.teilgenommen);if(!s||!teil.length){showToast('⚠️ Keine teilgenommenen Teilnehmer vorhanden.','#f59e0b');return;}const items=[];for(const t of teil){const r=await externePsagaZertifikat(schulungId,t.id,false,false);if(r)items.push({t,r});}if(!items.length)return;let modal=document.getElementById('eps-versand-vorschau');if(!modal){modal=document.createElement('div');modal.id='eps-versand-vorschau';modal.className='modal-overlay';modal.innerHTML='<div class="modal-box" style="max-width:680px"><div class="modal-title">👁 Zertifikate prüfen – noch kein Versand</div><p style="font-size:.82rem;color:#64748b">Jedes Zertifikat kann einzeln als PDF geöffnet werden. Bitte Name, Thema, Datum, Inhalte, Schulungsleiter und Unterschrift prüfen. Änderungen erfolgen über „Teilnehmer bearbeiten“ oder „Themen auswählen“.</p><div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px;font-size:.82rem;color:#9a3412;font-weight:600">⚠️ Der Versand erfolgt erst nach ausdrücklicher Bestätigung.</div><div id="eps-versand-vorschau-liste"></div><label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:.82rem"><input id="eps-versand-pruefung" type="checkbox" onchange="externePsagaVersandFreigeben(this)"> Ich habe alle Zertifikate geöffnet und geprüft. Die Daten sind korrekt.</label><div class="modal-actions"><button class="btn btn-secondary" onclick="document.getElementById(\'eps-versand-vorschau\').classList.remove(\'active\')">Schließen</button><button id="eps-versand-verbindlich" class="btn btn-success" disabled onclick="document.getElementById(\'eps-versand-vorschau\').classList.remove(\'active\');externePsagaPerMail(document.getElementById(\'eps-versand-vorschau\').dataset.schulungId)">📧 Verbindlich an Firma senden</button></div></div>';document.body.appendChild(modal);}modal.dataset.schulungId=schulungId;const pruefung=document.getElementById('eps-versand-pruefung');if(pruefung){pruefung.checked=false;externePsagaVersandFreigeben(pruefung);}document.getElementById('eps-versand-vorschau-liste').innerHTML=items.map(({t})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #e5e7eb"><span>✅ ${escHtml(externeName(t))}</span><button class="btn btn-outline btn-sm eps-preview-open">Zertifikat als PDF-Vorschau öffnen</button></div>`).join('');items.forEach(({r},i)=>{document.querySelectorAll('#eps-versand-vorschau-liste .eps-preview-open')[i].onclick=()=>window.open(URL.createObjectURL(r.blob),'_blank','noopener');});modal.classList.add('active');}
 async function externePsagaAlleZertifikate(schulungId){const teil=(externePsagaTeilnehmer[schulungId]||[]).filter(t=>t.teilgenommen);if(!teil.length){showToast('⚠️ Keine teilgenommenen Teilnehmer vorhanden.','#f59e0b');return;}for(const t of teil)await externePsagaZertifikat(schulungId,t.id,true);showToast(`✅ ${teil.length} Zertifikat(e) erstellt und gespeichert.`,'#15803d');await externePsagaRendern();}
