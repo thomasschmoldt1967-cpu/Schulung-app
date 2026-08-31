@@ -4825,6 +4825,53 @@ function verantwBereicheModal() {
   verantwBereicheRendern();
 }
 
+function verantwMitarbeiterZuordnungModal() {
+  const mitarbeiter = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.tenant_id === currentUser.tenantId && !u.archiviert).sort((a,b) => a.name.localeCompare(b.name, 'de'));
+  const bereiche = APP_BEREICHE.filter(b => b.tenant_id === currentUser.tenantId);
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9600;display:flex;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto';
+  const bereichOptionen = bereiche.map(b => {
+    const bl = APP_USERS.filter(u => u.role === 'bereichsleiter' && u.tenant_id === currentUser.tenantId && u.bereich_id === b.id).map(u => u.name).join(', ');
+    return `<label style="display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer">
+      <input class="ma-bereich-radio" type="radio" name="ma-bereich-__ID__" value="${escHtml(b.id)}" data-user-id="__ID__" style="margin-top:3px;accent-color:#1e3a5f">
+      <span><strong style="font-size:.82rem;color:#1e3a5f">${escHtml(b.name)}</strong><br><small style="color:#6b7280">${bl ? 'Bereichsleiter: ' + escHtml(bl) : 'Noch kein Bereichsleiter hinterlegt'}</small></span>
+    </label>`;
+  }).join('');
+  const rows = mitarbeiter.map(ma => {
+    const optionen = bereichOptionen.replaceAll('__ID__', ma.id);
+    return `<div style="padding:12px;border:1px solid #dbe3ec;border-radius:10px;margin-bottom:9px;background:#f8fafc">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px"><strong style="color:#1e3a5f;font-size:.88rem">${escHtml(ma.name)}</strong><span style="font-size:.72rem;color:#6b7280">${escHtml(ma.personalnummer || ma.mobil || 'Keine Zusatzdaten')}</span></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px">
+        <label style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer"><input class="ma-bereich-radio" type="radio" name="ma-bereich-${ma.id}" value="" data-user-id="${escHtml(ma.id)}" ${!ma.bereich_id ? 'checked' : ''} style="accent-color:#1e3a5f"><span style="font-size:.82rem;color:#6b7280">Nicht zugeordnet</span></label>
+        ${optionen.replace(new RegExp(`value="${escHtml(ma.bereich_id || '__none__')}"`), `$& checked`)}
+      </div>
+    </div>`;
+  }).join('');
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:760px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3 style="margin:0;font-size:1.05rem;color:#1e3a5f">☑️ Mitarbeiter Bereichsleitern zuordnen</h3><button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button></div>
+    <p style="margin:0 0 14px;color:#6b7280;font-size:.8rem">Alle Mitarbeiter des eigenen Mandanten. Pro Mitarbeiter genau einen Bereich auswählen; dadurch wird der zuständige Bereichsleiter festgelegt.</p>
+    <div id="ma-zuordnung-fehler" style="color:#dc2626;font-size:.82rem;min-height:18px;margin-bottom:5px"></div>
+    <div>${rows || '<div style="text-align:center;color:#9ca3af;padding:24px">Noch keine Mitarbeiter angelegt.</div>'}</div>
+    <div style="display:flex;gap:10px;margin-top:14px"><button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button><button onclick="verantwMitarbeiterZuordnungSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">💾 Zuordnungen speichern</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+}
+
+async function verantwMitarbeiterZuordnungSpeichern(modal) {
+  const auswahl = [...modal.querySelectorAll('.ma-bereich-radio:checked')];
+  const fehler = modal.querySelector('#ma-zuordnung-fehler');
+  const mitarbeiter = APP_USERS.filter(u => u.role === 'mitarbeiter' && u.tenant_id === currentUser.tenantId && !u.archiviert);
+  if (!auswahl.length && mitarbeiter.length) { fehler.textContent = 'Bitte mindestens eine Zuordnung prüfen.'; return; }
+  try {
+    await Promise.all(auswahl.map(radio => SB.patch('users', `id=eq.${radio.dataset.userId}`, { bereich_id: radio.value || null })));
+    auswahl.forEach(radio => { const ma = APP_USERS.find(u => u.id === radio.dataset.userId); if (ma) ma.bereich_id = radio.value || null; });
+    await sbAudit('MITARBEITER_BEREICHSLEITER_ZUORDNUNG', `${auswahl.length} Mitarbeiter-Zuordnungen gespeichert`);
+    modal.remove();
+    showToast(`✅ ${auswahl.length} Mitarbeiter-Zuordnung(en) gespeichert.`, '#0f5132');
+    renderMitarbeiterListe();
+  } catch (e) { fehler.textContent = 'Fehler beim Speichern: ' + e.message; }
+}
+
 // Bereichsleiter: Schulungsfreigaben anzeigen
 function blSchulungsFreigabenAnzeigen() {
   // Zeigt welche Schulungen der Verantwortliche für diesen Bereich freigegeben hat
@@ -5216,11 +5263,14 @@ function renderSubDashboard() {
   const maImport = document.getElementById('sub-ma-import');
   const kalBtns = document.getElementById('sub-kalender-buttons');
   const bereicheBtn = document.getElementById('sub-bereiche-btn');
+  const maZuordnungBtn = document.getElementById('sub-ma-zuordnung-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
-  // Mitarbeiter-Import nur für firma und admin sichtbar
-  const kannImportieren = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
+  const kannVerwalten = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
+  if (maZuordnungBtn) maZuordnungBtn.style.display = kannVerwalten ? 'flex' : 'none';
+  // Mitarbeiter-Import nur für firma, admin und Verantwortliche sichtbar
+  const kannImportieren = kannVerwalten;
   if (maImport) maImport.style.display = kannImportieren ? '' : 'none';
   if (kalBtns) {
     if (isMitarbeiter) {
