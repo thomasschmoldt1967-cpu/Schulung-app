@@ -5195,7 +5195,7 @@ function renderSubDashboard() {
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma und admin sichtbar
-  const kannImportieren = currentUser.role === 'firma' || currentUser.role === 'admin';
+  const kannImportieren = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
   if (maImport) maImport.style.display = kannImportieren ? '' : 'none';
   if (kalBtns) {
     if (isMitarbeiter) {
@@ -6480,9 +6480,19 @@ async function gastAbschliessen() {
 
 let importDaten = []; // Parsed rows from Excel
 
-// ══════════════════════════════════════════════════════════
-// Einzelnen Mitarbeiter anlegen
-// ══════════════════════════════════════════════════════════
+// Öffnet auf Android/Telefon die SMS-App mit fertig ausgefüllten Zugangsdaten.
+// Kein SMS-Anbieter-Schlüssel im Frontend nötig; der Versand wird vom Benutzer bestätigt.
+function smsZugangSenden(handynrEncoded, nameEncoded, pwEncoded) {
+  const handynr = decodeURIComponent(handynrEncoded || '');
+  const name = decodeURIComponent(nameEncoded || '');
+  const pw = decodeURIComponent(pwEncoded || '');
+  if (!handynr || !pw) { showToast('⚠️ Für diesen Mitarbeiter fehlen Handynummer oder Passwort.', '#b45309'); return; }
+  const login = handynr.replace(/^00/, '+').replace(/^0/, '+49');
+  const text = `Hallo ${name},%0A%0Adeine Zugangsdaten für die CSC-Schulungsapp:%0A%0ALogin: ${login}%0APasswort: ${pw}%0A%0ALink: https://schulung.csc-hannover.de%0A%0ABitte ändere das Passwort beim ersten Login.`;
+  window.location.href = `sms:${encodeURIComponent(handynr)}?body=${text}`;
+}
+
+// ── Einzelnen Mitarbeiter anlegen ────────────────────────────
 function mitarbeiterEinzelnOeffnen() {
   if (currentUser && currentUser.role === 'mitarbeiter') {
     alert('Diese Funktion steht nur Verantwortlichen zur Verfügung.');
@@ -6588,7 +6598,8 @@ async function mitarbeiterEinzelnSpeichern() {
       (bereich  ? `<div style="margin-bottom:6px"><strong>Bereich:</strong> ${escHtml(bereich)}</div>` : '') +
       `<div style="margin-bottom:6px"><strong>Login:</strong> <code style="background:#f0f9ff;padding:2px 6px;border-radius:4px;font-size:.9rem">${escHtml(email)}</code></div>` +
       `<div style="margin-bottom:6px"><strong>Passwort:</strong> <code style="background:#dcfce7;padding:2px 6px;border-radius:4px;font-size:.9rem">${pw}</code></div>` +
-      `<div style="color:#0369a1;margin-top:8px">📱 Zugangsdaten bitte per WhatsApp/SMS an ${escHtml(handynr)} senden.</div>`;
+      `<button type="button" class="btn btn-primary" style="margin-top:8px;width:100%" onclick="smsZugangSenden('${encodeURIComponent(handynr)}','${encodeURIComponent(name)}','${encodeURIComponent(pw)}')">📱 Zugangsdaten per SMS vorbereiten</button>` +
+      `<div style="color:#0369a1;margin-top:8px">Die SMS-App öffnet sich mit einem vorbereiteten Text. Bitte den Versand dort bestätigen.</div>`;
     document.getElementById('einzel-ergebnis').style.display = 'block';
     renderMitarbeiterListe();
 
@@ -6654,15 +6665,26 @@ function mitarbeiterImportDateiLesen(input) {
       const sheet    = workbook.Sheets[workbook.SheetNames[0]];
       const rows     = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 
-      // Erste Zeile = Kopfzeile überspringen
-      const datenZeilen = rows.slice(1).filter(r => r[0] || r[1]); // mind. Name oder E-Mail vorhanden
+      // Kopfzeilen flexibel erkennen: Name oder Vorname/Nachname sowie optionale Felder.
+      const norm = v => String(v || '').trim().toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+      const kopf = rows[0].map(norm);
+      const spalte = (...namen) => kopf.findIndex(h => namen.some(n => h === n || h.includes(n)));
+      const iName = kopf.findIndex(h => ['name', 'mitarbeiter', 'mitarbeitername', 'vollname'].includes(h));
+      const iVorname = spalte('vorname');
+      const iNachname = spalte('nachname', 'familienname');
+      const iPnr = spalte('personalnummer', 'personal nr', 'pnr');
+      const iBereich = spalte('bereich', 'objekt');
+      const iHandy = spalte('handynummer', 'mobil', 'telefon', 'mobile');
+      const iPw = spalte('passwort', 'kennwort');
+      const val = (r, i) => i >= 0 ? String(r[i] || '').trim() : '';
+      const datenZeilen = rows.slice(1).filter(r => r.some(v => String(v || '').trim()));
 
       importDaten = datenZeilen.map((r, idx) => {
-        const name    = String(r[0] || '').trim();
-        const handynr = String(r[1] || '').trim().replace(/\s+/g, '');
-        const email   = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
-        const pw      = String(r[2] || '').trim();
-        return { idx: idx + 2, name, handynr, email, pw }; // idx = Zeilennummer (1-basiert, +1 für Header)
+        const vorname = val(r, iVorname), nachname = val(r, iNachname);
+        const name = val(r, iName) || [vorname, nachname].filter(Boolean).join(' ');
+        const handynr = val(r, iHandy).replace(/\s+/g, '');
+        const email = handynr ? handynr.replace(/^00/, '+').replace(/^0/, '+49') + '@csc-hannover.de' : '';
+        return { idx: idx + 2, name, handynr, email, pw: val(r, iPw), personalnummer: val(r, iPnr), bereich: val(r, iBereich) };
       });
 
       document.getElementById('import-lade-msg').style.display = 'none';
@@ -6692,18 +6714,14 @@ function mitarbeiterImportZeigeVorschau() {
   const handynrSet = new Set();
   importDaten.forEach(r => {
     if (!r.name) fehler.push(`Zeile ${r.idx}: Name fehlt`);
-    if (!r.handynr) {
-      fehler.push(`Zeile ${r.idx}: Handynummer fehlt`);
-    } else if (handynrSet.has(r.handynr)) {
+    if (r.handynr && handynrSet.has(r.handynr)) {
       fehler.push(`Zeile ${r.idx}: Handynummer „${escHtml(r.handynr)}" doppelt`);
     }
-    handynrSet.add(r.handynr);
+    if (r.handynr) handynrSet.add(r.handynr);
   });
 
   // Gültige Zeilen
-  const gueltig = importDaten.filter(r =>
-    r.name && r.handynr
-  );
+  const gueltig = importDaten.filter(r => r.name);
 
   document.getElementById('import-anzahl').textContent = gueltig.length;
 
@@ -6716,9 +6734,9 @@ function mitarbeiterImportZeigeVorschau() {
       `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-bottom:1px solid #f3f4f6">
         <div>
           <div style="font-weight:600">${escHtml(r.name)}</div>
-          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.handynr)}</div>
+          <div style="color:#6b7280;font-size:.78rem">${escHtml(r.personalnummer || 'Keine Personalnummer')} · ${escHtml(r.bereich || 'Kein Bereich')} · ${escHtml(r.handynr || 'Telefon später')}</div>
         </div>
-        <div style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:6px;font-family:monospace">${escHtml(r.pw)}</div>
+        <div style="font-size:.75rem;background:#f0fdf4;color:#16a34a;padding:3px 8px;border-radius:6px;font-family:monospace">${r.handynr ? escHtml(r.pw || 'wird erzeugt') : 'kein Passwort nötig'}</div>
       </div>`
     ).join('');
   }
@@ -6744,9 +6762,7 @@ async function mitarbeiterImportStarten() {
   btn.disabled = true;
   btn.textContent = '⏳ Wird importiert …';
 
-  const gueltig = importDaten.filter(r =>
-    r.name && r.handynr
-  );
+  const gueltig = importDaten.filter(r => r.name);
 
   let erfolg = 0, fehler = 0;
   const details = [];
@@ -6758,10 +6774,14 @@ async function mitarbeiterImportStarten() {
       const res    = await SB.post('users', {
         id:            userId,
         name:          r.name,
-        email:         r.email,
+        email:         r.email || null,
+        mobil:         r.handynr || null,
         password_hash: hash,
         role:          'mitarbeiter',
         tenant_id:     currentUser.tenantId,
+        personalnummer: r.personalnummer || null,
+        bereich:       r.bereich || null,
+        bereich_id:    (APP_BEREICHE || []).find(b => String(b.name).toLowerCase() === String(r.bereich || '').toLowerCase() || b.id === r.bereich)?.id || null,
         muss_pw_aendern: true
       });
       if (res && res.error) {
@@ -6804,7 +6824,7 @@ async function mitarbeiterImportStarten() {
 
   const detailEl = document.getElementById('import-ergebnis-details');
   detailEl.innerHTML = details.map(d => {
-    if (d.status === 'ok')   return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · PW: ${escHtml(d.pw)}</span></div>`;
+    if (d.status === 'ok') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between;align-items:center;gap:8px"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr || 'Telefon später')}</span></span><span style="color:#16a34a;font-size:.78rem">✅ Angelegt · ${d.handynr ? `PW: ${escHtml(d.pw)} <button type="button" class="btn btn-outline btn-sm" onclick="smsZugangSenden('${encodeURIComponent(d.handynr)}','${encodeURIComponent(d.name)}','${encodeURIComponent(d.pw)}')">📱 SMS</button>` : 'SMS später'}</span></div>`;
     if (d.status === 'skip') return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#9ca3af;font-size:.78rem">⏭ Übersprungen</span></div>`;
     return `<div style="padding:7px 12px;border-bottom:1px solid #f3f4f6;display:flex;justify-content:space-between"><span><strong>${escHtml(d.name)}</strong> <span style="color:#6b7280">${escHtml(d.handynr)}</span></span><span style="color:#dc2626;font-size:.78rem">❌ ${escHtml(d.msg||'Fehler')}</span></div>`;
   }).join('');

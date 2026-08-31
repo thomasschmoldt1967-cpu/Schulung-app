@@ -1160,13 +1160,14 @@
     <!-- Schritt 1: Datei hochladen -->
     <div id="import-step-upload">
       <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:16px;font-size:.83rem;color:#0369a1">
-        <strong>📋 Excel-Format:</strong><br>
-        Spalte A: <strong>Name</strong> (Pflicht) · Spalte B: <strong>Handynummer</strong> (Pflicht) · Spalte C: <strong>Passwort</strong> (optional – wird automatisch generiert)<br>
-        <span style="font-size:.75rem;opacity:.8">Erste Zeile = Kopfzeile (wird übersprungen)</span>
+        <strong>📋 Datei-Format:</strong><br>
+        Unterstützt <strong>CSV, XLSX und XLS</strong>. Empfohlene Kopfzeile:<br>
+        <code>Vorname | Nachname | Personalnummer | Bereich | Handynummer | Passwort</code><br>
+        <span style="font-size:.75rem;opacity:.85">Vorname/Nachname oder eine gemeinsame Spalte „Name“. Handynummer, Bereich und Passwort sind optional und können später ergänzt werden. Bereiche werden bei exakter Übereinstimmung automatisch zugeordnet.</span>
       </div>
       <div style="margin-bottom:14px">
-        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:8px;color:#374151">Excel-Datei auswählen (.xlsx, .xls):</label>
-        <input type="file" id="import-datei" accept=".xlsx,.xls" onchange="mitarbeiterImportDateiLesen(this)" style="width:100%;padding:10px;border:2px dashed #d1d5db;border-radius:8px;font-size:.85rem;cursor:pointer">
+        <label style="display:block;font-weight:600;font-size:.88rem;margin-bottom:8px;color:#374151">Datei auswählen (.csv, .xlsx, .xls):</label>
+        <input type="file" id="import-datei" accept=".csv,.xlsx,.xls,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" onchange="mitarbeiterImportDateiLesen(this)" style="width:100%;padding:10px;border:2px dashed #d1d5db;border-radius:8px;font-size:.85rem;cursor:pointer">
       </div>
       <div id="import-lade-msg" style="display:none;color:#2563eb;font-size:.85rem;padding:8px 0">⏳ Datei wird gelesen …</div>
     </div>
