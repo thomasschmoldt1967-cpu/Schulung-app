@@ -1162,10 +1162,18 @@ async function initApp() {
     APP_TENANTS       = tenants;
     APP_USERS         = users; // Für ID→Name Auflösung (z.B. im PDF)
     APP_BEREICHE      = bereiche || [];
-    SCHULUNG_VORLAGEN = vorlagen.map(v => ({
-      ...v, intervallMonate: v.intervall_monate,
-      abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
-    }));
+    // Die beiden DGUV-Module liegen als echte DB-Vorlagen vor, ihre Inhalte
+    // kommen aber aus den eingebauten Modulen (nicht aus abschnitte). Nach
+    // jedem Reload müssen sie deshalb wieder als eingebaut markiert werden.
+    // Sonst erscheinen sie im Admin als normale, leere Formulare.
+    const eingebautMeta = new Map([[HUB_VORLAGE_ID,{_eingebaut:true}],[BP_VORLAGE_ID,{_eingebaut:true,_bpModul:true}]]);
+    SCHULUNG_VORLAGEN = vorlagen.map(v => {
+      const meta = eingebautMeta.get(v.id);
+      return Object.assign({
+        ...v, intervallMonate: v.intervall_monate,
+        abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : (v.abschnitte || [])
+      }, meta || {});
+    });
 
     // Eingebaute Vorlagen müssen ebenfalls als echte DB-Datensätze existieren,
     // weil zuweisungen.vorlage_id per Fremdschlüssel auf vorlagen.id verweist.

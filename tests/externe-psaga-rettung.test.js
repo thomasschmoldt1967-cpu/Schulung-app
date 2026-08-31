@@ -5,6 +5,14 @@ const test = require('node:test');
 const ROOT = process.cwd();
 
 for (const file of ['app.src.js', 'app.js']) {
+  test(`${file}: eingebaute DGUV-Vorlagen bleiben in der Adminansicht als Module erkennbar`, () => {
+    const source = fs.readFileSync(file, 'utf8');
+    assert.match(source, /const eingebautMeta = new Map\(\[\[HUB_VORLAGE_ID,\{_eingebaut:true\}\],\[BP_VORLAGE_ID,\{_eingebaut:true,_bpModul:true\}\]\]\)/);
+    assert.match(source, /return Object\.assign\(\{/);
+    assert.match(source, /hubAdminVorschau\(\)/);
+    assert.match(source, /bpAdminVorschau\(\)/);
+  });
+
   test(`${file}: Dreibein-Rettungsübung ist Zertifikatsthema`, () => {
     const source = fs.readFileSync(file, 'utf8');
     assert.match(source, /Rettung aus beengten Räumen mit Dreibein nach DGUV Regel 113-004/);
