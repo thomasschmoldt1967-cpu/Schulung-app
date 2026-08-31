@@ -1381,11 +1381,17 @@ function routeAfterLogin() {
     // 1. Nur eigener Tenant sichtbar
     APP_TENANTS = APP_TENANTS.filter(t => t.id === tid);
 
-    // 2. Nur eigene Zuweisungen (ohne persönliche Einweisungen anderer Mitarbeiter)
-    zuweisungen = zuweisungen.filter(z =>
-      z.tenantId === tid &&
-      (z.zugewiesenAn === null || z.zugewiesenAn === currentUser.userId)
-    );
+    // 2. Verantwortliche sehen alle Zuweisungen ihres Tenants, damit sie
+    //    den Schulungsstand aller Mitarbeiter verwalten können. Normale
+    //    Mitarbeiter sehen dagegen nur globale bzw. eigene Zuweisungen.
+    if (currentUser.role === 'verantwortlicher') {
+      zuweisungen = zuweisungen.filter(z => z.tenantId === tid);
+    } else {
+      zuweisungen = zuweisungen.filter(z =>
+        z.tenantId === tid &&
+        (z.zugewiesenAn === null || z.zugewiesenAn === currentUser.userId)
+      );
+    }
 
     // 3. Nur Formulare der eigenen Zuweisungen
     const eigeneZuwIds = new Set(zuweisungen.map(z => z.id));

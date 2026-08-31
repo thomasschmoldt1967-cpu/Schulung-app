@@ -2,7 +2,7 @@
 //  sw.js  —  Service Worker für Schulungs-App (Offline-Modus)
 //  v3.2 – Vereinfacht: Network-First für alles außer Supabase
 // ============================================================
-const CACHE_NAME = 'schulung-v209';
+const CACHE_NAME = 'schulung-v210';
 
 
 // ── INSTALL: Sofort aktivieren ───────────────────────────────
