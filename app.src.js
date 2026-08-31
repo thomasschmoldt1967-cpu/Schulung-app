@@ -4869,7 +4869,8 @@ function verantwMitarbeiterZuordnungModal() {
   }).join('');
   const rows = mitarbeiter.map(ma => {
     const optionen = bereichOptionen.replaceAll('__ID__', ma.id);
-    return `<div style="padding:12px;border:1px solid #dbe3ec;border-radius:10px;margin-bottom:9px;background:#f8fafc">
+    const suchtext = [ma.name, ma.email, ma.personalnummer, ma.mobil, ma.bereich].filter(Boolean).join(' ').toLowerCase();
+    return `<div class="ma-zuordnung-row" data-search="${escHtml(suchtext)}" style="padding:12px;border:1px solid #dbe3ec;border-radius:10px;margin-bottom:9px;background:#f8fafc">
       <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;margin-bottom:8px"><strong style="color:#1e3a5f;font-size:.88rem">${escHtml(ma.name)}</strong><span style="font-size:.72rem;color:#6b7280">${escHtml(ma.personalnummer || ma.mobil || 'Keine Zusatzdaten')}</span></div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px">
         <label style="display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid #e5e7eb;border-radius:8px;background:#fff;cursor:pointer"><input class="ma-bereich-radio" type="radio" name="ma-bereich-${ma.id}" value="" data-user-id="${escHtml(ma.id)}" ${!ma.bereich_id ? 'checked' : ''} style="accent-color:#1e3a5f"><span style="font-size:.82rem;color:#6b7280">Nicht zugeordnet</span></label>
@@ -4880,11 +4881,27 @@ function verantwMitarbeiterZuordnungModal() {
   modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:760px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px"><h3 style="margin:0;font-size:1.05rem;color:#1e3a5f">☑️ Mitarbeiter Bereichsleitern zuordnen</h3><button onclick="this.closest('[style*=fixed]').remove()" style="background:none;border:none;font-size:1.3rem;cursor:pointer;color:#6b7280">✕</button></div>
     <p style="margin:0 0 14px;color:#6b7280;font-size:.8rem">Alle Mitarbeiter des eigenen Mandanten. Pro Mitarbeiter genau einen Bereich auswählen; dadurch wird der zuständige Bereichsleiter festgelegt.</p>
+    <input type="search" placeholder="🔎 Mitarbeiter suchen: Name, E-Mail, Personalnr. oder Bereich …" oninput="verantwMitarbeiterZuordnungSuche(this.value, this.closest('[style*=fixed]'))" style="width:100%;box-sizing:border-box;padding:10px 12px;border:1px solid #cbd5e1;border-radius:8px;font-size:.84rem;margin-bottom:10px">
+    <div id="ma-zuordnung-suchinfo" style="color:#6b7280;font-size:.75rem;min-height:16px;margin-bottom:4px"></div>
     <div id="ma-zuordnung-fehler" style="color:#dc2626;font-size:.82rem;min-height:18px;margin-bottom:5px"></div>
     <div>${rows || '<div style="text-align:center;color:#9ca3af;padding:24px">Noch keine Mitarbeiter angelegt.</div>'}</div>
     <div style="display:flex;gap:10px;margin-top:14px"><button onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Abbrechen</button><button onclick="verantwMitarbeiterZuordnungSpeichern(this.closest('[style*=fixed]'))" class="btn-primary" style="flex:2;padding:11px">💾 Zuordnungen speichern</button></div>
   </div>`;
   document.body.appendChild(modal);
+}
+
+function verantwMitarbeiterZuordnungSuche(suche, modal) {
+  if (!modal) return;
+  const s = String(suche || '').trim().toLowerCase();
+  const rows = [...modal.querySelectorAll('.ma-zuordnung-row')];
+  let sichtbar = 0;
+  rows.forEach(row => {
+    const passt = !s || (row.dataset.search || '').includes(s);
+    row.style.display = passt ? '' : 'none';
+    if (passt) sichtbar++;
+  });
+  const info = modal.querySelector('#ma-zuordnung-suchinfo');
+  if (info) info.textContent = s ? `${sichtbar} von ${rows.length} Mitarbeitern gefunden` : `${rows.length} Mitarbeiter`;
 }
 
 async function verantwMitarbeiterZuordnungSpeichern(modal) {
