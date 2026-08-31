@@ -1156,7 +1156,7 @@ async function initApp() {
       SB.get('tenants'),
       SB.get('vorlagen'),
       SB.get('zuweisungen'),
-      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert,bereich_id,personalnummer'),
+      SB.get('users', 'select=id,name,email,tenant_id,role,telefon,mobil,position,aktiv,archiviert,bereich_id,bereich,standort,personalnummer'),
       SB.get('bereiche')
     ]);
     APP_TENANTS       = tenants;
