@@ -6846,10 +6846,14 @@ async function mitarbeiterImportStarten() {
     try {
       const hash   = await hashPasswort(r.pw);
       const userId = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+      // Die produktive users-Tabelle verlangt email NOT NULL. Ohne echte E-Mail
+      // wird eine interne, nicht zustellbare Login-Adresse erzeugt.
+      const loginKey = String(r.personalnummer || userId).toLowerCase().replace(/[^a-z0-9_-]/g, '_');
+      const loginEmail = r.email || `ma.${currentUser.tenantId}.${loginKey}@csc-hannover.de`;
       const res    = await SB.post('users', {
         id:            userId,
         name:          r.name,
-        email:         r.email || null,
+        email:         loginEmail,
         mobil:         r.handynr || null,
         password_hash: hash,
         role:          'mitarbeiter',
@@ -6857,6 +6861,8 @@ async function mitarbeiterImportStarten() {
         personalnummer: r.personalnummer || null,
         bereich:       r.bereich || null,
         bereich_id:    (APP_BEREICHE || []).find(b => String(b.name).toLowerCase() === String(r.bereich || '').toLowerCase() || b.id === r.bereich)?.id || null,
+        aktiv:         true,
+        archiviert:    false,
         muss_pw_aendern: true
       });
       if (res && res.error) {
