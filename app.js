@@ -1500,6 +1500,10 @@ function blMitarbeiterDetail(userId) {
     </div>
     ${ma.personalnummer?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">Personalnr.: ${escHtml(ma.personalnummer)}</div>`:''}
     ${ma.mobil?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">📱 ${escHtml(ma.mobil)}</div>`:ma.email&&!ma.email.includes('@csc-hannover.de')?`<div style="font-size:.8rem;color:#6b7280;margin-bottom:10px">✉️ ${escHtml(ma.email)}</div>`:''}
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input id="bl-ma-mobil-${userId}" type="tel" value="${escHtml(ma.mobil || '')}" placeholder="Handynummer nachtragen (optional)" style="flex:1;padding:9px 10px;border:1px solid #d1d5db;border-radius:8px;font-size:.82rem">
+      <button type="button" onclick="blMitarbeiterMobilSpeichern('${userId}',this)" style="padding:9px 10px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:8px;cursor:pointer;font-size:.78rem">💾 Mobil speichern</button>
+    </div>
     <div style="margin-bottom:14px">
       ${maZuws.length ? maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
@@ -1518,6 +1522,27 @@ function blMitarbeiterDetail(userId) {
     </div>
   </div>`;
   document.body.appendChild(modal);
+}
+
+async function blMitarbeiterMobilSpeichern(userId, button) {
+  const input = document.getElementById(`bl-ma-mobil-${userId}`);
+  const mobil = (input?.value || '').trim().replace(/\s+/g, ' ');
+  if (mobil && !/^[+0-9 ()\/-]{6,25}$/.test(mobil)) {
+    showToast('⚠️ Bitte eine gültige Handynummer eingeben.', '#b45309');
+    return;
+  }
+  button.disabled = true;
+  try {
+    await SB.patch('users', `id=eq.${userId}`, { mobil: mobil || null });
+    const ma = APP_USERS.find(u => u.id === userId);
+    if (ma) ma.mobil = mobil || null;
+    showToast(mobil ? '✅ Handynummer gespeichert.' : '✅ Handynummer entfernt.', '#0f5132');
+    blMitarbeiterDetail(userId);
+    button.closest('[style*=fixed]')?.remove();
+  } catch (e) {
+    showToast('❌ Speichern fehlgeschlagen: ' + e.message, '#b91c1c');
+    button.disabled = false;
+  }
 }
 
 async function blSchulungZuweisen(userId) {
