@@ -1230,6 +1230,19 @@ async function initApp() {
 }
 
 // ── AMPEL ────────────────────────────────────────────────────
+// Persönliche Zuweisungen haben Vorrang vor einer alten mandantenweiten Zuweisung
+// derselben Vorlage. So erben neu importierte Mitarbeiter weder alte Fristen noch
+// den gemeinsamen Formularstatus eines anderen Mitarbeiters.
+function relevanteZuweisungenFuerMitarbeiter(userId, alleZuws = zuweisungen) {
+  const tenantZuws = alleZuws.filter(z => z.tenantId === currentUser?.tenantId);
+  const persoenlich = tenantZuws.filter(z => z.zugewiesenAn === userId);
+  const persoenlicheVorlagen = new Set(persoenlich.map(z => z.vorlagenId));
+  return tenantZuws.filter(z =>
+    z.zugewiesenAn === userId ||
+    (!z.zugewiesenAn && !persoenlicheVorlagen.has(z.vorlagenId))
+  );
+}
+
 function berechneStatus(zuw) {
   // Lernpfad-Zuweisung: Status aus lernpfadUnterschrift (eigener User) oder _lpUntCache (andere User)
   if (zuw.vorlagenId === LERNPFAD_VORLAGE_ID) {
@@ -4528,9 +4541,7 @@ async function renderMitarbeiterListe() {
     const rows = mitarbeiter.map(m => {
       // SICHERHEIT: Nur Formulare aus Zuweisungen des eigenen Tenants zählen
       // Zuweisungen die für diesen MA relevant sind (global oder persönlich zugewiesen)
-      const maZuws = meineZuws.filter(z =>
-        !z.zugewiesenAn || z.zugewiesenAn === m.id
-      );
+      const maZuws = relevanteZuweisungenFuerMitarbeiter(m.id, meineZuws);
       const mFormulare = Object.entries(formulare)
         .filter(([zuwId, f]) => {
           const zuw = maZuws.find(z => z.id === zuwId);
@@ -4589,7 +4600,7 @@ async function renderMitarbeiterListe() {
       } else if (abgeschl === gesamtZuws) {
         ampel = 'gruen';
       } else if (offen > 0) {
-        const hatUeberfaellig = meineZuws.some(z => {
+        const hatUeberfaellig = maZuws.some(z => {
           const f = formulare[z.id] || {};
           if (f.abgeschlossen) return false;
           const fristDate = z.frist ? new Date(z.frist) : null;
@@ -5234,7 +5245,9 @@ function renderSubDashboard() {
       ? '📋 Meine Schulungen'
       : '📋 Schulungsmanagement Mitarbeiter';
   }
-  const meineZuws = zuweisungen.filter(z=>z.tenantId===currentUser.tenantId);
+  const meineZuws = currentUser.role === 'mitarbeiter'
+    ? relevanteZuweisungenFuerMitarbeiter(currentUser.userId)
+    : zuweisungen.filter(z=>z.tenantId===currentUser.tenantId);
   const stati = meineZuws.map(z=>berechneStatus(z));
   const g=stati.filter(s=>s==='gruen').length;
   const y=stati.filter(s=>s==='gelb').length;
@@ -6874,6 +6887,37 @@ async function mitarbeiterImportStarten() {
           fehler++;
         }
       } else {
+        // Mandantenweite Schulungen für neue Mitarbeiter persönlich und leer anlegen.
+        // Die alte globale Frist darf nicht auf einen Neueintritt durchschlagen.
+        const neueFrist = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
+        const globaleZuws = zuweisungen.filter(z =>
+          z.tenantId === currentUser.tenantId && !z.zugewiesenAn
+        );
+        for (const globalZuw of globaleZuws) {
+          const persoenlicheId = `zuw_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+          const zuwRes = await SB.post('zuweisungen', {
+            id: persoenlicheId,
+            vorlage_id: globalZuw.vorlagenId,
+            tenant_id: currentUser.tenantId,
+            frist: neueFrist,
+            pflicht: globalZuw.pflicht !== false,
+            zugewiesen_an: userId,
+            bereich_id: (APP_BEREICHE || []).find(b =>
+              String(b.name).toLowerCase() === String(r.bereich || '').toLowerCase() || b.id === r.bereich
+            )?.id || globalZuw.bereichId || null
+          });
+          if (zuwRes?.error) throw new Error(zuwRes.error.message || JSON.stringify(zuwRes.error));
+          zuweisungen.push({
+            id: persoenlicheId,
+            vorlagenId: globalZuw.vorlagenId,
+            tenantId: currentUser.tenantId,
+            frist: neueFrist,
+            pflicht: globalZuw.pflicht !== false,
+            zugewiesenAn: userId,
+            bereichId: globalZuw.bereichId || null
+          });
+          formulare[persoenlicheId] = {};
+        }
         await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.handynr}) importiert`);
         details.push({ name: r.name, handynr: r.handynr, status: 'ok', pw: r.pw });
         erfolg++;
