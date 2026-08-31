@@ -1167,6 +1167,25 @@ async function initApp() {
       abschnitte: typeof v.abschnitte === 'string' ? JSON.parse(v.abschnitte) : v.abschnitte
     }));
 
+    // Eingebaute Vorlagen müssen ebenfalls als echte DB-Datensätze existieren,
+    // weil zuweisungen.vorlage_id per Fremdschlüssel auf vorlagen.id verweist.
+    // Ohne diesen Abgleich führt die Zuweisung von Hub/BP zu PostgreSQL 23503.
+    const eingebaut = [
+      { id: HUB_VORLAGE_ID, titel: 'Hubarbeitsbühnen — DGUV 308-008', beschreibung: '14 Kapitel · 4 Module · 10 Quizfragen · Teilnahmebescheinigung', typ: 'hub', intervall_monate: 12, abschnitte: [] },
+      { id: BP_VORLAGE_ID, titel: 'Schulung: Befähigte Person Leitern & Tritte', beschreibung: '8 Module · 20 Quizfragen · Fachkundenachweis (BetrSichV · DGUV 208-016)', typ: 'befperson', intervall_monate: 60, abschnitte: [] }
+    ];
+    for (const v of eingebaut) {
+      if (!SCHULUNG_VORLAGEN.some(x => x.id === v.id)) {
+        try {
+          const res = await SB.post('vorlagen', v);
+          const dbV = Array.isArray(res) ? res[0] : res;
+          SCHULUNG_VORLAGEN.unshift({ ...v, ...(dbV || {}), intervallMonate: v.intervall_monate, _eingebaut: true });
+        } catch (e) {
+          console.warn('Eingebaute Vorlage konnte nicht angelegt werden:', v.id, e);
+        }
+      }
+    }
+
     // ── Hubarbeitsbühnen DGUV 308-008 — eingebaute Vorlage ──
     if (!SCHULUNG_VORLAGEN.some(v => v.id === HUB_VORLAGE_ID)) {
       SCHULUNG_VORLAGEN.unshift({
