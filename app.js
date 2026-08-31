@@ -6887,37 +6887,6 @@ async function mitarbeiterImportStarten() {
           fehler++;
         }
       } else {
-        // Mandantenweite Schulungen für neue Mitarbeiter persönlich und leer anlegen.
-        // Die alte globale Frist darf nicht auf einen Neueintritt durchschlagen.
-        const neueFrist = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
-        const globaleZuws = zuweisungen.filter(z =>
-          z.tenantId === currentUser.tenantId && !z.zugewiesenAn
-        );
-        for (const globalZuw of globaleZuws) {
-          const persoenlicheId = `zuw_import_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-          const zuwRes = await SB.post('zuweisungen', {
-            id: persoenlicheId,
-            vorlage_id: globalZuw.vorlagenId,
-            tenant_id: currentUser.tenantId,
-            frist: neueFrist,
-            pflicht: globalZuw.pflicht !== false,
-            zugewiesen_an: userId,
-            bereich_id: (APP_BEREICHE || []).find(b =>
-              String(b.name).toLowerCase() === String(r.bereich || '').toLowerCase() || b.id === r.bereich
-            )?.id || globalZuw.bereichId || null
-          });
-          if (zuwRes?.error) throw new Error(zuwRes.error.message || JSON.stringify(zuwRes.error));
-          zuweisungen.push({
-            id: persoenlicheId,
-            vorlagenId: globalZuw.vorlagenId,
-            tenantId: currentUser.tenantId,
-            frist: neueFrist,
-            pflicht: globalZuw.pflicht !== false,
-            zugewiesenAn: userId,
-            bereichId: globalZuw.bereichId || null
-          });
-          formulare[persoenlicheId] = {};
-        }
         await sbAudit('MITARBEITER_IMPORT', `Mitarbeiter „${r.name}" (${r.handynr}) importiert`);
         details.push({ name: r.name, handynr: r.handynr, status: 'ok', pw: r.pw });
         erfolg++;
