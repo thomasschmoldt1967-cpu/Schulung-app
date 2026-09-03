@@ -125,6 +125,28 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .pw-wrap { position: relative; }
 .pw-wrap input { padding-right: 42px; }
 .pw-toggle { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 1.1rem; }
+.praesenz-ort-details {
+  border: 1px solid var(--border); border-radius: 8px; background: var(--bg); overflow: hidden;
+}
+.praesenz-ort-details summary {
+  cursor: pointer; padding: 10px 12px; color: var(--primary); font-size: .88rem; font-weight: 600; list-style-position: inside;
+}
+.praesenz-ort-details[open] summary { border-bottom: 1px solid var(--border); }
+.praesenz-ort-details input { width: 100%; box-sizing: border-box; border: 0; border-radius: 0; background: #fff; }
+.praesenz-ma-zeile {
+  display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 7px 8px; border-bottom: 1px solid #e5e7eb; cursor: pointer;
+}
+.praesenz-ma-zeile:last-child { border-bottom: 0; }
+.praesenz-ma-zeile > span { min-width: 0; flex: 1; }
+.praesenz-ma-zeile > .praesenz-ma-sprache { flex: 0 1 125px; min-width: 105px; padding: 6px 5px; border: 1px solid #cbd5e1; border-radius: 7px; background: #fff; color: #374151; font-size: .76rem; }
+.praesenz-ma-zeile small { display: block; color: #64748b; font-size: .76rem; margin-top: 2px; }
+.praesenz-inhalte { display: flex; flex-direction: column; gap: 8px; }
+.praesenz-thema { border: 1px solid #dbe3ee; border-radius: 9px; background: #f8fafc; overflow: hidden; }
+.praesenz-thema summary { cursor: pointer; padding: 11px 13px; color: #1e3a5f; font-weight: 700; font-size: .88rem; }
+.praesenz-thema > div { padding: 0 13px 10px; }
+.praesenz-thema-punkt { padding: 8px 0; border-top: 1px solid #e5e7eb; color: #374151; font-size: .82rem; line-height: 1.45; }
+.praesenz-thema-punkt b { display: block; margin-bottom: 2px; }
+.praesenz-ma-zeile > input[type="checkbox"] { flex: 0 0 auto; width: 18px; height: 18px; margin: 0 2px 0 10px; }
 
 /* ── CHECKBOX-FELD ───────────────────────────────────────── */
 .checkbox-field {

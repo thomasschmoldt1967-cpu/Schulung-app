@@ -4,6 +4,8 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE TABLE IF NOT EXISTS praesenzschulungen (
   id text PRIMARY KEY,
   tenant_id text NOT NULL,
+  vorlage_id text NULL,
+  inhalte_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb,
   bereich_id text NULL REFERENCES bereiche(id) ON DELETE SET NULL,
   objekt_name text NOT NULL,
   titel text NOT NULL,
@@ -43,6 +45,10 @@ CREATE TABLE IF NOT EXISTS praesenzschulung_teilnehmer (
 
 CREATE INDEX IF NOT EXISTS idx_praesenz_tenant ON praesenzschulungen(tenant_id, datum DESC);
 CREATE INDEX IF NOT EXISTS idx_praesenz_teilnehmer ON praesenzschulung_teilnehmer(schulungs_id);
+
+-- Nachrüstung für bereits angelegte Installationen
+ALTER TABLE praesenzschulungen ADD COLUMN IF NOT EXISTS vorlage_id text NULL;
+ALTER TABLE praesenzschulungen ADD COLUMN IF NOT EXISTS inhalte_snapshot jsonb NOT NULL DEFAULT '{}'::jsonb;
 
 -- Signaturen und abgeschlossene Nachweise dürfen nicht überschrieben werden.
 CREATE OR REPLACE FUNCTION praesenzschulung_signatur_schutz() RETURNS trigger AS $$

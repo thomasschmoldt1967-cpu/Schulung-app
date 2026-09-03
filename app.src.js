@@ -7846,6 +7846,7 @@ async function zeigeSchulungshistorie(userId) {
       if (ids.length) {
         const sessions = await SB.get('praesenzschulungen', `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&id=in.(${ids.map(encodeURIComponent).join(',')})`);
         const sessionMap = Object.fromEntries((sessions || []).map(s => [s.id, s]));
+        (sessions || []).forEach(s => { praesenzNachleseCache[s.id] = s; });
         praesenzTeilnahmen = praesenzTeilnahmen.map(p => ({ ...p, session: sessionMap[p.schulungs_id] })).filter(p => p.session);
       }
     } catch(e) { praesenzTeilnahmen = []; }
@@ -8013,7 +8014,7 @@ async function zeigeSchulungshistorie(userId) {
     const praesenzHistorieBlock = praesenzTeilnahmen.length ? `
       <div style="border:2px solid #86efac;border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
         <div style="background:#166534;padding:12px 16px;color:#fff;font-weight:700">🏢 Präsenzschulungen vor Ort</div>
-        ${praesenzTeilnahmen.map(p => { const s=p.session; const vollstaendig=!!(p.teilnehmer_unterschrieben_am && s.objektleiter_unterschrieben_am); return `<div style="padding:12px 16px;border-bottom:1px solid #dcfce7;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div style="font-weight:700;color:#1f2937">${vollstaendig?'✅':'🟡'} ${escHtml(s.titel)}</div><div style="font-size:.76rem;color:#6b7280">${escHtml(s.objekt_name)} · ${escHtml(s.datum)} · ${vollstaendig?'vollständig unterzeichnet':'noch nicht vollständig abgeschlossen'}</div></div>${s.pdf_path ? `<button onclick="oeffnePdfSigniert('${escHtml(s.pdf_path)}')" class="btn btn-outline btn-sm">📄 PDF-Nachweis</button>` : '<span style="font-size:.75rem;color:#9ca3af">PDF nach Gegenzeichnung</span>'}</div>`; }).join('')}
+        ${praesenzTeilnahmen.map(p => { const s=p.session; const vollstaendig=!!(p.teilnehmer_unterschrieben_am && s.objektleiter_unterschrieben_am); return `<div style="padding:12px 16px;border-bottom:1px solid #dcfce7;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div style="font-weight:700;color:#1f2937">${vollstaendig?'✅':'🟡'} ${escHtml(s.titel)}</div><div style="font-size:.76rem;color:#6b7280">${escHtml(s.objekt_name)} · ${escHtml(s.datum)} · ${vollstaendig?'vollständig unterzeichnet':'noch nicht vollständig abgeschlossen'}</div></div>${s.inhalte_snapshot ? `<button onclick="praesenzNachleseOeffnen('${escHtml(s.id)}','${escHtml(p.sprache || 'de')}')" class="btn btn-outline btn-sm">📚 Inhalte</button>` : ''}${s.pdf_path ? `<button onclick="oeffnePdfSigniert('${escHtml(s.pdf_path)}')" class="btn btn-outline btn-sm">📄 PDF-Nachweis</button>` : '<span style="font-size:.75rem;color:#9ca3af">PDF nach Gegenzeichnung</span>'}</div>`; }).join('')}
       </div>` : '';
 
     document.getElementById('historie-inhalt').innerHTML = `
@@ -17235,6 +17236,42 @@ async function externePsagaPerMail(schulungId){const s=externePsagaSchulungen.fi
 let praesenzAktiv = null;
 let praesenzSignaturCanvas = null;
 let praesenzSignaturHatStriche = false;
+const praesenzNachleseCache = {};
+
+function praesenzInhalteSnapshot(vorlage, sprachen) {
+  const result = {};
+  for (const sprache of [...new Set(['de', ...(sprachen || [])])]) {
+    result[sprache] = (vorlage?.abschnitte || []).map(abschnitt => ({
+      titel: uebersetzeAbschnitt(abschnitt.titel || '', sprache),
+      themen: (abschnitt.felder || []).filter(f => f.typ !== 'unterschrift').map(f => ({
+        titel: uebersetzeFeldLabel(f.label || '', sprache),
+        text: f.text || '',
+        typ: f.typ || 'info'
+      }))
+    }));
+  }
+  return result;
+}
+function praesenzInhalteHtml(inhalte, sprache = 'de') {
+  const abschnitte = inhalte?.[sprache] || inhalte?.de || [];
+  if (!abschnitte.length) return '<div style="padding:18px;color:#64748b">Für diese Schulung sind keine Themen hinterlegt.</div>';
+  return abschnitte.map((a, i) => `<details class="praesenz-thema"${i === 0 ? ' open' : ''}><summary>${i + 1}. ${escHtml(a.titel)}</summary><div>${(a.themen || []).map(t => `<div class="praesenz-thema-punkt"><b>${escHtml(t.titel)}</b>${t.text ? `<div>${escHtml(t.text)}</div>` : ''}</div>`).join('')}</div></details>`).join('');
+}
+function praesenzNachleseOeffnen(sessionId, sprache = 'de') {
+  const session = praesenzNachleseCache[sessionId];
+  if (!session) { showToast('Schulungsinhalte konnten nicht geladen werden.', '#dc2626'); return; }
+  const modal = document.createElement('div');
+  modal.className = 'modal-overlay active';
+  modal.innerHTML = `<div class="modal-box" style="max-width:760px;max-height:90vh;overflow-y:auto"><div class="modal-title">📚 Schulungsinhalte nachlesen</div><div style="font-size:.8rem;color:#64748b;margin-bottom:12px">${escHtml(session.titel)} · ${escHtml(session.datum)} · Sprache: ${escHtml(sprache)}</div><div class="praesenz-inhalte">${praesenzInhalteHtml(typeof session.inhalte_snapshot === 'string' ? JSON.parse(session.inhalte_snapshot) : session.inhalte_snapshot, sprache)}</div><div class="modal-actions"><button class="btn btn-primary" onclick="this.closest('.modal-overlay').remove()">Schließen</button></div></div>`;
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
+}
+function praesenzDurchfuehrungAnsicht() {
+  const box = document.getElementById('praesenz-signaturbereich');
+  if (!box || !praesenzAktiv) return;
+  document.getElementById('praesenz-form').style.display = 'none'; box.style.display = '';
+  box.innerHTML = `<div style="font-weight:700;color:#1e3a5f;margin-bottom:6px">📚 Unterweisung durchführen</div><p style="font-size:.8rem;color:#64748b">Die Vortragssicht für den Schulungsleiter ist ausschließlich auf Deutsch.</p><div class="praesenz-inhalte">${praesenzInhalteHtml(praesenzAktiv.session.inhalte_snapshot, 'de')}</div><div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-primary" onclick="praesenzSignaturAnsicht()">✅ Weiter zur Teilnehmerunterschrift</button></div>`;
+}
 
 function praesenzId(prefix) {
   return `${prefix}_${(crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).slice(2))}`;
@@ -17254,11 +17291,11 @@ function praesenzModalErzeugen() {
     <div id="praesenz-form">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
         <div class="form-group" style="margin:0"><label>Unterweisung *</label><select id="praesenz-vorlage"></select></div>
-        <div class="form-group" style="margin:0"><label>Objekt / Schulungsort *</label><select id="praesenz-objekt"></select></div>
+        <div class="form-group" style="margin:0"><label>Objekt / Schulungsort *</label><details id="praesenz-ort-details" class="praesenz-ort-details"><summary>Schulungsort frei eingeben</summary><input id="praesenz-ort" type="text" placeholder="z. B. Objektname, Adresse oder Besprechungsraum" autocomplete="off"></details></div>
         <div class="form-group" style="margin:0"><label>Datum *</label><input id="praesenz-datum" type="date"></div>
         <div class="form-group" style="margin:0"><label>Beginn</label><input id="praesenz-beginn" type="time"></div>
         <div class="form-group" style="margin:0"><label>Ende</label><input id="praesenz-ende" type="time"></div>
-        <div class="form-group" style="margin:0"><label>Sprache der Unterweisung *</label><select id="praesenz-sprache"><option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="tr">🇹🇷 Türkçe</option><option value="ar">🇸🇦 العربية</option><option value="es">🇪🇸 Español</option><option value="ru">🇷🇺 Русский</option></select></div>
+        <div class="form-group" style="margin:0"><label>Standardsprache *</label><select id="praesenz-sprache" onchange="praesenzStandardspracheSetzen(this.value)"><option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="tr">🇹🇷 Türkçe</option><option value="ar">🇸🇦 العربية</option><option value="es">🇪🇸 Español</option><option value="ru">🇷🇺 Русский</option></select><small style="display:block;color:#64748b;margin-top:4px">Kann je Mitarbeiter geändert werden.</small></div>
       </div>
       <div class="form-group" style="margin-top:12px"><label>Anwesende Mitarbeiter auswählen *</label><div id="praesenz-mitarbeiter" style="max-height:230px;overflow:auto;border:1px solid #dbe3ee;border-radius:9px;padding:8px;background:#f8fafc"></div></div>
       <div id="praesenz-form-msg" class="error-msg"></div>
@@ -17276,33 +17313,50 @@ function praesenzschulungOeffnen() {
   document.getElementById('praesenz-signaturbereich').style.display = 'none';
   document.getElementById('praesenz-form-msg').textContent = '';
   const vs = document.getElementById('praesenz-vorlage');
-  const os = document.getElementById('praesenz-objekt');
   vs.innerHTML = SCHULUNG_VORLAGEN.filter(v => !String(v.id).startsWith('__')).map(v => `<option value="${escHtml(v.id)}">${escHtml(v.titel)}</option>`).join('');
-  const bereiche = (APP_BEREICHE || []).filter(b => b.tenant_id === currentUser.tenantId || b.tenantId === currentUser.tenantId);
-  os.innerHTML = bereiche.map(b => `<option value="${escHtml(b.id)}" data-name="${escHtml(b.objekt || b.name || b.ort || '')}">${escHtml(b.objekt || b.name || b.ort || 'Objekt')}</option>`).join('');
-  if (!os.options.length) os.innerHTML = `<option value="">${escHtml(currentUser.standort || 'Objekt auswählen')}</option>`;
+  const ort = document.getElementById('praesenz-ort');
+  const ortDetails = document.getElementById('praesenz-ort-details');
+  ort.value = '';
+  if (ortDetails) ortDetails.open = false;
   const heute = new Date(); document.getElementById('praesenz-datum').value = heute.toISOString().slice(0,10);
-  const users = (APP_USERS || []).filter(u => u.tenant_id === currentUser.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
-  document.getElementById('praesenz-mitarbeiter').innerHTML = users.length ? users.map(u => `<label style="display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid #e5e7eb;cursor:pointer"><input type="checkbox" class="praesenz-ma" value="${escHtml(u.id)}"><span><b>${escHtml(u.name)}</b><small style="display:block;color:#64748b">${escHtml(u.personalnummer || '')}${u.bereich ? ' · ' + escHtml(u.bereich) : ''}</small></span></label>`).join('') : '<div style="padding:12px;color:#92400e">Keine aktiven Mitarbeiter für diesen Mandanten gefunden.</div>';
+  const users = (APP_USERS || []).filter(u => u.tenant_id === currentUser.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert)
+    .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+  const maBox = document.getElementById('praesenz-mitarbeiter');
+  maBox.innerHTML = users.length ? `<input type="search" id="praesenz-ma-suche" placeholder="🔍 Mitarbeiter suchen…" aria-label="Mitarbeiter suchen" oninput="praesenzMitarbeiterFiltern(this.value)" style="width:100%;box-sizing:border-box;margin-bottom:8px;padding:9px 11px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;font-size:.88rem">` + users.map(u => `<label class="praesenz-ma-zeile" data-search="${escHtml(`${u.name || ''} ${u.personalnummer || ''} ${u.bereich || ''}`.toLocaleLowerCase('de-DE'))}"><span><b>${escHtml(u.name)}</b><small>${escHtml(u.personalnummer || '')}${u.bereich ? ' · ' + escHtml(u.bereich) : ''}</small></span><select class="praesenz-ma-sprache" aria-label="Sprache für ${escHtml(u.name)}" onclick="event.stopPropagation()" onchange="event.stopPropagation()">${praesenzSprachOptionen(u.sprache || 'de')}</select><input type="checkbox" class="praesenz-ma" value="${escHtml(u.id)}" aria-label="${escHtml(u.name)} auswählen"></label>`).join('') : '<div style="padding:12px;color:#92400e">Keine aktiven Mitarbeiter für diesen Mandanten gefunden.</div>';
   modal.classList.add('active');
 }
 function praesenzschulungSchliessen() { const m = document.getElementById('praesenzschulung-modal'); if (m) m.classList.remove('active'); praesenzAktiv = null; }
+function praesenzSprachOptionen(aktuell = 'de') {
+  return [['de','🇩🇪 Deutsch'],['en','🇬🇧 English'],['tr','🇹🇷 Türkçe'],['ar','🇸🇦 العربية'],['es','🇪🇸 Español'],['ru','🇷🇺 Русский']]
+    .map(([code, label]) => `<option value="${code}"${code === aktuell ? ' selected' : ''}>${label}</option>`).join('');
+}
+function praesenzStandardspracheSetzen(sprache) {
+  document.querySelectorAll('#praesenz-mitarbeiter .praesenz-ma-sprache').forEach(select => { select.value = sprache; });
+}
+function praesenzMitarbeiterFiltern(suchtext) {
+  const query = String(suchtext || '').trim().toLocaleLowerCase('de-DE');
+  document.querySelectorAll('#praesenz-mitarbeiter .praesenz-ma-zeile').forEach(row => {
+    row.style.display = !query || row.dataset.search.includes(query) ? 'flex' : 'none';
+  });
+}
 async function praesenzschulungErstellen() {
   const msg = document.getElementById('praesenz-form-msg'); msg.textContent = '';
   const ids = [...document.querySelectorAll('.praesenz-ma:checked')].map(x => x.value);
   const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === document.getElementById('praesenz-vorlage').value);
-  const obj = document.getElementById('praesenz-objekt'); const objektName = obj.options[obj.selectedIndex]?.dataset.name || obj.options[obj.selectedIndex]?.textContent || '';
-  if (!vorlage || !ids.length || !document.getElementById('praesenz-datum').value || !objektName) { msg.textContent = 'Bitte Unterweisung, Objekt, Datum und mindestens einen Mitarbeiter auswählen.'; return; }
+  const objektName = document.getElementById('praesenz-ort')?.value.trim() || '';
+  if (!vorlage || !ids.length || !document.getElementById('praesenz-datum').value || !objektName) { msg.textContent = 'Bitte Unterweisung, Schulungsort, Datum und mindestens einen Mitarbeiter auswählen.'; return; }
   const id = praesenzId('prs');
   const users = ids.map(uid => APP_USERS.find(u => u.id === uid)).filter(Boolean);
-  const session = { id, tenant_id: currentUser.tenantId, bereich_id: obj.value || null, objekt_name: objektName.trim(), titel: vorlage.titel, sprache: document.getElementById('praesenz-sprache').value, datum: document.getElementById('praesenz-datum').value, beginn: document.getElementById('praesenz-beginn').value || null, ende: document.getElementById('praesenz-ende').value || null, ort: objektName.trim(), erstellt_von: currentUser.userId, status: 'teilnehmer_signieren' };
+  const sessionSprache = document.getElementById('praesenz-sprache').value;
+  const spracheNachUser = Object.fromEntries([...document.querySelectorAll('.praesenz-ma:checked')].map(cb => [cb.value, cb.closest('.praesenz-ma-zeile')?.querySelector('.praesenz-ma-sprache')?.value || sessionSprache]));
+  const session = { id, tenant_id: currentUser.tenantId, vorlage_id: vorlage.id, inhalte_snapshot: praesenzInhalteSnapshot(vorlage, users.map(u => spracheNachUser[u.id] || sessionSprache)), bereich_id: null, objekt_name: objektName, titel: vorlage.titel, sprache: sessionSprache, datum: document.getElementById('praesenz-datum').value, beginn: document.getElementById('praesenz-beginn').value || null, ende: document.getElementById('praesenz-ende').value || null, ort: objektName, erstellt_von: currentUser.userId, status: 'teilnehmer_signieren' };
   try {
     await SB.post('praesenzschulungen', session);
-    const rows = users.map(u => ({ id: praesenzId('prst'), schulungs_id: id, tenant_id: currentUser.tenantId, user_id: u.id, name_snapshot: u.name, personalnummer_snapshot: u.personalnummer || null, bereich_snapshot: u.bereich || null, sprache: session.sprache, anwesend: true }));
+    const rows = users.map(u => ({ id: praesenzId('prst'), schulungs_id: id, tenant_id: currentUser.tenantId, user_id: u.id, name_snapshot: u.name, personalnummer_snapshot: u.personalnummer || null, bereich_snapshot: u.bereich || null, sprache: spracheNachUser[u.id] || session.sprache, anwesend: true }));
     await SB.post('praesenzschulung_teilnehmer', rows);
     await sbAudit('PRAESENZSCHULUNG_ERSTELLT', `Präsenzschulung ${session.titel} · ${session.objekt_name} · ${rows.length} Teilnehmer`);
     praesenzAktiv = { session, teilnehmer: rows, index: 0 };
-    praesenzSignaturAnsicht();
+    praesenzDurchfuehrungAnsicht();
   } catch (e) { msg.textContent = 'Fehler beim Anlegen: ' + String(e.message || e).slice(0, 180); }
 }
 function praesenzSignaturAnsicht() {
@@ -17312,7 +17366,7 @@ function praesenzSignaturAnsicht() {
   const abgeschlossen = praesenzAktiv.teilnehmer.every(x => x.teilnehmer_unterschrieben_am);
   if (abgeschlossen && !praesenzAktiv.session.objektleiter_unterschrieben_am) { praesenzObjektleiterSignaturAnsicht(); return; }
   if (praesenzAktiv.session.objektleiter_unterschrieben_am) { box.innerHTML = '<div style="padding:18px;text-align:center;color:#166534;font-weight:700">✅ Präsenzschulung vollständig abgeschlossen und archiviert.</div><div class="modal-actions"><button class="btn btn-primary" onclick="praesenzschulungSchliessen()">Schließen</button></div>'; return; }
-  box.innerHTML = `<div style="font-weight:700;color:#1e3a5f;margin-bottom:6px">✍️ Unterschrift Mitarbeiter ${praesenzAktiv.index + 1} von ${praesenzAktiv.teilnehmer.length}</div><div style="font-size:.9rem;margin-bottom:8px"><b>${escHtml(p.name_snapshot)}</b>${p.personalnummer_snapshot ? ' · ' + escHtml(p.personalnummer_snapshot) : ''}</div><p style="font-size:.8rem;color:#64748b">Ich bestätige meine Teilnahme an der Unterweisung „${escHtml(praesenzAktiv?.session?.titel || '')}“ am ${escHtml(praesenzAktiv.session.datum)}.</p><canvas id="praesenz-signatur-canvas" width="700" height="180" style="display:block;width:100%;height:180px;background:#fff;border:2px solid #bfdbfe;border-radius:9px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span id="praesenz-signatur-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span><button class="btn btn-outline btn-sm" onclick="praesenzSignaturLoeschen()">↻ Löschen</button></div><div id="praesenz-signatur-msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-primary" onclick="praesenzTeilnehmerUnterzeichnen()">✅ Unterschrift speichern</button></div>`;
+  box.innerHTML = `<div style="font-weight:700;color:#1e3a5f;margin-bottom:6px">✍️ Unterschrift Mitarbeiter ${praesenzAktiv.index + 1} von ${praesenzAktiv.teilnehmer.length}</div><div style="font-size:.9rem;margin-bottom:8px"><b>${escHtml(p.name_snapshot)}</b>${p.personalnummer_snapshot ? ' · ' + escHtml(p.personalnummer_snapshot) : ''}</div><p style="font-size:.8rem;color:#64748b">Bitte lesen Sie die Unterweisung in Ihrer Sprache und bestätigen Sie anschließend Ihre Teilnahme.</p><div class="praesenz-inhalte">${praesenzInhalteHtml(praesenzAktiv.session.inhalte_snapshot, p.sprache || 'de')}</div><p style="font-size:.8rem;color:#64748b">Ich bestätige meine Teilnahme an der Unterweisung „${escHtml(praesenzAktiv?.session?.titel || '')}“ am ${escHtml(praesenzAktiv.session.datum)}.</p><canvas id="praesenz-signatur-canvas" width="700" height="180" style="display:block;width:100%;height:180px;background:#fff;border:2px solid #bfdbfe;border-radius:9px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span id="praesenz-signatur-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span><button class="btn btn-outline btn-sm" onclick="praesenzSignaturLoeschen()">↻ Löschen</button></div><div id="praesenz-signatur-msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-primary" onclick="praesenzTeilnehmerUnterzeichnen()">✅ Unterschrift speichern</button></div>`;
   praesenzSignaturInit();
 }
 function praesenzSignaturInit() { const c = document.getElementById('praesenz-signatur-canvas'); if (!c) return; const ctx = c.getContext('2d'); ctx.strokeStyle='#1455a0'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.lineJoin='round'; let draw=false; const pos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};}; c.onpointerdown=e=>{draw=true;praesenzSignaturHatStriche=true;c.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}; c.onpointermove=e=>{if(!draw)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}; c.onpointerup=c.onpointercancel=()=>{draw=false;}; praesenzSignaturCanvas=c; }
