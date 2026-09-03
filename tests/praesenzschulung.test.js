@@ -10,6 +10,12 @@ for (const file of ['app.src.js', 'app.js']) {
     assert.match(source, /praesenzObjektleiterUnterzeichnen/);
     assert.match(source, /praesenzschulungAbschlussPruefen/);
   });
+  test(`${file}: verlinkt Präsenznachweise in Mitarbeiterhistorie und Objektansicht`, () => {
+    assert.match(source, /praesenzTeilnahmen/);
+    assert.match(source, /praesenzHistorieBlock/);
+    assert.match(source, /praesenzObjektNachweiseOeffnen/);
+    assert.match(source, /oeffnePdfSigniert/);
+  });
 }
 
 test('Migration definiert unveränderbare Teilnehmer- und Objektleiter-Signaturen', () => {

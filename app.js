@@ -4990,6 +4990,7 @@ async function verantwBereicheRendern() {
           </div>
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;margin-left:8px">
+          <button onclick="praesenzObjektNachweiseOeffnen('${b.id}')" style="background:#dcfce7;border:none;border-radius:7px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:#166534">📄 Nachweise</button>
           <button onclick="verantwBereichsleiterAnlegenModal('${b.id}')" class="btn-primary" style="font-size:.75rem;padding:6px 10px">➕ BL</button>
           <button onclick="verantwBereichLoeschen('${b.id}','${escHtml(b.name)}')" style="background:#fee2e2;border:none;border-radius:7px;padding:6px 10px;font-size:.75rem;cursor:pointer;color:#dc2626">🗑</button>
         </div>
@@ -7835,6 +7836,20 @@ async function zeigeSchulungshistorie(userId) {
       eigeneZuwIds.includes(f.id) || eigeneZuwIds.includes(f.zuweisung_id)
     );
 
+    // Präsenznachweise dieses Mitarbeiters laden — derselbe zentrale PDF-Nachweis wird beim Mitarbeiter verlinkt.
+    let praesenzTeilnahmen = [];
+    try {
+      praesenzTeilnahmen = await SB.get('praesenzschulung_teilnehmer',
+        `user_id=eq.${encodeURIComponent(userId)}&tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&order=erstellt_am.desc&limit=100`
+      );
+      const ids = [...new Set(praesenzTeilnahmen.map(p => p.schulungs_id).filter(Boolean))];
+      if (ids.length) {
+        const sessions = await SB.get('praesenzschulungen', `tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&id=in.(${ids.map(encodeURIComponent).join(',')})`);
+        const sessionMap = Object.fromEntries((sessions || []).map(s => [s.id, s]));
+        praesenzTeilnahmen = praesenzTeilnahmen.map(p => ({ ...p, session: sessionMap[p.schulungs_id] })).filter(p => p.session);
+      }
+    } catch(e) { praesenzTeilnahmen = []; }
+
     // Lernpfad-Unterschrift für diesen Mitarbeiter laden
     // Neuesten UNTERZEICHNETEN Durchgang laden (Platzhalter ohne unterzeichnet_am ignorieren)
     const lpUntRow = await (async () => {
@@ -7845,7 +7860,7 @@ async function zeigeSchulungshistorie(userId) {
       } catch(e) { return null; }
     })();
 
-    if (!alleFormulare.length && !lpUntRow) {
+    if (!alleFormulare.length && !lpUntRow && !praesenzTeilnahmen.length) {
       document.getElementById('historie-inhalt').innerHTML =
         '<div style="text-align:center;padding:24px;color:#6b7280">📋 Noch keine abgeschlossenen Schulungen</div>';
       return;
@@ -7995,6 +8010,12 @@ async function zeigeSchulungshistorie(userId) {
         </div>`;
     }
 
+    const praesenzHistorieBlock = praesenzTeilnahmen.length ? `
+      <div style="border:2px solid #86efac;border-radius:10px;margin-bottom:18px;overflow:hidden;background:#fff">
+        <div style="background:#166534;padding:12px 16px;color:#fff;font-weight:700">🏢 Präsenzschulungen vor Ort</div>
+        ${praesenzTeilnahmen.map(p => { const s=p.session; const vollstaendig=!!(p.teilnehmer_unterschrieben_am && s.objektleiter_unterschrieben_am); return `<div style="padding:12px 16px;border-bottom:1px solid #dcfce7;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><div style="flex:1;min-width:220px"><div style="font-weight:700;color:#1f2937">${vollstaendig?'✅':'🟡'} ${escHtml(s.titel)}</div><div style="font-size:.76rem;color:#6b7280">${escHtml(s.objekt_name)} · ${escHtml(s.datum)} · ${vollstaendig?'vollständig unterzeichnet':'noch nicht vollständig abgeschlossen'}</div></div>${s.pdf_path ? `<button onclick="oeffnePdfSigniert('${escHtml(s.pdf_path)}')" class="btn btn-outline btn-sm">📄 PDF-Nachweis</button>` : '<span style="font-size:.75rem;color:#9ca3af">PDF nach Gegenzeichnung</span>'}</div>`; }).join('')}
+      </div>` : '';
+
     document.getElementById('historie-inhalt').innerHTML = `
       <div style="margin-bottom:10px;display:flex;justify-content:space-between;align-items:center">
         <span style="font-size:.85rem;color:#6b7280">${alleFormulare.length} Schulung${alleFormulare.length !== 1 ? 'en' : ''} abgeschlossen</span>
@@ -8004,7 +8025,7 @@ async function zeigeSchulungshistorie(userId) {
           📄 PDF-Nachweis
         </button>` : ''}
       </div>
-      ${lpUntHistorieBlock}${html}`;
+      ${praesenzHistorieBlock}${lpUntHistorieBlock}${html}`;
   } catch(e) {
     document.getElementById('historie-inhalt').innerHTML =
       `<div style="color:#dc2626;padding:12px">Fehler: ${escHtml(e.message)}</div>`;
@@ -17314,4 +17335,17 @@ async function praesenzschulungAbschlussPruefen(session, teilnehmer) {
     if(y>245){doc.addPage();y=22;} doc.setFontSize(11); doc.text('Gegenzeichnung Objektleiter',20,y); y+=8; doc.setFontSize(9); doc.text(`${session.objektleiter_name||''} · ${new Date(session.objektleiter_unterschrieben_am).toLocaleString('de-DE')}`,20,y); if(session.objektleiter_unterschrift) doc.addImage(session.objektleiter_unterschrift,'PNG',125,y-6,55,14);
     const blob=doc.output('blob'); const path=await SB.uploadPdf(blob,`praesenzschulung/${session.id}/teilnahmenachweis.pdf`); await SB.patch('praesenzschulungen',`id=eq.${encodeURIComponent(session.id)}`,{pdf_path:path}); session.pdf_path=path; return path;
   } catch(e){ console.warn('Präsenz-PDF konnte nicht gespeichert werden:',e); return null; }
+}
+
+
+async function praesenzObjektNachweiseOeffnen(bereichId) {
+  const bereich = APP_BEREICHE.find(b=>b.id===bereichId); if (!bereich) return;
+  const modal=document.createElement('div'); modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:9600;display:flex;align-items:center;justify-content:center;padding:16px';
+  modal.innerHTML=`<div style="background:#fff;border-radius:16px;width:100%;max-width:680px;max-height:88vh;overflow:auto;padding:22px"><div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h3 style="margin:0;color:#1e3a5f;font-size:1rem">📄 Präsenznachweise · ${escHtml(bereich.objekt||bereich.name)}</h3><button onclick="this.closest('[style*=fixed]').remove()" style="border:0;background:none;font-size:1.2rem;cursor:pointer">✕</button></div><div id="praesenz-objekt-nachweise" style="margin-top:14px;text-align:center;color:#6b7280">⏳ Wird geladen…</div></div>`; document.body.appendChild(modal);
+  try {
+    const rows=await SB.get('praesenzschulungen',`tenant_id=eq.${encodeURIComponent(currentUser.tenantId)}&bereich_id=eq.${encodeURIComponent(bereichId)}&order=datum.desc&limit=100`);
+    const el=modal.querySelector('#praesenz-objekt-nachweise');
+    if(!rows.length){el.innerHTML='<div style="padding:24px">📭 Für dieses Objekt liegen noch keine Präsenznachweise vor.</div>';return;}
+    el.innerHTML=rows.map(s=>`<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;text-align:left;padding:12px 0;border-bottom:1px solid #e5e7eb"><div style="flex:1;min-width:250px"><b>${s.status==='abgeschlossen'?'✅':'🟡'} ${escHtml(s.titel)}</b><div style="font-size:.76rem;color:#6b7280">${escHtml(s.datum)} · ${escHtml(s.sprache)} · ${s.objektleiter_name?`Gegenzeichnung: ${escHtml(s.objektleiter_name)}`:'Gegenzeichnung ausstehend'}</div></div>${s.pdf_path?`<button onclick="oeffnePdfSigniert('${escHtml(s.pdf_path)}')" class="btn btn-outline btn-sm">📄 PDF öffnen</button>`:'<span style="font-size:.75rem;color:#9ca3af">Noch kein PDF</span>'}</div>`).join('');
+  } catch(e) { modal.querySelector('#praesenz-objekt-nachweise').innerHTML=`<div style="color:#dc2626;padding:16px">Nachweise konnten nicht geladen werden: ${escHtml(String(e.message||e))}</div>`; }
 }
