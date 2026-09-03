@@ -17206,3 +17206,112 @@ function externePsagaVersandFreigeben(cb){const b=document.getElementById('eps-v
 async function externePsagaVersandVorschau(schulungId){const s=externePsagaSchulungen.find(x=>x.id===schulungId),teil=(externePsagaTeilnehmer[schulungId]||[]).filter(t=>t.teilgenommen);if(!s||!teil.length){showToast('⚠️ Keine teilgenommenen Teilnehmer vorhanden.','#f59e0b');return;}const items=[];for(const t of teil){const r=await externePsagaZertifikat(schulungId,t.id,false,false);if(r)items.push({t,r});}if(!items.length)return;let modal=document.getElementById('eps-versand-vorschau');if(!modal){modal=document.createElement('div');modal.id='eps-versand-vorschau';modal.className='modal-overlay';modal.innerHTML='<div class="modal-box" style="max-width:680px"><div class="modal-title">👁 Zertifikate prüfen – noch kein Versand</div><p style="font-size:.82rem;color:#64748b">Jedes Zertifikat kann einzeln als PDF geöffnet werden. Bitte Name, Thema, Datum, Inhalte, Schulungsleiter und Unterschrift prüfen. Änderungen erfolgen über „Teilnehmer bearbeiten“ oder „Themen auswählen“.</p><div style="background:#fff7ed;border:1px solid #fdba74;border-radius:8px;padding:10px;font-size:.82rem;color:#9a3412;font-weight:600">⚠️ Der Versand erfolgt erst nach ausdrücklicher Bestätigung.</div><div id="eps-versand-vorschau-liste"></div><label style="display:flex;gap:8px;align-items:flex-start;margin-top:12px;font-size:.82rem"><input id="eps-versand-pruefung" type="checkbox" onchange="externePsagaVersandFreigeben(this)"> Ich habe alle Zertifikate geöffnet und geprüft. Die Daten sind korrekt.</label><div class="modal-actions"><button class="btn btn-secondary" onclick="document.getElementById(\'eps-versand-vorschau\').classList.remove(\'active\')">Schließen</button><button id="eps-versand-verbindlich" class="btn btn-success" disabled onclick="document.getElementById(\'eps-versand-vorschau\').classList.remove(\'active\');externePsagaPerMail(document.getElementById(\'eps-versand-vorschau\').dataset.schulungId)">📧 Verbindlich an Firma senden</button></div></div>';document.body.appendChild(modal);}modal.dataset.schulungId=schulungId;const pruefung=document.getElementById('eps-versand-pruefung');if(pruefung){pruefung.checked=false;externePsagaVersandFreigeben(pruefung);}document.getElementById('eps-versand-vorschau-liste').innerHTML=items.map(({t})=>`<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-top:1px solid #e5e7eb"><span>✅ ${escHtml(externeName(t))}</span><button class="btn btn-outline btn-sm eps-preview-open">Zertifikat als PDF-Vorschau öffnen</button></div>`).join('');items.forEach(({r},i)=>{document.querySelectorAll('#eps-versand-vorschau-liste .eps-preview-open')[i].onclick=()=>window.open(URL.createObjectURL(r.blob),'_blank','noopener');});modal.classList.add('active');}
 async function externePsagaAlleZertifikate(schulungId){const teil=(externePsagaTeilnehmer[schulungId]||[]).filter(t=>t.teilgenommen);if(!teil.length){showToast('⚠️ Keine teilgenommenen Teilnehmer vorhanden.','#f59e0b');return;}for(const t of teil)await externePsagaZertifikat(schulungId,t.id,true);showToast(`✅ ${teil.length} Zertifikat(e) erstellt und gespeichert.`,'#15803d');await externePsagaRendern();}
 async function externePsagaPerMail(schulungId){const s=externePsagaSchulungen.find(x=>x.id===schulungId),teil=(externePsagaTeilnehmer[schulungId]||[]).filter(t=>t.teilgenommen),versandEmpfaenger=EXTERNE_PSAGA_EMAIL_OVERRIDE||s?.email;if(!s||!teil.length){showToast('⚠️ Keine teilgenommenen Teilnehmer vorhanden.','#f59e0b');return;}const attachments=[];for(const t of teil){const r=await externePsagaZertifikat(schulungId,t.id,false);if(r)attachments.push({filename:r.filename,content:await externeBlobBase64(r.blob)});}if(!attachments.length)return;try{const res=await fetch(EMAIL_PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({to:versandEmpfaenger,subject:`Teilnahmebescheinigungen PSAgA – ${s.firmenname} – ${externeDatum(s.datum)}`,html:`<div style="font-family:sans-serif"><h2>Teilnahmebescheinigungen PSAgA</h2><p>Guten Tag ${escHtml(s.ansprechpartner)},</p><p>anbei erhalten Sie die Teilnahmebescheinigungen der PSAgA-Schulung vom ${externeDatum(s.datum)} in ${escHtml(s.ort)}.</p><p>Teilnehmer: ${teil.map(t=>escHtml(externeName(t))).join(', ')}</p><p>Viele Grüße<br>CSC Schulungsmanagement</p></div>`,attachments})});if(!res.ok)throw new Error(`HTTP ${res.status}`);await SB.post('externe_psaga_versand',{id:externeId('epsv'),schulung_id:schulungId,empfaenger:versandEmpfaenger,status:'gesendet',gesendet_am:new Date().toISOString()});showToast(`✅ ${attachments.length} Zertifikat(e) an ${versandEmpfaenger} versendet.`,'#15803d');}catch(e){await SB.post('externe_psaga_versand',{id:externeId('epsv'),schulung_id:schulungId,empfaenger:versandEmpfaenger,status:'fehler',fehler:e.message.slice(0,300)}).catch(()=>{});showToast('❌ E-Mail-Versand fehlgeschlagen: '+e.message.slice(0,140),'#dc2626');}await externePsagaRendern();}
+
+
+// ══════════════════════════════════════════════════════════════
+//  PRÄSENZSCHULUNG VOR ORT — Teilnehmer- und Objektleiter-Signaturen
+// ══════════════════════════════════════════════════════════════
+let praesenzAktiv = null;
+let praesenzSignaturCanvas = null;
+let praesenzSignaturHatStriche = false;
+
+function praesenzId(prefix) {
+  return `${prefix}_${(crypto.randomUUID ? crypto.randomUUID() : Date.now() + '_' + Math.random().toString(36).slice(2))}`;
+}
+function praesenzBerechtigt() {
+  return !!currentUser && ['admin','firma','verantwortlicher','bereichsleiter','objektleiter'].includes(currentUser.role);
+}
+function praesenzModalErzeugen() {
+  let modal = document.getElementById('praesenzschulung-modal');
+  if (modal) return modal;
+  modal = document.createElement('div');
+  modal.id = 'praesenzschulung-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `<div class="modal-box" style="max-width:760px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">🏢 Präsenzschulung vor Ort</div>
+    <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Unterweisung gemeinsam durchführen. Jeder anwesende Mitarbeiter unterschreibt persönlich; anschließend zeichnet der Objektleiter die Teilnehmerliste gegen.</p>
+    <div id="praesenz-form">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+        <div class="form-group" style="margin:0"><label>Unterweisung *</label><select id="praesenz-vorlage"></select></div>
+        <div class="form-group" style="margin:0"><label>Objekt / Schulungsort *</label><select id="praesenz-objekt"></select></div>
+        <div class="form-group" style="margin:0"><label>Datum *</label><input id="praesenz-datum" type="date"></div>
+        <div class="form-group" style="margin:0"><label>Beginn</label><input id="praesenz-beginn" type="time"></div>
+        <div class="form-group" style="margin:0"><label>Ende</label><input id="praesenz-ende" type="time"></div>
+        <div class="form-group" style="margin:0"><label>Sprache der Unterweisung *</label><select id="praesenz-sprache"><option value="de">🇩🇪 Deutsch</option><option value="en">🇬🇧 English</option><option value="tr">🇹🇷 Türkçe</option><option value="ar">🇸🇦 العربية</option><option value="es">🇪🇸 Español</option><option value="ru">🇷🇺 Русский</option></select></div>
+      </div>
+      <div class="form-group" style="margin-top:12px"><label>Anwesende Mitarbeiter auswählen *</label><div id="praesenz-mitarbeiter" style="max-height:230px;overflow:auto;border:1px solid #dbe3ee;border-radius:9px;padding:8px;background:#f8fafc"></div></div>
+      <div id="praesenz-form-msg" class="error-msg"></div>
+      <div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-primary" onclick="praesenzschulungErstellen()">✅ Teilnehmerliste anlegen</button></div>
+    </div>
+    <div id="praesenz-signaturbereich" style="display:none"></div>
+  </div>`;
+  document.body.appendChild(modal);
+  return modal;
+}
+function praesenzschulungOeffnen() {
+  if (!praesenzBerechtigt()) { showToast('⛔ Keine Berechtigung für Präsenzschulungen.', '#dc2626'); return; }
+  const modal = praesenzModalErzeugen();
+  document.getElementById('praesenz-form').style.display = '';
+  document.getElementById('praesenz-signaturbereich').style.display = 'none';
+  document.getElementById('praesenz-form-msg').textContent = '';
+  const vs = document.getElementById('praesenz-vorlage');
+  const os = document.getElementById('praesenz-objekt');
+  vs.innerHTML = SCHULUNG_VORLAGEN.filter(v => !String(v.id).startsWith('__')).map(v => `<option value="${escHtml(v.id)}">${escHtml(v.titel)}</option>`).join('');
+  const bereiche = (APP_BEREICHE || []).filter(b => b.tenant_id === currentUser.tenantId || b.tenantId === currentUser.tenantId);
+  os.innerHTML = bereiche.map(b => `<option value="${escHtml(b.id)}" data-name="${escHtml(b.objekt || b.name || b.ort || '')}">${escHtml(b.objekt || b.name || b.ort || 'Objekt')}</option>`).join('');
+  if (!os.options.length) os.innerHTML = `<option value="">${escHtml(currentUser.standort || 'Objekt auswählen')}</option>`;
+  const heute = new Date(); document.getElementById('praesenz-datum').value = heute.toISOString().slice(0,10);
+  const users = (APP_USERS || []).filter(u => u.tenant_id === currentUser.tenantId && u.role === 'mitarbeiter' && u.aktiv !== false && !u.archiviert);
+  document.getElementById('praesenz-mitarbeiter').innerHTML = users.length ? users.map(u => `<label style="display:flex;gap:8px;align-items:center;padding:8px;border-bottom:1px solid #e5e7eb;cursor:pointer"><input type="checkbox" class="praesenz-ma" value="${escHtml(u.id)}"><span><b>${escHtml(u.name)}</b><small style="display:block;color:#64748b">${escHtml(u.personalnummer || '')}${u.bereich ? ' · ' + escHtml(u.bereich) : ''}</small></span></label>`).join('') : '<div style="padding:12px;color:#92400e">Keine aktiven Mitarbeiter für diesen Mandanten gefunden.</div>';
+  modal.classList.add('active');
+}
+function praesenzschulungSchliessen() { const m = document.getElementById('praesenzschulung-modal'); if (m) m.classList.remove('active'); praesenzAktiv = null; }
+async function praesenzschulungErstellen() {
+  const msg = document.getElementById('praesenz-form-msg'); msg.textContent = '';
+  const ids = [...document.querySelectorAll('.praesenz-ma:checked')].map(x => x.value);
+  const vorlage = SCHULUNG_VORLAGEN.find(v => v.id === document.getElementById('praesenz-vorlage').value);
+  const obj = document.getElementById('praesenz-objekt'); const objektName = obj.options[obj.selectedIndex]?.dataset.name || obj.options[obj.selectedIndex]?.textContent || '';
+  if (!vorlage || !ids.length || !document.getElementById('praesenz-datum').value || !objektName) { msg.textContent = 'Bitte Unterweisung, Objekt, Datum und mindestens einen Mitarbeiter auswählen.'; return; }
+  const id = praesenzId('prs');
+  const users = ids.map(uid => APP_USERS.find(u => u.id === uid)).filter(Boolean);
+  const session = { id, tenant_id: currentUser.tenantId, bereich_id: obj.value || null, objekt_name: objektName.trim(), titel: vorlage.titel, sprache: document.getElementById('praesenz-sprache').value, datum: document.getElementById('praesenz-datum').value, beginn: document.getElementById('praesenz-beginn').value || null, ende: document.getElementById('praesenz-ende').value || null, ort: objektName.trim(), erstellt_von: currentUser.userId, status: 'teilnehmer_signieren' };
+  try {
+    await SB.post('praesenzschulungen', session);
+    const rows = users.map(u => ({ id: praesenzId('prst'), schulungs_id: id, tenant_id: currentUser.tenantId, user_id: u.id, name_snapshot: u.name, personalnummer_snapshot: u.personalnummer || null, bereich_snapshot: u.bereich || null, sprache: session.sprache, anwesend: true }));
+    await SB.post('praesenzschulung_teilnehmer', rows);
+    await sbAudit('PRAESENZSCHULUNG_ERSTELLT', `Präsenzschulung ${session.titel} · ${session.objekt_name} · ${rows.length} Teilnehmer`);
+    praesenzAktiv = { session, teilnehmer: rows, index: 0 };
+    praesenzSignaturAnsicht();
+  } catch (e) { msg.textContent = 'Fehler beim Anlegen: ' + String(e.message || e).slice(0, 180); }
+}
+function praesenzSignaturAnsicht() {
+  const box = document.getElementById('praesenz-signaturbereich'); if (!box || !praesenzAktiv) return;
+  document.getElementById('praesenz-form').style.display = 'none'; box.style.display = '';
+  const p = praesenzAktiv.teilnehmer[praesenzAktiv.index];
+  const abgeschlossen = praesenzAktiv.teilnehmer.every(x => x.teilnehmer_unterschrieben_am);
+  if (abgeschlossen && !praesenzAktiv.session.objektleiter_unterschrieben_am) { praesenzObjektleiterSignaturAnsicht(); return; }
+  if (praesenzAktiv.session.objektleiter_unterschrieben_am) { box.innerHTML = '<div style="padding:18px;text-align:center;color:#166534;font-weight:700">✅ Präsenzschulung vollständig abgeschlossen und archiviert.</div><div class="modal-actions"><button class="btn btn-primary" onclick="praesenzschulungSchliessen()">Schließen</button></div>'; return; }
+  box.innerHTML = `<div style="font-weight:700;color:#1e3a5f;margin-bottom:6px">✍️ Unterschrift Mitarbeiter ${praesenzAktiv.index + 1} von ${praesenzAktiv.teilnehmer.length}</div><div style="font-size:.9rem;margin-bottom:8px"><b>${escHtml(p.name_snapshot)}</b>${p.personalnummer_snapshot ? ' · ' + escHtml(p.personalnummer_snapshot) : ''}</div><p style="font-size:.8rem;color:#64748b">Ich bestätige meine Teilnahme an der Unterweisung „${escHtml(praesenzAktiv?.session?.titel || '')}“ am ${escHtml(praesenzAktiv.session.datum)}.</p><canvas id="praesenz-signatur-canvas" width="700" height="180" style="display:block;width:100%;height:180px;background:#fff;border:2px solid #bfdbfe;border-radius:9px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span id="praesenz-signatur-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span><button class="btn btn-outline btn-sm" onclick="praesenzSignaturLoeschen()">↻ Löschen</button></div><div id="praesenz-signatur-msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-primary" onclick="praesenzTeilnehmerUnterzeichnen()">✅ Unterschrift speichern</button></div>`;
+  praesenzSignaturInit();
+}
+function praesenzSignaturInit() { const c = document.getElementById('praesenz-signatur-canvas'); if (!c) return; const ctx = c.getContext('2d'); ctx.strokeStyle='#1455a0'; ctx.lineWidth=3; ctx.lineCap='round'; ctx.lineJoin='round'; let draw=false; const pos=e=>{const r=c.getBoundingClientRect();return{x:(e.clientX-r.left)*c.width/r.width,y:(e.clientY-r.top)*c.height/r.height};}; c.onpointerdown=e=>{draw=true;praesenzSignaturHatStriche=true;c.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);}; c.onpointermove=e=>{if(!draw)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}; c.onpointerup=c.onpointercancel=()=>{draw=false;}; praesenzSignaturCanvas=c; }
+function praesenzSignaturLoeschen() { const c=praesenzSignaturCanvas||document.getElementById('praesenz-signatur-canvas'); if(c){c.getContext('2d').clearRect(0,0,c.width,c.height);praesenzSignaturHatStriche=false;const s=document.getElementById('praesenz-signatur-status');if(s)s.textContent='Noch keine Unterschrift';} }
+async function praesenzHash(value) { try { const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); } catch (_) { return 'sha256-unavailable'; } }
+async function praesenzTeilnehmerUnterzeichnen() { const p=praesenzAktiv?.teilnehmer?.[praesenzAktiv.index], msg=document.getElementById('praesenz-signatur-msg'); if(!p)return; if(!praesenzSignaturHatStriche){msg.textContent='Bitte unterschreiben Sie zuerst.';return;} const sig=document.getElementById('praesenz-signatur-canvas').toDataURL('image/png'), ts=new Date().toISOString(), hash=await praesenzHash(`${p.id}|${sig}|${ts}`); try { await SB.patch('praesenzschulung_teilnehmer',`id=eq.${encodeURIComponent(p.id)}&teilnehmer_unterschrieben_am=is.null`,{teilnehmer_unterschrift:sig,teilnehmer_unterschrieben_am:ts,signatur_hash:hash});p.teilnehmer_unterschrift=sig;p.teilnehmer_unterschrieben_am=ts;p.signatur_hash=hash;await sbAudit('PRAESENZ_TEILNEHMER_UNTERZEICHNET',`Teilnehmer ${p.name_snapshot} · ${praesenzAktiv.session.id}`);praesenzAktiv.index++;praesenzSignaturHatStriche=false;praesenzSignaturAnsicht();}catch(e){msg.textContent='Unterschrift konnte nicht gespeichert werden: '+String(e.message||e).slice(0,160);} }
+function praesenzObjektleiterSignaturAnsicht() { const box=document.getElementById('praesenz-signaturbereich');box.innerHTML=`<div style="font-weight:700;color:#166534;margin-bottom:6px">🧑‍💼 Objektleiter gegenzeichnet Teilnehmerliste</div><p style="font-size:.8rem;color:#64748b">Alle Mitarbeiter haben persönlich unterschrieben. Bitte Teilnehmerliste prüfen und anschließend als Objektleiter gegenzeichnen.</p><div style="background:#f8fafc;border:1px solid #dbe3ee;border-radius:8px;padding:8px;margin-bottom:10px;font-size:.82rem">${praesenzAktiv.teilnehmer.map(p=>`✅ ${escHtml(p.name_snapshot)} · ${escHtml(p.teilnehmer_unterschrieben_am ? new Date(p.teilnehmer_unterschrieben_am).toLocaleString('de-DE') : 'fehlt')}`).join('<br>')}</div><canvas id="praesenz-signatur-canvas" width="700" height="180" style="display:block;width:100%;height:180px;background:#fff;border:2px solid #86efac;border-radius:9px;touch-action:none"></canvas><div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px"><span id="praesenz-signatur-status" style="font-size:.78rem;color:#9ca3af">Noch keine Unterschrift</span><button class="btn btn-outline btn-sm" onclick="praesenzSignaturLoeschen()">↻ Löschen</button></div><div id="praesenz-signatur-msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="praesenzschulungSchliessen()">Abbrechen</button><button class="btn btn-success" onclick="praesenzObjektleiterUnterzeichnen()">✅ Als Objektleiter gegenzeichnen</button></div>`;praesenzSignaturHatStriche=false;praesenzSignaturInit();}
+async function praesenzObjektleiterUnterzeichnen() { const msg=document.getElementById('praesenz-signatur-msg');if(!praesenzAktiv||!praesenzAktiv.teilnehmer.every(p=>p.teilnehmer_unterschrieben_am)){msg.textContent='Die Objektleiter-Gegenzeichnung ist erst nach allen Mitarbeiter-Unterschriften möglich.';return;}if(!praesenzSignaturHatStriche){msg.textContent='Bitte zuerst als Objektleiter unterschreiben.';return;}const sig=document.getElementById('praesenz-signatur-canvas').toDataURL('image/png'),ts=new Date().toISOString();try{await SB.patch('praesenzschulungen',`id=eq.${encodeURIComponent(praesenzAktiv.session.id)}&objektleiter_unterschrieben_am=is.null`,{status:'abgeschlossen',objektleiter_id:currentUser.userId,objektleiter_name:currentUser.name,objektleiter_unterschrift:sig,objektleiter_unterschrieben_am:ts,abgeschlossen_am:ts,abgeschlossen_hash:await praesenzHash(`${praesenzAktiv.session.id}|${sig}|${ts}`)});Object.assign(praesenzAktiv.session,{status:'abgeschlossen',objektleiter_id:currentUser.userId,objektleiter_name:currentUser.name,objektleiter_unterschrift:sig,objektleiter_unterschrieben_am:ts});await sbAudit('PRAESENZ_OBJEKTLEITER_UNTERZEICHNET',`Präsenzschulung ${praesenzAktiv.session.id}`);await praesenzschulungAbschlussPruefen(praesenzAktiv.session,praesenzAktiv.teilnehmer);showToast('✅ Präsenzschulung vollständig unterzeichnet.','#166534');praesenzSignaturAnsicht();}catch(e){msg.textContent='Gegenzeichnung konnte nicht gespeichert werden: '+String(e.message||e).slice(0,160);} }
+
+
+async function praesenzschulungAbschlussPruefen(session, teilnehmer) {
+  if (!session?.objektleiter_unterschrieben_am || !teilnehmer?.length || !teilnehmer.every(t=>t.teilnehmer_unterschrieben_am)) throw new Error('Abschluss erst nach allen Signaturen möglich');
+  if (typeof jspdf === 'undefined' && typeof window.jspdf === 'undefined') return null;
+  try {
+    const PDF = window.jspdf?.jsPDF || jspdf.jsPDF; const doc = new PDF({unit:'mm',format:'a4'});
+    doc.setFontSize(18); doc.text('Teilnahmenachweis Präsenzschulung',20,22); doc.setFontSize(10);
+    doc.text(`Unterweisung: ${session.titel}`,20,34); doc.text(`Objekt: ${session.objekt_name}`,20,41); doc.text(`Datum: ${session.datum} · Ort: ${session.ort}`,20,48); doc.text(`Sprache: ${session.sprache}`,20,55);
+    let y=68; doc.setFontSize(11); doc.text('Teilnehmer und persönliche Unterschrift',20,y); y+=8; doc.setFontSize(9);
+    for(const t of teilnehmer){ doc.text(`${t.name_snapshot}${t.personalnummer_snapshot?' · '+t.personalnummer_snapshot:''}`,20,y); if(t.teilnehmer_unterschrift) doc.addImage(t.teilnehmer_unterschrift,'PNG',125,y-6,55,14); y+=20; if(y>260){doc.addPage();y=22;} }
+    if(y>245){doc.addPage();y=22;} doc.setFontSize(11); doc.text('Gegenzeichnung Objektleiter',20,y); y+=8; doc.setFontSize(9); doc.text(`${session.objektleiter_name||''} · ${new Date(session.objektleiter_unterschrieben_am).toLocaleString('de-DE')}`,20,y); if(session.objektleiter_unterschrift) doc.addImage(session.objektleiter_unterschrift,'PNG',125,y-6,55,14);
+    const blob=doc.output('blob'); const path=await SB.uploadPdf(blob,`praesenzschulung/${session.id}/teilnahmenachweis.pdf`); await SB.patch('praesenzschulungen',`id=eq.${encodeURIComponent(session.id)}`,{pdf_path:path}); session.pdf_path=path; return path;
+  } catch(e){ console.warn('Präsenz-PDF konnte nicht gespeichert werden:',e); return null; }
+}
