@@ -5504,12 +5504,26 @@ const BL_SIGNATUR_FELDER = new Set(['lt_sig_uw','lt_sig_bl']);
 const AUTO_AUSBLENDEN = new Set(['td_geburtsdatum']);
 // Universelle Pflichtfelder decken auch alte/PDF-Vorlagen ohne Signatur oder Datum ab.
 const UNIVERSAL_SCHULUNGSFELDER = ['employee_signature', 'training_date', 'completion_acknowledgement'];
+// Dieser zentrale Vertrag gilt automatisch für jede Vorlage, die über
+// oeffneFormularMitSprache/formularSpeichern läuft – auch für künftig angelegte Themen.
+const VERBINDLICHER_SCHULUNGSNACHWEIS = Object.freeze({
+  hinweis: 'Alle erforderlichen Kontrollkästchen müssen aktiviert werden. Sie dokumentieren damit, dass das Schulungsmaterial gelesen wurde.',
+  pflichtfelder: UNIVERSAL_SCHULUNGSFELDER
+});
 function universalSchulungsfelder(form = {}) {
   return {
     employee_signature: form.employee_signature || null,
     training_date: form.training_date || new Date().toISOString().slice(0, 10),
     completion_acknowledgement: !!form.completion_acknowledgement
   };
+}
+function verbindlichenSchulungsnachweisPruefen({ ack, trainingDate, employeeSignature, abschliessen }) {
+  if (!abschliessen) return [];
+  return [
+    !ack && 'Pflichtbestätigung: Schulungsmaterial gelesen',
+    !trainingDate && 'Schulungsdatum',
+    !employeeSignature && 'Unterschrift Mitarbeiter'
+  ].filter(Boolean);
 }
 
 function schulungsTenant(zuw) {
@@ -5599,7 +5613,7 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
 
   // Prominenter Hinweis: Checkboxen sind die Lesebestätigung der Unterweisung.
   const universal = universalSchulungsfelder(form.felder || {});
-  const universalHtml = `<div class="form-group" style="background:#fff7ed;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px"><strong style="display:block;color:#9a3412">⚠️ Dokumentationspflicht</strong><p style="margin:6px 0;font-size:.84rem;color:#7c2d12">Alle erforderlichen Kontrollkästchen müssen aktiviert werden. Sie dokumentieren damit, dass das Schulungsmaterial gelesen wurde.</p><label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;color:#7c2d12"><input id="formular-acknowledgement" type="checkbox" ${universal.completion_acknowledgement?'checked':''} ${readOnly?'disabled':''}> Pflichtbestätigung: Ich habe das Schulungsmaterial gelesen und alle erforderlichen Kontrollkästchen geprüft.</label><div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:12px;margin-top:12px"><div><label>Schulungsdatum *</label><input id="feld_training_date" type="date" value="${escHtml(universal.training_date)}" ${readOnly?'readonly':''}></div><div><label>Unterschrift Mitarbeiter *</label><div class="sig-container"><canvas id="sig_employee_signature" class="sig-canvas"></canvas></div><small>Mit Finger oder Maus unterschreiben</small></div></div></div>`;
+  const universalHtml = `<div class="form-group" style="background:#fff7ed;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px"><strong style="display:block;color:#9a3412">⚠️ Dokumentationspflicht</strong><p style="margin:6px 0;font-size:.84rem;color:#7c2d12">${VERBINDLICHER_SCHULUNGSNACHWEIS.hinweis}</p><label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;color:#7c2d12"><input id="formular-acknowledgement" type="checkbox" ${universal.completion_acknowledgement?'checked':''} ${readOnly?'disabled':''}> Pflichtbestätigung: Ich habe das Schulungsmaterial gelesen und alle erforderlichen Kontrollkästchen geprüft.</label><div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:12px;margin-top:12px"><div><label>Schulungsdatum *</label><input id="feld_training_date" type="date" value="${escHtml(universal.training_date)}" ${readOnly?'readonly':''}></div><div><label>Unterschrift Mitarbeiter *</label><div class="sig-container"><canvas id="sig_employee_signature" class="sig-canvas"></canvas></div><small>Mit Finger oder Maus unterschreiben</small></div></div></div>`;
 
   // PDF-Vorlage oder Felder anzeigen
   if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
@@ -5747,9 +5761,7 @@ function formularSpeichern(abschliessen) {
   const ack = document.getElementById('formular-acknowledgement')?.checked === true;
   const trainingDate = document.getElementById('feld_training_date')?.value || '';
   const employeeSignature = getSigDataUrl('employee_signature') || (formulare[activeZuwId]||{}).felder?.employee_signature || null;
-  if (abschliessen && !ack) fehler.push('Pflichtbestätigung: Schulungsmaterial gelesen');
-  if (abschliessen && !trainingDate) fehler.push('Schulungsdatum');
-  if (abschliessen && !employeeSignature) fehler.push('Unterschrift Mitarbeiter');
+  fehler.push(...verbindlichenSchulungsnachweisPruefen({ ack, trainingDate, employeeSignature, abschliessen }));
   felder.employee_signature = employeeSignature;
   felder.training_date = trainingDate;
   felder.completion_acknowledgement = ack;

@@ -51,6 +51,12 @@ test('PDF backup uses immutable unique paths and visible primary-backup errors',
   assert.match(source, /Primär-Backup fehlgeschlagen/);
 });
 
+test('Neue Schulungsthemen erben den zentralen Pflichtnachweis automatisch', () => {
+  assert.match(source, /VERBINDLICHER_SCHULUNGSNACHWEIS/);
+  assert.match(source, /verbindlichenSchulungsnachweisPruefen/);
+  assert.match(source, /fehler\.push\(\.\.\.verbindlichenSchulungsnachweisPruefen/);
+  assert.match(source, /universalHtml.*VERBINDLICHER_SCHULUNGSNACHWEIS\.hinweis/);
+});
 test('Keine Browser-Dialoge im neuen Prüfworkflow', () => {
   const start = source.indexOf('function blLeiternPruefungOeffnen');
   const end = source.indexOf('async function blMitarbeiterMobilSpeichern', start);
