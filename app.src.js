@@ -1858,6 +1858,12 @@ async function oeffnePdfSigniert(storagePath) {
   }
 }
 
+// Externe PSAgA-Zertifikate verwenden diesen Handlernamen in ihrem Inline-Button.
+// Als Alias bleibt die zentrale signierte-URL-Logik erhalten.
+async function oeffneStoragePdf(storagePath) {
+  return oeffnePdfSigniert(storagePath);
+}
+
 async function oeffneStorageBild(storagePath) {
   if (!storagePath) return;
   try {
