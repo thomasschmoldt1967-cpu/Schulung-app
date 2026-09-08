@@ -31,6 +31,7 @@ let APP_BEREICHE      = []; // Bereiche (bereichsleiter-System)
 let SCHULUNG_VORLAGEN = [];
 let zuweisungen       = [];
 let formulare         = {};   // { zuwId: { felder, gestartet, abgeschlossen, ... } }
+
 let auditLog          = [];
 let activeZuwId       = null;
 let abschlussCallback = null;
@@ -1076,8 +1077,7 @@ const SB = {
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': contentType,
-        'x-upsert': 'true'
+        'Content-Type': contentType
       },
       body: fileBlob
     });
@@ -1085,14 +1085,13 @@ const SB = {
     return `schulung-pdfs/${path}`;
   },
   async uploadPdf(pdfBlob, path) {
-    // PUT mit x-upsert:true — überschreibt ohne 409-Fehler
+    // Einmaliger Upload auf einen unveränderlichen Pfad; kein Überschreiben.
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
-      method:'PUT',
+      method:'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type':'application/pdf',
-        'x-upsert': 'true'
+        'Content-Type':'application/pdf'
       },
       body: pdfBlob
     });
@@ -1247,6 +1246,7 @@ async function initApp() {
       };
     });
 
+
     const session = checkSession();
     if (session) { currentUser = session; startInactivityWatcher(); routeAfterLogin(); }
     else { showScreen('screen-login'); }
@@ -1334,6 +1334,7 @@ function doLogout() {
   SCHULUNG_VORLAGEN = [];
   zuweisungen       = [];
   formulare         = {};
+
   lernpfadFortschritt = {};
   lernpfadUnterschrift = null;
   document.getElementById('screen-firma')?.style.setProperty('display','none');
@@ -2953,7 +2954,6 @@ function vtAlsMaSpielen(vorlagenId) {
   // Formular rendern (echte renderFeld-Funktion nutzen)
   const container = document.getElementById('vt-ma-formular-container');
   if (!container) return;
-
   let html = `<p class="pflicht-hinweis"><span>*</span> Pflichtfelder</p>`;
   vorlage.abschnitte.forEach(ab => {
     html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
@@ -5502,6 +5502,15 @@ const AUTO_SCHULUNGSFELDER = new Set([
 ]);
 const BL_SIGNATUR_FELDER = new Set(['lt_sig_uw','lt_sig_bl']);
 const AUTO_AUSBLENDEN = new Set(['td_geburtsdatum']);
+// Universelle Pflichtfelder decken auch alte/PDF-Vorlagen ohne Signatur oder Datum ab.
+const UNIVERSAL_SCHULUNGSFELDER = ['employee_signature', 'training_date', 'completion_acknowledgement'];
+function universalSchulungsfelder(form = {}) {
+  return {
+    employee_signature: form.employee_signature || null,
+    training_date: form.training_date || new Date().toISOString().slice(0, 10),
+    completion_acknowledgement: !!form.completion_acknowledgement
+  };
+}
 
 function schulungsTenant(zuw) {
   return APP_TENANTS.find(t => t.id === zuw?.tenantId) || {};
@@ -5539,6 +5548,7 @@ function renderAutoFeld(feld, value) {
   const hinweis = feld.id === 'fd_ansprechpartner' ? 'Zuständiger Bereichsleiter' : 'Automatisch aus Stammdaten';
   return `<div class="form-group"><label>${escHtml(feld.label)}</label><div class="auto-form-value" style="padding:10px 12px;border:1px solid #dbe3ee;border-radius:8px;background:#f8fafc;color:#1e3a5f">${escHtml(value || '–')}</div><small style="display:block;color:#6b7280;margin-top:4px">🔒 ${hinweis}</small></div>`;
 }
+
 
 async function oeffneFormularMitSprache(zuwId, sprache) {
   activeZuwId = zuwId;
@@ -5587,9 +5597,13 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
   const body = document.getElementById('formular-body');
   body.dir = t.richtung || 'ltr';
 
+  // Prominenter Hinweis: Checkboxen sind die Lesebestätigung der Unterweisung.
+  const universal = universalSchulungsfelder(form.felder || {});
+  const universalHtml = `<div class="form-group" style="background:#fff7ed;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px"><strong style="display:block;color:#9a3412">⚠️ Dokumentationspflicht</strong><p style="margin:6px 0;font-size:.84rem;color:#7c2d12">Alle erforderlichen Kontrollkästchen müssen aktiviert werden. Sie dokumentieren damit, dass das Schulungsmaterial gelesen wurde.</p><label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;color:#7c2d12"><input id="formular-acknowledgement" type="checkbox" ${universal.completion_acknowledgement?'checked':''} ${readOnly?'disabled':''}> Pflichtbestätigung: Ich habe das Schulungsmaterial gelesen und alle erforderlichen Kontrollkästchen geprüft.</label><div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:12px;margin-top:12px"><div><label>Schulungsdatum *</label><input id="feld_training_date" type="date" value="${escHtml(universal.training_date)}" ${readOnly?'readonly':''}></div><div><label>Unterschrift Mitarbeiter *</label><div class="sig-container"><canvas id="sig_employee_signature" class="sig-canvas"></canvas></div><small>Mit Finger oder Maus unterschreiben</small></div></div></div>`;
+
   // PDF-Vorlage oder Felder anzeigen
   if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
-    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    let html = universalHtml + `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     // Signierte URL generieren (5 Min gültig)
     let pdfAnzeigeUrl = '';
     try {
@@ -5627,7 +5641,7 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     body.innerHTML = html;
   } else {
     // Standard-Felder-Formular
-    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    let html = universalHtml + `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     if (vorlage) vorlage.abschnitte.forEach(ab => {
       html += `<div class="form-section"><div class="form-section-title">${escHtml(uebersetzeAbschnitt(ab.titel, sprache))}</div>`;
       // HTML-Erklärungsblock (Bilder, Texte, Infografiken) – direkt als innerHTML einbetten
@@ -5654,6 +5668,7 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     sigPads={}; uploadFiles={};
   }
   if (!readOnly && vorlage) {
+    initSigPad('employee_signature', universal.employee_signature);
     vorlage.abschnitte.forEach(ab => {
       ab.felder.filter(f=>f.typ==='signature').forEach(f=>initSigPad(f.id,(form.felder||{})[f.id]));
       ab.felder.filter(f=>f.typ==='upload').forEach(f=>{
@@ -5729,6 +5744,15 @@ function formularSpeichern(abschliessen) {
   const autoFelder=schulungsAutoFelder(zuw);
   const fehlEl=document.getElementById('formular-fehler'); fehlEl.classList.remove('show');
   const felder={}, fehler=[];
+  const ack = document.getElementById('formular-acknowledgement')?.checked === true;
+  const trainingDate = document.getElementById('feld_training_date')?.value || '';
+  const employeeSignature = getSigDataUrl('employee_signature') || (formulare[activeZuwId]||{}).felder?.employee_signature || null;
+  if (abschliessen && !ack) fehler.push('Pflichtbestätigung: Schulungsmaterial gelesen');
+  if (abschliessen && !trainingDate) fehler.push('Schulungsdatum');
+  if (abschliessen && !employeeSignature) fehler.push('Unterschrift Mitarbeiter');
+  felder.employee_signature = employeeSignature;
+  felder.training_date = trainingDate;
+  felder.completion_acknowledgement = ack;
   vorlage.abschnitte.forEach(ab => {
     ab.felder.forEach(feld => {
       if (AUTO_AUSBLENDEN.has(feld.id)) return;
@@ -5938,27 +5962,28 @@ function generatePdf(zuwId, downloadOnly) {
 // ── SUPABASE STORAGE UPLOAD ──────────────────────────────────
 async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
   try {
-    const path = `${tenantId}/${filename}`;
-    // PUT mit x-upsert:true — überschreibt existierende Datei ohne 409-Fehler
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
-      method: 'PUT',
+    const immutablePdfPath = `${tenantId}/${zuwId}/${Date.now()}_${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}_${filename}`;
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${immutablePdfPath}`, {
+      method: 'POST',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Content-Type': 'application/pdf',
-        'x-upsert': 'true'
+        'x-upsert': 'false'
       },
       body: pdfBlob
     });
     if (!r.ok) throw new Error(await r.text());
-    // Speichere Storage-Pfad statt public URL
-    const storagePath = `schulung-pdfs/${path}`;
-    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath });
-    if (formulare[zuwId]) formulare[zuwId].pdfPath = storagePath;
-    showToast('🗄️ PDF gespeichert', '#0047cc');
+    const storagePath = `schulung-pdfs/${immutablePdfPath}`;
+    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath, pdf_backup_status: 'primary_ok', pdf_backup_created_at: now(), pdf_backup_filename: filename });
+    if (formulare[zuwId]) Object.assign(formulare[zuwId], { pdfPath: storagePath, pdfBackupStatus: 'primary_ok' });
+    showToast('🗄️ Primär-Backup gespeichert', '#0047cc');
+    return storagePath;
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
-    showToast('⚠️ PDF-Upload fehlgeschlagen: ' + e.message.substring(0,80), '#dc2626');
+    try { await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_backup_status: 'primary_failed', pdf_backup_error: String(e.message).slice(0,500), pdf_backup_failed_at: now() }); } catch (_) {}
+    showToast('❌ Primär-Backup fehlgeschlagen: ' + String(e.message).substring(0,100), '#dc2626');
+    return null;
   }
 }
 
@@ -7922,6 +7947,20 @@ async function emailTestSenden() {
 //  FEATURE 8: SCHULUNGSHISTORIE PRO MITARBEITER
 // ══════════════════════════════════════════════════════════════
 
+// BL-Gegenzeichnung für jede abgeschlossene Schulung. Die Formularfelder bleiben dabei unverändert;
+// die Signatur wird ausschließlich append-only in einer separaten Tabelle gespeichert.
+async function blSignaturFuerSchulungOeffnen(formularId, titel) {
+  if (!['bereichsleiter','admin','verantwortlicher'].includes(currentUser?.role)) { showToast('⛔ Keine Berechtigung für die BL-Gegenzeichnung.', '#dc2626'); return; }
+  const modal = document.createElement('div'); modal.className = 'modal-overlay active';
+  modal.innerHTML = `<div class="modal-box" style="max-width:520px"><div class="modal-title">✍️ BL-Gegenzeichnung</div><p style="font-size:.84rem">Schulung: <strong>${escHtml(titel || formularId)}</strong></p><p style="font-size:.8rem;color:#64748b">Die abgeschlossenen Formulardaten sind schreibgeschützt. Ihre Gegenzeichnung wird separat und unveränderlich protokolliert.</p><canvas id="bl-counter-signature" width="700" height="180" style="width:100%;height:150px;border:2px solid #bfdbfe;border-radius:8px;background:#fff;touch-action:none"></canvas><div id="bl-counter-error" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Abbrechen</button><button class="btn btn-success" id="bl-counter-save">✅ Gegenzeichnung speichern</button></div></div>`;
+  document.body.appendChild(modal);
+  const canvas = modal.querySelector('#bl-counter-signature'), ctx = canvas.getContext('2d'); let drawing = false, hasInk = false;
+  const pos = e => { const r=canvas.getBoundingClientRect(); return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}; };
+  canvas.onpointerdown=e=>{drawing=true;hasInk=true;canvas.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
+  canvas.onpointermove=e=>{if(drawing){const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}}; canvas.onpointerup=()=>{drawing=false;};
+  modal.querySelector('#bl-counter-save').onclick = async () => { const err=modal.querySelector('#bl-counter-error'); if(!hasInk){err.textContent='Bitte zuerst unterschreiben.';return;} const ts=now(); try { await SB.post('schulung_bl_counter_signatures', { id: `blcs_${crypto.randomUUID ? crypto.randomUUID() : Date.now()}`, formular_id: formularId, bl_user_id: currentUser.userId, bl_name: currentUser.name, signature_data: canvas.toDataURL('image/png'), signed_at: ts }); await sbAudit('BL_GEGENZEICHNUNG', `Schulung ${formularId} durch ${currentUser.name}`); modal.remove(); showToast('✅ BL-Gegenzeichnung unveränderlich gespeichert.', '#15803d'); } catch(e) { err.textContent='Gegenzeichnung konnte nicht gespeichert werden: '+String(e.message||e).slice(0,160); } };
+}
+
 async function zeigeSchulungshistorie(userId) {
   const user = APP_USERS.find(u => u.id === userId);
   if (!user) return;
@@ -7979,6 +8018,9 @@ async function zeigeSchulungshistorie(userId) {
         '<div style="text-align:center;padding:24px;color:#6b7280">📋 Noch keine abgeschlossenen Schulungen</div>';
       return;
     }
+
+    let blSignaturen = [];
+    try { blSignaturen = await SB.get('schulung_bl_counter_signatures', `formular_id=in.(${alleFormulare.map(f => encodeURIComponent(f.id)).join(',')})&order=signed_at.desc`); } catch (_) { blSignaturen = []; }
 
     const html = alleFormulare.map((f, idx) => {
       const zuw = zuweisungen.find(z => z.id === f.id);
@@ -8078,10 +8120,16 @@ async function zeigeSchulungshistorie(userId) {
         <div style="padding:14px 16px">
           ${abschnitteHtml}
         </div>
-        <!-- Footer mit PDF-Button -->
-        ${f.pdf_path ? `<div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb">
-          <button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>
-        </div>` : ''}
+        <!-- Unveränderliche Historie: Datum, Mitarbeitersignatur und BL-Status -->
+        <div style="padding:10px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;font-size:.8rem">
+          <div>📅 Schulungsdatum: <strong>${escHtml(felder.training_date || f.abgeschlossen_am || '–')}</strong></div>
+          <div>✍️ Mitarbeitersignatur: <strong>${felder.employee_signature ? 'vorhanden' : 'fehlt'}</strong></div>
+          <div>🧑‍💼 BL-Gegenzeichnung: <strong>${blSignaturen.some(s => s.formular_id === f.id) ? 'vorhanden' : 'ausstehend'}</strong></div>
+        </div>
+        <div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;display:flex;gap:8px;flex-wrap:wrap">
+          ${f.pdf_path ? `<button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>` : ''}
+          <button onclick="blSignaturFuerSchulungOeffnen('${f.id}','${escHtml(v?.titel || f.id)}')" class="btn btn-outline btn-sm" style="font-size:.78rem">✍️ BL gegenzeichnen</button>
+        </div>
       </div>`;
     }).join('');
 
@@ -13719,8 +13767,7 @@ async function hubBescheinigungErstellen() {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/pdf',
-          'x-upsert': 'true'
+          'Content-Type': 'application/pdf'
         },
         body: pdfBytes
       });

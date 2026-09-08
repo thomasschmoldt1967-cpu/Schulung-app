@@ -25,6 +25,32 @@ test('Bereichsleiter hat separaten Prüf- und Signaturworkflow', () => {
   assert.match(source, /Prüfung durch BL/);
 });
 
+test('Mandatory completion documentation is universal and immutable', () => {
+  assert.match(source, /UNIVERSAL_SCHULUNGSFELDER/);
+  assert.match(source, /employee_signature/);
+  assert.match(source, /training_date/);
+  assert.match(source, /completion_acknowledgement/);
+  assert.match(source, /readOnly.*form\.abgeschlossen/);
+});
+
+test('Training start shows mandatory checkbox notice and completion enforces acknowledgement', () => {
+  assert.match(source, /Alle erforderlichen Kontrollkästchen müssen aktiviert werden/);
+  assert.match(source, /formular-acknowledgement/);
+  assert.match(source, /Pflichtbestätigung.*gelesen/);
+});
+
+test('BL counter-signatures are available for every completed training and append-only', () => {
+  assert.match(source, /blSignaturFuerSchulungOeffnen/);
+  assert.match(source, /schulung_bl_counter_signatures/);
+  assert.match(source, /append-only/);
+});
+
+test('PDF backup uses immutable unique paths and visible primary-backup errors', () => {
+  assert.doesNotMatch(source, /'x-upsert':\s*'true'/);
+  assert.match(source, /immutablePdfPath/);
+  assert.match(source, /Primär-Backup fehlgeschlagen/);
+});
+
 test('Keine Browser-Dialoge im neuen Prüfworkflow', () => {
   const start = source.indexOf('function blLeiternPruefungOeffnen');
   const end = source.indexOf('async function blMitarbeiterMobilSpeichern', start);
