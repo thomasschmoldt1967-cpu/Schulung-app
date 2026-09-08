@@ -1553,12 +1553,15 @@ function blMitarbeiterDetail(userId) {
     <div style="margin-bottom:14px">
       ${maZuws.length ? maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
+        const f = formulare[z.id] || {};
         const s = berechneStatus(z);
         const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
-        return `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
-          <span>${dot}</span>
-          <div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>
-          ${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}
+        const leiterPruefung = z.vorlagenId === 'vorlage_leitern_tritte' && f.abgeschlossen
+          ? `<button onclick="blLeiternPruefungOeffnen('${z.id}','${userId}');event.stopPropagation()" style="margin-top:6px;padding:6px 9px;border:1px solid #1e3a5f;border-radius:7px;background:#eff6ff;color:#1e3a5f;font-size:.72rem;cursor:pointer">${f.felder?.lt_sig_bl ? '✅ BL-Prüfung anzeigen' : '✍️ Prüfung durch BL'}</button>`
+          : '';
+        return `<div style="padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
+          <div style="display:flex;align-items:center;gap:8px"><span>${dot}</span><div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}</div>
+          ${leiterPruefung}
         </div>`;
       }).join('') : '<div style="color:#9ca3af;font-size:.82rem;text-align:center;padding:12px">Keine Schulungen zugewiesen</div>'}
     </div>
@@ -1568,6 +1571,42 @@ function blMitarbeiterDetail(userId) {
     </div>
   </div>`;
   document.body.appendChild(modal);
+}
+
+function blLeiternPruefungOeffnen(zuwId, userId) {
+  if (currentUser?.role !== 'bereichsleiter') {
+    showToast('⛔ Nur der zuständige Bereichsleiter kann prüfen.', '#b91c1c');
+    return;
+  }
+  const zuw = zuweisungen.find(z => z.id === zuwId), form = formulare[zuwId] || {};
+  if (!zuw || zuw.vorlagenId !== 'vorlage_leitern_tritte' || !form.abgeschlossen) return;
+  const ma = APP_USERS.find(u => u.id === userId), existing = form.felder?.lt_sig_bl;
+  const modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9700;display:flex;align-items:center;justify-content:center;padding:18px';
+  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:470px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow:auto">
+    <h3 style="margin:0 0 8px;color:#1e3a5f;font-size:1rem">🪜 Leitern & Tritte — BL-Prüfung</h3>
+    <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Teilnehmer: <strong>${escHtml(ma?.name || '–')}</strong><br>Die Mitarbeitenden-Schulung wurde abgeschlossen. Bitte Inhalte prüfen und erst danach als Bereichsleiter bestätigen.</p>
+    ${existing ? `<div style="padding:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:.8rem;color:#166534;margin-bottom:12px">✅ Bereits bestätigt durch ${escHtml(form.felder.lt_bl_name || currentUser.name)}${form.felder.lt_bl_am ? ` am ${dateStr(form.felder.lt_bl_am)}` : ''}<img src="${existing}" style="display:block;max-width:300px;margin-top:10px;border:1px solid #d1d5db;border-radius:6px"></div>` : `<label style="display:block;font-size:.8rem;color:#374151;margin-bottom:6px">Unterschrift Bereichsleiter *</label><div class="sig-container"><canvas id="sig_bl_pruefung" class="sig-canvas"></canvas></div><div class="sig-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="clearSig('bl_pruefung')">✕ Löschen</button><span style="font-size:.75rem;color:#6b7280">Mit Finger oder Maus unterschreiben</span></div>`}
+    <div style="display:flex;gap:9px;margin-top:16px"><button type="button" onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Schließen</button>${existing ? '' : `<button type="button" onclick="blLeiternPruefungSpeichern('${zuwId}','${userId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:1;padding:11px">✅ Bestätigen</button>`}</div>
+  </div>`;
+  document.body.appendChild(modal);
+  if (!existing) requestAnimationFrame(() => initSigPad('bl_pruefung', null));
+}
+
+async function blLeiternPruefungSpeichern(zuwId, userId, modal) {
+  const signatur = getSigDataUrl('bl_pruefung');
+  if (!signatur) { showToast('Bitte zuerst die BL-Unterschrift leisten.', '#b45309'); return; }
+  const form = formulare[zuwId] || {}, felder = { ...(form.felder || {}), lt_sig_bl: signatur, lt_bl_name: currentUser.name, lt_bl_am: now() };
+  try {
+    await SB.patch('formulare', `id=eq.${encodeURIComponent(zuwId)}`, { felder, gespeichert_am: now() });
+    formulare[zuwId] = { ...form, felder };
+    await sbAudit('BL_PRUEFUNG_LEITERN_TRITTE', `Bereichsleiter-Prüfung für ${zuwId} durch ${currentUser.name}`);
+    modal.remove();
+    showToast('✅ Prüfung und BL-Unterschrift gespeichert.', '#166534');
+    blMitarbeiterDetail(userId);
+  } catch (e) {
+    showToast('❌ Prüfung konnte nicht gespeichert werden: ' + e.message, '#b91c1c');
+  }
 }
 
 async function blMitarbeiterMobilSpeichern(userId, button) {
@@ -5453,6 +5492,54 @@ function oeffneFormular(zuwId) {
   oeffneFormularMitSprache(zuwId, 'de');
 }
 
+// Automatische Stammdaten für Mitarbeiterformulare. Die Werte werden beim
+// Speichern als Snapshot übernommen, damit spätere Stammdatenänderungen alte
+// Nachweise nicht verfälschen.
+const AUTO_SCHULUNGSFELDER = new Set([
+  'td_vorname','td_nachname','td_geburtsdatum','td_email','td_funktion',
+  'fd_firma','fd_strasse','fd_plz_ort','fd_ansprechpartner','fd_funktion_ap',
+  'ba_name','ba_name_ma','ba_personal'
+]);
+const BL_SIGNATUR_FELDER = new Set(['lt_sig_uw','lt_sig_bl']);
+const AUTO_AUSBLENDEN = new Set(['td_geburtsdatum']);
+
+function schulungsTenant(zuw) {
+  return APP_TENANTS.find(t => t.id === zuw?.tenantId) || {};
+}
+function schulungsMitarbeiter(zuw) {
+  return APP_USERS.find(u => u.id === (zuw?.zugewiesenAn || currentUser?.userId)) || currentUser || {};
+}
+function schulungsBereichsleiter(zuw, mitarbeiter) {
+  const tenantId = zuw?.tenantId || mitarbeiter?.tenant_id || currentUser?.tenantId;
+  const bereichId = mitarbeiter?.bereich_id || zuw?.bereichId || currentUser?.bereichId;
+  return APP_USERS.find(u => u.role === 'bereichsleiter' && u.tenant_id === tenantId && bereichId && u.bereich_id === bereichId)
+    || APP_USERS.find(u => u.role === 'bereichsleiter' && u.tenant_id === tenantId) || null;
+}
+function nameTeilen(name) {
+  const teile = String(name || '').trim().split(/\\s+/).filter(Boolean);
+  return { vorname: teile.shift() || '', nachname: teile.join(' ') };
+}
+function schulungsAutoFelder(zuw) {
+  const tenant = schulungsTenant(zuw), ma = schulungsMitarbeiter(zuw);
+  const bl = schulungsBereichsleiter(zuw, ma), name = nameTeilen(ma.name);
+  const adresse = tenant.adresse || tenant.strasse || tenant.strasse_hausnummer || '';
+  const plzOrt = tenant.plz_ort || [tenant.plz, tenant.ort].filter(Boolean).join(' ');
+  return {
+    td_vorname: name.vorname, td_nachname: name.nachname, td_email: ma.email || '',
+    td_funktion: ma.position || ma.bereich || '', fd_firma: tenant.name || '',
+    fd_strasse: adresse, fd_plz_ort: plzOrt, fd_ansprechpartner: bl?.name || '',
+    fd_funktion_ap: bl ? 'Bereichsleiter' : '', ba_name: tenant.name || '',
+    ba_name_ma: ma.name || '', ba_personal: ma.personalnummer || ''
+  };
+}
+function istMitarbeiterFormularfeld(feld) {
+  return AUTO_SCHULUNGSFELDER.has(feld.id) || (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter');
+}
+function renderAutoFeld(feld, value) {
+  const hinweis = feld.id === 'fd_ansprechpartner' ? 'Zuständiger Bereichsleiter' : 'Automatisch aus Stammdaten';
+  return `<div class="form-group"><label>${escHtml(feld.label)}</label><div class="auto-form-value" style="padding:10px 12px;border:1px solid #dbe3ee;border-radius:8px;background:#f8fafc;color:#1e3a5f">${escHtml(value || '–')}</div><small style="display:block;color:#6b7280;margin-top:4px">🔒 ${hinweis}</small></div>`;
+}
+
 async function oeffneFormularMitSprache(zuwId, sprache) {
   activeZuwId = zuwId;
   if (sprache === 'de') { sigPads={}; uploadFiles={}; }
@@ -5460,6 +5547,7 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
   const zuw     = zuweisungen.find(z=>z.id===zuwId);
   const vorlage = SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const form    = formulare[zuwId]||{};
+  const autoFelder = schulungsAutoFelder(zuw);
   const status  = berechneStatus(zuw);
   const readOnly = !!form.abgeschlossen;
   const t = UEBERSETZUNGEN[sprache] || UEBERSETZUNGEN.de;
@@ -5528,8 +5616,11 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     html += `<div class="form-section"><div class="form-section-title">✍️ ${uebersetzeAbschnitt('Unterschriften', sprache)}</div>`;
     (vorlage.abschnitte||[]).forEach(ab => {
       ab.felder.forEach(feld => {
+        if (AUTO_AUSBLENDEN.has(feld.id)) return;
+        if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') return;
         const label = uebersetzeFeldLabel(feld.label, sprache);
-        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+        if (AUTO_SCHULUNGSFELDER.has(feld.id)) html += renderAutoFeld({...feld, label}, autoFelder[feld.id]);
+        else html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
       });
     });
     html += '</div>';
@@ -5544,8 +5635,11 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
         html += `<div class="form-section-html" style="margin:0 0 12px 0">${ab.html}</div>`;
       }
       ab.felder.forEach(feld => {
+        if (AUTO_AUSBLENDEN.has(feld.id)) return;
+        if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') return;
         const label = uebersetzeFeldLabel(feld.label, sprache);
-        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+        if (AUTO_SCHULUNGSFELDER.has(feld.id)) html += renderAutoFeld({...feld, label}, autoFelder[feld.id]);
+        else html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
       });
       html += '</div>';
     });
@@ -5632,10 +5726,20 @@ function getSigDataUrl(feldId) { const p=sigPads[feldId]; if(!p||isSigEmpty(feld
 function formularSpeichern(abschliessen) {
   const zuw=zuweisungen.find(z=>z.id===activeZuwId); if(!zuw) return;
   const vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
+  const autoFelder=schulungsAutoFelder(zuw);
   const fehlEl=document.getElementById('formular-fehler'); fehlEl.classList.remove('show');
   const felder={}, fehler=[];
   vorlage.abschnitte.forEach(ab => {
     ab.felder.forEach(feld => {
+      if (AUTO_AUSBLENDEN.has(feld.id)) return;
+      if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') {
+        // Die BL-Signatur wird bewusst erst im Bereichsleiter-Workflow gesetzt.
+        return;
+      }
+      if (AUTO_SCHULUNGSFELDER.has(feld.id)) {
+        felder[feld.id] = autoFelder[feld.id] || '';
+        return;
+      }
       if (feld.typ==='text'||feld.typ==='textarea') { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.value.trim(); if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }
       else if (feld.typ==='select')   { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.value; if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }
       else if (feld.typ==='checkbox') { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.checked; if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }

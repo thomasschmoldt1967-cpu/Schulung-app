@@ -1,0 +1,671 @@
+[
+  {
+    "id": "vorlage_datenschutzdsgvovereinbarung_1782122893828",
+    "titel": "Datenschutz-DSGVO-Vereinbarung",
+    "beschreibung": "DSGVO",
+    "intervall_monate": 12,
+    "abschnitte": [
+      {
+        "titel": "1. Belehrung & gesetzliche Grundlagen",
+        "felder": [
+          {
+            "id": "f_1782122893827_kemmzscoefn",
+            "typ": "checkbox",
+            "label": "Verpflichtung zur Wahrung der Vertraulichkeit und zum Schutz von Geschäftsgeheimnissen",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893827_qbcrvc0uxwb",
+            "typ": "checkbox",
+            "label": "Zwischen dem Arbeitgeber und dem Mitarbeiter.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_gsl6gikwdkk",
+            "typ": "checkbox",
+            "label": "Ich wurde heute über die datenschutzrechtlichen Pflichten sowie den Schutz von Geschäftsgeheimnissen belehrt.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_ryycvujym8q",
+            "typ": "checkbox",
+            "label": "Diese Verpflichtung erfolgt auf Grundlage der EU-Datenschutz-Grundverordnung (DSGVO) sowie des Bundesdatenschutzgesetzes (BDSG).",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_3lsa0glp5k",
+            "typ": "checkbox",
+            "label": "Sowie des Gesetzes zum Schutz von Geschäftsgeheimnissen (GeschGehG) (ehemals § 17 UWG).",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "2. Kernpflichten im Umgang mit Daten",
+        "felder": [
+          {
+            "id": "f_1782122893828_8gzr78vgnek",
+            "typ": "checkbox",
+            "label": "Mir ist untersagt, personenbezogene Daten unbefugt zu anderen Zwecken als der jeweiligen rechtmäßigen Aufgabenerfüllung zu erheben, zu verarbeiten, bekannt zu geben oder Dritten zugänglich zu machen.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_lf6qmr70r2b",
+            "typ": "checkbox",
+            "label": "Ich verpflichte mich, die im Rahmen meiner Aufgaben notwendige Sorgfalt zum Schutz der Daten anzuwenden.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_1oqejj56dc1",
+            "typ": "checkbox",
+            "label": "Bestehende Datensicherungsvorschriften sind strikt zu beachten.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_hri05v08tuc",
+            "typ": "checkbox",
+            "label": "Sollte ich Mängel im Sicherungssystem feststellen, werde ich diese unverzüglich beheben oder der Geschäftsleitung melden.",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "3. Umfang der Verschwiegenheitspflicht",
+        "felder": [
+          {
+            "id": "f_1782122893828_avbcr055eaq",
+            "typ": "checkbox",
+            "label": "Die Pflicht zur Verschwiegenheit erstreckt sich auf alle Informationen, die mir im Rahmen meiner beruflichen Tätigkeit anvertraut oder bekannt geworden sind.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_5o4u5m3cwcl",
+            "typ": "checkbox",
+            "label": "Kundendaten: Namen, Anschriften sowie persönliche und wirtschaftliche Verhältnisse, Planungen und interne Details unserer Kunden.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_t8yl2l2my1r",
+            "typ": "checkbox",
+            "label": "Unternehmensdaten: Wirtschaftliche und steuerliche Verhältnisse des Arbeitgebers sowie Informationen über andere im Unternehmen tätige Personen.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_u8dit1w1oa",
+            "typ": "checkbox",
+            "label": "Privatsphäre: Jegliche Äußerungen gegenüber Außenstehenden sowie gegenüber nahestehenden Personen wie Lebenspartnern oder Familienangehörigen.",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "4. Besondere Verhaltensregeln",
+        "felder": [
+          {
+            "id": "f_1782122893828_q98e2ame3wl",
+            "typ": "checkbox",
+            "label": "Zur Wahrung der Vertraulichkeit habe ich folgende Punkte einzuhalten.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_p4msxvxo9ca",
+            "typ": "checkbox",
+            "label": "Einsichtnahme: Unbefugten Personen darf kein Einblick in Post, Firmeninterna, Belege oder sonstige Unterlagen gewährt werden.",
+            "pflicht": true
+          },
+          {
+            "id": "f_1782122893828_1vm786duuxt",
+            "typ": "checkbox",
+            "label": "Herausgabe: Unterlagen dürfen ohne ausdrücklichen Auftrag nicht an Dritte weitergegeben oder unbefugt vervielfältigt werden (Kopie, Scan, E-Mail).",
+            "pflicht": true
+          }
+        ]
+      }
+    ],
+    "pdf_url": null,
+    "typ": "felder",
+    "uebersetzungen": {}
+  },
+  {
+    "id": "vorlage_hygieneplan_kita_1785758509",
+    "titel": "Hygieneplan Kindertagesstätten (§ 36 IfSG)",
+    "beschreibung": "Hygiene- und Reinigungsvorgaben gemäß § 36 IfSG für Kindertagesstätten / Gemeinschaftseinrichtungen",
+    "intervall_monate": 12,
+    "abschnitte": [
+      {
+        "titel": "1. Allgemeine Hygiene-Grundsätze",
+        "felder": [
+          {
+            "id": "f_1785766102719_ikivu584hhl",
+            "typ": "checkbox",
+            "label": "Schutzhandschuhe werden getragen (bei Bedarf Einmalschürze und Mundschutz)",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102719_yfp3g23z6",
+            "typ": "checkbox",
+            "label": "Händedesinfektion / Händewaschen: vor Arbeitsbeginn, nach Sanitärreinigung und nach Ausziehen der Handschuhe",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102719_7q8ytr3vms2",
+            "typ": "checkbox",
+            "label": "Kein Schmuck an Händen und Unterarmen während der Arbeit",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102719_yu3bey9z8td",
+            "typ": "checkbox",
+            "label": "Masernimpfnachweis vorhanden (Pflicht gemäß § 20 IfSG)",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "2. Reinigungsfrequenzen & 3-Farben-System",
+        "felder": [
+          {
+            "id": "f_1785766102720_8ua2y4g0cxr",
+            "typ": "checkbox",
+            "label": "Tägliche Reinigung: Türgriffe, Lichtschalter, Handläufe, Armaturen (Kontaktflächen)",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_f3pwiikgr0m",
+            "typ": "checkbox",
+            "label": "Sanitärbereiche täglich: WCs, Waschbecken, Böden (feucht wischen)",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_nw4n7f97j3l",
+            "typ": "checkbox",
+            "label": "Wickelbereiche: desinfizierende Reinigung der Wickelauflagen gemäß Dosier- und Einwirkplan",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_ykr9guz4jal",
+            "typ": "checkbox",
+            "label": "3-Farben-System einhalten: 🔴 Rot = WC | 🟡 Gelb = Sanitär | 🔵 Blau = Möbel/Türen",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_n2ejjb78ge",
+            "typ": "checkbox",
+            "label": "Täglich frische Reinigungstücher — kein Wiederverwenden",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "3. Chemikalien & Desinfektionsmittel",
+        "felder": [
+          {
+            "id": "f_1785766102720_usgv7ugw31",
+            "typ": "checkbox",
+            "label": "Ausschließlich freigegebene Mittel der CSC GmbH werden verwendet",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_rhraxjq33od",
+            "typ": "checkbox",
+            "label": "Dosierungsanweisungen des Herstellers werden strikt eingehalten",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_q4uj27yxmmi",
+            "typ": "checkbox",
+            "label": "Sicherheitsdatenblätter und Betriebsanweisungen sind bekannt (verfügbar in CSC GmbH APP)",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "4. Besondere Infektionsfälle (Ausbruchsmanagement)",
+        "felder": [
+          {
+            "id": "f_1785766102720_ttdxl075f5",
+            "typ": "checkbox",
+            "label": "Bei gemeldeten Infektionshäufungen (z.B. Norovirus): erweiterte Desinfektion nach Anweisung CSC GmbH",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_u05uaf0k08",
+            "typ": "checkbox",
+            "label": "Verwendung VAH/RKI-gelisteter Präparate mit viruzider Wirkung bei Ausbruch bekannt",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "titel": "5. Bestätigung",
+        "felder": [
+          {
+            "id": "f_1785766102720_o5vde687ci",
+            "typ": "checkbox",
+            "label": "Ich habe den Hygieneplan gelesen, verstanden und verpflichte mich zur Einhaltung",
+            "pflicht": true
+          },
+          {
+            "id": "f_1785766102720_vmo587803u",
+            "typ": "text",
+            "label": "Datum",
+            "pflicht": true
+          }
+        ]
+      }
+    ],
+    "pdf_url": null,
+    "typ": "felder",
+    "uebersetzungen": {}
+  },
+  {
+    "id": "vorlage_leitern_tritte",
+    "titel": "Leitern und Tritte – Sicherheitsunterweisung mit Wissenstest",
+    "beschreibung": "Online-Unterweisung zur sicheren Verwendung von Leitern und Tritten gem. DGUV Information 208-016. Mit Bildmaterial (BG BAU), Personen- und Firmendatenerfassung, Wissenstest (8 Fragen, 80 %) und digitalem Teilnahmenachweis. Rechtsgrundlage: § 12 ArbSchG, DGUV V1.",
+    "intervall_monate": 12,
+    "abschnitte": [
+      {
+        "html": "<div style=\"background:#eff6ff;border-radius:8px;padding:10px 12px;border-left:4px solid #2563eb;font-size:.84rem;color:#1e3a5f;line-height:1.5;margin-bottom:12px\">Bitte vollständig ausfüllen. Diese Angaben erscheinen auf Ihrem <strong>Teilnahmenachweis</strong>.</div>",
+        "titel": "Angaben zur Person",
+        "felder": [
+          {
+            "id": "td_vorname",
+            "typ": "text",
+            "label": "Vorname",
+            "pflicht": true
+          },
+          {
+            "id": "td_nachname",
+            "typ": "text",
+            "label": "Nachname",
+            "pflicht": true
+          },
+          {
+            "id": "td_geburtsdatum",
+            "typ": "text",
+            "label": "Geburtsdatum",
+            "pflicht": true,
+            "placeholder": "TT.MM.JJJJ"
+          },
+          {
+            "id": "td_funktion",
+            "typ": "text",
+            "label": "Funktion / Tätigkeit im Betrieb",
+            "pflicht": true
+          },
+          {
+            "id": "td_email",
+            "typ": "text",
+            "label": "E-Mail-Adresse",
+            "pflicht": true,
+            "placeholder": "name@firma.de"
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"background:#f0fdf4;border-radius:8px;padding:10px 12px;border-left:4px solid #16a34a;font-size:.84rem;color:#14532d;line-height:1.5;margin-bottom:12px\">Diese Angaben werden für den <strong>betrieblichen Unterweisungsnachweis</strong> benötigt (§ 12 ArbSchG, DGUV V1 § 4).</div>",
+        "titel": "Angaben zum Unternehmen",
+        "felder": [
+          {
+            "id": "fd_firma",
+            "typ": "text",
+            "label": "Firmenname",
+            "pflicht": true
+          },
+          {
+            "id": "fd_strasse",
+            "typ": "text",
+            "label": "Straße und Hausnummer",
+            "pflicht": true
+          },
+          {
+            "id": "fd_plz_ort",
+            "typ": "text",
+            "label": "PLZ und Ort",
+            "pflicht": true
+          },
+          {
+            "id": "fd_ansprechpartner",
+            "typ": "text",
+            "label": "Name des Beauftragenden",
+            "pflicht": true
+          },
+          {
+            "id": "fd_funktion_ap",
+            "typ": "text",
+            "label": "Funktion des Beauftragenden",
+            "pflicht": false,
+            "placeholder": "z. B. Sicherheitsbeauftragter, HR-Leitung"
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:.75rem;color:#64748b;line-height:1.5\">📋 <strong>Quelle:</strong> DGUV Information 208-016, Kap. 5 – BG BAU. Bildquelle: bgbau-medien.de. Nutzung gem. § 12 ArbSchG.</div><div style=\"margin-bottom:12px\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/55.jpg\" style=\"max-width:100%;border-radius:8px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"background:#eff6ff;border-radius:8px;padding:10px 12px;border-left:4px solid #2563eb;font-size:.84rem;color:#1e3a5f;line-height:1.55\"><strong>Pflicht vor jeder Verwendung:</strong> Leitern und Tritte visuell auf <strong>Schäden kontrollieren</strong>. Bei Auffälligkeiten darf die Leiter <strong>nicht benutzt</strong> werden.</div></div>",
+        "titel": "Vor jeder Nutzung – Sichtkontrolle",
+        "felder": [
+          {
+            "id": "lt_01",
+            "typ": "checkbox",
+            "label": "Leiter / Tritt vor Nutzung auf sichtbare Schäden geprüft",
+            "pflicht": true
+          },
+          {
+            "id": "lt_02",
+            "typ": "checkbox",
+            "label": "Gebrauchsanleitung des Herstellers bekannt",
+            "pflicht": true
+          },
+          {
+            "id": "lt_03",
+            "typ": "checkbox",
+            "label": "Keine defekte oder beschädigte Leiter verwendet",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/56.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Stufenstehleiter beidseitig</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/57.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Stehleiter mit Plattform</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/58.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Stufenanlegeleiter</div></div></div><div style=\"background:#eff6ff;border-radius:8px;padding:10px 12px;border-left:4px solid #2563eb;font-size:.84rem;color:#1e3a5f;line-height:1.55\"><strong>🔺 Dreipunkt-Methode:</strong> immer 3 Kontaktpunkte halten – beide Hände + ein Fuß oder beide Füße + eine Hand. Körperschwerpunkt stets <strong>zwischen den Holmen</strong>.</div></div>",
+        "titel": "Sicherer Stand – Dreipunkt-Methode",
+        "felder": [
+          {
+            "id": "lt_04",
+            "typ": "checkbox",
+            "label": "Dreipunkt-Methode bekannt und wird angewendet",
+            "pflicht": true
+          },
+          {
+            "id": "lt_05",
+            "typ": "checkbox",
+            "label": "Sicherer Stand beim Arbeiten auf der Leiter gewährleistet",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5a.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Max. 150 kg</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5b.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Nur 1 Person</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5c.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Ges. Schuhwerk</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5d.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">In Blickrichtung</div></div></div><ul style=\"font-size:.84rem;color:#374151;line-height:1.65;margin:0;padding-left:18px\"><li>Max. Belastung <strong>150 kg</strong></li><li>Nur <strong>eine Person</strong> gleichzeitig</li><li><strong>Geschlossenes Schuhwerk</strong> – kein offenes ohne Fersenriemen</li><li>Nur <strong>in Blickrichtung</strong> auf Stufen/Sprossen</li><li>Kein Aufstieg auf Hocker, Kisten, Tische, Fässer</li><li>Mitgeführtes Material: max. <strong>10 kg</strong></li></ul></div>",
+        "titel": "Grundregeln der Nutzung",
+        "felder": [
+          {
+            "id": "lt_06",
+            "typ": "checkbox",
+            "label": "Max. Tragfähigkeit (150 kg) bekannt und eingehalten",
+            "pflicht": true
+          },
+          {
+            "id": "lt_07",
+            "typ": "checkbox",
+            "label": "Nur eine Person gleichzeitig auf der Leiter",
+            "pflicht": true
+          },
+          {
+            "id": "lt_08",
+            "typ": "checkbox",
+            "label": "Geschlossenes Schuhwerk wird getragen",
+            "pflicht": true
+          },
+          {
+            "id": "lt_09",
+            "typ": "checkbox",
+            "label": "Nur in Blickrichtung auf Stufen/Sprossen",
+            "pflicht": true
+          },
+          {
+            "id": "lt_10",
+            "typ": "checkbox",
+            "label": "Keine Ersatzbehälter (Hocker, Kisten, Tische) als Aufstieg",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5e.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Nicht hinauslehnen</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5f.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Ebener Untergrund</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5g.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Kein verunr. Untergrund</div></div></div><div style=\"background:#fef2f2;border-radius:8px;padding:10px 12px;border-left:4px solid #dc2626;font-size:.84rem;color:#7f1d1d;line-height:1.55\">⚠️ <strong>Häufigste Unfallursache:</strong> Seitliches Hinauslehnen → Körperschwerpunkt verlässt die Holmebene → Leiter kippt. Schwerpunkt stets <strong>zwischen den Leiterholmen</strong> halten.</div></div>",
+        "titel": "Nicht zu weit hinauslehnen – Standsicherheit",
+        "felder": [
+          {
+            "id": "lt_11",
+            "typ": "checkbox",
+            "label": "Nicht zu weit seitlich hinauslehnen – Schwerpunkt zwischen den Holmen",
+            "pflicht": true
+          },
+          {
+            "id": "lt_12",
+            "typ": "checkbox",
+            "label": "Leiter nur auf ebenem, tragfähigem, rutschhemmendem Untergrund",
+            "pflicht": true
+          },
+          {
+            "id": "lt_13",
+            "typ": "checkbox",
+            "label": "Keine Nutzung bei Sturm, Eis oder Schneeglätte",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5h.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Festhalten</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5i.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Keine Seitenbelastung</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5k.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Kein Strom</div></div></div><ul style=\"font-size:.84rem;color:#374151;line-height:1.65;margin:0;padding-left:18px\"><li>Beim Auf-/Abstieg <strong>gut festhalten</strong></li><li>Keine Arbeiten mit starker Seitenbelastung</li><li>Keine Nutzung in der Nähe <strong>elektrischer Spannung</strong></li><li>Leiter <strong>nicht als Überbrückung</strong> verwenden</li><li>Leiter während des Stehens <strong>nicht bewegen</strong></li></ul></div>",
+        "titel": "Weitere Sicherheitsregeln",
+        "felder": [
+          {
+            "id": "lt_14",
+            "typ": "checkbox",
+            "label": "Beim Auf-/Abstieg gut festhalten",
+            "pflicht": true
+          },
+          {
+            "id": "lt_15",
+            "typ": "checkbox",
+            "label": "Keine Arbeiten mit starker Seitenbelastung",
+            "pflicht": true
+          },
+          {
+            "id": "lt_16",
+            "typ": "checkbox",
+            "label": "Keine Nutzung in der Nähe elektrischer Spannungsquellen",
+            "pflicht": true
+          },
+          {
+            "id": "lt_17",
+            "typ": "checkbox",
+            "label": "Leiter nicht als Überbrückung verwenden",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/59.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Abb. 59 – Ellbogenmethode</div></div><div><div style=\"background:#f0fdf4;border-radius:8px;padding:10px 12px;border-left:4px solid #16a34a;font-size:.84rem;color:#14532d;line-height:1.55\"><strong>📐 Anlegewinkel:</strong><br>Stufenleiter: <strong>60–70°</strong><br>Sprossenleiter: <strong>65–75°</strong><br><em>Zu flach = Wegrutschen · zu steil = Umkippen</em></div></div></div><ul style=\"font-size:.84rem;color:#374151;line-height:1.65;margin:0;padding-left:18px\"><li>Nur an <strong>sichere, feste Flächen</strong> anlegen</li><li>Oberste <strong>3 Stufen/Sprossen nicht betreten</strong></li><li>Fallhakensicherungen vor Benutzung <strong>einrasten</strong></li></ul></div>",
+        "titel": "Anlege- & Schiebeleiter – Winkel & Aufstellung",
+        "felder": [
+          {
+            "id": "lt_18",
+            "typ": "checkbox",
+            "label": "Anlegewinkel korrekt (Ellbogenmethode bekannt)",
+            "pflicht": true
+          },
+          {
+            "id": "lt_19",
+            "typ": "checkbox",
+            "label": "Oberste 3 Stufen/Sprossen werden nicht betreten",
+            "pflicht": true
+          },
+          {
+            "id": "lt_20",
+            "typ": "checkbox",
+            "label": "Sicherungen vor Nutzung vollständig eingerastet",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5v.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Nur drittoberste Stufe</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5w.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Spreizsicherungen</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/5x.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.1)\"><div style=\"font-size:.68rem;color:#6b7280;margin-top:3px\">Nie als Anlegeleiter!</div></div></div><ul style=\"font-size:.84rem;color:#374151;line-height:1.65;margin:0;padding-left:18px\"><li>Ohne Haltevorrichtung: nur bis <strong>drittoberste Stufe</strong></li><li>Nur mit <strong>vollständig gespannten Spreizsicherungen</strong></li><li><strong>Niemals als Anlegeleiter</strong> – stark erhöhte Kippgefahr!</li><li>Fahrbare Stehleitern: <strong>Feststellbremsen</strong> anziehen</li></ul></div>",
+        "titel": "Stehleiter – Besondere Regeln",
+        "felder": [
+          {
+            "id": "lt_21",
+            "typ": "checkbox",
+            "label": "Stehleiter: nur bis zur drittobersten Stufe (ohne Haltevorrichtung)",
+            "pflicht": true
+          },
+          {
+            "id": "lt_22",
+            "typ": "checkbox",
+            "label": "Spreizsicherungen vollständig gespannt",
+            "pflicht": true
+          },
+          {
+            "id": "lt_23",
+            "typ": "checkbox",
+            "label": "Stehleiter wird nicht als Anlegeleiter verwendet",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"margin-bottom:12px\"><div style=\"display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px\"><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/67.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Ergonomischer Transport</div></div><div style=\"text-align:center\"><img src=\"https://www.bgbau-medien.de/handlungshilfen_gb/daten/dguv/208_016/68.jpg\" style=\"width:100%;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.12)\"><div style=\"font-size:.7rem;color:#6b7280;margin-top:4px\">Ladungssicherung</div></div></div><ul style=\"font-size:.84rem;color:#374151;line-height:1.65;margin:0;padding-left:18px\"><li>Schwere Leitern zu <strong>mehreren Personen</strong> tragen</li><li>Vor Transport <strong>zusammenklappen/schieben</strong></li><li>Im Fahrzeug <strong>sicher befestigen</strong></li><li>Lagerung: <strong>geschützt</strong> vor Witterung und Feuchtigkeit</li></ul></div>",
+        "titel": "Transport und Lagerung",
+        "felder": [
+          {
+            "id": "lt_24",
+            "typ": "checkbox",
+            "label": "Sicherer Transport bekannt",
+            "pflicht": true
+          },
+          {
+            "id": "lt_25",
+            "typ": "checkbox",
+            "label": "Ordnungsgemäße Lagerung bekannt",
+            "pflicht": true
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"background:linear-gradient(135deg,#1e3a5f,#2563eb);border-radius:12px;padding:14px 16px;margin-bottom:14px;color:#fff\"><div style=\"font-size:1.3rem;font-weight:700;margin-bottom:4px\">📝 Wissenstest</div><div style=\"font-size:.84rem;opacity:.9\">8 Fragen · Bestehensgrenze: 80 % (mind. 7 von 8 richtig)</div></div><div style=\"background:#fef9c3;border-radius:8px;padding:10px 12px;border-left:4px solid #ca8a04;font-size:.83rem;color:#713f12;margin-bottom:12px\">⚠️ Wählen Sie bei jeder Frage die <strong>eine richtige Antwort</strong>. Der Teilnahmenachweis wird nur bei Bestehen ausgestellt.</div>",
+        "titel": "Wissenstest – Leitern und Tritte",
+        "felder": [
+          {
+            "id": "quiz_01",
+            "typ": "select",
+            "label": "1. Welche Methode sichert den Stand auf der Leiter?",
+            "pflicht": true,
+            "optionen": [
+              "Beide Hände + ein Fuß oder beide Füße + eine Hand gleichzeitig an der Leiter",
+              "Mindestens ein Fuß auf der Leiter – die Hände sind frei für Werkzeug",
+              "Auf der obersten Stufe stehen und mit dem Körper anlehnen",
+              "Leiter an der Wand fixieren und frei stehen"
+            ]
+          },
+          {
+            "id": "quiz_02",
+            "typ": "select",
+            "label": "2. Welche Stufen einer Stehleiter (ohne Haltevorrichtung) dürfen NICHT betreten werden?",
+            "pflicht": true,
+            "optionen": [
+              "Die drei obersten Stufen dürfen nicht betreten werden",
+              "Nur die oberste Stufe ist verboten",
+              "Alle Stufen dürfen betreten werden",
+              "Nur die unterste Stufe ist gefährlich"
+            ]
+          },
+          {
+            "id": "quiz_03",
+            "typ": "select",
+            "label": "3. Welchen Anlegewinkel benötigt eine Stufenleiter?",
+            "pflicht": true,
+            "optionen": [
+              "60–70° zur Waagerechten",
+              "45–55° zur Waagerechten",
+              "75–85° zur Waagerechten",
+              "30–40° zur Waagerechten"
+            ]
+          },
+          {
+            "id": "quiz_04",
+            "typ": "select",
+            "label": "4. Was ist die häufigste Unfallursache beim Leitergebrauch?",
+            "pflicht": true,
+            "optionen": [
+              "Seitliches Hinauslehnen – Körperschwerpunkt verlässt den Bereich zwischen den Holmen",
+              "Falsches Schuhwerk",
+              "Zu niedriger Anlegewinkel",
+              "Überschreitung der 150-kg-Grenze"
+            ]
+          },
+          {
+            "id": "quiz_05",
+            "typ": "select",
+            "label": "5. Eine Leiter hat eine verbogene Sprosse. Was tun Sie?",
+            "pflicht": true,
+            "optionen": [
+              "Sofort außer Betrieb setzen und Meldung an Vorgesetzte/n",
+              "Vorsichtig weiterbenutzen – die Sprosse auslassen",
+              "Die Sprosse selbst provisorisch reparieren",
+              "Erst nach der Schicht melden"
+            ]
+          },
+          {
+            "id": "quiz_06",
+            "typ": "select",
+            "label": "6. Wie viel Gewicht darf beim Besteigen maximal mitgeführt werden?",
+            "pflicht": true,
+            "optionen": [
+              "Maximal 10 kg Werkzeug/Material",
+              "Beliebig viel, solange beide Hände frei sind",
+              "Maximal 25 kg",
+              "Gar nichts – Hände müssen frei bleiben"
+            ]
+          },
+          {
+            "id": "quiz_07",
+            "typ": "select",
+            "label": "7. Darf eine Stehleiter als Anlegeleiter verwendet werden?",
+            "pflicht": true,
+            "optionen": [
+              "Nein – erhöhte Kippgefahr durch die Form der Leiterfüße",
+              "Ja, wenn der Anlegewinkel stimmt",
+              "Ja, wenn sie groß genug ist",
+              "Nur kurzzeitig und im Notfall"
+            ]
+          },
+          {
+            "id": "quiz_08",
+            "typ": "select",
+            "label": "8. Welcher Untergrund ist für den Aufbau einer Leiter NICHT geeignet?",
+            "pflicht": true,
+            "optionen": [
+              "Lose Unterlagen, einzelne Ziegelsteine, Kisten oder verschmutzter Untergrund",
+              "Betonboden, trocken und eben",
+              "Verdichteter Kies mit Stahlspitzen",
+              "Fester Holzboden, eben und trocken"
+            ]
+          }
+        ]
+      },
+      {
+        "html": "<div style=\"background:#f0fdf4;border-radius:8px;padding:10px 12px;border-left:4px solid #16a34a;font-size:.84rem;color:#14532d;line-height:1.5;margin-bottom:12px\">Mit Ihrer Unterschrift bestätigen Sie, dass Sie die Unterweisung vollständig erhalten, verstanden und den Wissenstest absolviert haben. Ein <strong>Teilnahmenachweis</strong> wird nach Abschluss ausgestellt.</div>",
+        "titel": "Bestätigung und Unterschriften",
+        "felder": [
+          {
+            "id": "lt_best",
+            "typ": "checkbox",
+            "label": "Ich bestätige, die Unterweisung zur sicheren Verwendung von Leitern und Tritten (gem. DGUV Information 208-016, § 12 ArbSchG) vollständig erhalten und verstanden zu haben.",
+            "pflicht": true
+          },
+          {
+            "id": "lt_sig_ma",
+            "typ": "signature",
+            "label": "Unterschrift Teilnehmer/in",
+            "pflicht": true
+          },
+          {
+            "id": "lt_sig_uw",
+            "typ": "signature",
+            "label": "Unterschrift Unterweisender (CSC GmbH)",
+            "pflicht": true
+          }
+        ]
+      }
+    ],
+    "pdf_url": null,
+    "typ": "felder",
+    "uebersetzungen": {}
+  }
+]
