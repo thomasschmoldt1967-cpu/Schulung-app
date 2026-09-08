@@ -1746,7 +1746,10 @@ async function doLogin() {
   const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
   let suchEmail;
   if (istHandynummer) {
-    const nr = eingabe.replace(/\s+/g,'').replace(/^00/,'+').replace(/^0/,'+49');
+    // Einheitliche Normalisierung: 0172…, 0049172…, 49172… und +49172…
+    // müssen alle auf dieselbe interne Login-Adresse +49172…@csc-hannover.de zeigen.
+    const rohNr = eingabe.replace(/\s+/g,'');
+    const nr = rohNr.replace(/^00/, '+').replace(/^49(?=\d)/, '+49').replace(/^0/, '+49');
     suchEmail = nr + '@csc-hannover.de';
   } else {
     suchEmail = eingabe.toLowerCase();
