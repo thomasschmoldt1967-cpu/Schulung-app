@@ -9837,22 +9837,28 @@ if (typeof showToast === 'undefined') {
 
 function renderFirmaDashboard() {
   const tenant = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+  const users = Array.isArray(APP_USERS) ? APP_USERS : [];
+  const verantwortliche = users.filter(u => u.role === 'verantwortlicher' && u.archiviert !== true);
+  const mitarbeiter = users.filter(u => u.role === 'mitarbeiter' && u.archiviert !== true);
+  const eigeneZuweisungen = Array.isArray(zuweisungen)
+    ? zuweisungen.filter(z => z.tenantId === currentUser.tenantId)
+    : [];
   document.getElementById('firma-username').textContent = currentUser.name;
   document.getElementById('firma-tenantname').textContent = tenant ? tenant.name : '';
-  // Aktiven Tab rendern
+  document.getElementById('firma-welcome-name').textContent = currentUser.name;
+  document.getElementById('firma-kpi-verantwortliche').textContent = verantwortliche.length;
+  document.getElementById('firma-kpi-mitarbeiter').textContent = mitarbeiter.length;
+  document.getElementById('firma-kpi-zuweisungen').textContent = eigeneZuweisungen.length;
+  // Aktiven Tab rendern; die Übersicht ist der Einstiegspunkt.
   const aktiv = document.querySelector('#screen-firma .firma-tab-btn[data-active="true"]');
-  const tabName = aktiv ? aktiv.dataset.tab : 'verantwortliche';
+  const tabName = aktiv ? aktiv.dataset.tab : 'uebersicht';
   firmaTabWechseln(tabName);
 }
 
 function firmaTabWechseln(tab) {
   // Tab-Buttons
   document.querySelectorAll('#screen-firma .firma-tab-btn').forEach(b => {
-    const isActive = b.dataset.tab === tab;
-    b.dataset.active = isActive;
-    b.style.fontWeight = isActive ? '700' : '400';
-    b.style.borderBottom = isActive ? '2px solid #1e3a5f' : '2px solid transparent';
-    b.style.color = isActive ? '#1e3a5f' : '#6b7280';
+    b.dataset.active = b.dataset.tab === tab;
   });
   // Tab-Inhalt
   document.querySelectorAll('#screen-firma .firma-tab-content').forEach(c => {
@@ -13482,6 +13488,12 @@ function hubQuizErgebnis() {
 
 // ── Teilnahmebescheinigung (PDF) ─────────────────────────────
 
+function tenantVerantwortlicher(tenantId) {
+  return APP_USERS?.find(u => u.tenant_id === tenantId && u.role === 'verantwortlicher' && u.archiviert !== true)
+    || APP_USERS?.find(u => u.tenant_id === tenantId && u.role === 'firma' && u.archiviert !== true)
+    || null;
+}
+
 async function hubBescheinigungErstellen() {
   const userId   = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
   const userName = currentUser?.name || 'Teilnehmer';
@@ -13491,6 +13503,9 @@ async function hubBescheinigungErstellen() {
     : (localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–');
   const datum    = new Date();
   const tenant   = APP_TENANTS?.find(t => t.id === tenantId);
+  const verantwortlicher = tenantVerantwortlicher(tenantId);
+  const verantwortlicherName = tenant?.ansprechpartner || verantwortlicher?.name || 'Verantwortlicher';
+  const firmaAdresse = [tenant.strasse, tenant.hausnummer, tenant.plz, tenant.ort].filter(Boolean).join(' · ');
   const firmaName = tenant?.name || 'CSC GmbH';
 
   // Fahrauftrag-Daten
@@ -13554,7 +13569,7 @@ async function hubBescheinigungErstellen() {
 
     // Unternehmen + Haupttext
     doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text(`Unternehmen: ${firmaName}`, ML, y); y += 7;
+    doc.text(`Unternehmen: ${firmaName}${firmaAdresse ? ' · ' + firmaAdresse : ''}`, ML, y); y += 7;
     doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung zum Bediener', ML, y, {maxWidth:CW}); y += 5.5;
     doc.text('von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y); y += 5.5;
     doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
@@ -13611,7 +13626,7 @@ async function hubBescheinigungErstellen() {
     doc.setDrawColor(...ROT); doc.setLineWidth(0.5);
     doc.line(ML+8,y+16,ML+halfW-4,y+16);
     doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
-    doc.text('gez. Thomas Schmoldt', ML+8, y+24);
+    doc.text(`gez. ${verantwortlicherName}`, ML+8, y+24);
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
     doc.text(`CSC GmbH · ${heute}`, ML+8, y+29);
 
@@ -13777,7 +13792,7 @@ async function hubBescheinigungErstellen() {
     doc.setDrawColor(...GRUEN); doc.setLineWidth(0.4);
     doc.line(rx2+8, y+28, rx2+uw-4, y+28);
     doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
-    doc.text('gez. Thomas Schmoldt', rx2+8, y+22);
+    doc.text(`gez. ${verantwortlicherName}`, rx2+8, y+22);
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
     doc.text('Geschäftsführer · CSC GmbH', rx2+8, y+29);
     doc.text(heute, rx2+8, y+uh-3);

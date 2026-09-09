@@ -1455,29 +1455,32 @@
       <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
-  <div class="content">
+  <div class="content firma-content">
+    <section class="firma-welcome" aria-labelledby="firma-welcome-title">
+      <div>
+        <div class="firma-eyebrow">UNTERNEHMENSBEREICH</div>
+        <h2 id="firma-welcome-title">Willkommen, <span id="firma-welcome-name"></span></h2>
+        <p>Behalte Verantwortliche, Mitarbeiter und Schulungsnachweise zentral im Blick.</p>
+      </div>
+      <div class="firma-welcome-icon" aria-hidden="true">🏢</div>
+    </section>
+
+    <section class="firma-kpis" aria-label="Unternehmenskennzahlen">
+      <div class="firma-kpi"><span class="firma-kpi-icon">👔</span><div><strong id="firma-kpi-verantwortliche">–</strong><span>Verantwortliche</span></div></div>
+      <div class="firma-kpi"><span class="firma-kpi-icon">👥</span><div><strong id="firma-kpi-mitarbeiter">–</strong><span>Mitarbeiter</span></div></div>
+      <div class="firma-kpi"><span class="firma-kpi-icon">📋</span><div><strong id="firma-kpi-zuweisungen">–</strong><span>Zuweisungen</span></div></div>
+    </section>
+
     <!-- Tab-Leiste -->
-    <div style="display:flex;gap:0;border-bottom:1px solid #e5e7eb;margin-bottom:14px;overflow-x:auto">
-      <button class="firma-tab-btn" data-tab="verantwortliche" onclick="firmaTabWechseln('verantwortliche')"
-        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid #1e3a5f;font-weight:700;color:#1e3a5f">
-        👔 Verantwortliche
-      </button>
-      <button class="firma-tab-btn" data-tab="uebersicht" onclick="firmaTabWechseln('uebersicht')"
-        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
-        📊 Übersicht
-      </button>
-      <button class="firma-tab-btn" data-tab="schulungen" onclick="firmaTabWechseln('schulungen')"
-        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
-        📋 Schulungen
-      </button>
-      <button class="firma-tab-btn" data-tab="historie" onclick="firmaTabWechseln('historie')"
-        style="padding:10px 16px;border:none;background:none;cursor:pointer;font-size:.88rem;white-space:nowrap;border-bottom:2px solid transparent;font-weight:400;color:#6b7280">
-        📜 Historie
-      </button>
-    </div>
+    <nav class="firma-tabs" aria-label="Unternehmensnavigation">
+      <button class="firma-tab-btn" data-tab="uebersicht" onclick="firmaTabWechseln('uebersicht')">📊 Übersicht</button>
+      <button class="firma-tab-btn" data-tab="verantwortliche" onclick="firmaTabWechseln('verantwortliche')">👔 Verantwortliche</button>
+      <button class="firma-tab-btn" data-tab="schulungen" onclick="firmaTabWechseln('schulungen')">📋 Schulungen</button>
+      <button class="firma-tab-btn" data-tab="historie" onclick="firmaTabWechseln('historie')">📜 Historie</button>
+    </nav>
 
     <!-- Tab: Verantwortliche -->
-    <div class="firma-tab-content" data-tab="verantwortliche">
+    <div class="firma-tab-content" data-tab="verantwortliche" style="display:none">
       <!-- App-Anleitung Button -->
       <div style="margin-bottom:12px">
         <button onclick="hilfeOeffnen('firma')" style="display:flex;align-items:center;gap:10px;background:#1e3a5f;color:#fff;padding:12px 16px;border-radius:10px;border:none;cursor:pointer;width:100%;text-align:left;box-shadow:0 2px 6px rgba(30,58,95,.2)">
@@ -1489,9 +1492,10 @@
           <span style="margin-left:auto;font-size:1rem;opacity:.7">›</span>
         </button>
       </div>
-      <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+      <div class="firma-section-heading">
+        <div><h3>Verantwortliche</h3><p>Personen, die Schulungen im Unternehmen verwalten.</p></div>
         <button onclick="firmaVerantwortlichenAnlegenOeffnen()"
-          style="background:#1e3a5f;color:#fff;border:none;padding:10px 18px;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer">
+          class="firma-primary-action">
           ➕ Verantwortlichen anlegen
         </button>
       </div>
@@ -1499,7 +1503,7 @@
     </div>
 
     <!-- Tab: Übersicht -->
-    <div class="firma-tab-content" data-tab="uebersicht" style="display:none">
+    <div class="firma-tab-content" data-tab="uebersicht">
       <div id="firma-uebersicht-inhalt"></div>
     </div>
 

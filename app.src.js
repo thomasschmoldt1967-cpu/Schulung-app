@@ -9643,22 +9643,28 @@ if (typeof showToast === 'undefined') {
 
 function renderFirmaDashboard() {
   const tenant = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+  const users = Array.isArray(APP_USERS) ? APP_USERS : [];
+  const verantwortliche = users.filter(u => u.role === 'verantwortlicher' && u.archiviert !== true);
+  const mitarbeiter = users.filter(u => u.role === 'mitarbeiter' && u.archiviert !== true);
+  const eigeneZuweisungen = Array.isArray(zuweisungen)
+    ? zuweisungen.filter(z => z.tenantId === currentUser.tenantId)
+    : [];
   document.getElementById('firma-username').textContent = currentUser.name;
   document.getElementById('firma-tenantname').textContent = tenant ? tenant.name : '';
-  // Aktiven Tab rendern
+  document.getElementById('firma-welcome-name').textContent = currentUser.name;
+  document.getElementById('firma-kpi-verantwortliche').textContent = verantwortliche.length;
+  document.getElementById('firma-kpi-mitarbeiter').textContent = mitarbeiter.length;
+  document.getElementById('firma-kpi-zuweisungen').textContent = eigeneZuweisungen.length;
+  // Aktiven Tab rendern; die Übersicht ist der Einstiegspunkt.
   const aktiv = document.querySelector('#screen-firma .firma-tab-btn[data-active="true"]');
-  const tabName = aktiv ? aktiv.dataset.tab : 'verantwortliche';
+  const tabName = aktiv ? aktiv.dataset.tab : 'uebersicht';
   firmaTabWechseln(tabName);
 }
 
 function firmaTabWechseln(tab) {
   // Tab-Buttons
   document.querySelectorAll('#screen-firma .firma-tab-btn').forEach(b => {
-    const isActive = b.dataset.tab === tab;
-    b.dataset.active = isActive;
-    b.style.fontWeight = isActive ? '700' : '400';
-    b.style.borderBottom = isActive ? '2px solid #1e3a5f' : '2px solid transparent';
-    b.style.color = isActive ? '#1e3a5f' : '#6b7280';
+    b.dataset.active = b.dataset.tab === tab;
   });
   // Tab-Inhalt
   document.querySelectorAll('#screen-firma .firma-tab-content').forEach(c => {
