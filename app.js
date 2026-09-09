@@ -31,7 +31,6 @@ let APP_BEREICHE      = []; // Bereiche (bereichsleiter-System)
 let SCHULUNG_VORLAGEN = [];
 let zuweisungen       = [];
 let formulare         = {};   // { zuwId: { felder, gestartet, abgeschlossen, ... } }
-
 let auditLog          = [];
 let activeZuwId       = null;
 let abschlussCallback = null;
@@ -1077,7 +1076,8 @@ const SB = {
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': contentType
+        'Content-Type': contentType,
+        'x-upsert': 'true'
       },
       body: fileBlob
     });
@@ -1085,13 +1085,14 @@ const SB = {
     return `schulung-pdfs/${path}`;
   },
   async uploadPdf(pdfBlob, path) {
-    // Einmaliger Upload auf einen unveränderlichen Pfad; kein Überschreiben.
+    // PUT mit x-upsert:true — überschreibt ohne 409-Fehler
     const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
-      method:'POST',
+      method:'PUT',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type':'application/pdf'
+        'Content-Type':'application/pdf',
+        'x-upsert': 'true'
       },
       body: pdfBlob
     });
@@ -1246,7 +1247,6 @@ async function initApp() {
       };
     });
 
-
     const session = checkSession();
     if (session) { currentUser = session; startInactivityWatcher(); routeAfterLogin(); }
     else { showScreen('screen-login'); }
@@ -1334,7 +1334,6 @@ function doLogout() {
   SCHULUNG_VORLAGEN = [];
   zuweisungen       = [];
   formulare         = {};
-
   lernpfadFortschritt = {};
   lernpfadUnterschrift = null;
   document.getElementById('screen-firma')?.style.setProperty('display','none');
@@ -1554,15 +1553,12 @@ function blMitarbeiterDetail(userId) {
     <div style="margin-bottom:14px">
       ${maZuws.length ? maZuws.map(z => {
         const v = SCHULUNG_VORLAGEN.find(vl=>vl.id===z.vorlagenId);
-        const f = formulare[z.id] || {};
         const s = berechneStatus(z);
         const dot = {gruen:'🟢',gelb:'🟡',rot:'🔴',grau:'⚪'}[s]||'⚪';
-        const leiterPruefung = z.vorlagenId === 'vorlage_leitern_tritte' && f.abgeschlossen
-          ? `<button onclick="blLeiternPruefungOeffnen('${z.id}','${userId}');event.stopPropagation()" style="margin-top:6px;padding:6px 9px;border:1px solid #1e3a5f;border-radius:7px;background:#eff6ff;color:#1e3a5f;font-size:.72rem;cursor:pointer">${f.felder?.lt_sig_bl ? '✅ BL-Prüfung anzeigen' : '✍️ Prüfung durch BL'}</button>`
-          : '';
-        return `<div style="padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
-          <div style="display:flex;align-items:center;gap:8px"><span>${dot}</span><div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}</div>
-          ${leiterPruefung}
+        return `<div style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;border-radius:8px;background:#f9fafb">
+          <span>${dot}</span>
+          <div style="flex:1;font-size:.82rem;color:#1e3a5f">${escHtml(v?.titel||z.vorlagenId)}</div>
+          ${z.frist?`<span style="font-size:.72rem;color:#6b7280">${datumStr(z.frist)}</span>`:''}
         </div>`;
       }).join('') : '<div style="color:#9ca3af;font-size:.82rem;text-align:center;padding:12px">Keine Schulungen zugewiesen</div>'}
     </div>
@@ -1572,42 +1568,6 @@ function blMitarbeiterDetail(userId) {
     </div>
   </div>`;
   document.body.appendChild(modal);
-}
-
-function blLeiternPruefungOeffnen(zuwId, userId) {
-  if (currentUser?.role !== 'bereichsleiter') {
-    showToast('⛔ Nur der zuständige Bereichsleiter kann prüfen.', '#b91c1c');
-    return;
-  }
-  const zuw = zuweisungen.find(z => z.id === zuwId), form = formulare[zuwId] || {};
-  if (!zuw || zuw.vorlagenId !== 'vorlage_leitern_tritte' || !form.abgeschlossen) return;
-  const ma = APP_USERS.find(u => u.id === userId), existing = form.felder?.lt_sig_bl;
-  const modal = document.createElement('div');
-  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9700;display:flex;align-items:center;justify-content:center;padding:18px';
-  modal.innerHTML = `<div style="background:#fff;border-radius:16px;width:100%;max-width:470px;padding:22px;box-shadow:0 8px 32px rgba(0,0,0,.25);max-height:92vh;overflow:auto">
-    <h3 style="margin:0 0 8px;color:#1e3a5f;font-size:1rem">🪜 Leitern & Tritte — BL-Prüfung</h3>
-    <p style="font-size:.82rem;color:#64748b;margin:0 0 14px">Teilnehmer: <strong>${escHtml(ma?.name || '–')}</strong><br>Die Mitarbeitenden-Schulung wurde abgeschlossen. Bitte Inhalte prüfen und erst danach als Bereichsleiter bestätigen.</p>
-    ${existing ? `<div style="padding:10px;background:#f0fdf4;border:1px solid #86efac;border-radius:8px;font-size:.8rem;color:#166534;margin-bottom:12px">✅ Bereits bestätigt durch ${escHtml(form.felder.lt_bl_name || currentUser.name)}${form.felder.lt_bl_am ? ` am ${dateStr(form.felder.lt_bl_am)}` : ''}<img src="${existing}" style="display:block;max-width:300px;margin-top:10px;border:1px solid #d1d5db;border-radius:6px"></div>` : `<label style="display:block;font-size:.8rem;color:#374151;margin-bottom:6px">Unterschrift Bereichsleiter *</label><div class="sig-container"><canvas id="sig_bl_pruefung" class="sig-canvas"></canvas></div><div class="sig-actions"><button type="button" class="btn btn-secondary btn-sm" onclick="clearSig('bl_pruefung')">✕ Löschen</button><span style="font-size:.75rem;color:#6b7280">Mit Finger oder Maus unterschreiben</span></div>`}
-    <div style="display:flex;gap:9px;margin-top:16px"><button type="button" onclick="this.closest('[style*=fixed]').remove()" style="flex:1;background:#f3f4f6;border:none;padding:11px;border-radius:9px;cursor:pointer">Schließen</button>${existing ? '' : `<button type="button" onclick="blLeiternPruefungSpeichern('${zuwId}','${userId}',this.closest('[style*=fixed]'))" class="btn-primary" style="flex:1;padding:11px">✅ Bestätigen</button>`}</div>
-  </div>`;
-  document.body.appendChild(modal);
-  if (!existing) requestAnimationFrame(() => initSigPad('bl_pruefung', null));
-}
-
-async function blLeiternPruefungSpeichern(zuwId, userId, modal) {
-  const signatur = getSigDataUrl('bl_pruefung');
-  if (!signatur) { showToast('Bitte zuerst die BL-Unterschrift leisten.', '#b45309'); return; }
-  const form = formulare[zuwId] || {}, felder = { ...(form.felder || {}), lt_sig_bl: signatur, lt_bl_name: currentUser.name, lt_bl_am: now() };
-  try {
-    await SB.patch('formulare', `id=eq.${encodeURIComponent(zuwId)}`, { felder, gespeichert_am: now() });
-    formulare[zuwId] = { ...form, felder };
-    await sbAudit('BL_PRUEFUNG_LEITERN_TRITTE', `Bereichsleiter-Prüfung für ${zuwId} durch ${currentUser.name}`);
-    modal.remove();
-    showToast('✅ Prüfung und BL-Unterschrift gespeichert.', '#166534');
-    blMitarbeiterDetail(userId);
-  } catch (e) {
-    showToast('❌ Prüfung konnte nicht gespeichert werden: ' + e.message, '#b91c1c');
-  }
 }
 
 async function blMitarbeiterMobilSpeichern(userId, button) {
@@ -1786,10 +1746,7 @@ async function doLogin() {
   const istHandynummer = /^[\d\s\+\-\/\(\)]+$/.test(eingabe) && eingabe.replace(/\D/g,'').length >= 6;
   let suchEmail;
   if (istHandynummer) {
-    // Einheitliche Normalisierung: 0172…, 0049172…, 49172… und +49172…
-    // müssen alle auf dieselbe interne Login-Adresse +49172…@csc-hannover.de zeigen.
-    const rohNr = eingabe.replace(/\s+/g,'');
-    const nr = rohNr.replace(/^00/, '+').replace(/^49(?=\d)/, '+49').replace(/^0/, '+49');
+    const nr = eingabe.replace(/\s+/g,'').replace(/^00/,'+').replace(/^0/,'+49');
     suchEmail = nr + '@csc-hannover.de';
   } else {
     suchEmail = eingabe.toLowerCase();
@@ -2954,6 +2911,7 @@ function vtAlsMaSpielen(vorlagenId) {
   // Formular rendern (echte renderFeld-Funktion nutzen)
   const container = document.getElementById('vt-ma-formular-container');
   if (!container) return;
+
   let html = `<p class="pflicht-hinweis"><span>*</span> Pflichtfelder</p>`;
   vorlage.abschnitte.forEach(ab => {
     html += `<div class="form-section"><div class="form-section-title">${escHtml(ab.titel)}</div>`;
@@ -5331,45 +5289,6 @@ modal.querySelector('#_znsb_ok').onclick = () => { document.body.removeChild(mod
   });
 }
 
-function firmenstammdatenOeffnen() {
-  const tenant = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
-  if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
-  let modal = document.getElementById('_sub_tenant_edit_modal');
-  if (modal) modal.remove();
-  const esc = value => escHtml(value || '');
-  modal = document.createElement('div');
-  modal.id = '_sub_tenant_edit_modal';
-  modal.className = 'modal-overlay active';
-  modal.innerHTML = `<div class="modal-box" style="max-width:560px;max-height:92vh;overflow-y:auto"><div class="modal-title">🏢 Firmendaten pflegen</div><p style="font-size:.78rem;color:#64748b;margin:0 0 12px">Diese Angaben werden für Schulungsnachweise und die Kommunikation verwendet.</p><div class="form-group"><label>Firmenname *</label><input id="_fst_name" value="${esc(tenant.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>Straße</label><input id="_fst_strasse" value="${esc(tenant.strasse)}"></div><div class="form-group"><label>Hausnummer</label><input id="_fst_hausnummer" value="${esc(tenant.hausnummer)}"></div><div class="form-group"><label>PLZ</label><input id="_fst_plz" value="${esc(tenant.plz)}" inputmode="numeric"></div><div class="form-group"><label>Ort</label><input id="_fst_ort" value="${esc(tenant.ort)}"></div></div><div class="form-group"><label>Land</label><input id="_fst_land" value="${esc(tenant.land || 'Deutschland')}"></div><div class="form-group"><label>Ansprechpartner</label><input id="_fst_ansprechpartner" value="${esc(tenant.ansprechpartner || currentUser.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>E-Mail *</label><input id="_fst_kontakt_email" type="email" value="${esc(tenant.kontakt_email || currentUser.email)}"></div><div class="form-group"><label>Telefon</label><input id="_fst_telefon" type="tel" value="${esc(tenant.telefon)}"></div></div><div class="form-group"><label>Webseite (optional)</label><input id="_fst_website" type="url" value="${esc(tenant.website)}" placeholder="https://…"></div><div id="_fst_msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" id="_fst_cancel">Abbrechen</button><button class="btn btn-primary" id="_fst_save">💾 Speichern</button></div></div>`;
-  document.body.appendChild(modal);
-  const close = () => modal.remove();
-  modal.querySelector('#_fst_cancel').onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); });
-  modal.querySelector('#_fst_save').onclick = async () => {
-    const value = id => modal.querySelector(id).value.trim();
-    const name = value('#_fst_name'), email = value('#_fst_kontakt_email'), msg = modal.querySelector('#_fst_msg');
-    if (!name || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
-    const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
-    const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
-    try {
-      const result = await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data);
-      if (Array.isArray(result) && result.length === 0) throw new Error('Das Unternehmen konnte nicht aktualisiert werden. Bitte Seite neu laden und erneut versuchen.');
-      // Die vom Server zurückgegebene Zeile ist maßgeblich; so werden lokale
-      // Anzeige und Datenbank nach dem Speichern nicht auseinandergezogen.
-      const saved = Array.isArray(result) ? result[0] : result;
-      Object.assign(tenant, saved && typeof saved === 'object' ? saved : data);
-      await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`);
-      close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d');
-    } catch (e) {
-      const details = String(e?.message || e || '');
-      msg.textContent = /42703|column .* does not exist/i.test(details)
-        ? 'Die Firmendaten-Erweiterung ist in der Datenbank noch nicht installiert. Bitte die Datei „supabase-migration-firmendaten-verantwortlicher.sql“ im Supabase SQL-Editor ausführen.'
-        : 'Fehler beim Speichern: ' + details.slice(0, 180);
-      btn.disabled = false; btn.textContent = '💾 Speichern';
-    }
-  };
-}
-
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -5415,11 +5334,9 @@ function renderSubDashboard() {
   const kalBtns = document.getElementById('sub-kalender-buttons');
   const bereicheBtn = document.getElementById('sub-bereiche-btn');
   const maZuordnungBtn = document.getElementById('sub-ma-zuordnung-btn');
-  const firmenstammdatenBtn = document.getElementById('sub-firmenstammdaten-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
-  if (firmenstammdatenBtn) firmenstammdatenBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   const kannVerwalten = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
   if (maZuordnungBtn) maZuordnungBtn.style.display = kannVerwalten ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma, admin und Verantwortliche sichtbar
@@ -5533,78 +5450,6 @@ function oeffneFormular(zuwId) {
   oeffneFormularMitSprache(zuwId, 'de');
 }
 
-// Automatische Stammdaten für Mitarbeiterformulare. Die Werte werden beim
-// Speichern als Snapshot übernommen, damit spätere Stammdatenänderungen alte
-// Nachweise nicht verfälschen.
-const AUTO_SCHULUNGSFELDER = new Set([
-  'td_vorname','td_nachname','td_geburtsdatum','td_email','td_funktion',
-  'fd_firma','fd_strasse','fd_plz_ort','fd_ansprechpartner','fd_funktion_ap',
-  'ba_name','ba_name_ma','ba_personal'
-]);
-const BL_SIGNATUR_FELDER = new Set(['lt_sig_uw','lt_sig_bl']);
-const AUTO_AUSBLENDEN = new Set(['td_geburtsdatum']);
-// Universelle Pflichtfelder decken auch alte/PDF-Vorlagen ohne Signatur oder Datum ab.
-const UNIVERSAL_SCHULUNGSFELDER = ['employee_signature', 'training_date', 'completion_acknowledgement'];
-// Dieser zentrale Vertrag gilt automatisch für jede Vorlage, die über
-// oeffneFormularMitSprache/formularSpeichern läuft – auch für künftig angelegte Themen.
-const VERBINDLICHER_SCHULUNGSNACHWEIS = Object.freeze({
-  hinweis: 'Alle erforderlichen Kontrollkästchen müssen aktiviert werden. Sie dokumentieren damit, dass das Schulungsmaterial gelesen wurde.',
-  pflichtfelder: UNIVERSAL_SCHULUNGSFELDER
-});
-function universalSchulungsfelder(form = {}) {
-  return {
-    employee_signature: form.employee_signature || null,
-    training_date: form.training_date || new Date().toISOString().slice(0, 10),
-    completion_acknowledgement: !!form.completion_acknowledgement
-  };
-}
-function verbindlichenSchulungsnachweisPruefen({ ack, trainingDate, employeeSignature, abschliessen }) {
-  if (!abschliessen) return [];
-  return [
-    !ack && 'Pflichtbestätigung: Schulungsmaterial gelesen',
-    !trainingDate && 'Schulungsdatum',
-    !employeeSignature && 'Unterschrift Mitarbeiter'
-  ].filter(Boolean);
-}
-
-function schulungsTenant(zuw) {
-  return APP_TENANTS.find(t => t.id === zuw?.tenantId) || {};
-}
-function schulungsMitarbeiter(zuw) {
-  return APP_USERS.find(u => u.id === (zuw?.zugewiesenAn || currentUser?.userId)) || currentUser || {};
-}
-function schulungsBereichsleiter(zuw, mitarbeiter) {
-  const tenantId = zuw?.tenantId || mitarbeiter?.tenant_id || currentUser?.tenantId;
-  const bereichId = mitarbeiter?.bereich_id || zuw?.bereichId || currentUser?.bereichId;
-  return APP_USERS.find(u => u.role === 'bereichsleiter' && u.tenant_id === tenantId && bereichId && u.bereich_id === bereichId)
-    || APP_USERS.find(u => u.role === 'bereichsleiter' && u.tenant_id === tenantId) || null;
-}
-function nameTeilen(name) {
-  const teile = String(name || '').trim().split(/\\s+/).filter(Boolean);
-  return { vorname: teile.shift() || '', nachname: teile.join(' ') };
-}
-function schulungsAutoFelder(zuw) {
-  const tenant = schulungsTenant(zuw), ma = schulungsMitarbeiter(zuw);
-  const bl = schulungsBereichsleiter(zuw, ma), name = nameTeilen(ma.name);
-  const adresse = tenant.adresse || tenant.strasse || tenant.strasse_hausnummer || '';
-  const plzOrt = tenant.plz_ort || [tenant.plz, tenant.ort].filter(Boolean).join(' ');
-  return {
-    td_vorname: name.vorname, td_nachname: name.nachname, td_email: ma.email || '',
-    td_funktion: ma.position || ma.bereich || '', fd_firma: tenant.name || '',
-    fd_strasse: adresse, fd_plz_ort: plzOrt, fd_ansprechpartner: bl?.name || '',
-    fd_funktion_ap: bl ? 'Bereichsleiter' : '', ba_name: tenant.name || '',
-    ba_name_ma: ma.name || '', ba_personal: ma.personalnummer || ''
-  };
-}
-function istMitarbeiterFormularfeld(feld) {
-  return AUTO_SCHULUNGSFELDER.has(feld.id) || (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter');
-}
-function renderAutoFeld(feld, value) {
-  const hinweis = feld.id === 'fd_ansprechpartner' ? 'Zuständiger Bereichsleiter' : 'Automatisch aus Stammdaten';
-  return `<div class="form-group"><label>${escHtml(feld.label)}</label><div class="auto-form-value" style="padding:10px 12px;border:1px solid #dbe3ee;border-radius:8px;background:#f8fafc;color:#1e3a5f">${escHtml(value || '–')}</div><small style="display:block;color:#6b7280;margin-top:4px">🔒 ${hinweis}</small></div>`;
-}
-
-
 async function oeffneFormularMitSprache(zuwId, sprache) {
   activeZuwId = zuwId;
   if (sprache === 'de') { sigPads={}; uploadFiles={}; }
@@ -5612,7 +5457,6 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
   const zuw     = zuweisungen.find(z=>z.id===zuwId);
   const vorlage = SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
   const form    = formulare[zuwId]||{};
-  const autoFelder = schulungsAutoFelder(zuw);
   const status  = berechneStatus(zuw);
   const readOnly = !!form.abgeschlossen;
   const t = UEBERSETZUNGEN[sprache] || UEBERSETZUNGEN.de;
@@ -5652,13 +5496,9 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
   const body = document.getElementById('formular-body');
   body.dir = t.richtung || 'ltr';
 
-  // Prominenter Hinweis: Checkboxen sind die Lesebestätigung der Unterweisung.
-  const universal = universalSchulungsfelder(form.felder || {});
-  const universalHtml = `<div class="form-group" style="background:#fff7ed;border:2px solid #f59e0b;border-radius:10px;padding:14px;margin-bottom:16px"><strong style="display:block;color:#9a3412">⚠️ Dokumentationspflicht</strong><p style="margin:6px 0;font-size:.84rem;color:#7c2d12">${VERBINDLICHER_SCHULUNGSNACHWEIS.hinweis}</p><label style="display:flex;gap:8px;align-items:flex-start;font-weight:600;color:#7c2d12"><input id="formular-acknowledgement" type="checkbox" ${universal.completion_acknowledgement?'checked':''} ${readOnly?'disabled':''}> Pflichtbestätigung: Ich habe das Schulungsmaterial gelesen und alle erforderlichen Kontrollkästchen geprüft.</label><div style="display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,1fr);gap:12px;margin-top:12px"><div><label>Schulungsdatum *</label><input id="feld_training_date" type="date" value="${escHtml(universal.training_date)}" ${readOnly?'readonly':''}></div><div><label>Unterschrift Mitarbeiter *</label><div class="sig-container"><canvas id="sig_employee_signature" class="sig-canvas"></canvas></div><small>Mit Finger oder Maus unterschreiben</small></div></div></div>`;
-
   // PDF-Vorlage oder Felder anzeigen
   if (vorlage?.typ === 'pdf' && vorlage?.pdf_url) {
-    let html = universalHtml + `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     // Signierte URL generieren (5 Min gültig)
     let pdfAnzeigeUrl = '';
     try {
@@ -5685,18 +5525,15 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     html += `<div class="form-section"><div class="form-section-title">✍️ ${uebersetzeAbschnitt('Unterschriften', sprache)}</div>`;
     (vorlage.abschnitte||[]).forEach(ab => {
       ab.felder.forEach(feld => {
-        if (AUTO_AUSBLENDEN.has(feld.id)) return;
-        if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') return;
         const label = uebersetzeFeldLabel(feld.label, sprache);
-        if (AUTO_SCHULUNGSFELDER.has(feld.id)) html += renderAutoFeld({...feld, label}, autoFelder[feld.id]);
-        else html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
       });
     });
     html += '</div>';
     body.innerHTML = html;
   } else {
     // Standard-Felder-Formular
-    let html = universalHtml + `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
+    let html = `<p class="pflicht-hinweis"><span>*</span> ${t.pflichtHinweis.replace('* ','')}</p>`;
     if (vorlage) vorlage.abschnitte.forEach(ab => {
       html += `<div class="form-section"><div class="form-section-title">${escHtml(uebersetzeAbschnitt(ab.titel, sprache))}</div>`;
       // HTML-Erklärungsblock (Bilder, Texte, Infografiken) – direkt als innerHTML einbetten
@@ -5704,11 +5541,8 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
         html += `<div class="form-section-html" style="margin:0 0 12px 0">${ab.html}</div>`;
       }
       ab.felder.forEach(feld => {
-        if (AUTO_AUSBLENDEN.has(feld.id)) return;
-        if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') return;
         const label = uebersetzeFeldLabel(feld.label, sprache);
-        if (AUTO_SCHULUNGSFELDER.has(feld.id)) html += renderAutoFeld({...feld, label}, autoFelder[feld.id]);
-        else html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
+        html += renderFeld({...feld, label}, (form.felder||{})[feld.id]||'', readOnly);
       });
       html += '</div>';
     });
@@ -5723,7 +5557,6 @@ async function oeffneFormularMitSprache(zuwId, sprache) {
     sigPads={}; uploadFiles={};
   }
   if (!readOnly && vorlage) {
-    initSigPad('employee_signature', universal.employee_signature);
     vorlage.abschnitte.forEach(ab => {
       ab.felder.filter(f=>f.typ==='signature').forEach(f=>initSigPad(f.id,(form.felder||{})[f.id]));
       ab.felder.filter(f=>f.typ==='upload').forEach(f=>{
@@ -5796,27 +5629,10 @@ function getSigDataUrl(feldId) { const p=sigPads[feldId]; if(!p||isSigEmpty(feld
 function formularSpeichern(abschliessen) {
   const zuw=zuweisungen.find(z=>z.id===activeZuwId); if(!zuw) return;
   const vorlage=SCHULUNG_VORLAGEN.find(v=>v.id===zuw.vorlagenId);
-  const autoFelder=schulungsAutoFelder(zuw);
   const fehlEl=document.getElementById('formular-fehler'); fehlEl.classList.remove('show');
   const felder={}, fehler=[];
-  const ack = document.getElementById('formular-acknowledgement')?.checked === true;
-  const trainingDate = document.getElementById('feld_training_date')?.value || '';
-  const employeeSignature = getSigDataUrl('employee_signature') || (formulare[activeZuwId]||{}).felder?.employee_signature || null;
-  fehler.push(...verbindlichenSchulungsnachweisPruefen({ ack, trainingDate, employeeSignature, abschliessen }));
-  felder.employee_signature = employeeSignature;
-  felder.training_date = trainingDate;
-  felder.completion_acknowledgement = ack;
   vorlage.abschnitte.forEach(ab => {
     ab.felder.forEach(feld => {
-      if (AUTO_AUSBLENDEN.has(feld.id)) return;
-      if (BL_SIGNATUR_FELDER.has(feld.id) && currentUser?.role === 'mitarbeiter') {
-        // Die BL-Signatur wird bewusst erst im Bereichsleiter-Workflow gesetzt.
-        return;
-      }
-      if (AUTO_SCHULUNGSFELDER.has(feld.id)) {
-        felder[feld.id] = autoFelder[feld.id] || '';
-        return;
-      }
       if (feld.typ==='text'||feld.typ==='textarea') { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.value.trim(); if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }
       else if (feld.typ==='select')   { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.value; if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }
       else if (feld.typ==='checkbox') { const el=document.getElementById(`feld_${feld.id}`); if(el) felder[feld.id]=el.checked; if(feld.pflicht&&abschliessen&&!felder[feld.id]) fehler.push(feld.label); }
@@ -6015,28 +5831,27 @@ function generatePdf(zuwId, downloadOnly) {
 // ── SUPABASE STORAGE UPLOAD ──────────────────────────────────
 async function uploadPdfToSupabase(pdfBlob, filename, zuwId, tenantId) {
   try {
-    const immutablePdfPath = `${tenantId}/${zuwId}/${Date.now()}_${crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2)}_${filename}`;
-    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${immutablePdfPath}`, {
-      method: 'POST',
+    const path = `${tenantId}/${filename}`;
+    // PUT mit x-upsert:true — überschreibt existierende Datei ohne 409-Fehler
+    const r = await fetch(`${SUPABASE_URL}/storage/v1/object/schulung-pdfs/${path}`, {
+      method: 'PUT',
       headers: {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Content-Type': 'application/pdf',
-        'x-upsert': 'false'
+        'x-upsert': 'true'
       },
       body: pdfBlob
     });
     if (!r.ok) throw new Error(await r.text());
-    const storagePath = `schulung-pdfs/${immutablePdfPath}`;
-    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath, pdf_backup_status: 'primary_ok', pdf_backup_created_at: now(), pdf_backup_filename: filename });
-    if (formulare[zuwId]) Object.assign(formulare[zuwId], { pdfPath: storagePath, pdfBackupStatus: 'primary_ok' });
-    showToast('🗄️ Primär-Backup gespeichert', '#0047cc');
-    return storagePath;
+    // Speichere Storage-Pfad statt public URL
+    const storagePath = `schulung-pdfs/${path}`;
+    await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_path: storagePath });
+    if (formulare[zuwId]) formulare[zuwId].pdfPath = storagePath;
+    showToast('🗄️ PDF gespeichert', '#0047cc');
   } catch(e) {
     console.warn('Supabase PDF Upload:', e.message);
-    try { await SB.patch('formulare', `id=eq.${zuwId}`, { pdf_backup_status: 'primary_failed', pdf_backup_error: String(e.message).slice(0,500), pdf_backup_failed_at: now() }); } catch (_) {}
-    showToast('❌ Primär-Backup fehlgeschlagen: ' + String(e.message).substring(0,100), '#dc2626');
-    return null;
+    showToast('⚠️ PDF-Upload fehlgeschlagen: ' + e.message.substring(0,80), '#dc2626');
   }
 }
 
@@ -6311,7 +6126,7 @@ function nuRenderListe() {
   }
   el.innerHTML = gefiltert.map(t => {
     const zuws   = zuweisungen.filter(z => z.tenantId === t.id);
-    const firmaU = APP_USERS.find(u => u.tenant_id === t.id && u.role === 'verantwortlicher') || APP_USERS.find(u => u.tenant_id === t.id && u.role === 'firma');
+    const firmaU = APP_USERS.find(u => u.tenant_id === t.id && u.role === 'firma');
     const aktiv  = firmaU ? firmaU.aktiv !== false : true;
     const lpZuw  = zuws.find(z => z.vorlagenId === LERNPFAD_VORLAGE_ID);
     return `<div role="button" tabindex="0" onclick="adminZeigeTenant('${t.id}')" onkeydown="if(event.key==='Enter'||event.key===' ')adminZeigeTenant('${t.id}')" style="border:1px solid #e5e7eb;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:${aktiv?'#fff':'#f9fafb'};cursor:pointer">
@@ -6339,7 +6154,7 @@ function nuRenderListe() {
 
 function nuFirmendatenBearbeiten(tenantId) {
   const tenant = APP_TENANTS.find(t => t.id === tenantId);
-  const firmaU = APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'verantwortlicher') || APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'firma');
+  const firmaU = APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'firma');
   if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
   const vorhanden = document.getElementById('_tenant_edit_modal');
   if (vorhanden) vorhanden.remove();
@@ -6368,7 +6183,7 @@ function nuFirmendatenBearbeiten(tenantId) {
     const msg = overlay.querySelector('#_te_msg');
     if (!name || !kontakt || !email) { msg.textContent = 'Bitte Firmenname, Ansprechpartner und E-Mail ausfüllen.'; return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.'; return; }
-    if (!firmaU) { msg.textContent = 'Kein Verantwortlicher für dieses Unternehmen gefunden.'; return; }
+    if (!firmaU) { msg.textContent = 'Kein Firmen-Login zu diesem Unternehmen gefunden.'; return; }
     const andere = APP_USERS.find(u => u.email?.toLowerCase() === email && u.id !== firmaU.id);
     if (andere) { msg.textContent = 'Diese E-Mail-Adresse ist bereits einem anderen Benutzer zugeordnet.'; return; }
     const btn = overlay.querySelector('#_te_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …'; msg.textContent = '';
@@ -8000,20 +7815,6 @@ async function emailTestSenden() {
 //  FEATURE 8: SCHULUNGSHISTORIE PRO MITARBEITER
 // ══════════════════════════════════════════════════════════════
 
-// BL-Gegenzeichnung für jede abgeschlossene Schulung. Die Formularfelder bleiben dabei unverändert;
-// die Signatur wird ausschließlich append-only in einer separaten Tabelle gespeichert.
-async function blSignaturFuerSchulungOeffnen(formularId, titel) {
-  if (!['bereichsleiter','admin','verantwortlicher'].includes(currentUser?.role)) { showToast('⛔ Keine Berechtigung für die BL-Gegenzeichnung.', '#dc2626'); return; }
-  const modal = document.createElement('div'); modal.className = 'modal-overlay active';
-  modal.innerHTML = `<div class="modal-box" style="max-width:520px"><div class="modal-title">✍️ BL-Gegenzeichnung</div><p style="font-size:.84rem">Schulung: <strong>${escHtml(titel || formularId)}</strong></p><p style="font-size:.8rem;color:#64748b">Die abgeschlossenen Formulardaten sind schreibgeschützt. Ihre Gegenzeichnung wird separat und unveränderlich protokolliert.</p><canvas id="bl-counter-signature" width="700" height="180" style="width:100%;height:150px;border:2px solid #bfdbfe;border-radius:8px;background:#fff;touch-action:none"></canvas><div id="bl-counter-error" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" onclick="this.closest('.modal-overlay').remove()">Abbrechen</button><button class="btn btn-success" id="bl-counter-save">✅ Gegenzeichnung speichern</button></div></div>`;
-  document.body.appendChild(modal);
-  const canvas = modal.querySelector('#bl-counter-signature'), ctx = canvas.getContext('2d'); let drawing = false, hasInk = false;
-  const pos = e => { const r=canvas.getBoundingClientRect(); return {x:(e.clientX-r.left)*canvas.width/r.width,y:(e.clientY-r.top)*canvas.height/r.height}; };
-  canvas.onpointerdown=e=>{drawing=true;hasInk=true;canvas.setPointerCapture?.(e.pointerId);const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};
-  canvas.onpointermove=e=>{if(drawing){const p=pos(e);ctx.lineTo(p.x,p.y);ctx.stroke();}}; canvas.onpointerup=()=>{drawing=false;};
-  modal.querySelector('#bl-counter-save').onclick = async () => { const err=modal.querySelector('#bl-counter-error'); if(!hasInk){err.textContent='Bitte zuerst unterschreiben.';return;} const ts=now(); try { await SB.post('schulung_bl_counter_signatures', { id: `blcs_${crypto.randomUUID ? crypto.randomUUID() : Date.now()}`, formular_id: formularId, bl_user_id: currentUser.userId, bl_name: currentUser.name, signature_data: canvas.toDataURL('image/png'), signed_at: ts }); await sbAudit('BL_GEGENZEICHNUNG', `Schulung ${formularId} durch ${currentUser.name}`); modal.remove(); showToast('✅ BL-Gegenzeichnung unveränderlich gespeichert.', '#15803d'); } catch(e) { err.textContent='Gegenzeichnung konnte nicht gespeichert werden: '+String(e.message||e).slice(0,160); } };
-}
-
 async function zeigeSchulungshistorie(userId) {
   const user = APP_USERS.find(u => u.id === userId);
   if (!user) return;
@@ -8071,9 +7872,6 @@ async function zeigeSchulungshistorie(userId) {
         '<div style="text-align:center;padding:24px;color:#6b7280">📋 Noch keine abgeschlossenen Schulungen</div>';
       return;
     }
-
-    let blSignaturen = [];
-    try { blSignaturen = await SB.get('schulung_bl_counter_signatures', `formular_id=in.(${alleFormulare.map(f => encodeURIComponent(f.id)).join(',')})&order=signed_at.desc`); } catch (_) { blSignaturen = []; }
 
     const html = alleFormulare.map((f, idx) => {
       const zuw = zuweisungen.find(z => z.id === f.id);
@@ -8173,16 +7971,10 @@ async function zeigeSchulungshistorie(userId) {
         <div style="padding:14px 16px">
           ${abschnitteHtml}
         </div>
-        <!-- Unveränderliche Historie: Datum, Mitarbeitersignatur und BL-Status -->
-        <div style="padding:10px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;font-size:.8rem">
-          <div>📅 Schulungsdatum: <strong>${escHtml(felder.training_date || f.abgeschlossen_am || '–')}</strong></div>
-          <div>✍️ Mitarbeitersignatur: <strong>${felder.employee_signature ? 'vorhanden' : 'fehlt'}</strong></div>
-          <div>🧑‍💼 BL-Gegenzeichnung: <strong>${blSignaturen.some(s => s.formular_id === f.id) ? 'vorhanden' : 'ausstehend'}</strong></div>
-        </div>
-        <div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;display:flex;gap:8px;flex-wrap:wrap">
-          ${f.pdf_path ? `<button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>` : ''}
-          <button onclick="blSignaturFuerSchulungOeffnen('${f.id}','${escHtml(v?.titel || f.id)}')" class="btn btn-outline btn-sm" style="font-size:.78rem">✍️ BL gegenzeichnen</button>
-        </div>
+        <!-- Footer mit PDF-Button -->
+        ${f.pdf_path ? `<div style="padding:8px 16px;border-top:1px solid #f3f4f6;background:#f9fafb">
+          <button onclick="oeffnePdfSigniert('${f.pdf_path}')" class="btn btn-outline btn-sm" style="font-size:.78rem">📄 PDF-Nachweis öffnen</button>
+        </div>` : ''}
       </div>`;
     }).join('');
 
@@ -13502,12 +13294,6 @@ function hubQuizErgebnis() {
 
 // ── Teilnahmebescheinigung (PDF) ─────────────────────────────
 
-function tenantVerantwortlicher(tenantId) {
-  return APP_USERS?.find(u => u.tenant_id === tenantId && u.role === 'verantwortlicher' && u.archiviert !== true)
-    || APP_USERS?.find(u => u.tenant_id === tenantId && u.role === 'firma' && u.archiviert !== true)
-    || null;
-}
-
 async function hubBescheinigungErstellen() {
   const userId   = _hubPreviewMode ? 'preview' : (currentUser?.userId || 'anon');
   const userName = currentUser?.name || 'Teilnehmer';
@@ -13517,9 +13303,6 @@ async function hubBescheinigungErstellen() {
     : (localStorage.getItem(`hub_quiz_ergebnis_${userId}`) || '–');
   const datum    = new Date();
   const tenant   = APP_TENANTS?.find(t => t.id === tenantId);
-  const verantwortlicher = tenantVerantwortlicher(tenantId);
-  const verantwortlicherName = tenant?.ansprechpartner || verantwortlicher?.name || 'Verantwortlicher';
-  const firmaAdresse = [tenant.strasse, tenant.hausnummer, tenant.plz, tenant.ort].filter(Boolean).join(' · ');
   const firmaName = tenant?.name || 'CSC GmbH';
 
   // Fahrauftrag-Daten
@@ -13583,7 +13366,7 @@ async function hubBescheinigungErstellen() {
 
     // Unternehmen + Haupttext
     doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(...GRAU);
-    doc.text(`Unternehmen: ${firmaName}${firmaAdresse ? ' · ' + firmaAdresse : ''}`, ML, y); y += 7;
+    doc.text(`Unternehmen: ${firmaName}`, ML, y); y += 7;
     doc.text('Hiermit wird bestätigt, dass die oben genannte Person die theoretische Ausbildung zum Bediener', ML, y, {maxWidth:CW}); y += 5.5;
     doc.text('von Hubarbeitsbühnen gemäß den Vorgaben des', ML, y); y += 5.5;
     doc.setFont('helvetica','bold'); doc.setTextColor(...ROT);
@@ -13640,7 +13423,7 @@ async function hubBescheinigungErstellen() {
     doc.setDrawColor(...ROT); doc.setLineWidth(0.5);
     doc.line(ML+8,y+16,ML+halfW-4,y+16);
     doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
-    doc.text(`gez. ${verantwortlicherName}`, ML+8, y+24);
+    doc.text('gez. Thomas Schmoldt', ML+8, y+24);
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
     doc.text(`CSC GmbH · ${heute}`, ML+8, y+29);
 
@@ -13806,7 +13589,7 @@ async function hubBescheinigungErstellen() {
     doc.setDrawColor(...GRUEN); doc.setLineWidth(0.4);
     doc.line(rx2+8, y+28, rx2+uw-4, y+28);
     doc.setFontSize(12); doc.setFont('helvetica','bolditalic'); doc.setTextColor(...ROT);
-    doc.text(`gez. ${verantwortlicherName}`, rx2+8, y+22);
+    doc.text('gez. Thomas Schmoldt', rx2+8, y+22);
     doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(130,130,130);
     doc.text('Geschäftsführer · CSC GmbH', rx2+8, y+29);
     doc.text(heute, rx2+8, y+uh-3);
@@ -13835,7 +13618,8 @@ async function hubBescheinigungErstellen() {
         headers: {
           'apikey': SUPABASE_KEY,
           'Authorization': 'Bearer ' + SUPABASE_KEY,
-          'Content-Type': 'application/pdf'
+          'Content-Type': 'application/pdf',
+          'x-upsert': 'true'
         },
         body: pdfBytes
       });

@@ -47,11 +47,11 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 /* SIBEDA als Produktmarke, CSC GmbH dezent als Dachmarke */
 .app-brand-lockup { display:flex; align-items:center; gap:9px; flex-shrink:0; position:relative; }
 .app-brand-lockup::after { content:"©"; position:absolute; right:-3px; bottom:-2px; font-size:.56rem; line-height:1; font-weight:700; color:rgba(71,85,105,.85); background:rgba(255,255,255,.85); border-radius:999px; padding:1px 2px; }
-.app-brand-sibeda { width:120px; height:44px; object-fit:contain; border-radius:3px; background:#fff; }
+.app-brand-sibeda { width:150px; height:46px; object-fit:contain; border-radius:0; background:transparent; }
 .app-brand-lockup .brand-endorsement { max-width:108px; color:rgba(255,255,255,.82); font-size:.6rem; line-height:1.15; }
 
 @media (max-width: 560px) {
-  .app-brand-sibeda { width:92px; height:35px; }
+  .app-brand-sibeda { width:120px; height:38px; }
   .app-brand-lockup .brand-endorsement { display:none; }
 }
 
