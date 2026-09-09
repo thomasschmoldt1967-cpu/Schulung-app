@@ -75,13 +75,27 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 #sub-stats .stat-tile { padding:9px 6px; border-radius:10px; }
 #sub-stats .stat-tile .zahl { font-size:1.35rem; }
 #sub-stats .stat-tile .label { font-size:.68rem; }
-#sub-ma-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
-#sub-ma-buttons button { margin-top:0 !important; min-height:102px; }
+/* Aktionskacheln: drei Spalten, fachlich in zwei Reihen angeordnet. */
+.sub-action-container { display:contents; }
 #sub-app-anleitung { display:none; }
-/* Firmenverantwortlicher: Kalender und Import als gemeinsame Zweierzeile */
-#sub-kalender-buttons { grid-column:1; }
-#sub-ma-import { grid-column:2; }
-@media (max-width: 600px) { #sub-kalender-buttons, #sub-ma-import { grid-column:1; } .sub-welcome { padding:18px; } .sub-welcome h2 { font-size:1.1rem; } .sub-welcome-icon { font-size:2rem; } #sub-dashboard-grid { grid-template-columns:1fr !important; } .sub-section-label { grid-column:1; } }
+#sub-dashboard-grid .sub-action-container button { margin-top:0 !important; min-height:102px; }
+#sub-ma-buttons > button:nth-child(1) { order:10; }
+#sub-ma-zuordnung-btn { order:20; }
+#sub-ma-import button { order:30; }
+#sub-bereiche-btn { order:40; }
+#sub-firmenstammdaten-btn { order:50; }
+#sub-kalender-buttons button { order:60; }
+#sub-app-anleitung button { order:70; }
+@media (min-width: 601px) {
+  #sub-dashboard-grid { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+}
+@media (max-width: 600px) {
+  #sub-dashboard-grid { grid-template-columns:1fr !important; }
+  .sub-welcome { padding:18px; }
+  .sub-welcome h2 { font-size:1.1rem; }
+  .sub-welcome-icon { font-size:2rem; }
+  .sub-section-label { grid-column:1; }
+}
 
 /* ── FIRMA-DASHBOARD ─────────────────────────────────────── */
 .firma-content { max-width: 1080px; }
