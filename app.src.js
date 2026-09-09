@@ -4507,33 +4507,59 @@ async function renderMitarbeiterListe() {
     if (filter === 'aktiv')          query += '&aktiv=eq.true&archiviert=eq.false';
     else if (filter === 'passiv')    query += '&aktiv=eq.false&archiviert=eq.false';
     else if (filter === 'archiviert') query += '&archiviert=eq.true';
-    else if (filter.startsWith('bereich:')) {
-      const b = filter.slice('bereich:'.length);
-      query += `&archiviert=eq.false&bereich=eq.${encodeURIComponent(b)}`;
+    else if (filter.startsWith('bereich:') || filter.startsWith('bereichsleiter:')) {
+      // Bereichsfilter werden nach dem Laden über bereich_id angewendet.
+      // So funktionieren sie unabhängig von alten/abweichenden Spaltennamen.
+      query += '&archiviert=eq.false';
     }
     // 'alle' = kein weiterer Filter
 
-    const mitarbeiter = await SB.get('users', query);
+    let mitarbeiter = await SB.get('users', query);
+
+    // Bereich/Bereichsleiter werden über die relationale bereich_id gefiltert.
+    // Der alte Textwert `bereich` bleibt als Fallback für Altbestände erhalten.
+    const tenantBereiche = APP_BEREICHE
+      .filter(b => b.tenant_id === currentUser.tenantId)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+    const tenantBereichsleiter = APP_USERS
+      .filter(u => u.tenant_id === currentUser.tenantId && u.role === 'bereichsleiter' && !u.archiviert)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+    if (filter.startsWith('bereich:')) {
+      const bereichId = filter.slice('bereich:'.length);
+      mitarbeiter = (mitarbeiter || []).filter(m => String(m.bereich_id || '') === bereichId);
+    } else if (filter.startsWith('bereichsleiter:')) {
+      const bereichsleiterId = filter.slice('bereichsleiter:'.length);
+      const leiter = tenantBereichsleiter.find(u => String(u.id) === bereichsleiterId);
+      mitarbeiter = leiter
+        ? (mitarbeiter || []).filter(m => String(m.bereich_id || '') === String(leiter.bereich_id || ''))
+        : [];
+    }
 
     // Filter-Zeile rendern (Header-Bereich)
     const headerEl = document.getElementById('sub-mitarbeiter-header');
     if (headerEl) {
       const currentVal = filter;
-      // Eindeutige Bereiche aus geladener Mitarbeiterliste sammeln
-      const bereiche = [...new Set((mitarbeiter||[]).map(m=>m.bereich).filter(Boolean))].sort();
-      const bereichOptions = bereiche.map(b =>
-        `<option value="bereich:${escHtml(b)}" ${currentVal===`bereich:${b}`?'selected':''}>${escHtml(b)}</option>`
+      const bereichOptions = tenantBereiche.map(b =>
+        `<option value="bereich:${escHtml(b.id)}" ${currentVal===`bereich:${b.id}`?'selected':''}>${escHtml(b.name)}</option>`
       ).join('');
+      const bereichsleiterOptions = tenantBereichsleiter.map(u => {
+        const bereich = tenantBereiche.find(b => String(b.id) === String(u.bereich_id));
+        const label = bereich ? `${u.name} · ${bereich.name}` : u.name;
+        return `<option value="bereichsleiter:${escHtml(u.id)}" ${currentVal===`bereichsleiter:${u.id}`?'selected':''}>${escHtml(label)}</option>`;
+      }).join('');
       headerEl.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <select id="ma-filter-select" onchange="renderMitarbeiterListe()"
-            style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:.8rem;background:#fff;cursor:pointer">
+            aria-label="Mitarbeiter nach Status, Bereich oder Bereichsleiter filtern"
+            style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:.8rem;background:#fff;cursor:pointer;max-width:100%">
             <option value="aktiv"      ${currentVal==='aktiv'?'selected':''}>👤 Aktive</option>
             <option value="passiv"     ${currentVal==='passiv'?'selected':''}>⏸ Passive</option>
             <option value="archiviert" ${currentVal==='archiviert'?'selected':''}>📦 Archivierte</option>
             <option value="alle"       ${currentVal==='alle'?'selected':''}>🔍 Alle</option>
-            ${bereiche.length ? `<optgroup label="── Bereich ──">${bereichOptions}</optgroup>` : ''}
+            ${tenantBereiche.length ? `<optgroup label="── Bereich ──">${bereichOptions}</optgroup>` : ''}
+            ${tenantBereichsleiter.length ? `<optgroup label="── Bereichsleiter ──">${bereichsleiterOptions}</optgroup>` : ''}
           </select>
+          ${(filter.startsWith('bereich:') || filter.startsWith('bereichsleiter:')) ? '<span style="font-size:.73rem;color:#64748b">Ampelstatus für die gewählte Zuständigkeit</span>' : ''}
         </div>`;
     }
 

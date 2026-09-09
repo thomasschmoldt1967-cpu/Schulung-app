@@ -85,3 +85,8 @@ DROP POLICY IF EXISTS praesenzschulungen_appzugriff ON praesenzschulungen;
 CREATE POLICY praesenzschulungen_appzugriff ON praesenzschulungen FOR ALL USING (true) WITH CHECK (true);
 DROP POLICY IF EXISTS praesenz_teilnehmer_appzugriff ON praesenzschulung_teilnehmer;
 CREATE POLICY praesenz_teilnehmer_appzugriff ON praesenzschulung_teilnehmer FOR ALL USING (true) WITH CHECK (true);
+
+-- PostgREST benötigt zusätzlich Tabellenrechte für den verwendeten anon-Key.
+-- Ohne diese GRANTs antwortet die Nachweise-Abfrage mit PostgreSQL 42501.
+GRANT SELECT, INSERT, UPDATE, DELETE ON praesenzschulungen TO anon, authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON praesenzschulung_teilnehmer TO anon, authenticated;

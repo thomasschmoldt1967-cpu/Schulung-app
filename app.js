@@ -4507,33 +4507,59 @@ async function renderMitarbeiterListe() {
     if (filter === 'aktiv')          query += '&aktiv=eq.true&archiviert=eq.false';
     else if (filter === 'passiv')    query += '&aktiv=eq.false&archiviert=eq.false';
     else if (filter === 'archiviert') query += '&archiviert=eq.true';
-    else if (filter.startsWith('bereich:')) {
-      const b = filter.slice('bereich:'.length);
-      query += `&archiviert=eq.false&bereich=eq.${encodeURIComponent(b)}`;
+    else if (filter.startsWith('bereich:') || filter.startsWith('bereichsleiter:')) {
+      // Bereichsfilter werden nach dem Laden über bereich_id angewendet.
+      // So funktionieren sie unabhängig von alten/abweichenden Spaltennamen.
+      query += '&archiviert=eq.false';
     }
     // 'alle' = kein weiterer Filter
 
-    const mitarbeiter = await SB.get('users', query);
+    let mitarbeiter = await SB.get('users', query);
+
+    // Bereich/Bereichsleiter werden über die relationale bereich_id gefiltert.
+    // Der alte Textwert `bereich` bleibt als Fallback für Altbestände erhalten.
+    const tenantBereiche = APP_BEREICHE
+      .filter(b => b.tenant_id === currentUser.tenantId)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+    const tenantBereichsleiter = APP_USERS
+      .filter(u => u.tenant_id === currentUser.tenantId && u.role === 'bereichsleiter' && !u.archiviert)
+      .sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'de'));
+    if (filter.startsWith('bereich:')) {
+      const bereichId = filter.slice('bereich:'.length);
+      mitarbeiter = (mitarbeiter || []).filter(m => String(m.bereich_id || '') === bereichId);
+    } else if (filter.startsWith('bereichsleiter:')) {
+      const bereichsleiterId = filter.slice('bereichsleiter:'.length);
+      const leiter = tenantBereichsleiter.find(u => String(u.id) === bereichsleiterId);
+      mitarbeiter = leiter
+        ? (mitarbeiter || []).filter(m => String(m.bereich_id || '') === String(leiter.bereich_id || ''))
+        : [];
+    }
 
     // Filter-Zeile rendern (Header-Bereich)
     const headerEl = document.getElementById('sub-mitarbeiter-header');
     if (headerEl) {
       const currentVal = filter;
-      // Eindeutige Bereiche aus geladener Mitarbeiterliste sammeln
-      const bereiche = [...new Set((mitarbeiter||[]).map(m=>m.bereich).filter(Boolean))].sort();
-      const bereichOptions = bereiche.map(b =>
-        `<option value="bereich:${escHtml(b)}" ${currentVal===`bereich:${b}`?'selected':''}>${escHtml(b)}</option>`
+      const bereichOptions = tenantBereiche.map(b =>
+        `<option value="bereich:${escHtml(b.id)}" ${currentVal===`bereich:${b.id}`?'selected':''}>${escHtml(b.name)}</option>`
       ).join('');
+      const bereichsleiterOptions = tenantBereichsleiter.map(u => {
+        const bereich = tenantBereiche.find(b => String(b.id) === String(u.bereich_id));
+        const label = bereich ? `${u.name} · ${bereich.name}` : u.name;
+        return `<option value="bereichsleiter:${escHtml(u.id)}" ${currentVal===`bereichsleiter:${u.id}`?'selected':''}>${escHtml(label)}</option>`;
+      }).join('');
       headerEl.innerHTML = `
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
           <select id="ma-filter-select" onchange="renderMitarbeiterListe()"
-            style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:.8rem;background:#fff;cursor:pointer">
+            aria-label="Mitarbeiter nach Status, Bereich oder Bereichsleiter filtern"
+            style="border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;font-size:.8rem;background:#fff;cursor:pointer;max-width:100%">
             <option value="aktiv"      ${currentVal==='aktiv'?'selected':''}>👤 Aktive</option>
             <option value="passiv"     ${currentVal==='passiv'?'selected':''}>⏸ Passive</option>
             <option value="archiviert" ${currentVal==='archiviert'?'selected':''}>📦 Archivierte</option>
             <option value="alle"       ${currentVal==='alle'?'selected':''}>🔍 Alle</option>
-            ${bereiche.length ? `<optgroup label="── Bereich ──">${bereichOptions}</optgroup>` : ''}
+            ${tenantBereiche.length ? `<optgroup label="── Bereich ──">${bereichOptions}</optgroup>` : ''}
+            ${tenantBereichsleiter.length ? `<optgroup label="── Bereichsleiter ──">${bereichsleiterOptions}</optgroup>` : ''}
           </select>
+          ${(filter.startsWith('bereich:') || filter.startsWith('bereichsleiter:')) ? '<span style="font-size:.73rem;color:#64748b">Ampelstatus für die gewählte Zuständigkeit</span>' : ''}
         </div>`;
     }
 
@@ -5289,31 +5315,6 @@ modal.querySelector('#_znsb_ok').onclick = () => { document.body.removeChild(mod
   });
 }
 
-function firmenstammdatenOeffnen() {
-  const tenant = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
-  if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
-  let modal = document.getElementById('_sub_tenant_edit_modal');
-  if (modal) modal.remove();
-  const esc = value => escHtml(value || '');
-  modal = document.createElement('div');
-  modal.id = '_sub_tenant_edit_modal';
-  modal.className = 'modal-overlay active';
-  modal.innerHTML = `<div class="modal-box" style="max-width:560px;max-height:92vh;overflow-y:auto"><div class="modal-title">🏢 Firmendaten pflegen</div><p style="font-size:.78rem;color:#64748b;margin:0 0 12px">Diese Angaben werden für Schulungsnachweise und die Kommunikation verwendet.</p><div class="form-group"><label>Firmenname *</label><input id="_fst_name" value="${esc(tenant.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>Straße</label><input id="_fst_strasse" value="${esc(tenant.strasse)}"></div><div class="form-group"><label>Hausnummer</label><input id="_fst_hausnummer" value="${esc(tenant.hausnummer)}"></div><div class="form-group"><label>PLZ</label><input id="_fst_plz" value="${esc(tenant.plz)}" inputmode="numeric"></div><div class="form-group"><label>Ort</label><input id="_fst_ort" value="${esc(tenant.ort)}"></div></div><div class="form-group"><label>Land</label><input id="_fst_land" value="${esc(tenant.land || 'Deutschland')}"></div><div class="form-group"><label>Ansprechpartner</label><input id="_fst_ansprechpartner" value="${esc(tenant.ansprechpartner || currentUser.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>E-Mail *</label><input id="_fst_kontakt_email" type="email" value="${esc(tenant.kontakt_email || currentUser.email)}"></div><div class="form-group"><label>Telefon</label><input id="_fst_telefon" type="tel" value="${esc(tenant.telefon)}"></div></div><div class="form-group"><label>Webseite (optional)</label><input id="_fst_website" type="url" value="${esc(tenant.website)}" placeholder="https://…"></div><div id="_fst_msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" id="_fst_cancel">Abbrechen</button><button class="btn btn-primary" id="_fst_save">💾 Speichern</button></div></div>`;
-  document.body.appendChild(modal);
-  const close = () => modal.remove();
-  modal.querySelector('#_fst_cancel').onclick = close;
-  modal.addEventListener('click', e => { if (e.target === modal) close(); });
-  modal.querySelector('#_fst_save').onclick = async () => {
-    const value = id => modal.querySelector(id).value.trim();
-    const name = value('#_fst_name'), email = value('#_fst_kontakt_email'), msg = modal.querySelector('#_fst_msg');
-    if (!name || !email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
-    const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
-    const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
-    try { await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data); Object.assign(tenant, data); await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`); close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d'); }
-    catch (e) { msg.textContent = 'Fehler beim Speichern: ' + String(e.message || e).slice(0, 180); btn.disabled = false; btn.textContent = '💾 Speichern'; }
-  };
-}
-
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -5359,12 +5360,9 @@ function renderSubDashboard() {
   const kalBtns = document.getElementById('sub-kalender-buttons');
   const bereicheBtn = document.getElementById('sub-bereiche-btn');
   const maZuordnungBtn = document.getElementById('sub-ma-zuordnung-btn');
-  const firmaStammdatenBtn = document.getElementById('sub-firmenstammdaten-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
-  // Firmendaten nur für Verantwortliche – bleibt im Verantwortlichen-Bereich sichtbar
-  if (firmaStammdatenBtn) firmaStammdatenBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   const kannVerwalten = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
   if (maZuordnungBtn) maZuordnungBtn.style.display = kannVerwalten ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma, admin und Verantwortliche sichtbar
