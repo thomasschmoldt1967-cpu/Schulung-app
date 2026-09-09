@@ -57,6 +57,19 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 /* ── CONTENT AREA ────────────────────────────────────────── */
 .content { padding: 16px; flex: 1; max-width: 900px; margin: 0 auto; width: 100%; }
 
+/* ── VERANTWORTLICHER-DASHBOARD ───────────────────────────── */
+.sub-content { max-width: 1080px; }
+.sub-welcome { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:20px 24px; margin-bottom:16px; border-radius:16px; color:#fff; background:linear-gradient(135deg,#0f5132,#18794e); box-shadow:0 5px 18px rgba(15,81,50,.18); }
+.sub-eyebrow { font-size:.68rem; letter-spacing:.12em; opacity:.75; font-weight:700; margin-bottom:5px; }
+.sub-welcome h2 { font-size:1.3rem; margin:0 0 5px; }
+.sub-welcome p { font-size:.82rem; opacity:.88; margin:0; }
+.sub-welcome-icon { font-size:2.5rem; }
+.sub-section-label { grid-column:1/-1; color:#64748b; font-size:.68rem; font-weight:800; letter-spacing:.1em; margin:3px 2px -3px; }
+.sub-section-label-admin { margin-top:8px; }
+#sub-dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:12px !important; }
+#sub-dashboard-grid > [id$="btn-wrap"], #sub-dashboard-grid > #btn-lernpfad { grid-column:1/-1; }
+@media (max-width: 600px) { .sub-welcome { padding:18px; } .sub-welcome h2 { font-size:1.1rem; } .sub-welcome-icon { font-size:2rem; } #sub-dashboard-grid { grid-template-columns:1fr !important; } .sub-section-label { grid-column:1; } }
+
 /* ── FIRMA-DASHBOARD ─────────────────────────────────────── */
 .firma-content { max-width: 1080px; }
 .firma-welcome { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:22px 24px; margin-bottom:16px; border-radius:16px; color:#fff; background:linear-gradient(135deg,#1e3a5f,#285b86); box-shadow:0 5px 18px rgba(30,58,95,.18); }

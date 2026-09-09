@@ -521,7 +521,15 @@
       <button class="btn-logout" onclick="doLogoutMitBestaetigung()">Abmelden</button>
     </div>
   </header>
-  <div class="content">
+  <div class="content sub-content">
+    <section class="sub-welcome" aria-labelledby="sub-welcome-title">
+      <div>
+        <div class="sub-eyebrow">SCHULUNGSMANAGEMENT</div>
+        <h2 id="sub-welcome-title">Ihre Unternehmensübersicht</h2>
+        <p>Schulungen, Mitarbeiter und Nachweise schnell und übersichtlich verwalten.</p>
+      </div>
+      <div class="sub-welcome-icon" aria-hidden="true">📋</div>
+    </section>
     <div id="sub-stats" class="stats-grid"></div>
     <!-- Schulungsliste für Mitarbeiter (wird per JS befüllt, nur für Rolle mitarbeiter) -->
     <div id="sub-schulungen-list" style="margin-bottom:14px"></div>
@@ -529,6 +537,7 @@
     <div id="wiederkehrende-hinweise-sub" style="display:none"></div>
     <div id="sub-kalender" style="display:none"></div>
 
+    <div class="sub-section-label">SCHULUNGEN UND NACHWEISE</div>
     <!-- Dashboard-Grid: alle Aktionen als Icon-Kacheln -->
     <div id="sub-dashboard-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px">
 
@@ -590,6 +599,7 @@
         <div id="lernpfad-container" style="display:none;margin-top:8px"></div>
       </div>
 
+      <div class="sub-section-label sub-section-label-admin">MITARBEITER UND ORGANISATION</div>
       <!-- Mitarbeiter anlegen -->
       <div id="sub-ma-buttons">
         <button onclick="mitarbeiterEinzelnOeffnen()"
