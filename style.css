@@ -45,7 +45,8 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .btn-logout { background: transparent; border: 1px solid rgba(255,255,255,.4); color: white; padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
 
 /* SIBEDA als Produktmarke, CSC GmbH dezent als Dachmarke */
-.app-brand-lockup { display:flex; align-items:center; gap:9px; flex-shrink:0; }
+.app-brand-lockup { display:flex; align-items:center; gap:9px; flex-shrink:0; position:relative; }
+.app-brand-lockup::after { content:"©"; position:absolute; right:-3px; bottom:-2px; font-size:.56rem; line-height:1; font-weight:700; color:rgba(71,85,105,.85); background:rgba(255,255,255,.85); border-radius:999px; padding:1px 2px; }
 .app-brand-sibeda { width:120px; height:44px; object-fit:contain; border-radius:3px; background:#fff; }
 .app-brand-lockup .brand-endorsement { max-width:108px; color:rgba(255,255,255,.82); font-size:.6rem; line-height:1.15; }
 
@@ -150,6 +151,7 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .login-logo .app-brand-lockup { flex-direction:column; gap:2px; margin-bottom:12px; }
 .login-logo .app-brand-sibeda { width:calc(100% + 24px); max-width:none; height:150px; margin-left:-12px; object-fit:contain; }
 .login-logo .app-brand-lockup .brand-endorsement { max-width:none; color:var(--muted); font-size:.82rem; }
+.login-logo .app-brand-lockup::after { right:0; bottom:22px; }
 .login-logo .app-brand-csc { width:145px; height:48px; }
 .login-logo h2 { color: var(--primary); font-size: 1.3rem; margin-top: 8px; }
 .login-logo .subtitle { color: var(--muted); font-size: 0.82rem; margin-top: 4px; }
