@@ -77,8 +77,9 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 #sub-ma-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 #sub-ma-buttons button { margin-top:0 !important; min-height:102px; }
 #sub-app-anleitung { display:none; }
-/* Firmenverantwortlicher: Import direkt unter dem Kalender */
-#sub-kalender-buttons, #sub-ma-import { grid-column:2; }
+/* Firmenverantwortlicher: Kalender und Import als gemeinsame Zweierzeile */
+#sub-kalender-buttons { grid-column:1; }
+#sub-ma-import { grid-column:2; }
 @media (max-width: 600px) { #sub-kalender-buttons, #sub-ma-import { grid-column:1; } .sub-welcome { padding:18px; } .sub-welcome h2 { font-size:1.1rem; } .sub-welcome-icon { font-size:2rem; } #sub-dashboard-grid { grid-template-columns:1fr !important; } .sub-section-label { grid-column:1; } }
 
 /* ── FIRMA-DASHBOARD ─────────────────────────────────────── */
