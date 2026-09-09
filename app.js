@@ -5289,6 +5289,31 @@ modal.querySelector('#_znsb_ok').onclick = () => { document.body.removeChild(mod
   });
 }
 
+function firmenstammdatenOeffnen() {
+  const tenant = APP_TENANTS.find(t => t.id === currentUser?.tenantId);
+  if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
+  let modal = document.getElementById('_sub_tenant_edit_modal');
+  if (modal) modal.remove();
+  const esc = value => escHtml(value || '');
+  modal = document.createElement('div');
+  modal.id = '_sub_tenant_edit_modal';
+  modal.className = 'modal-overlay active';
+  modal.innerHTML = `<div class="modal-box" style="max-width:560px;max-height:92vh;overflow-y:auto"><div class="modal-title">🏢 Firmendaten pflegen</div><p style="font-size:.78rem;color:#64748b;margin:0 0 12px">Diese Angaben werden für Schulungsnachweise und die Kommunikation verwendet.</p><div class="form-group"><label>Firmenname *</label><input id="_fst_name" value="${esc(tenant.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>Straße</label><input id="_fst_strasse" value="${esc(tenant.strasse)}"></div><div class="form-group"><label>Hausnummer</label><input id="_fst_hausnummer" value="${esc(tenant.hausnummer)}"></div><div class="form-group"><label>PLZ</label><input id="_fst_plz" value="${esc(tenant.plz)}" inputmode="numeric"></div><div class="form-group"><label>Ort</label><input id="_fst_ort" value="${esc(tenant.ort)}"></div></div><div class="form-group"><label>Land</label><input id="_fst_land" value="${esc(tenant.land || 'Deutschland')}"></div><div class="form-group"><label>Ansprechpartner</label><input id="_fst_ansprechpartner" value="${esc(tenant.ansprechpartner || currentUser.name)}"></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>E-Mail *</label><input id="_fst_kontakt_email" type="email" value="${esc(tenant.kontakt_email || currentUser.email)}"></div><div class="form-group"><label>Telefon</label><input id="_fst_telefon" type="tel" value="${esc(tenant.telefon)}"></div></div><div class="form-group"><label>Webseite (optional)</label><input id="_fst_website" type="url" value="${esc(tenant.website)}" placeholder="https://…"></div><div id="_fst_msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" id="_fst_cancel">Abbrechen</button><button class="btn btn-primary" id="_fst_save">💾 Speichern</button></div></div>`;
+  document.body.appendChild(modal);
+  const close = () => modal.remove();
+  modal.querySelector('#_fst_cancel').onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  modal.querySelector('#_fst_save').onclick = async () => {
+    const value = id => modal.querySelector(id).value.trim();
+    const name = value('#_fst_name'), email = value('#_fst_kontakt_email'), msg = modal.querySelector('#_fst_msg');
+    if (!name || !email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
+    const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
+    const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
+    try { await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data); Object.assign(tenant, data); await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`); close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d'); }
+    catch (e) { msg.textContent = 'Fehler beim Speichern: ' + String(e.message || e).slice(0, 180); btn.disabled = false; btn.textContent = '💾 Speichern'; }
+  };
+}
+
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -5334,9 +5359,12 @@ function renderSubDashboard() {
   const kalBtns = document.getElementById('sub-kalender-buttons');
   const bereicheBtn = document.getElementById('sub-bereiche-btn');
   const maZuordnungBtn = document.getElementById('sub-ma-zuordnung-btn');
+  const firmaStammdatenBtn = document.getElementById('sub-firmenstammdaten-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
+  // Firmendaten nur für Verantwortliche – bleibt im Verantwortlichen-Bereich sichtbar
+  if (firmaStammdatenBtn) firmaStammdatenBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   const kannVerwalten = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
   if (maZuordnungBtn) maZuordnungBtn.style.display = kannVerwalten ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma, admin und Verantwortliche sichtbar
