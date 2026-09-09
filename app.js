@@ -5315,6 +5315,50 @@ modal.querySelector('#_znsb_ok').onclick = () => { document.body.removeChild(mod
   });
 }
 
+function firmenstammdatenOeffnen() {
+  if (!currentUser || currentUser.role !== 'verantwortlicher') {
+    showToast('❌ Nur Verantwortliche dürfen Firmendaten ändern', '#dc2626');
+    return;
+  }
+  const tenant = APP_TENANTS.find(t => t.id === currentUser.tenantId);
+  if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
+  const old = document.getElementById('_sub_tenant_edit_modal');
+  if (old) old.remove();
+  const esc = value => escHtml(value || '');
+  const modal = document.createElement('div');
+  modal.id = '_sub_tenant_edit_modal';
+  modal.className = 'modal-overlay active';
+  modal.innerHTML = `<div class="modal-box" style="max-width:560px;max-height:92vh;overflow-y:auto">
+    <div class="modal-title">🏢 Firmendaten anpassen</div>
+    <p style="font-size:.78rem;color:#64748b;margin:0 0 12px">Diese Angaben werden für Schulungsnachweise und die Kommunikation verwendet.</p>
+    <div class="form-group"><label>Firmenname *</label><input id="_fst_name" value="${esc(tenant.name)}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>Straße</label><input id="_fst_strasse" value="${esc(tenant.strasse)}"></div><div class="form-group"><label>Hausnummer</label><input id="_fst_hausnummer" value="${esc(tenant.hausnummer)}"></div><div class="form-group"><label>PLZ</label><input id="_fst_plz" value="${esc(tenant.plz)}" inputmode="numeric"></div><div class="form-group"><label>Ort</label><input id="_fst_ort" value="${esc(tenant.ort)}"></div></div>
+    <div class="form-group"><label>Land</label><input id="_fst_land" value="${esc(tenant.land || 'Deutschland')}"></div>
+    <div class="form-group"><label>Ansprechpartner</label><input id="_fst_ansprechpartner" value="${esc(tenant.ansprechpartner || currentUser.name)}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="form-group"><label>E-Mail *</label><input id="_fst_kontakt_email" type="email" value="${esc(tenant.kontakt_email || currentUser.email)}"></div><div class="form-group"><label>Telefon</label><input id="_fst_telefon" type="tel" value="${esc(tenant.telefon)}"></div></div>
+    <div class="form-group"><label>Webseite (optional)</label><input id="_fst_website" type="url" value="${esc(tenant.website)}" placeholder="https://…"></div>
+    <div id="_fst_msg" class="error-msg"></div><div class="modal-actions"><button class="btn btn-secondary" id="_fst_cancel">Abbrechen</button><button class="btn btn-primary" id="_fst_save">💾 Speichern</button></div>
+  </div>`;
+  document.body.appendChild(modal);
+  const close = () => modal.remove();
+  modal.querySelector('#_fst_cancel').onclick = close;
+  modal.addEventListener('click', e => { if (e.target === modal) close(); });
+  modal.querySelector('#_fst_save').onclick = async () => {
+    const value = id => modal.querySelector(id).value.trim();
+    const name = value('#_fst_name'), email = value('#_fst_kontakt_email'), msg = modal.querySelector('#_fst_msg');
+    if (!name || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
+    const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
+    const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
+    try {
+      const result = await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data);
+      if (Array.isArray(result) && result.length === 0) throw new Error('Das Unternehmen konnte nicht aktualisiert werden.');
+      Object.assign(tenant, Array.isArray(result) ? (result[0] || data) : (result || data));
+      await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`);
+      close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d');
+    } catch (e) { msg.textContent = 'Fehler beim Speichern: ' + String(e?.message || e).slice(0, 180); btn.disabled = false; btn.textContent = '💾 Speichern'; }
+  };
+}
+
 function renderSubDashboard() {
   const tenant = APP_TENANTS.find(t=>t.id===currentUser.tenantId);
   document.getElementById('sub-username').textContent   = currentUser.name;
@@ -5360,9 +5404,11 @@ function renderSubDashboard() {
   const kalBtns = document.getElementById('sub-kalender-buttons');
   const bereicheBtn = document.getElementById('sub-bereiche-btn');
   const maZuordnungBtn = document.getElementById('sub-ma-zuordnung-btn');
+  const firmenstammdatenBtn = document.getElementById('sub-firmenstammdaten-btn');
   if (maBtns) maBtns.style.display = isMitarbeiter ? 'none' : '';
   // Bereiche-Button nur für Verantwortliche
   if (bereicheBtn) bereicheBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
+  if (firmenstammdatenBtn) firmenstammdatenBtn.style.display = isVerantwortlicher ? 'flex' : 'none';
   const kannVerwalten = ['admin', 'firma', 'verantwortlicher'].includes(currentUser.role);
   if (maZuordnungBtn) maZuordnungBtn.style.display = kannVerwalten ? 'flex' : 'none';
   // Mitarbeiter-Import nur für firma, admin und Verantwortliche sichtbar
@@ -6180,7 +6226,7 @@ function nuRenderListe() {
 
 function nuFirmendatenBearbeiten(tenantId) {
   const tenant = APP_TENANTS.find(t => t.id === tenantId);
-  const firmaU = APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'firma');
+  const firmaU = APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'verantwortlicher') || APP_USERS.find(u => u.tenant_id === tenantId && u.role === 'firma');
   if (!tenant) { showToast('❌ Unternehmen nicht gefunden', '#dc2626'); return; }
   const vorhanden = document.getElementById('_tenant_edit_modal');
   if (vorhanden) vorhanden.remove();
@@ -6209,7 +6255,7 @@ function nuFirmendatenBearbeiten(tenantId) {
     const msg = overlay.querySelector('#_te_msg');
     if (!name || !kontakt || !email) { msg.textContent = 'Bitte Firmenname, Ansprechpartner und E-Mail ausfüllen.'; return; }
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte eine gültige E-Mail-Adresse eingeben.'; return; }
-    if (!firmaU) { msg.textContent = 'Kein Firmen-Login zu diesem Unternehmen gefunden.'; return; }
+    if (!firmaU) { msg.textContent = 'Kein Verantwortlicher oder Firmen-Benutzer zu diesem Unternehmen gefunden.'; return; }
     const andere = APP_USERS.find(u => u.email?.toLowerCase() === email && u.id !== firmaU.id);
     if (andere) { msg.textContent = 'Diese E-Mail-Adresse ist bereits einem anderen Benutzer zugeordnet.'; return; }
     const btn = overlay.querySelector('#_te_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …'; msg.textContent = '';
