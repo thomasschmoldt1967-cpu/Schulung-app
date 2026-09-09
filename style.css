@@ -63,11 +63,19 @@ html, body { height: 100%; font-family: -apple-system, BlinkMacSystemFont, 'Sego
 .sub-eyebrow { font-size:.68rem; letter-spacing:.12em; opacity:.75; font-weight:700; margin-bottom:5px; }
 .sub-welcome h2 { font-size:1.3rem; margin:0 0 5px; }
 .sub-welcome p { font-size:.82rem; opacity:.88; margin:0; }
+.sub-guide-btn { margin-top:12px; padding:7px 11px; border:1px solid rgba(255,255,255,.6); border-radius:8px; background:rgba(255,255,255,.12); color:#fff; font-size:.75rem; font-weight:700; cursor:pointer; }
 .sub-welcome-icon { font-size:2.5rem; }
 .sub-section-label { grid-column:1/-1; color:#64748b; font-size:.68rem; font-weight:800; letter-spacing:.1em; margin:3px 2px -3px; }
 .sub-section-label-admin { margin-top:8px; }
 #sub-dashboard-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:12px !important; }
 #sub-dashboard-grid > [id$="btn-wrap"], #sub-dashboard-grid > #btn-lernpfad { grid-column:1/-1; }
+#sub-stats { grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; }
+#sub-stats .stat-tile { padding:9px 6px; border-radius:10px; }
+#sub-stats .stat-tile .zahl { font-size:1.35rem; }
+#sub-stats .stat-tile .label { font-size:.68rem; }
+#sub-ma-buttons { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+#sub-ma-buttons button { margin-top:0 !important; min-height:102px; }
+#sub-app-anleitung { display:none; }
 @media (max-width: 600px) { .sub-welcome { padding:18px; } .sub-welcome h2 { font-size:1.1rem; } .sub-welcome-icon { font-size:2rem; } #sub-dashboard-grid { grid-template-columns:1fr !important; } .sub-section-label { grid-column:1; } }
 
 /* ── FIRMA-DASHBOARD ─────────────────────────────────────── */

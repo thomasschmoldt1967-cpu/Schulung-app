@@ -527,6 +527,7 @@
         <div class="sub-eyebrow">SCHULUNGSMANAGEMENT</div>
         <h2 id="sub-welcome-title">Ihre Unternehmensübersicht</h2>
         <p>Schulungen, Mitarbeiter und Nachweise schnell und übersichtlich verwalten.</p>
+        <button class="sub-guide-btn" type="button" onclick="hilfeOeffnen(window._currentRole || 'verantwortlicher')">📖 App-Anleitung öffnen</button>
       </div>
       <div class="sub-welcome-icon" aria-hidden="true">📋</div>
     </section>
@@ -640,8 +641,8 @@
         </button>
       </div>
 
-      <!-- App-Anleitung -->
-      <div>
+      <!-- App-Anleitung: bereits im Banner verfügbar -->
+      <div id="sub-app-anleitung">
         <button onclick="hilfeOeffnen(window._currentRole || 'verantwortlicher')"
           style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:#fff;color:#1e3a5f;padding:16px 10px;border-radius:12px;box-shadow:0 2px 8px rgba(30,58,95,.18);border:1.5px solid #1e3a5f;width:100%;cursor:pointer;text-align:center;box-sizing:border-box;-webkit-appearance:none">
           <span style="font-size:1.8rem">&#128214;</span>
