@@ -5348,7 +5348,7 @@ function firmenstammdatenOeffnen() {
   modal.querySelector('#_fst_save').onclick = async () => {
     const value = id => modal.querySelector(id).value.trim();
     const name = value('#_fst_name'), email = value('#_fst_kontakt_email'), msg = modal.querySelector('#_fst_msg');
-    if (!name || !email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
+    if (!name || !email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
     const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
     const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
     try {
