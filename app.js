@@ -5351,8 +5351,22 @@ function firmenstammdatenOeffnen() {
     if (!name || !email || !/^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$/.test(email)) { msg.textContent = 'Bitte Firmenname und eine gültige E-Mail-Adresse ausfüllen.'; return; }
     const data = { name, strasse:value('#_fst_strasse') || null, hausnummer:value('#_fst_hausnummer') || null, plz:value('#_fst_plz') || null, ort:value('#_fst_ort') || null, land:value('#_fst_land') || null, ansprechpartner:value('#_fst_ansprechpartner') || null, kontakt_email:email, telefon:value('#_fst_telefon') || null, website:value('#_fst_website') || null, kontakt:email };
     const btn = modal.querySelector('#_fst_save'); btn.disabled = true; btn.textContent = '⏳ Speichern …';
-    try { await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data); Object.assign(tenant, data); await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`); close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d'); }
-    catch (e) { msg.textContent = e?.code === '42703' ? 'Die Firmendaten-Erweiterung ist noch nicht installiert. Bitte zuerst die bereitgestellte Supabase-Migration ausführen.' : 'Fehler beim Speichern: ' + String(e.message || e).slice(0, 180); btn.disabled = false; btn.textContent = '💾 Speichern'; }
+    try {
+      const result = await SB.patch('tenants', `id=eq.${encodeURIComponent(currentUser.tenantId)}`, data);
+      if (Array.isArray(result) && result.length === 0) throw new Error('Das Unternehmen konnte nicht aktualisiert werden. Bitte Seite neu laden und erneut versuchen.');
+      // Die vom Server zurückgegebene Zeile ist maßgeblich; so werden lokale
+      // Anzeige und Datenbank nach dem Speichern nicht auseinandergezogen.
+      const saved = Array.isArray(result) ? result[0] : result;
+      Object.assign(tenant, saved && typeof saved === 'object' ? saved : data);
+      await sbAudit('FIRMENDATEN_BEARBEITET', `Firmendaten von ${name} aktualisiert`);
+      close(); renderSubDashboard(); showToast('✅ Firmendaten gespeichert', '#15803d');
+    } catch (e) {
+      const details = String(e?.message || e || '');
+      msg.textContent = /42703|column .* does not exist/i.test(details)
+        ? 'Die Firmendaten-Erweiterung ist in der Datenbank noch nicht installiert. Bitte die Datei „supabase-migration-firmendaten-verantwortlicher.sql“ im Supabase SQL-Editor ausführen.'
+        : 'Fehler beim Speichern: ' + details.slice(0, 180);
+      btn.disabled = false; btn.textContent = '💾 Speichern';
+    }
   };
 }
 
